@@ -2414,7 +2414,7 @@ async function syncConnectF(){
     } else {
       const res = await fetch(SYNC_API, { method:'POST',
         headers:{ 'Content-Type':'application/json', 'X-Master-Key':code, 'X-Bin-Name':'forma-sync', 'X-Bin-Private':'true' },
-        body: JSON.stringify({ forma:state, forma_ts:Date.now(), kalorije:null, kalorije_ts:0 }) });
+        body: JSON.stringify({ forma:slimForma(state), forma_ts:Date.now(), kalorije:null, kalorije_ts:0 }) });
       if (!res.ok) throw new Error('jsonbin: HTTP '+res.status+' — preveri Master Key.');
       const d = await res.json();
       state.sync = { bin:d.metadata?.id, key:code }; save();
@@ -2428,6 +2428,12 @@ async function syncGetF(){
   const res = await fetch(`${SYNC_API}/${c.bin}/latest`, { headers:{'X-Master-Key':c.key} });
   if (!res.ok) throw new Error('Sync branje: HTTP '+res.status);
   return (await res.json()).record || {};
+}
+function slimForma(f){   // brez velikih Strava zemljevidov (polyline) — da sync bin (100 KB) ne poči
+  if(!f) return f;
+  const c = JSON.parse(JSON.stringify(f));
+  (c.rides||[]).forEach(r=>{ delete r.polyline; delete r.streams; delete r.map; });
+  return c;
 }
 function mergeForma(local, remote){
   if(!remote) return local; if(!local) return remote;
@@ -2468,7 +2474,7 @@ function syncPush(){
     try{
       const rec = (await syncGetF()) || {};
       const f = rec.forma ? mergeForma(state, rec.forma) : state;   // ohrani vožnje z druge naprave
-      rec.forma = f; rec.forma_ts = f._ts || Date.now();
+      rec.forma = slimForma(f); rec.forma_ts = f._ts || Date.now();   // brez zemljevidov (velikost bina!)
       await fetch(`${SYNC_API}/${c.bin}`, { method:'PUT',
         headers:{'Content-Type':'application/json','X-Master-Key':c.key}, body:JSON.stringify(rec) });
     }catch(e){ console.warn('sync push:', e.message); }
@@ -2487,6 +2493,8 @@ if (state.icu?.athleteId && state.icu?.apiKey) icuImport(true);
 renderSyncF();
 syncPullF();
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) syncPullF(); });
+window.addEventListener('focus', ()=>{ if(state.sync?.bin) syncPullF(); });
+setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) syncPullF(); }, 60000);   // samodejno vsakih 60 s
 </script>
 </body>
 </html>

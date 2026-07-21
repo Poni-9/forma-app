@@ -220,7 +220,7 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 
   <div class="top">
     <div class="logo">🍽️</div>
-    <div><h1>KalorijeAI</h1><small>slikaj → AI prešteje kalorije · <b style="color:var(--acc2)">v2.4</b></small></div>
+    <div><h1>KalorijeAI</h1><small>slikaj → AI prešteje kalorije · <b style="color:var(--acc2)">v2.5</b></small></div>
     <div class="right">
       <button class="btn btn-ghost btn-sm" id="btnSyncTop" onclick="forceSync()" title="Sinhroniziraj zdaj (pošlji + prejmi)">⟳</button>
       <button class="btn btn-ghost btn-sm" onclick="openSettings()">⚙️ Nastavitve</button>
@@ -563,10 +563,12 @@ Vrni SAMO JSON: {"obrok":"${meal}","predlogi":[{"jed":"kratek opis obroka","kcal
   }catch(e){ toast(e.message,'err'); }
   btn.disabled=false; btn.innerHTML=orig;
 }
+function hideMealSug(){ lastSug=null; $('mealSug').innerHTML=''; }
 function renderMealSug(){
   if(!lastSug){ $('mealSug').innerHTML=''; return; }
   $('mealSug').innerHTML =
-    `<div class="pd-lbl">Za ${mealCap(lastSug.obrok)} · ostane ~${lastSug.leftK} kcal / ~${lastSug.leftP} g belj.</div>`+
+    `<div style="display:flex;align-items:center;gap:8px"><div class="pd-lbl" style="flex:1;margin:0">Za ${mealCap(lastSug.obrok)} · ostane ~${lastSug.leftK} kcal / ~${lastSug.leftP} g belj.</div>
+       <button class="btn btn-ghost btn-sm" onclick="hideMealSug()" title="Skrij predloge">✕ Skrij</button></div>`+
     lastSug.predlogi.map((p,i)=>`<div class="entry" style="cursor:default">
       <div class="noimg">🍽️</div>
       <div class="nm">${esc(p.jed)}<small>${esc(p.zakaj||'')}</small></div>
@@ -1176,6 +1178,13 @@ function mergeDays(localDays, remoteDays, tomb){
   }
   return out;
 }
+/* iz forma za SINHRONIZACIJO odstrani velike zemljevide poti (Strava polyline) — sicer bin (100 KB) poči */
+function slimForma(f){
+  if(!f) return f;
+  const c = JSON.parse(JSON.stringify(f));
+  (c.rides||[]).forEach(r=>{ delete r.polyline; delete r.streams; delete r.map; });
+  return c;
+}
 /* --- ZDRUŽEVANJE forma stanja: vožnje po ID-ju (da se ne izgubijo), ostalo novejše --- */
 function mergeForma(local, remote){
   if(!remote) return local;
@@ -1212,7 +1221,7 @@ async function syncSetup(code){
   // Master key → ustvari nov bin
   const res = await fetch(SYNC_API, { method:'POST',
     headers:{ 'Content-Type':'application/json', 'X-Master-Key':code, 'X-Bin-Name':'forma-sync', 'X-Bin-Private':'true' },
-    body: JSON.stringify({ forma: F||null, forma_ts: F?._ts||Date.now(), kalorije: db, kalorije_ts: Date.now() }) });
+    body: JSON.stringify({ forma: slimForma(F)||null, forma_ts: F?._ts||Date.now(), kalorije: db, kalorije_ts: Date.now() }) });
   if (!res.ok) throw new Error('jsonbin: HTTP '+res.status+' — preveri Master Key.');
   const d = await res.json();
   db.settings.sync = { bin:d.metadata?.id, key:code }; save();
@@ -1236,7 +1245,7 @@ async function forceSync(){
     if (f){ try{ localStorage.setItem('forma_trener_v1', JSON.stringify(f)); refreshF(); }catch(_){}}
     db._ts = Date.now();
     rec.kalorije = db;  rec.kalorije_ts = db._ts;
-    rec.forma = f;      rec.forma_ts = f?._ts || Date.now();
+    rec.forma = slimForma(f);  rec.forma_ts = f?._ts || Date.now();
     try{ localStorage.setItem(DB, JSON.stringify(db)); }catch(_){}
     await fetch(`${SYNC_API}/${c.bin}`, { method:'PUT',
       headers:{'Content-Type':'application/json','X-Master-Key':c.key}, body: JSON.stringify(rec) });
@@ -1276,7 +1285,7 @@ function syncPush(part){
         let f = formaState();
         if (rec.forma) f = mergeForma(f, rec.forma);   // ohrani vožnje z druge naprave
         if (f){ try{ localStorage.setItem('forma_trener_v1', JSON.stringify(f)); refreshF(); }catch(_){}}
-        rec.forma = f; rec.forma_ts = f?._ts || Date.now();
+        rec.forma = slimForma(f); rec.forma_ts = f?._ts || Date.now();   // brez zemljevidov (velikost!)
       }
       if (part==='kalorije' || !part){
         if (rec.kalorije) mergeKalorije(rec.kalorije);   // najprej poberi tuje vnose, da jih ne povozimo
@@ -1384,6 +1393,7 @@ renderAll();
 syncPull();
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) syncPull(); });
 window.addEventListener('focus', ()=>syncPull());   // ko klikneš nazaj na okno, poberi najnovejše
+setInterval(()=>{ if(document.visibilityState==='visible' && db.settings.sync?.bin) syncPull(); }, 60000);   // samodejno vsakih 60 s
 </script>
 </body>
 </html>
