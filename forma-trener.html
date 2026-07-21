@@ -395,7 +395,7 @@ h2#calLabel{letter-spacing:-.02em}
         <div class="val" id="sbFormVal">–</div>
         <div class="desc" id="sbFormDesc">Dodaj vožnje za izračun</div>
       </div>
-      <div style="text-align:center;font-size:10.5px;color:var(--dim);margin-top:8px">Trener AI · v2.8</div>
+      <div style="text-align:center;font-size:10.5px;color:var(--dim);margin-top:8px">Trener AI · v2.9</div>
     </div>
   </aside>
 
@@ -2595,6 +2595,8 @@ function renderAll(){ renderSidebar(); renderDash(); renderRides(); renderPlan()
 fillSettings();
 renderAll();
 getWeather().then(()=>{ renderWeather(); renderPlan(); });   // vreme ob zagonu → osveži trak in dnevne oznake
+window.addEventListener('focus', ()=>{ getWeather().then(()=>{ renderWeather(); renderPlan(); }); });
+setInterval(()=>{ if(document.visibilityState==='visible'){ getWeather(true).then(()=>{ renderWeather(); renderPlan(); }); } }, 2*3600e3);   // vreme vsaki 2 h
 // samodejna sinhronizacija ob odprtju
 if (state.strava.accessToken) stravaImport(true);
 if (state.icu?.athleteId && state.icu?.apiKey) icuImport(true);

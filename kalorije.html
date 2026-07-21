@@ -233,7 +233,7 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 
   <div class="top">
     <div class="logo">🍽️</div>
-    <div><h1>KalorijeAI</h1><small>slikaj → AI prešteje kalorije · <b style="color:var(--acc2)">v2.8</b></small></div>
+    <div><h1>KalorijeAI</h1><small>slikaj → AI prešteje kalorije · <b style="color:var(--acc2)">v2.9</b></small></div>
     <div class="right">
       <button class="btn btn-ghost btn-sm" id="btnSyncTop" onclick="forceSync()" title="Sinhroniziraj zdaj (pošlji + prejmi)">⟳</button>
       <button class="btn btn-ghost btn-sm" onclick="openSettings()">⚙️ Nastavitve</button>
@@ -867,12 +867,42 @@ async function getWeatherK(){
     return wxCache;
   }catch(e){ return F?.weather || null; }   // rezerva: iz sinhroniziranega plana
 }
-async function renderWeatherK(){
-  const el=$('weatherStripK'); if(!el) return;
+async function renderWeatherK(auto){
+  const el=$('weatherStripK');
   const w=await getWeatherK();
-  if(!w?.days?.length){ el.innerHTML='<span class="hint">Napovedi trenutno ni.</span>'; return; }
-  el.innerHTML=w.days.filter(d=>d.date>=todayIso()).slice(0,7).map(d=>{ const wi=weatherInfo(d.code), dd=parseIso(d.date);
-    return `<div class="wx ${wi.bad?'bad':''}"><div class="wx-d">${DNEVI[(dd.getDay()+6)%7].slice(0,3)}</div><div class="wx-e">${wi.e}</div><div class="wx-t">${d.tmax}°</div><div class="wx-p">${d.pop}%💧</div></div>`; }).join('');
+  if(el){
+    if(!w?.days?.length){ el.innerHTML='<span class="hint">Napovedi trenutno ni.</span>'; }
+    else el.innerHTML=w.days.filter(d=>d.date>=todayIso()).slice(0,7).map(d=>{ const wi=weatherInfo(d.code), dd=parseIso(d.date);
+      return `<div class="wx ${wi.bad?'bad':''}"><div class="wx-d">${DNEVI[(dd.getDay()+6)%7].slice(0,3)}</div><div class="wx-e">${wi.e}</div><div class="wx-t">${d.tmax}°</div><div class="wx-p">${d.pop}%💧</div></div>`; }).join('');
+  }
+  checkWeatherAdapt(auto);
+}
+/* zaznaj konflikte vreme↔plan (zunanji dan z dežjem) in po potrebi samodejno prilagodi */
+function weatherBadDay(d){ if(!d) return false; const wi=weatherInfo(d.code); return wi.bad>=2 || (wi.bad>=1 && d.pop>=60); }
+function weatherConflicts(){
+  if(!wxCache?.days?.length || !F?.plans) return [];
+  const today=todayIso(), to=isoDate(addDays(new Date(),6)), out=[];
+  for(const p of F.plans) for(const dd of (p.days||[])){
+    if(dd.datum<today || dd.datum>to) continue;
+    if(dd.done || (F.rides||[]).some(r=>r.date===dd.datum)) continue;
+    const ct=chipTip(dd.tip); if(!(ct.l==='POHOD'||ct.l==='KOLO')) continue;
+    if(/trenaž|trenaz|notranj|soba/i.test(dd.opis||'')) continue;   // že prilagojeno na dež
+    if(weatherBadDay(wxCache.days.find(x=>x.date===dd.datum))) out.push(dd.datum);
+  }
+  return out;
+}
+async function checkWeatherAdapt(auto){
+  const el=$('rebalMsg'); const conf=weatherConflicts(); const sig=conf.join(',');
+  if(el){
+    el.innerHTML = conf.length
+      ? `<div class="link-banner" style="background:rgba(77,163,255,.1);border-color:rgba(77,163,255,.4);color:#cfe3ff;margin-top:10px">🌦️ Vreme se je spremenilo — za ${conf.length} zunanji dan je napovedan dež. Priporočam <b>⚖️ Prilagodi teden</b> spodaj.</div>`
+      : '';
+  }
+  if(auto && sig && sig!==db.settings.wxSig && (Date.now()-(db.settings.wxTs||0) > 2*3600e3) && geminiKey()){
+    db.settings.wxSig=sig; db.settings.wxTs=Date.now(); save();
+    toast('Vreme se je spremenilo — samodejno prilagajam plan… 🌦️','');
+    try{ await rebalanceWeek(); }catch(_){}
+  }
 }
 function chipTip(tip){
   const t=(tip||'').toLowerCase();
@@ -1500,9 +1530,11 @@ save();
 renderAll();
 // sinhronizacija: potegni ob zagonu, ob vrnitvi v aplikacijo in vsakih 90 s
 syncPull();
-document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) syncPull(); });
-window.addEventListener('focus', ()=>syncPull());   // ko klikneš nazaj na okno, poberi najnovejše
-setInterval(()=>{ if(document.visibilityState==='visible' && db.settings.sync?.bin) syncPull(); }, 60000);   // samodejno vsakih 60 s
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ syncPull(); renderWeatherK(true); } });
+window.addEventListener('focus', ()=>{ syncPull(); renderWeatherK(true); });   // ko klikneš nazaj na okno, poberi najnovejše + vreme
+setInterval(()=>{ if(document.visibilityState==='visible' && db.settings.sync?.bin) syncPull(); }, 60000);   // sync vsakih 60 s
+setInterval(()=>{ if(document.visibilityState==='visible'){ wxCache=null; renderWeatherK(true); } }, 2*3600e3);   // vreme vsaki 2 h
+renderWeatherK(true);   // preveri vreme ob zagonu
 </script>
 </body>
 </html>
