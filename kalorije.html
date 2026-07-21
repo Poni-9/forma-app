@@ -760,7 +760,7 @@ function renderPlanTab(){
       ${d.vaje?`<div class="pd-sec"><div class="pd-lbl">🏋️ Vaje (muscle-up)</div>${d.vaje.includes('\n')?opisHtml(d.vaje):`<div class="opis-line">${esc(d.vaje)}</div>`}</div>`:''}
       ${(d.prehrana||d.kcal_vnos)?`<div class="pd-sec"><div class="pd-lbl">🍽 Prehrana</div>${esc(d.prehrana||'').split(/\s*\|\s*/).filter(x=>x).map(x=>`<div class="opis-line">${x}</div>`).join('')}${d.kcal_vnos?`<div class="hint" style="color:var(--yellow);font-weight:700;margin-top:4px">🔥 vnos ~${d.kcal_vnos} · poraba ~${d.kcal_poraba||'?'} kcal</div>`:''}</div>`:''}
       <div class="pd-actions">
-        ${hasSets(d) ? `<button class="btn btn-primary btn-sm" onclick='pwStartFor("${d.datum}")'>▶ Začni vodeni trening</button>`:''}
+        ${ct.l==='TRENING MOČI' ? `<button class="btn btn-primary btn-sm" onclick='pwStartFor("${d.datum}")'>▶ Začni vodeni trening</button>`:''}
         ${isToday && ct.l!=='POČITEK' ? `<button class="btn btn-ghost btn-sm" onclick="$('adaptBack').classList.add('open')">⏱ Nimam toliko časa</button>`:''}
       </div>
     </div>`;
