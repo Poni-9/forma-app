@@ -561,7 +561,12 @@ h2#calLabel{letter-spacing:-.02em}
           <div class="frm-grid">
             <label class="fld"><span>Ime</span><input id="pIme" placeholder="Blaž"></label>
             <label class="fld"><span>Starost</span><input type="number" id="pStarost"></label>
+            <label class="fld"><span>Spol</span>
+              <select id="pSpol"><option value="moški" selected>Moški</option><option value="ženska">Ženska</option></select>
+            </label>
+            <label class="fld"><span>Višina (cm)</span><input type="number" id="pVisina" placeholder="npr. 179"></label>
             <label class="fld"><span>Teža (kg)</span><input type="number" id="pTeza"></label>
+            <label class="fld"><span>Telesna maščoba % (neobvezno)</span><input type="number" id="pBf" placeholder="npr. 14"></label>
             <label class="fld"><span>Max utrip</span><input type="number" id="pMaxHr" placeholder="npr. 190"></label>
             <label class="fld"><span>Utrip v mirovanju</span><input type="number" id="pRestHr" placeholder="npr. 55"></label>
             <label class="fld"><span>Prag – LTHR (neobvezno)</span><input type="number" id="pLthr" placeholder="izračunam sam"></label>
@@ -750,7 +755,7 @@ const DB_KEY = 'forma_trener_v1';
 const defaultState = () => ({
   settings: {
     geminiKey:'', geminiModel:'gemini-flash-latest', proxy:'',
-    profile:{ ime:'', starost:null, teza:null, maxHr:null, restHr:null, lthr:null, ftp:null, shema:5, nivo:'rekreativni', ure:6, cilj:'', ciljDatum:null, ciljTeza:null }
+    profile:{ ime:'', starost:null, spol:'moški', visina:null, teza:null, bf:null, maxHr:null, restHr:null, lthr:null, ftp:null, shema:5, nivo:'rekreativni', ure:6, cilj:'', ciljDatum:null, ciljTeza:null }
   },
   strava:{ clientId:'', clientSecret:'', accessToken:'', refreshToken:'', expiresAt:0, athleteName:'' },
   icu:{ athleteId:'', apiKey:'', name:'' },
@@ -1211,13 +1216,20 @@ async function gemini(parts, {json=true, temp=0.4}={}){
     headers:{ 'Content-Type':'application/json', 'x-goog-api-key':key },
     body: JSON.stringify(body)
   });
+  const sleep = ms => new Promise(r=>setTimeout(r,ms));
   let res = await call(model);
   if (res.status===404 && model!=='gemini-flash-latest') res = await call('gemini-flash-latest');   // neznano ime modela → varni model
+  // preobremenjenost/začasne napake (503/500/502/504/429) → do 3 samodejni ponovni poskusi z naraščajočim zamikom
+  for (let i=0; i<3 && [429,500,502,503,504].includes(res.status); i++){
+    await sleep(1500*(i+1));
+    res = await call(i>=1 ? 'gemini-flash-latest' : model);   // ob vztrajni napaki še preklop na varni model
+  }
   if (!res.ok){
     let msg = `Gemini napaka (${res.status})`;
     try{ const e = await res.json(); msg += ': ' + (e.error?.message||'').slice(0,180); }catch(_){}
     if (res.status===400 || res.status===403) msg += ' — preveri API ključ.';
     if (res.status===429) msg = 'Gemini: presežena kvota — počakaj minuto in poskusi znova.';
+    if (res.status===503 || res.status===500) msg = 'Gemini je trenutno preobremenjen. Samodejno sem poskusil večkrat — počakaj minuto in klikni znova. 🔁';
     throw new Error(msg);
   }
   const data = await res.json();
@@ -1254,9 +1266,16 @@ function buildContext(){
   const L = [];
   L.push(`DANES JE: ${todayIso()} (${DNEVI[(new Date().getDay()+6)%7]})`);
   L.push(`\nPROFIL KOLESARJA:`);
-  L.push(`- ime: ${p.ime||'?'} | starost: ${p.starost||'?'} | teža: ${p.teza||'?'} kg | nivo: ${p.nivo}`);
+  L.push(`- ime: ${p.ime||'?'} | starost: ${p.starost||'?'} | spol: ${p.spol||'moški'} | višina: ${p.visina||'?'} cm | teža: ${p.teza||'?'} kg${p.bf?` | telesna maščoba ~${p.bf} %`:''} | nivo: ${p.nivo}`);
+  const _bmi=bmiVal(), _bmr=bmr(), _tdee=tdee(), _prot=proteinTarget();
+  if (_bmi) L.push(`- ITM: ${_bmi}${_bmr?` | bazalna poraba (BMR) ~${_bmr} kcal | vzdrževanje (TDEE) ~${_tdee} kcal/dan`:''}`);
   L.push(`- max utrip: ${p.maxHr||'?'} | utrip v mirovanju: ${p.restHr||'?'} (trenira po srčnem utripu, NIMA merilca moči)`);
   L.push(`- ciljni obseg: ~${p.ure||6} ur/teden | cilji: ${p.cilj||'splošna forma'}`);
+  if (_tdee){
+    const gd0 = goalDeficit();
+    const cilj = gd0 ? Math.max(_bmr+200, _tdee - gd0.deficit) : Math.round(_tdee - 290);
+    L.push(`- PREHRANSKI CILJ (lean-fit: počasno izgubljanje maščobe + gradnja mišic): ~${Math.round(cilj)} kcal/dan (rahli deficit glede na vzdrževanje ${_tdee}). Beljakovine KLJUČNE: ~${_prot} g/dan (ohranjajo mišice v deficitu). Maščobe ~0.9 g/kg, ostalo ogljikovi hidrati okoli treninga.`);
+  }
   const z = hrZones();
   if (z) L.push(`- CONE UTRIPA (šema ${+p.shema===7?'7 con, Z1–Z7':'5 con, C1–C5'}): ${zonesText()}${lthrVal()?` | prag (LTHR) ~${lthrVal()}`:''}`);
   if (powerZones()) L.push(`- MOČNOSTNE CONE (FTP ${p.ftp} W): ${powerZonesText()}`);
@@ -1377,11 +1396,12 @@ const STIL = `STIL PISANJA TRENINGOV — piši PREPROSTO IN RAZUMLJIVO, kot da r
 
 const STRATEGIJA = `POČITNIŠKA STRATEGIJA "LEAN" — razkrij mišico pod maščobo (STRIKTNO upoštevaj pri vsakem planiranju):
 1. KALORIČNI DEFICIT + PREHRANA: maščoba gre dol le ob deficitu, VISOK vnos beljakovin ščiti mišice. POMEMBNO: obroke pripravlja mama — NIKOLI ne predpisuj jedilnikov! Svetuj samo tisto, kar lahko kolesar SAM kontrolira ob serviranih obrokih: velikost porcije (manj priloge, več mesa/zelenjave), beljakovinski dodatki, ki si jih vzame sam (skuta, jajca, grški jogurt, tuna, mleko), brez sladkarij/sladkih pijač/prigrizkov, kruh zmerno, 2,5 l vode.
-2. MOČ ima KONKRETEN CILJ: naučiti se MUSCLE-UP. Vsak moč trening je korak progresije: sklece + zgibi + dipsi + trebušnjaki/dvigi nog (osnove) → eksplozivni zgibi do prsi → negativni muscle-upi → poskusi prehoda čez drog. Zgibi dajo V-hrbet, dipsi in sklece prsa/triceps, trup pa prehod. Brez treninga z odporom telo v deficitu izgublja mišice.
+2. MOČ ima KONKRETEN CILJ: naučiti se MUSCLE-UP. Vsak moč trening je korak progresije: sklece + zgibi + dipsi + trebušnjaki/dvigi nog (osnove) → eksplozivni zgibi do prsi → negativni muscle-upi → poskusi prehoda čez drog. Zgibi dajo V-hrbet, dipsi in sklece prsa/triceps, trup pa prehod. Brez treninga z odporom telo v deficitu izgublja mišice. KO POSTANE VAJA PRELAHKA (npr. zlahka narediš vse serije), dodaj obremenitev — nahrbtnik z utežjo, elastika ali obtežilni jopič — sicer se rast mišic z golo lastno težo sčasoma ustavi (plato).
 3. STRUKTURA TEDNA:
    - JEDRO TEDNA = IZMENJAVA KOLESA IN POHODA (to je glavna, aktivna vsebina). Čez teden se izmenjujeta kolo in hoja v hribe — npr. kolo, pohod, kolo, pohod … skupaj 4–5× tedensko. To gradi kondicijo in kuri maščobo in je glavna postavka večine dni.
    - MOČ JE DODATEK (2–3× tedensko, 20–40 min): krajši trening za zgornji del telesa proti muscle-upu, dodan POLEG glavne aktivnosti — lahko isti dan kot lažje kolo (v polju "vaje") ali kot kratek samostojen dan tipa "moč". Ni glavna postavka dneva, ampak nadgradnja.
-   - PRAVILO RAZPOREDA: dva težka dneva NE zaporedoma; po napornem pohodu ali intenzivnem kolesu lažji dan, samo moč ali regeneracija. 1 dan v tednu prosto/lahka regeneracija.`;
+   - PRAVILO RAZPOREDA: dva težka dneva NE zaporedoma; po napornem pohodu ali intenzivnem kolesu lažji dan, samo moč ali regeneracija. 1 dan v tednu prosto/lahka regeneracija.
+4. POHODI — VEDNO predlagaj KONKRETEN bližnji hrib blizu VODIC (Slovenija). Primerni hribi: Šmarna gora (~1 h vzpona), Rašica, Sv. Jakob, Sv. Miklavž nad Vodicami, Gobavica (Mengeš), Šenturška gora / Sv. Ambrož, Sv. Ana. V naslovu in opisu navedi IME hriba, približen čas vzpona v eno smer in skupno trajanje pohoda (gor + dol), ki naj se UJEMA s trajanjem, predvidenim v planu (trajanje_min). Bolj kot je dan zahteven, višji/daljši hrib; za lažji dan bližji/nižji (npr. Šmarna gora).`;
 
 /* ---------- cone utripa in moči iz profila ---------- */
 function hrZones(){
@@ -1446,6 +1466,25 @@ function goalDeficit(){
   if (kg <= 0) return null;
   return { dni, kg, deficit: Math.min(1100, Math.round(kg*7700/dni)) };
 }
+/* --- telesni izračuni (Mifflin-St Jeor) --- */
+function bmr(){                                   // bazalna poraba (kcal/dan)
+  const p = state.settings.profile;
+  if (!p.teza || !p.visina || !p.starost) return null;
+  const base = 10*p.teza + 6.25*p.visina - 5*p.starost;
+  return Math.round(base + (p.spol==='ženska' ? -161 : 5));
+}
+function tdee(){                                  // vzdrževanje = BMR × faktor aktivnosti
+  const b = bmr(); if (!b) return null;
+  const ure = state.settings.profile.ure || 6;
+  const f = ure>=8 ? 1.6 : ure>=5 ? 1.5 : ure>=3 ? 1.42 : 1.3;
+  return Math.round(b*f);
+}
+function bmiVal(){
+  const p = state.settings.profile;
+  if (!p.teza || !p.visina) return null;
+  return +(p.teza/Math.pow(p.visina/100,2)).toFixed(1);
+}
+const proteinTarget = () => { const t=state.settings.profile.teza; return t?Math.round(t*2.2):null; }; // g/dan (lean-fit)
 const normDay = (d, datum) => ({ datum: datum||d.datum, tip:d.tip||'vzdržljivost', naslov:d.naslov||'Trening',
   trajanje_min:+d.trajanje_min||0, opis:d.opis||'', tss_ocena:+d.tss_ocena||0,
   prehrana:d.prehrana||'', vaje:d.vaje||'', kcal_vnos:+d.kcal_vnos||null, kcal_poraba:+d.kcal_poraba||null });
@@ -2109,6 +2148,7 @@ function saveProfile(){
   const p = state.settings.profile;
   const num = v => v==='' ? null : +v;
   p.ime = $('pIme').value.trim(); p.starost = num($('pStarost').value); p.teza = num($('pTeza').value);
+  p.spol = $('pSpol').value || 'moški'; p.visina = num($('pVisina').value); p.bf = num($('pBf').value);
   p.maxHr = num($('pMaxHr').value); p.restHr = num($('pRestHr').value);
   p.nivo = $('pNivo').value; p.ure = num($('pUre').value)||6; p.cilj = $('pCilj').value.trim();
   p.ciljDatum = $('pCiljDatum').value || null; p.ciljTeza = num($('pCiljTeza').value);
@@ -2121,6 +2161,7 @@ function saveProfile(){
 function fillSettings(){
   const p = state.settings.profile;
   $('pIme').value=p.ime||''; $('pStarost').value=p.starost??''; $('pTeza').value=p.teza??'';
+  $('pSpol').value=p.spol||'moški'; $('pVisina').value=p.visina??''; $('pBf').value=p.bf??'';
   $('pMaxHr').value=p.maxHr??''; $('pRestHr').value=p.restHr??'';
   $('pNivo').value=p.nivo||'rekreativni'; $('pUre').value=p.ure??6; $('pCilj').value=p.cilj||'';
   $('pCiljDatum').value=p.ciljDatum||''; $('pCiljTeza').value=p.ciljTeza??'';

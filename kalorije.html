@@ -153,7 +153,10 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 .pday.today .pd-day{color:var(--orange)}
 .pd-sport{font-size:10.5px;font-weight:900;background:rgba(255,255,255,.06);border:1px solid var(--border2);padding:2px 9px;border-radius:7px;white-space:nowrap}
 .pd-title{font-weight:800;font-size:14px;flex:1;min-width:120px}
-.pd-meta{font-size:11.5px;color:var(--dim);font-weight:700;white-space:nowrap}
+.pd-title2{font-weight:800;font-size:15px;margin-top:7px;line-height:1.3}
+.pd-time{display:inline-block;margin-top:7px;font-size:12.5px;font-weight:800;color:var(--acc2);background:var(--accSoft);border:1px solid rgba(63,206,107,.25);padding:3px 10px;border-radius:8px}
+.pday.today .pd-time{color:var(--orange);background:rgba(252,76,2,.1);border-color:rgba(252,76,2,.3)}
+.pd-meta{font-size:11.5px;color:var(--dim);font-weight:700;white-space:nowrap;margin-left:auto}
 .pd-meta .okk{color:var(--acc2)}
 .opis-line{padding:2px 0 2px 9px;border-left:2px solid var(--border2);margin:4px 0;line-height:1.45;font-size:13px;color:#cfd8e0}
 .pd-sec{margin-top:9px}
@@ -269,6 +272,13 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
     </div>
   </div>
 
+  <!-- ===== PREDLOG OBROKA ===== -->
+  <div class="card">
+    <h3>🍽️ Kaj naj pojem?<span class="sub">iz tvoje hrane + ostanek dneva</span></h3>
+    <button class="btn btn-primary btn-sm" id="btnMeal" onclick="suggestMeal()">Predlagaj obrok zdaj</button>
+    <div id="mealSug" style="margin-top:12px"></div>
+  </div>
+
   <!-- ===== DNEVNIK PO OBROKIH ===== -->
   <div class="card">
     <h3>
@@ -296,7 +306,12 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
       <h3>📅 Moj trening plan <span class="sub" id="planSyncLbl"></span></h3>
       <div class="hint" style="margin-bottom:12px">Iz FORMA Trenerja — kolo 🚴, pohod 🥾, moč 💪. Klikni "⏱ Nimam toliko časa", če je dan prekratek.</div>
       <div id="planList"></div>
-      <button class="btn btn-ghost btn-sm" onclick="syncPull(true)" style="margin-top:6px">⟳ Osveži plan</button>
+      <div id="rebalMsg"></div>
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+        <button class="btn btn-primary btn-sm" id="btnRebal" onclick="rebalanceWeek()">⚖️ Prilagodi teden glede na izvedbo</button>
+        <button class="btn btn-ghost btn-sm" onclick="syncPull(true)">⟳ Osveži plan</button>
+      </div>
+      <div class="hint" style="margin-top:8px">Glede na to, kako si dejansko izpeljal treninge (Strava + opravljeno), pametno prerazporedi preostanek tedna.</div>
     </div>
   </div>
 
@@ -401,8 +416,9 @@ function toast(msg,type=''){ const t=document.createElement('div'); t.className=
    SHRAMBA + POVEZAVA S FORMA TRENERJEM
 ================================================================ */
 const DB = 'kalorije_v1';
-let db = { settings:{ key:'', model:'', kcalManual:null, tezaManual:null }, days:{} };
+let db = { settings:{ key:'', model:'', kcalManual:null, tezaManual:null }, days:{}, deleted:{} };
 try{ const raw=localStorage.getItem(DB); if(raw) db=Object.assign(db,JSON.parse(raw)); }catch(_){}
+if(!db.deleted) db.deleted={};
 // stare sličice počisti (varčevanje prostora): thumb ostane samo za zadnja 2 dni
 (function prune(){
   const keep=[todayIso(), isoDate(addDays(new Date(),-1))];
@@ -450,26 +466,50 @@ function rideKcal(r){
 function actualBurnToday(){
   return (F?.rides||[]).filter(r=>r.date===todayIso()).reduce((a,r)=>a+rideKcal(r),0);
 }
-const basalKcal = () => Math.round(teza()*24*1.35);      // groba dnevna poraba brez treninga
+/* Mifflin-St Jeor iz FORMA profila (višina/spol/starost) — točneje kot groba ocena */
+function bmrK(){
+  const p=F?.settings?.profile; if(!p) return null;
+  const cm=p.visina, age=p.starost, kg=teza();
+  if(!cm||!age||!kg) return null;
+  return Math.round(10*kg + 6.25*cm - 5*age + (p.spol==='ženska'?-161:5));
+}
+function tdeeK(){
+  const b=bmrK(); if(!b) return null;
+  const ure=F?.settings?.profile?.ure||6;
+  const f=ure>=8?1.6:ure>=5?1.5:ure>=3?1.42:1.3;
+  return Math.round(b*f);
+}
+const basalKcal = () => bmrK() || Math.round(teza()*22);   // dnevna poraba v mirovanju
 function baseTargetKcal(){
   if (db.settings.kcalManual) return db.settings.kcalManual;
   const pd=planToday(); if (pd?.kcal_vnos) return pd.kcal_vnos;
+  const t=tdeeK();
+  if (t) return Math.max((bmrK()||1400)+150, Math.round(t - goalDeficit()));  // vzdrževanje − deficit
   return Math.max(1400, Math.round(teza()*30 - goalDeficit()));
 }
-/* koliko VEČ si pokuril, kot je bilo predpisano → toliko več smeš pojesti (deficit ostane isti) */
-function bonusKcal(){
+/* prilagoditev vnosa glede na DEJANSKO opravljen trening v primerjavi s predpisanim:
+   pokuril VEČ → smeš pojesti več (deficit ostane isti);
+   pokuril MANJ (krajša vožnja) → poješ manj, da OSTANEŠ v deficitu.
+   Dokler danes še ni nobene aktivnosti, ne prilagajamo (0). */
+function trainAdjust(){
+  const act = actualBurnToday();
+  if (act<=0) return 0;
   const pd=planToday();
   const plannedTrain = pd?.kcal_poraba ? Math.max(0, pd.kcal_poraba - basalKcal()) : 0;
-  return Math.max(0, Math.min(1200, Math.round(actualBurnToday() - plannedTrain)));
+  return Math.round(act - plannedTrain);   // + več / − manj kot predpisano
 }
-function targetKcal(){ return baseTargetKcal() + bonusKcal(); }
+const bonusKcal = () => Math.max(0, trainAdjust());   // (nazaj-združljivost)
+function targetKcal(){
+  const adj = Math.max(-800, Math.min(1200, trainAdjust()));
+  return Math.max(basalKcal()-100, baseTargetKcal() + adj);   // nikoli pod ~bazalno porabo
+}
 function burnKcal(){
   const act = actualBurnToday();
   if (act>0) return {v: basalKcal()+act, src:'dejansko (Strava + aktivnosti)'};
   const pd=planToday(); if (pd?.kcal_poraba) return {v:pd.kcal_poraba, src:'iz plana FORMA'};
   return {v:basalKcal(), src:'ocena (osnovna poraba)'};
 }
-const protTarget = () => Math.round(teza()*1.8);
+const protTarget = () => Math.round(teza()*2.2);   // lean-fit: ohranja/gradi mišice v deficitu
 
 /* ================================================================
    DNEVNIK
@@ -482,6 +522,61 @@ function autoMeal(){
   return mealFromH(h);
 }
 const mealFromH = h => h<11?'zajtrk':h<14.5?'kosilo':h<17.5?'malica':'vecerja';
+
+/* --- PREDLOG OBROKA (uči se iz zgodovine hrane + ostanek dneva) --- */
+let lastSug=null;
+function foodHistory(days=21){
+  const from=isoDate(addDays(new Date(),-days)), tally={};
+  for(const [iso,d] of Object.entries(db.days||{})){
+    if(iso<from) continue;
+    for(const e of (d.entries||[])){ const k=(e.jed||'').trim().toLowerCase(); if(!k) continue;
+      const t=tally[k]||(tally[k]={jed:e.jed,n:0,kcal:0,b:0}); t.n++; t.kcal+=+e.kcal||0; t.b+=+e.b||0; }
+  }
+  return Object.values(tally).map(t=>({jed:t.jed,krat:t.n,kcal:Math.round(t.kcal/t.n),b:Math.round(t.b/t.n)})).sort((a,b)=>b.krat-a.krat);
+}
+function nextMealSlot(){
+  const used=new Set((dayData(todayIso()).entries||[]).map(e=>e.meal));
+  const h=new Date().getHours()+new Date().getMinutes()/60;
+  const order = h<11?['zajtrk','malica','kosilo','vecerja'] : h<14.5?['kosilo','malica','vecerja'] : h<17.5?['malica','vecerja','kosilo'] : ['vecerja','malica'];
+  for(const m of order) if(!used.has(m)) return m;
+  return order[0];
+}
+const mealCap = m => ({zajtrk:'🌅 Zajtrk',kosilo:'🍲 Kosilo',malica:'🍎 Malica',vecerja:'🌙 Večerja'}[m]||m);
+async function suggestMeal(){
+  const btn=$('btnMeal'); const orig=btn.innerHTML; btn.disabled=true; btn.innerHTML='<span class="spin"></span> Razmišljam …';
+  try{
+    const de=dayData(todayIso()).entries;
+    const eaten=sumK(de), tgt=targetKcal(), leftK=Math.max(0,tgt-eaten);
+    const prot=sumB(de), leftP=Math.max(0,protTarget()-prot);
+    const meal=nextMealSlot(), hist=foodHistory().slice(0,25);
+    const r=await gemini([{text:`Si prehranski svetovalec za "lean-fit" cilj (rahli deficit + veliko beljakovin za mišice).
+Predlagaj, kaj naj oseba poje za ${mealCap(meal)}.
+Ostane danes do cilja: ~${leftK} kcal in ~${leftP} g beljakovin (dnevni cilj ${tgt} kcal / ${protTarget()} g beljakovin).
+Hrana, ki jo OBIČAJNO je (uporabi PREDNOSTNO te — ima jih doma in mu teknejo), povprečje na porcijo:
+${hist.length?hist.map(h=>`- ${h.jed} (~${h.kcal} kcal, ${h.b} g belj.; ${h.krat}×)`).join('\n'):'(še ni dovolj zgodovine — predlagaj preprosto zdravo slovensko hrano z veliko beljakovin)'}
+Predlagaj 2–3 KONKRETNE možnosti za TA obrok iz teh (ali zelo podobnih) živil. Vsaka naj se čim bolj približa ostanku kcal in doda čim več beljakovin. Kratko in praktično.
+Vrni SAMO JSON: {"obrok":"${meal}","predlogi":[{"jed":"kratek opis obroka","kcal":number,"beljakovine_g":number,"zakaj":"1 kratek razlog"}]}`}]);
+    lastSug={obrok:r.obrok||meal, predlogi:(r.predlogi||[]).slice(0,3), leftK, leftP};
+    renderMealSug();
+  }catch(e){ toast(e.message,'err'); }
+  btn.disabled=false; btn.innerHTML=orig;
+}
+function renderMealSug(){
+  if(!lastSug){ $('mealSug').innerHTML=''; return; }
+  $('mealSug').innerHTML =
+    `<div class="pd-lbl">Za ${mealCap(lastSug.obrok)} · ostane ~${lastSug.leftK} kcal / ~${lastSug.leftP} g belj.</div>`+
+    lastSug.predlogi.map((p,i)=>`<div class="entry" style="cursor:default">
+      <div class="noimg">🍽️</div>
+      <div class="nm">${esc(p.jed)}<small>${esc(p.zakaj||'')}</small></div>
+      <div class="kc">${Math.round(p.kcal||0)} kcal<small>${Math.round(p.beljakovine_g||0)} g belj.</small></div>
+      <button class="del" title="dodaj kot vnos" onclick="addSug(${i})">＋</button>
+    </div>`).join('');
+}
+function addSug(i){
+  const p=lastSug?.predlogi[i]; if(!p) return;
+  dayData(todayIso()).entries.push({ id:uid(), ts:Date.now(), time:new Date().toTimeString().slice(0,5), meal:lastSug.obrok, jed:p.jed, grami:null, kcal:Math.round(p.kcal||0), b:Math.round(p.beljakovine_g||0), zan:'', op:'predlog', thumb:null });
+  save(); renderAll(); toast('Dodano med vnose. 🍽️','');
+}
 
 /* prebere uro fotografiranja iz EXIF (za pravilno razvrstitev v obrok pri večernem nalaganju) */
 async function exifHour(file){
@@ -529,12 +624,18 @@ async function gemini(parts){
   const body = { contents:[{role:'user',parts}], generationConfig:{ temperature:.2, response_mime_type:'application/json' } };
   const call = m => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`,{
     method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':key}, body:JSON.stringify(body) });
+  const sleep = ms => new Promise(r=>setTimeout(r,ms));
   let res = await call(geminiModel());
   if (res.status===404 && geminiModel()!=='gemini-flash-latest') res = await call('gemini-flash-latest');
+  for (let i=0; i<3 && [429,500,502,503,504].includes(res.status); i++){   // preobremenjenost → samodejni ponovni poskusi
+    await sleep(1500*(i+1));
+    res = await call(i>=1 ? 'gemini-flash-latest' : geminiModel());
+  }
   if (!res.ok){
     let msg='Gemini napaka ('+res.status+')';
     try{ const e=await res.json(); msg+=': '+(e.error?.message||'').slice(0,140); }catch(_){}
     if (res.status===429) msg='Gemini: presežena kvota — počakaj minuto.';
+    if (res.status===503 || res.status===500) msg='Gemini je trenutno preobremenjen. Poskusil sem večkrat — počakaj minuto in klikni znova. 🔁';
     throw new Error(msg);
   }
   const data = await res.json();
@@ -599,7 +700,7 @@ Vrni SAMO JSON:
       if (q.ex) meal = mealFromH(q.ex.h);                       // ura s fotografije = najbolj zanesljiva
       else { meal = ['zajtrk','kosilo','malica','vecerja'].includes(r.obrok) ? r.obrok : autoMeal();
              if (nowH<11) meal='zajtrk'; }                      // pred 11.00 vedno zajtrk
-      const e = { id:uid(), time: q.ex?q.ex.hm:new Date().toTimeString().slice(0,5),
+      const e = { id:uid(), ts:Date.now(), time: q.ex?q.ex.hm:new Date().toTimeString().slice(0,5),
         meal,
         jed: r.jed||'Hrana', grami: grami?Math.round(grami):null,
         kcal: Math.round(+r.kcal||0), b: Math.round(+r.beljakovine_g||0),
@@ -638,10 +739,11 @@ function renderHero(){
   $('stLeft').textContent = (left>=0?left:0) + ' kcal';
   $('stLeft').style.color = left<0 ? 'var(--red)' : left<200 ? 'var(--yellow)' : 'var(--acc2)';
   if (left<0) $('stLeft').textContent = `${-left} čez!`;
-  const bonus = bonusKcal();
+  const adj = trainAdjust();
   $('stTarget').textContent = target+' kcal';
   $('stTargetSrc').innerHTML = (db.settings.kcalManual ? 'ročno nastavljen' : pd?.kcal_vnos ? 'iz FORMA plana ✓' : 'ocena (teža − deficit)')
-    + (bonus>0 ? ` · <b style="color:var(--acc2)">+${bonus} od vožnje 🚴</b>` : '');
+    + (adj>0 ? ` · <b style="color:var(--acc2)">+${adj} (pokuril več) 🚴</b>`
+     : adj<0 ? ` · <b style="color:var(--orange)">${adj} (krajši trening — ostani v deficitu)</b>` : '');
   $('stBurn').textContent = '~'+burn.v+' kcal';
   $('stBurnSrc').textContent = burn.src;
   $('stProt').textContent = `${prot} / ${pt} g`;
@@ -753,9 +855,10 @@ function renderPlanTab(){
       <div class="pd-head">
         <span class="pd-day">${DNEVI[(dd.getDay()+6)%7].slice(0,3)} ${dd.getDate()}.${dd.getMonth()+1}.</span>
         <span class="pd-sport">${ct.i} ${ct.l}</span>
-        <span class="pd-title">${esc(d.naslov||'')}</span>
-        <span class="pd-meta">${ct.l==='POČITEK'?'—':fmtDur(d.trajanje_min)+' · ~'+(d.tss_ocena||'?')+' TSS'}${done?'<span class="okk"> ✓</span>':''}</span>
+        ${done?'<span class="pd-meta"><span class="okk">✓ opravljeno</span></span>':''}
       </div>
+      <div class="pd-title2">${esc(d.naslov||'')}</div>
+      ${ct.l!=='POČITEK' && d.trajanje_min?`<div class="pd-time">⏱ Skupaj ~${fmtDur(d.trajanje_min)}${d.tss_ocena?` · ~${d.tss_ocena} TSS`:''}</div>`:''}
       ${d.opis?`<div class="pd-sec">${opisHtml(d.opis)}</div>`:''}
       ${d.vaje?`<div class="pd-sec"><div class="pd-lbl">🏋️ Vaje (muscle-up)</div>${d.vaje.includes('\n')?opisHtml(d.vaje):`<div class="opis-line">${esc(d.vaje)}</div>`}</div>`:''}
       ${(d.prehrana||d.kcal_vnos)?`<div class="pd-sec"><div class="pd-lbl">🍽 Prehrana</div>${esc(d.prehrana||'').split(/\s*\|\s*/).filter(x=>x).map(x=>`<div class="opis-line">${x}</div>`).join('')}${d.kcal_vnos?`<div class="hint" style="color:var(--yellow);font-weight:700;margin-top:4px">🔥 vnos ~${d.kcal_vnos} · poraba ~${d.kcal_poraba||'?'} kcal</div>`:''}</div>`:''}
@@ -792,6 +895,53 @@ Vrni SAMO JSON: {"naslov":"...","trajanje_min":${min},"opis":"...","vaje":"skraj
     $('adaptBack').classList.remove('open');
     renderAll();
     toast('Trening prilagojen na '+min+' min. '+(r.razlaga||''),'');
+  }catch(e){ toast(e.message,'err'); }
+  btn.disabled=false; btn.innerHTML=orig;
+}
+
+/* --- PRILAGODI TEDEN glede na dejansko izvedbo (Strava + opravljeno) --- */
+async function rebalanceWeek(){
+  refreshF();
+  if(!F?.plans?.length){ toast('Ni plana za prilagoditev.','err'); return; }
+  const today=todayIso();
+  const wkStart=isoDate(addDays(new Date(), -((new Date().getDay()+6)%7)));   // ponedeljek tega tedna
+  const to=isoDate(addDays(parseIso(wkStart),6));
+  const allDays=[]; for(const p of F.plans) for(const d of (p.days||[])) if(d.datum>=wkStart && d.datum<=to) allDays.push(d);
+  allDays.sort((a,b)=>a.datum.localeCompare(b.datum));
+  const future=allDays.filter(d=>d.datum>=today);
+  if(!future.length){ toast('Za preostanek tedna ni planiranih dni.','err'); return; }
+  // izvedba: predpisano vs opravljeno za pretekle dni tega tedna
+  const exec=[];
+  for(const d of allDays.filter(x=>x.datum<today)){
+    const done=(F.rides||[]).filter(r=>r.date===d.datum);
+    exec.push(`${d.datum} (${DNEVI[(parseIso(d.datum).getDay()+6)%7].slice(0,3)}): predpisano "${d.tip} ${d.naslov} ${d.trajanje_min}min ~${d.tss_ocena}TSS" → ${done.length?done.map(r=>`OPRAVIL: ${r.name} ${r.time||'?'}min TSS~${r.tss||'?'}`).join('; '):'NI OPRAVIL (izpuščeno)'}`);
+  }
+  const btn=$('btnRebal'); const orig=btn.innerHTML; btn.disabled=true; btn.innerHTML='<span class="spin"></span> Prilagajam teden …';
+  try{
+    const prof=F?.settings?.profile||{};
+    const r=await gemini([{text:`Si kolesarski trener. Kolesar želi, da glede na to, KAKO je dejansko izvedel treninge ta teden (v primerjavi s predpisanim), PAMETNO prilagodiš PREOSTANEK tedna, da tedenski cilj ostane smiseln.
+Profil: ${prof.teza||'?'} kg, višina ${prof.visina||'?'} cm, cilj "${prof.cilj||'lean-fit'}", tedenski obseg ~${prof.ure||6} h. Danes je ${today}.
+IZVEDBA DO DANES ta teden:
+${exec.length?exec.join('\n'):'(ni preteklih dni tega tedna)'}
+PREOSTANEK TEDNA (te dni prilagodi):
+${future.map(d=>`- ${d.datum}: ${d.tip} — ${d.naslov} (${d.trajanje_min} min, ~${d.tss_ocena} TSS)`).join('\n')}
+PRAVILA:
+- Če je kolesar IZPUSTIL dneve, smiselno prerazporedi manjkajočo obremenitev na preostale dni — a NE vse naenkrat: brez dveh težkih dni zapored, brez pretreniranja. Če je danes izpustil, jutri lahko malo več.
+- Če je naredil VEČ kot predpisano, dodaj več regeneracije.
+- Ohrani značaj tedna: jedro = izmenjava KOLO/POHOD, MOČ je krajši dodatek. Za pohode predlagaj konkreten bližnji hrib blizu VODIC (Šmarna gora, Rašica, Sv. Jakob, Sv. Miklavž, Gobavica) s časom vzpona, ki ustreza trajanju.
+- Piši PREPROSTO slovensko, vsak korak v svoji vrstici (loči z \\n), utrip vedno s številkami v oklepaju, brez žargona in brez znaka "=".
+- Vaje za moč (če so) zapiši kot "Ime: N serij po M ponovitev, odmor X".
+Vrni SAMO JSON: {"povzetek":"1-2 stavka kaj si spremenil in zakaj","dnevi":[{"datum":"YYYY-MM-DD","tip":"kolo|pohod|moč|regeneracija|počitek","naslov":"...","trajanje_min":number,"opis":"...","tss_ocena":number,"vaje":"","kcal_vnos":null,"kcal_poraba":null}]}
+Dnevi točno: ${future.map(d=>d.datum).join(', ')}.`}]);
+    const map={}; for(const d of (r.dnevi||[])) if(d.datum) map[d.datum]=d;
+    let n=0;
+    for(const p of F.plans) for(const d of (p.days||[])){ const m=map[d.datum]; if(m){ Object.assign(d, {
+      tip:m.tip||d.tip, naslov:m.naslov||d.naslov, trajanje_min:+m.trajanje_min||d.trajanje_min,
+      opis:m.opis||d.opis, tss_ocena:+m.tss_ocena||d.tss_ocena, vaje:(m.vaje??d.vaje) }); n++; } }
+    F._ts=Date.now(); localStorage.setItem('forma_trener_v1', JSON.stringify(F)); syncPush('forma');
+    renderAll();
+    $('rebalMsg').innerHTML = r.povzetek ? `<div class="link-banner ok" style="margin-top:10px">✅ ${esc(r.povzetek)}</div>` : '';
+    toast('Teden prilagojen ('+n+' dni). ⚖️','');
   }catch(e){ toast(e.message,'err'); }
   btn.disabled=false; btn.innerHTML=orig;
 }
@@ -1010,6 +1160,31 @@ function pwLog(){
    SINHRONIZACIJA MED NAPRAVAMI (jsonbin.io)
 ================================================================ */
 const SYNC_API = 'https://api.jsonbin.io/v3/b';
+
+/* --- ZDRUŽEVANJE dnevnikov po posameznih vnosih (da ena naprava NE povozi druge) --- */
+function mergeDays(localDays, remoteDays, tomb){
+  const out={}; const isos=new Set([...Object.keys(localDays||{}), ...Object.keys(remoteDays||{})]);
+  for(const iso of isos){
+    const byId={};
+    const add = arr => { for(const e of (arr||[])){ if(!e||!e.id||tomb[e.id]) continue; const cur=byId[e.id]; if(!cur || (e.ts||0)>=(cur.ts||0)) byId[e.id]=e; } };
+    add((localDays[iso]||{}).entries); add((remoteDays[iso]||{}).entries);
+    const entries=Object.values(byId);
+    if(entries.length) out[iso]={ entries };
+  }
+  return out;
+}
+function mergeKalorije(r){
+  if(!r) return;
+  const tomb=Object.assign({}, db.deleted||{}, r.deleted||{});
+  db.days=mergeDays(db.days||{}, r.days||{}, tomb);
+  db.deleted=tomb;
+  if((r._ts||0) > (db._ts||0)){   // novejše ročne nastavitve prevzemi (ne pa sync-kod!)
+    if(r.settings && 'kcalManual' in r.settings) db.settings.kcalManual=r.settings.kcalManual;
+    if(r.settings && 'tezaManual' in r.settings) db.settings.tezaManual=r.settings.tezaManual;
+    if(r.settings?.model) db.settings.model=r.settings.model;
+  }
+}
+
 async function syncSetup(code){
   code = code.trim();
   if (!code){ db.settings.sync=null; save(); return; }
@@ -1043,11 +1218,11 @@ async function syncPull(manual){
     if (rec.forma && (rec.forma_ts||0) > (F?._ts||0)){
       localStorage.setItem('forma_trener_v1', JSON.stringify(rec.forma)); refreshF(); changed=true;
     }
-    if (rec.kalorije && (rec.kalorije_ts||0) > (db._ts||0)){
-      const mySync = db.settings.sync, myKey = db.settings.key;
-      db = Object.assign(db, rec.kalorije);
-      db.settings.sync = mySync; if(myKey) db.settings.key = myKey;
-      save(); changed=true;
+    if (rec.kalorije){
+      const before = JSON.stringify(db.days)+JSON.stringify(db.deleted);
+      mergeKalorije(rec.kalorije);   // združi vnose (ne povozi!)
+      const after = JSON.stringify(db.days)+JSON.stringify(db.deleted);
+      if (after!==before){ try{ localStorage.setItem(DB, JSON.stringify(db)); }catch(_){}; changed=true; }
     }
     if (changed){ renderAll(); if(manual) toast('Plan in podatki osveženi. 🔄',''); }
     else if (manual) toast('Vse je že usklajeno. ✓','');
@@ -1061,7 +1236,10 @@ function syncPush(part){
     try{
       const rec = await syncGet() || {};
       if (part==='forma' || !part){ rec.forma = formaState(); rec.forma_ts = rec.forma?._ts || Date.now(); }
-      if (part==='kalorije' || !part){ db._ts = Date.now(); rec.kalorije = db; rec.kalorije_ts = db._ts; }
+      if (part==='kalorije' || !part){
+        if (rec.kalorije) mergeKalorije(rec.kalorije);   // najprej poberi tuje vnose, da jih ne povozimo
+        db._ts = Date.now(); rec.kalorije = db; rec.kalorije_ts = db._ts;
+      }
       await fetch(`${SYNC_API}/${c.bin}`, { method:'PUT',
         headers:{'Content-Type':'application/json','X-Master-Key':c.key}, body: JSON.stringify(rec) });
     }catch(e){ console.warn('sync push:', e.message); }
@@ -1094,9 +1272,9 @@ function saveEdit(){
   if (!vals.kcal){ toast('Vpiši kalorije.','err'); return; }
   if (editRef){
     const e = dayData(editRef.iso).entries.find(x=>x.id===editRef.id);
-    Object.assign(e, vals);
+    Object.assign(e, vals, {ts:Date.now()});
   } else {
-    dayData(viewDay).entries.push({ id:uid(), time:new Date().toTimeString().slice(0,5), ...vals });
+    dayData(viewDay).entries.push({ id:uid(), ts:Date.now(), time:new Date().toTimeString().slice(0,5), ...vals });
   }
   save(); renderAll(); closeEdit();
 }
@@ -1104,6 +1282,7 @@ function closeEdit(){ $('editBack').classList.remove('open'); }
 function delEntry(iso,id){
   if (!confirm('Izbrišem ta vnos?')) return;
   const d=dayData(iso); d.entries=d.entries.filter(x=>x.id!==id);
+  (db.deleted=db.deleted||{})[id]=Date.now();   // nagrobni zapis, da se ob sinhronizaciji ne vrne
   save(); renderAll();
 }
 
