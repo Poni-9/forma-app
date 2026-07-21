@@ -385,7 +385,7 @@ h2#calLabel{letter-spacing:-.02em}
         <div class="val" id="sbFormVal">–</div>
         <div class="desc" id="sbFormDesc">Dodaj vožnje za izračun</div>
       </div>
-      <div style="text-align:center;font-size:10.5px;color:var(--dim);margin-top:8px">Trener AI · v2.4</div>
+      <div style="text-align:center;font-size:10.5px;color:var(--dim);margin-top:8px">Trener AI · v2.7</div>
     </div>
   </aside>
 
@@ -1002,6 +1002,19 @@ function renderCharts(){
 ================================================================ */
 const srcLabel = s => ({strava:'🟠 Strava', intervals:'📈 Intervals.icu', screenshot:'📸 screenshot', manual:'✍️ ročni vnos'}[s] || s);
 
+function rideMeta(r){   // povzetek vrstice glede na šport (moč nima km/višincev/utripa)
+  if(r.sport==='moc'){
+    const fb = r.fb ? ({lahko:'prelahko',ok:'ravno prav',tezko:'težko',delno:'delno'}[r.fb]||r.fb) : '';
+    return `${fmtDur(r.time)} · trening moči${fb?` · občutek: ${fb}`:''}${r.tss?` · TSS ${r.tss}`:''}`;
+  }
+  const p=[];
+  if(r.dist) p.push(`${(+r.dist).toFixed(1)} km`);
+  p.push(fmtDur(r.time));
+  if(r.elev) p.push(`${Math.round(r.elev)} m vzpona`);
+  if(r.avgHr) p.push(`utrip ${r.avgHr}`);
+  if(r.tss) p.push(`TSS ${r.tss}`);
+  return p.join(', ');
+}
 function rideRowHtml(r){
   const d = parseIso(r.date);
   const oc = r.analysis ? ` · <span style="color:var(--acc2)">ocena ${r.analysis.ocena}/10</span>` : '';
@@ -1325,6 +1338,11 @@ function buildContext(){
       L.push(`- ${d.datum} ${d.tip}: ${d.naslov} (${d.trajanje_min||0} min)${(rest||fut)?'':done?' → OPRAVLJENO':' → NI opravljeno'}`);
     }
   } else L.push(`\n(planov še ni bilo)`);
+  if (state.forma && (state.forma.history||[]).length){
+    const fm = state.forma;
+    L.push(`\nNAPREDEK MOČI (muscle-up): nivo ${fm.level||1}/10 · faktor ponovitev ${fm.repMult||1} (raste ob "prelahko", pada ob "težko") · ${(fm.history||[]).length} opravljenih moč treningov.`);
+    L.push(`Zadnje povratne informacije po treningu: ${(fm.history||[]).slice(-6).map(h=>h.fb).join(', ')}. Vaje za moč predpiši SKLADNO s tem nivojem — višji nivo = več ponovitev in težje variante proti muscle-upu (eksplozivni zgibi → negativni muscle-up → poskusi).`);
+  }
   return L.join('\n');
 }
 
@@ -1644,7 +1662,7 @@ function showDay(iso){
   if (rides.length){
     h += `<div style="font-weight:800;font-size:13px;margin-top:14px;color:var(--green)">✓ Opravljeno:</div>`;
     for (const r of rides)
-      h += `<div class="analysis-box">${esc(r.name)} — ${r.dist??'?'} km, ${fmtDur(r.time)}, ${r.elev??'?'} m višincev, utrip ${r.avgHr??'?'}, TSS ${r.tss}${r.analysis?`<br><b>AI ocena:</b> ${r.analysis.ocena}/10 (${esc(r.analysis.skladnost)})`:''}</div>`;
+      h += `<div class="analysis-box">${esc(r.name)} — ${rideMeta(r)}${r.analysis?`<br><b>AI ocena:</b> ${r.analysis.ocena}/10 (${esc(r.analysis.skladnost)})`:''}</div>`;
   }
   $('dayBody').innerHTML = h;
   $('dayModalBack').classList.add('open');
@@ -2414,7 +2432,7 @@ async function syncConnectF(){
     } else {
       const res = await fetch(SYNC_API, { method:'POST',
         headers:{ 'Content-Type':'application/json', 'X-Master-Key':code, 'X-Bin-Name':'forma-sync', 'X-Bin-Private':'true' },
-        body: JSON.stringify({ forma:slimForma(state), forma_ts:Date.now(), kalorije:null, kalorije_ts:0 }) });
+        body: JSON.stringify(fitRecord({ forma:slimForma(state), forma_ts:Date.now(), kalorije:null, kalorije_ts:0 })) });
       if (!res.ok) throw new Error('jsonbin: HTTP '+res.status+' — preveri Master Key.');
       const d = await res.json();
       state.sync = { bin:d.metadata?.id, key:code }; save();
@@ -2429,11 +2447,28 @@ async function syncGetF(){
   if (!res.ok) throw new Error('Sync branje: HTTP '+res.status);
   return (await res.json()).record || {};
 }
-function slimForma(f){   // brez velikih Strava zemljevidov (polyline) — da sync bin (100 KB) ne poči
+function slimForma(f){   // brez velikih Strava zemljevidov (polyline) + le zadnjih 200 voženj — da sync bin (100 KB) ne poči
   if(!f) return f;
   const c = JSON.parse(JSON.stringify(f));
   (c.rides||[]).forEach(r=>{ delete r.polyline; delete r.streams; delete r.map; });
+  if(c.rides && c.rides.length>200) c.rides = c.rides.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).slice(-200);
   return c;
+}
+/* samodejna omejitev velikosti: ko se napolni, briši najstarejše (vožnje/dni), da vedno ostane prostor. Zgodovina ostane lokalno. */
+function fitRecord(rec){
+  const LIMIT = 90000;
+  const size = () => JSON.stringify(rec).length;
+  let guard = 0;
+  while(size() > LIMIT && guard++ < 8000){
+    const rides = rec.forma && rec.forma.rides;
+    const days  = rec.kalorije && rec.kalorije.days;
+    const dayKeys = days ? Object.keys(days).sort() : [];
+    const ridesN = rides ? rides.length : 0, daysN = dayKeys.length;
+    if(ridesN===0 && daysN===0) break;
+    if(ridesN >= daysN && ridesN>0){ rides.sort((a,b)=>(a.date||'').localeCompare(b.date||'')); rides.shift(); }
+    else { delete days[dayKeys[0]]; }
+  }
+  return rec;
 }
 function mergeForma(local, remote){
   if(!remote) return local; if(!local) return remote;
@@ -2475,6 +2510,7 @@ function syncPush(){
       const rec = (await syncGetF()) || {};
       const f = rec.forma ? mergeForma(state, rec.forma) : state;   // ohrani vožnje z druge naprave
       rec.forma = slimForma(f); rec.forma_ts = f._ts || Date.now();   // brez zemljevidov (velikost bina!)
+      fitRecord(rec);
       await fetch(`${SYNC_API}/${c.bin}`, { method:'PUT',
         headers:{'Content-Type':'application/json','X-Master-Key':c.key}, body:JSON.stringify(rec) });
     }catch(e){ console.warn('sync push:', e.message); }

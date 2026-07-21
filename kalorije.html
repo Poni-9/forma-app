@@ -213,6 +213,9 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 .pw-stat{background:var(--panel);border:1px solid var(--border);border-radius:11px;padding:10px 16px}
 .pw-stat b{display:block;font-size:19px;font-weight:900}
 .pw-stat span{font-size:11px;color:var(--muted);font-weight:700}
+.pw-fb{display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px;margin-top:10px}
+.pw-fb .btn{width:100%;justify-content:flex-start;font-size:14px;padding:12px 16px}
+.pw-prog{font-size:12px;font-weight:700;color:var(--acc2);background:var(--accSoft);border:1px solid rgba(63,206,107,.25);padding:6px 12px;border-radius:9px;margin-top:2px}
 </style>
 </head>
 <body>
@@ -220,7 +223,7 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 
   <div class="top">
     <div class="logo">🍽️</div>
-    <div><h1>KalorijeAI</h1><small>slikaj → AI prešteje kalorije · <b style="color:var(--acc2)">v2.5</b></small></div>
+    <div><h1>KalorijeAI</h1><small>slikaj → AI prešteje kalorije · <b style="color:var(--acc2)">v2.7</b></small></div>
     <div class="right">
       <button class="btn btn-ghost btn-sm" id="btnSyncTop" onclick="forceSync()" title="Sinhroniziraj zdaj (pošlji + prejmi)">⟳</button>
       <button class="btn btn-ghost btn-sm" onclick="openSettings()">⚙️ Nastavitve</button>
@@ -1030,7 +1033,10 @@ Ogrevanje in zaključek/raztezanje = "timed". Vsaka vaja = "sets" z odmorom (obi
     }catch(e){ /* obdržimo lokalno razčlembo */ }
   }
   if(!blocks.length){ toast('Za ta dan ni vaj za moč.','err'); pwClose(); return; }
-  PW={ day, blocks, bi:-1, phase:'intro', tid:null, title:src.naslov };
+  // STOPNJEVANJE: apliciraj faktor napredka (raste/pada glede na pretekle povratne informacije)
+  const mult = (F && F.forma && F.forma.repMult) ? F.forma.repMult : 1;
+  blocks.forEach(b=>{ if(b.kind==='sets' && !b.repsIsTime) b.reps = Math.max(1, Math.round(b.reps*mult)); });
+  PW={ day, blocks, bi:-1, phase:'intro', tid:null, title:src.naslov, mult };
   openPlay(); pwWake(true); pwRenderIntro();
 }
 function openPlay(){ $('playBack').classList.add('open'); }
@@ -1047,11 +1053,14 @@ function pwRenderIntro(){
     ? `<div class="pw-li"><span>🔥 ${esc(b.name)}</span><b>${Math.round(b.dur/60)} min</b></div>`
     : `<div class="pw-li"><span>💪 ${esc(b.name)}</span><b>${b.sets}×${b.repsIsTime?b.reps+'s':b.reps}</b></div>`).join('');
   const setsN=PW.blocks.filter(b=>b.kind==='sets').length;
+  const lvl=(F&&F.forma&&F.forma.level)||1, pct=Math.round((((F&&F.forma&&F.forma.repMult)||1)-1)*100);
+  const doneN=(F&&F.forma&&F.forma.history)?F.forma.history.length:0;
   $('playBody').innerHTML=`<div class="pw-screen">
     <div class="pw-phase">Vodeni trening moči</div>
     <div class="pw-big">🏋️</div>
     <div class="pw-title">${esc(PW.title||PW.day.naslov||'Trening moči')}</div>
     <div class="pw-sub">${setsN} vaj · telefon te vodi skozi vsako serijo in odmor</div>
+    <div class="pw-prog">📈 Napredek: nivo ${lvl}/10 · ${pct>=0?'+':''}${pct}% ponovitev · ${doneN} opravljenih treningov</div>
     <div class="pw-list">${list}</div>
     <button class="btn btn-primary pw-cta" onclick="pwBegin()">▶ Začni</button>
   </div>`;
@@ -1127,37 +1136,50 @@ function pwFinish(){
   const setsN=PW.blocks.filter(b=>b.kind==='sets').reduce((a,b)=>a+b.sets,0);
   const vajN=PW.blocks.filter(b=>b.kind==='sets').length;
   $('playProg').innerHTML=PW.blocks.map(()=>`<span class="d"></span>`).join('');
+  PW.mins=mins; PW.setsN=setsN; PW.vajN=vajN;
   $('playBody').innerHTML=`<div class="pw-screen">
     <div class="pw-done-emo">🎉</div>
     <div class="pw-title">Trening opravljen!</div>
-    <div class="pw-sub">Odlično — spet korak bližje muscle-upu.</div>
     <div class="pw-stats">
       <div class="pw-stat"><b>${mins}</b><span>minut</span></div>
       <div class="pw-stat"><b>${setsN}</b><span>serij</span></div>
       <div class="pw-stat"><b>${vajN}</b><span>vaj</span></div>
     </div>
-    <button class="btn btn-primary pw-cta" onclick="pwLog()">✓ Zabeleži v FORMA</button>
+    <div class="pw-sub" style="margin-top:10px">Kako je bilo? Naslednji trening prilagodim temu 👇</div>
+    <div class="pw-fb">
+      <button class="btn btn-ghost" onclick="pwLog('lahko')">😎 Vse serije, prelahko</button>
+      <button class="btn btn-ghost" onclick="pwLog('ok')">🙂 Vse, ravno prav</button>
+      <button class="btn btn-ghost" onclick="pwLog('tezko')">😮‍💨 Vse, a težko</button>
+      <button class="btn btn-ghost" onclick="pwLog('delno')">🙁 Nisem vseh serij</button>
+    </div>
     <div class="pw-row"><button class="btn btn-ghost btn-sm" onclick="pwClose()">Zapri brez beleženja</button></div>
   </div>`;
   beep(880,.15,.25); setTimeout(()=>beep(1180,.22,.25),160);
 }
-function pwLog(){
+function pwLog(fb){
   refreshF();
   if(F){
     F.forma = F.forma || {level:1,history:[]};
+    if(F.forma.repMult==null) F.forma.repMult=1;
+    // STOPNJEVANJE glede na povratno informacijo: naslednjič težje/lažje
+    const adj = fb==='lahko'?0.08 : fb==='ok'?0.03 : fb==='tezko'?-0.03 : fb==='delno'?-0.08 : 0;
+    F.forma.repMult = Math.max(0.7, Math.min(1.6, +( (F.forma.repMult||1) + adj ).toFixed(2)));
     F.forma.history = F.forma.history || [];
-    if(!F.forma.history.some(h=>h.date===todayIso())){
-      F.forma.history.push({date:todayIso(),dot:'med'});
-      if(F.forma.history.length%4===0 && (F.forma.level||F.forma.level===0?F.forma.level:1)<10){ F.forma.level=(F.forma.level||1)+1; }
-    }
+    F.forma.history.push({date:todayIso(), fb:fb||'ok', mult:F.forma.repMult, min:PW.mins||null, vaj:PW.vajN||null});
+    F.forma.level = Math.min(10, 1 + Math.floor(F.forma.history.length/4));   // vsakih 4 treningov → naslednja faza muscle-upa
     F.rides = F.rides || [];
     if(!F.rides.some(r=>r.date===todayIso() && r.sport==='moc'))
-      F.rides.push({id:'pw'+Date.now(), source:'manual', sport:'moc', date:todayIso(), name:(PW.title||'Trening moči (vodeni)'), dist:null, time:Math.max(1,Math.round((Date.now()-(PW.tStart||Date.now()))/60000)), elev:null, avgHr:null, tss:40});
+      F.rides.push({id:'pw'+Date.now(), source:'manual', sport:'moc', date:todayIso(), name:(PW.title||'Trening moči (vodeni)'), dist:null, time:Math.max(1,PW.mins||20), elev:null, avgHr:null, tss:(fb==='lahko'?30:(fb==='tezko'||fb==='delno')?45:38), fb:fb||'ok'});
     for(const p of (F.plans||[])){ const d=(p.days||[]).find(x=>x.datum===todayIso()); if(d){ d.done=true; break; } }
     F._ts=Date.now(); localStorage.setItem('forma_trener_v1', JSON.stringify(F));
     if(typeof syncPush==='function') syncPush('forma');
   }
-  toast('Trening zabeležen! 💪','');
+  const msg = fb==='lahko' ? 'Zabeleženo. Naslednjič bo malce težje. 📈'
+            : fb==='ok'    ? 'Zabeleženo. Nadaljujemo s postopno rastjo. ✔'
+            : fb==='tezko' ? 'Zabeleženo. Naslednjič ostane podobno — utrdimo. 💪'
+            : fb==='delno' ? 'Zabeleženo. Naslednjič malce olajšam, da narediš vse. 👍'
+            : 'Trening zabeležen! 💪';
+  toast(msg,'');
   pwClose(); renderAll();
 }
 
@@ -1171,18 +1193,51 @@ function mergeDays(localDays, remoteDays, tomb){
   const out={}; const isos=new Set([...Object.keys(localDays||{}), ...Object.keys(remoteDays||{})]);
   for(const iso of isos){
     const byId={};
-    const add = arr => { for(const e of (arr||[])){ if(!e||!e.id||tomb[e.id]) continue; const cur=byId[e.id]; if(!cur || (e.ts||0)>=(cur.ts||0)) byId[e.id]=e; } };
+    const add = arr => { for(const e of (arr||[])){ if(!e||!e.id||tomb[e.id]) continue; const cur=byId[e.id]; if(!cur || (e.ts||0)>=(cur.ts||0)){ let ne=e; if(cur&&cur.thumb&&!e.thumb) ne={...e,thumb:cur.thumb}; byId[e.id]=ne; } } };
     add((localDays[iso]||{}).entries); add((remoteDays[iso]||{}).entries);
     const entries=Object.values(byId);
     if(entries.length) out[iso]={ entries };
   }
   return out;
 }
-/* iz forma za SINHRONIZACIJO odstrani velike zemljevide poti (Strava polyline) — sicer bin (100 KB) poči */
+/* iz forma za SINHRONIZACIJO odstrani velike zemljevide poti (Strava polyline) + omeji št. voženj — sicer bin (100 KB) poči */
 function slimForma(f){
   if(!f) return f;
   const c = JSON.parse(JSON.stringify(f));
   (c.rides||[]).forEach(r=>{ delete r.polyline; delete r.streams; delete r.map; });
+  if(c.rides && c.rides.length>200) c.rides = c.rides.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).slice(-200);  // le zadnjih 200 (ostalo lokalno)
+  return c;
+}
+/* SAMODEJNA OMEJITEV VELIKOSTI: če zapis preseže varno mejo, briši najstarejše (vožnje in dni hrane), dokler ni dovolj prostora.
+   Vsa zgodovina ostane LOKALNO — obreže se samo kopija v oblaku. */
+function fitRecord(rec){
+  const LIMIT = 90000;   // varno pod 100 KB
+  const size = () => JSON.stringify(rec).length;
+  let guard = 0;
+  while(size() > LIMIT && guard++ < 8000){
+    const rides = rec.forma && rec.forma.rides;
+    const days  = rec.kalorije && rec.kalorije.days;
+    const dayKeys = days ? Object.keys(days).sort() : [];
+    const ridesN = rides ? rides.length : 0, daysN = dayKeys.length;
+    if(ridesN===0 && daysN===0) break;
+    if(ridesN >= daysN && ridesN>0){                 // odstrani najstarejšo vožnjo
+      rides.sort((a,b)=>(a.date||'').localeCompare(b.date||'')); rides.shift();
+    } else {                                          // odstrani najstarejši dan hrane
+      delete days[dayKeys[0]];
+    }
+  }
+  return rec;
+}
+/* iz kalorij za SINHRONIZACIJO odstrani slike (thumb) in stare dni — da sync ostane majhen za vedno */
+function slimKalorije(d){
+  const cut = isoDate(addDays(new Date(),-45)), cutTs = Date.now()-45*864e5;
+  const c = { _ts:d._ts, settings:{ kcalManual:d.settings?.kcalManual??null, tezaManual:d.settings?.tezaManual??null, model:d.settings?.model||'' }, days:{}, deleted:{} };
+  for(const [iso,day] of Object.entries(d.days||{})){
+    if(iso<cut) continue;
+    c.days[iso] = { entries:(day.entries||[]).map(e=>{ const {thumb,...rest}=e; return rest; }) };
+    if(day.target!=null) c.days[iso].target=day.target;
+  }
+  for(const [id,ts] of Object.entries(d.deleted||{})) if(ts>=cutTs) c.deleted[id]=ts;
   return c;
 }
 /* --- ZDRUŽEVANJE forma stanja: vožnje po ID-ju (da se ne izgubijo), ostalo novejše --- */
@@ -1221,7 +1276,7 @@ async function syncSetup(code){
   // Master key → ustvari nov bin
   const res = await fetch(SYNC_API, { method:'POST',
     headers:{ 'Content-Type':'application/json', 'X-Master-Key':code, 'X-Bin-Name':'forma-sync', 'X-Bin-Private':'true' },
-    body: JSON.stringify({ forma: slimForma(F)||null, forma_ts: F?._ts||Date.now(), kalorije: db, kalorije_ts: Date.now() }) });
+    body: JSON.stringify(fitRecord({ forma: slimForma(F)||null, forma_ts: F?._ts||Date.now(), kalorije: slimKalorije(db), kalorije_ts: Date.now() })) });
   if (!res.ok) throw new Error('jsonbin: HTTP '+res.status+' — preveri Master Key.');
   const d = await res.json();
   db.settings.sync = { bin:d.metadata?.id, key:code }; save();
@@ -1244,9 +1299,10 @@ async function forceSync(){
     let f = formaState(); if (rec.forma) f = mergeForma(f, rec.forma);   // poberi tuje vožnje
     if (f){ try{ localStorage.setItem('forma_trener_v1', JSON.stringify(f)); refreshF(); }catch(_){}}
     db._ts = Date.now();
-    rec.kalorije = db;  rec.kalorije_ts = db._ts;
+    rec.kalorije = slimKalorije(db);  rec.kalorije_ts = db._ts;
     rec.forma = slimForma(f);  rec.forma_ts = f?._ts || Date.now();
     try{ localStorage.setItem(DB, JSON.stringify(db)); }catch(_){}
+    fitRecord(rec);
     await fetch(`${SYNC_API}/${c.bin}`, { method:'PUT',
       headers:{'Content-Type':'application/json','X-Master-Key':c.key}, body: JSON.stringify(rec) });
     renderAll();
@@ -1289,8 +1345,9 @@ function syncPush(part){
       }
       if (part==='kalorije' || !part){
         if (rec.kalorije) mergeKalorije(rec.kalorije);   // najprej poberi tuje vnose, da jih ne povozimo
-        db._ts = Date.now(); rec.kalorije = db; rec.kalorije_ts = db._ts;
+        db._ts = Date.now(); rec.kalorije = slimKalorije(db); rec.kalorije_ts = db._ts;
       }
+      fitRecord(rec);
       await fetch(`${SYNC_API}/${c.bin}`, { method:'PUT',
         headers:{'Content-Type':'application/json','X-Master-Key':c.key}, body: JSON.stringify(rec) });
     }catch(e){ console.warn('sync push:', e.message); }
