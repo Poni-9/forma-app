@@ -1,0 +1,2435 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FORMA Trener — razkrij mišico pod maščobo</title>
+<meta name="theme-color" content="#0a0e13">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2224%22 fill=%22%23fc4c02%22/><text x=%2250%22 y=%2270%22 font-size=%2258%22 text-anchor=%22middle%22>🚴</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+:root{
+  --bg:#0a0e13; --bg2:#0f141b; --panel:#141b24; --panel2:#1a2330;
+  --border:#22303f; --border2:#2d3d50;
+  --text:#e8eef4; --muted:#8b9bab; --dim:#5c6b7a;
+  --acc:#fc4c02; --acc2:#ff7a3d; --accSoft:rgba(252,76,2,.12);
+  --green:#3fce6b; --greenSoft:rgba(63,206,107,.12);
+  --red:#ff5c5c; --redSoft:rgba(255,92,92,.12);
+  --yellow:#ffc247; --yellowSoft:rgba(255,194,71,.12);
+  --blue:#4da3ff; --blueSoft:rgba(77,163,255,.12);
+  --purple:#b48cff; --purpleSoft:rgba(180,140,255,.12);
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(252,76,2,.07), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(77,163,255,.05), transparent 60%),
+    var(--bg);
+  color:var(--text); font-size:15px; line-height:1.55;
+}
+::selection{background:var(--acc);color:#fff}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#26364a;border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ---------- Postavitev ---------- */
+.app{display:flex;min-height:100vh}
+.sidebar{
+  width:242px;flex-shrink:0;position:sticky;top:0;height:100vh;
+  background:linear-gradient(180deg,#0e141c 0%,#0a0f15 100%);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;padding:22px 14px;
+}
+.logo{display:flex;align-items:center;gap:11px;padding:4px 10px 22px}
+.logo-mark{
+  width:40px;height:40px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--acc) 0%,#ff8a2a 100%);
+  display:flex;align-items:center;justify-content:center;font-size:21px;
+  box-shadow:0 4px 18px rgba(252,76,2,.35);
+}
+.logo-name{font-weight:800;font-size:16.5px;letter-spacing:-.02em}
+.logo-name small{display:block;font-weight:500;font-size:11px;color:var(--muted);letter-spacing:.04em}
+.nav{display:flex;flex-direction:column;gap:3px;margin-top:4px}
+.nav-item{
+  display:flex;align-items:center;gap:11px;padding:10.5px 12px;border-radius:10px;
+  color:var(--muted);cursor:pointer;font-weight:600;font-size:14px;
+  border:1px solid transparent;transition:all .15s;user-select:none;
+}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.nav-item.active{
+  color:#fff;background:linear-gradient(90deg,rgba(252,76,2,.16),rgba(252,76,2,.05));
+  border-color:rgba(252,76,2,.3);
+}
+.nav-item .ic{width:20px;text-align:center;font-size:16px}
+.side-foot{margin-top:auto;padding:12px 10px 4px}
+.form-badge{
+  background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:13px 14px;
+}
+.form-badge .lbl{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--dim);text-transform:uppercase}
+.form-badge .val{font-size:20px;font-weight:800;margin-top:2px}
+.form-badge .desc{font-size:12px;color:var(--muted);margin-top:1px}
+
+.main{flex:1;min-width:0;padding:34px 42px 70px;max-width:1240px;margin:0 auto}
+.tab{display:none;animation:fadeIn .25s ease}
+.tab.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.page-head{margin-bottom:26px}
+.page-head h1{font-size:26px;font-weight:800;letter-spacing:-.03em}
+.page-head p{color:var(--muted);margin-top:3px;font-size:14px}
+.head-row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+/* ---------- Kartice / mreže ---------- */
+.card{
+  background:linear-gradient(180deg,var(--panel) 0%,rgba(20,27,36,.7) 100%);
+  border:1px solid var(--border);border-radius:var(--radius);padding:20px;
+}
+.card h3{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h3 .sub{font-weight:500;color:var(--dim);font-size:12px;margin-left:auto}
+.grid-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:22px}
+.stat{padding:16px 18px}
+.stat .k{font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--dim)}
+.stat .v{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-top:4px}
+.stat .v small{font-size:13px;font-weight:600;color:var(--muted)}
+.stat .t{font-size:12px;margin-top:3px;color:var(--muted)}
+.grid-2{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
+@media(max-width:1050px){.grid-2{grid-template-columns:1fr}}
+
+/* ---------- Gumbi / vnosi ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;
+  font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;border:1px solid transparent;
+  transition:all .15s;user-select:none;white-space:nowrap;
+}
+.btn-primary{background:linear-gradient(135deg,var(--acc),#ff7222);color:#fff;box-shadow:0 3px 14px rgba(252,76,2,.3)}
+.btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-ghost{background:var(--panel2);color:var(--text);border-color:var(--border2)}
+.btn-ghost:hover{border-color:#3d5065;background:#20293a}
+.btn-danger{background:var(--redSoft);color:var(--red);border-color:rgba(255,92,92,.3)}
+.btn-sm{padding:6px 12px;font-size:12.5px;border-radius:8px}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+.btn .spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite;display:inline-block}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+label.fld{display:block;margin-bottom:13px}
+label.fld span{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px;letter-spacing:.02em}
+input,select,textarea{
+  width:100%;background:#0e1520;border:1px solid var(--border2);border-radius:9px;
+  color:var(--text);padding:9.5px 12px;font-family:inherit;font-size:14px;outline:none;
+  transition:border-color .15s;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--acc)}
+textarea{resize:vertical;min-height:70px}
+.frm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0 14px}
+.hint{font-size:12px;color:var(--dim);margin-top:-7px;margin-bottom:12px}
+
+/* ---------- Značke ---------- */
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:11.5px;font-weight:700;letter-spacing:.02em}
+.chip.intervali{background:var(--redSoft);color:var(--red)}
+.chip.vzdržljivost,.chip.vzdrzljivost{background:var(--blueSoft);color:var(--blue)}
+.chip.tempo{background:var(--yellowSoft);color:var(--yellow)}
+.chip.regeneracija{background:var(--greenSoft);color:var(--green)}
+.chip.počitek,.chip.pocitek{background:rgba(139,155,171,.12);color:var(--muted)}
+.chip.moč,.chip.moc{background:var(--purpleSoft);color:var(--purple)}
+.chip.pohod{background:rgba(92,214,214,.12);color:#5cd6d6}
+.dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.dot.easy{background:var(--blue);box-shadow:0 0 8px rgba(77,163,255,.6)}
+.dot.med{background:var(--yellow);box-shadow:0 0 8px rgba(255,194,71,.6)}
+.dot.hard{background:var(--red);box-shadow:0 0 8px rgba(255,92,92,.6)}
+.ex-row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border:1px solid var(--border2);border-radius:10px;margin-bottom:8px;background:#0e1520}
+.ex-row .nm{font-weight:700;font-size:14px}
+.ex-row .nm small{display:block;font-weight:500;color:var(--dim);font-size:11.5px}
+.ex-row .rp{font-weight:800;font-size:15px;color:var(--acc2);white-space:nowrap}
+.chip.gray{background:rgba(139,155,171,.12);color:var(--muted)}
+.chip.orange{background:var(--accSoft);color:var(--acc2)}
+.chip.green{background:var(--greenSoft);color:var(--green)}
+
+/* ---------- Vožnje ---------- */
+.ride-row{
+  display:grid;grid-template-columns:52px 1.6fr repeat(4,minmax(70px,.7fr)) 90px auto;
+  gap:10px;align-items:center;padding:13px 16px;border-bottom:1px solid var(--border);
+}
+.ride-row:last-child{border-bottom:none}
+.ride-row:hover{background:rgba(255,255,255,.02)}
+.ride-date{text-align:center;line-height:1.15}
+.ride-date .d{font-weight:800;font-size:17px}
+.ride-date .m{font-size:10.5px;color:var(--dim);text-transform:uppercase;font-weight:700;letter-spacing:.05em}
+.ride-name{font-weight:700;font-size:14px}
+.ride-name .src{font-size:11.5px;color:var(--dim);font-weight:500;margin-top:1px}
+.ride-met{text-align:center}
+.ride-met .a{font-weight:700;font-size:14px}
+.ride-met .b{font-size:10.5px;color:var(--dim);text-transform:uppercase;font-weight:600;letter-spacing:.04em}
+.ride-acts{display:flex;gap:6px;justify-content:flex-end}
+.icon-btn{
+  width:30px;height:30px;border-radius:8px;background:var(--panel2);border:1px solid var(--border2);
+  color:var(--muted);cursor:pointer;font-size:13px;display:inline-flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.icon-btn:hover{color:var(--text);border-color:#3d5065}
+.icon-btn.del:hover{color:var(--red);border-color:rgba(255,92,92,.4)}
+.rides-head{display:grid;grid-template-columns:52px 1.6fr repeat(4,minmax(70px,.7fr)) 90px auto;gap:10px;padding:10px 16px;font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--border)}
+@media(max-width:900px){.ride-row,.rides-head{grid-template-columns:52px 1.4fr repeat(2,.7fr) auto}.hide-sm{display:none}}
+
+.dropzone{
+  border:2px dashed var(--border2);border-radius:var(--radius);padding:30px 20px;text-align:center;
+  color:var(--muted);cursor:pointer;transition:all .2s;background:rgba(255,255,255,.015);
+}
+.dropzone:hover,.dropzone.over{border-color:var(--acc);background:var(--accSoft);color:var(--acc2)}
+.dropzone b{color:var(--text)}
+.dropzone .big{font-size:30px;display:block;margin-bottom:6px}
+
+/* ---------- Plan ---------- */
+.week-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px}
+.day-card{
+  background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;
+  display:flex;flex-direction:column;gap:8px;min-height:170px;position:relative;transition:border-color .15s;
+}
+.day-card:hover{border-color:var(--border2)}
+.day-card.today{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc),0 4px 20px rgba(252,76,2,.15)}
+.day-card.done{opacity:.75}
+.day-card .dc-day{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;align-items:center}
+.day-card .dc-title{font-weight:700;font-size:13.5px;line-height:1.3}
+.day-card .dc-desc{font-size:12px;color:var(--muted);flex:1;line-height:1.45}
+.day-card .dc-meta{font-size:11.5px;color:var(--dim);font-weight:600}
+.day-card .done-mark{color:var(--green);font-size:13px}
+/* tedenski plan — pregleden seznam */
+.week-list{display:flex;flex-direction:column;gap:10px}
+.day-row{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px 18px;transition:border-color .15s}
+.day-row:hover{border-color:var(--border2)}
+.day-row.today{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+.day-row.done{opacity:.75}
+.dr-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dr-day{font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--dim);min-width:76px}
+.day-row.today .dr-day{color:var(--acc2)}
+.dr-title{font-weight:800;font-size:15px;flex:1;min-width:180px}
+.dr-meta{font-size:12px;color:var(--dim);font-weight:700;white-space:nowrap}
+.dr-meta .okk{color:var(--green);margin-left:6px}
+.dr-body{display:grid;gap:16px;margin-top:11px}
+@media(max-width:950px){.dr-body{grid-template-columns:1fr!important}}
+.dr-col{font-size:13px;color:#cfd8e0;min-width:0;background:rgba(255,255,255,.018);border:1px solid rgba(45,61,80,.45);border-radius:10px;padding:10px 12px}
+.dr-lbl{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--acc2);margin-bottom:5px}
+.dr-kcal{margin-top:7px;font-size:12.5px;color:var(--yellow);font-weight:700}
+.dr-sport{font-size:11px;font-weight:900;letter-spacing:.05em;background:rgba(255,255,255,.05);border:1px solid var(--border2);padding:3px 10px;border-radius:7px;white-space:nowrap}
+.plan-summary{background:linear-gradient(135deg,rgba(252,76,2,.08),rgba(77,163,255,.05));border:1px solid rgba(252,76,2,.25);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px;font-size:13.5px;color:#d6dee6}
+.plan-summary b{color:var(--acc2)}
+
+/* ---------- Današnji trening ---------- */
+.today-setup{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;align-items:end}
+.seg{display:flex;background:#0e1520;border:1px solid var(--border2);border-radius:9px;padding:3px;gap:3px}
+.seg button{flex:1;border:none;background:transparent;color:var(--muted);font-family:inherit;font-weight:700;font-size:13px;padding:7px 4px;border-radius:7px;cursor:pointer;transition:all .15s}
+.seg button.on{background:var(--acc);color:#fff}
+.workout-box{margin-top:20px}
+.wo-part{display:flex;gap:14px;padding:13px 0;border-bottom:1px solid var(--border)}
+.wo-part:last-child{border:none}
+.wo-part .tag{flex-shrink:0;width:96px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--acc2);padding-top:2px}
+.wo-part .txt{font-size:13.5px;color:#cfd8e0;white-space:pre-wrap}
+
+/* ---------- Nastavitve ---------- */
+.set-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media(max-width:1000px){.set-grid{grid-template-columns:1fr}}
+.steps{font-size:13px;color:var(--muted);line-height:1.7;margin:10px 0 14px;padding-left:18px}
+.steps li{margin-bottom:4px}
+.steps code{background:#0e1520;border:1px solid var(--border2);padding:1px 6px;border-radius:5px;font-size:12px;color:var(--acc2)}
+.conn-status{display:flex;align-items:center;gap:9px;padding:11px 14px;border-radius:10px;font-size:13.5px;font-weight:600;margin-bottom:14px}
+.conn-status.ok{background:var(--greenSoft);color:var(--green);border:1px solid rgba(63,206,107,.3)}
+.conn-status.no{background:rgba(139,155,171,.08);color:var(--muted);border:1px solid var(--border)}
+
+/* ---------- Modal ---------- */
+.modal-back{
+  position:fixed;inset:0;background:rgba(4,8,12,.72);backdrop-filter:blur(4px);
+  display:none;align-items:flex-start;justify-content:center;z-index:100;padding:40px 16px;overflow-y:auto;
+}
+.modal-back.open{display:flex}
+.modal{
+  background:var(--panel);border:1px solid var(--border2);border-radius:16px;
+  width:100%;max-width:560px;padding:24px;animation:pop .2s ease;
+}
+@keyframes pop{from{opacity:0;transform:scale(.97) translateY(8px)}to{opacity:1;transform:none}}
+.modal h2{font-size:18px;font-weight:800;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.modal .x{cursor:pointer;color:var(--dim);font-size:20px;line-height:1}
+.modal .x:hover{color:var(--text)}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+.shot-prev{max-width:100%;max-height:220px;border-radius:10px;border:1px solid var(--border2);display:block;margin:0 auto 14px}
+
+/* ---------- Razno ---------- */
+.toasts{position:fixed;bottom:22px;right:22px;z-index:200;display:flex;flex-direction:column;gap:10px}
+.toast{
+  background:var(--panel2);border:1px solid var(--border2);border-left:3px solid var(--acc);
+  border-radius:10px;padding:12px 16px;font-size:13.5px;font-weight:600;max-width:360px;
+  box-shadow:0 8px 30px rgba(0,0,0,.4);animation:pop .2s ease;
+}
+.toast.err{border-left-color:var(--red)}
+.toast.ok{border-left-color:var(--green)}
+.empty{
+  text-align:center;padding:44px 20px;color:var(--dim);font-size:14px;
+}
+.empty .big{font-size:34px;display:block;margin-bottom:8px}
+.ai-note{font-size:12px;color:var(--dim);display:flex;gap:6px;align-items:center;margin-top:10px}
+.mt{margin-top:16px}.mb{margin-bottom:16px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+canvas{max-width:100%}
+.analysis-box{background:#0e1520;border:1px solid var(--border2);border-radius:10px;padding:14px;font-size:13px;color:#cfd8e0;margin-top:10px}
+.analysis-box b{color:var(--acc2)}
+.score-ring{font-size:22px;font-weight:900;color:var(--acc2)}
+
+/* ---------- Koledar ---------- */
+.cal-head{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:8px}
+.cal-head div{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);text-align:center}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.cal-cell{background:var(--panel);border:1px solid var(--border);border-radius:10px;min-height:98px;padding:8px 9px 8px 12px;cursor:pointer;position:relative;overflow:hidden;transition:all .15s}
+.cal-cell:hover{border-color:var(--border2);transform:translateY(-1px)}
+.cal-cell.out{opacity:.35}
+.cal-cell.today{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+.cal-cell .num{font-weight:800;font-size:12.5px;color:var(--muted)}
+.cal-item{font-size:11px;font-weight:600;line-height:1.35;margin-top:5px;padding:3px 6px;border-radius:6px;background:rgba(255,255,255,.045)}
+.cal-item.done{color:var(--green);background:var(--greenSoft)}
+.cal-stripe{position:absolute;left:0;top:0;bottom:0;width:3.5px}
+.macro-bar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+.macro-pill{font-size:11.5px;font-weight:700;padding:4px 11px;border-radius:99px;border:1px solid var(--border2);color:var(--muted);background:var(--panel)}
+.zones-box{font-size:12px;color:var(--muted);background:#0e1520;border:1px solid var(--border2);border-radius:9px;padding:10px 12px;margin-bottom:13px;line-height:1.7}
+.zones-box b{color:var(--acc2)}
+
+/* ---------- Podrobnosti vožnje ---------- */
+.rd-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:8px;margin-bottom:14px}
+.rd-stat{background:#0e1520;border:1px solid var(--border2);border-radius:9px;padding:9px 6px;text-align:center}
+.rd-stat .a{font-weight:800;font-size:14.5px}
+.rd-stat .b{font-size:9.5px;color:var(--dim);text-transform:uppercase;font-weight:700;letter-spacing:.05em;margin-top:2px}
+#rdMap{height:265px;border-radius:12px;margin-bottom:12px;border:1px solid var(--border2);background:#0e1520}
+.rd-chart{position:relative;height:150px;margin-bottom:10px}
+.leaflet-container{background:#0e1520}
+.opis-line{padding:3px 0 3px 9px;border-left:2px solid var(--border2);margin:4px 0;line-height:1.45}
+.opis-line:hover{border-left-color:var(--acc)}
+
+/* ---------- Onboarding ---------- */
+.onb{cursor:pointer;padding:7px 8px;font-size:13.5px;color:var(--muted);border-radius:8px;font-weight:600}
+.onb:hover{background:rgba(255,255,255,.035);color:var(--text)}
+.onb.ok{color:var(--green);text-decoration:line-through;text-decoration-color:rgba(63,206,107,.5)}
+
+/* ---------- Lepotni popravki ---------- */
+.page-head h1{position:relative;display:inline-block}
+.page-head h1::after{content:'';position:absolute;left:1px;bottom:-7px;width:34px;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--acc),transparent)}
+.card{transition:border-color .2s}
+.card:hover{border-color:#2a3a4d}
+.stat{transition:transform .18s,border-color .2s}
+.stat:hover{transform:translateY(-2px);border-color:rgba(252,76,2,.35)}
+.modal{box-shadow:0 24px 70px rgba(0,0,0,.55)}
+input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px rgba(252,76,2,.15)}
+.btn:focus-visible,.icon-btn:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
+.nav-item{position:relative}
+.nav-item.active::before{content:'';position:absolute;left:-14px;top:50%;transform:translateY(-50%);width:3.5px;height:60%;border-radius:3px;background:var(--acc);box-shadow:0 0 10px rgba(252,76,2,.7)}
+.ride-row{transition:background .12s}
+details summary::-webkit-details-marker{color:var(--acc)}
+details[open] summary{margin-bottom:4px}
+.toast{backdrop-filter:blur(6px)}
+.day-card .dc-desc .opis-line{border-left-color:rgba(45,61,80,.6)}
+.chip{border:1px solid transparent}
+.plan-summary{box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}
+.cal-cell .num{display:flex;justify-content:space-between;align-items:center}
+.sidebar .nav{gap:4px}
+h2#calLabel{letter-spacing:-.02em}
+
+/* ---------- Odzivnost (telefon/ožji zasloni) ---------- */
+@media(max-width:840px){
+  .app{flex-direction:column}
+  .sidebar{width:100%;height:auto;position:static;flex-direction:row;align-items:center;gap:6px;padding:10px 12px;border-right:none;border-bottom:1px solid var(--border);flex-wrap:wrap}
+  .logo{padding:0 6px 0 0}
+  .logo-name small{display:none}
+  .logo-mark{width:32px;height:32px;border-radius:9px;font-size:16px}
+  .logo-name{font-size:14px}
+  .nav{flex-direction:row;flex-wrap:wrap;margin:0 0 0 auto;gap:3px}
+  .nav-item{padding:7px 10px;font-size:12.5px;gap:6px}
+  .nav-item .ic{font-size:13px;width:auto}
+  .nav-item.active::before{display:none}
+  .side-foot{display:none}
+  .main{padding:18px 14px 60px}
+  .page-head h1{font-size:21px}
+  .week-grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+  .cal-cell{min-height:74px;padding:5px 6px 5px 9px}
+  .cal-item{font-size:9.5px;padding:2px 4px}
+  .grid-stats{grid-template-columns:repeat(2,1fr)}
+  .today-setup{grid-template-columns:1fr}
+  .modal{padding:16px}
+  .rd-stats{grid-template-columns:repeat(3,1fr)}
+  #rdMap{height:200px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ======= STRANSKA VRSTICA ======= -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">💪</div>
+      <div class="logo-name">FORMA Trener<small>razkrij mišico pod maščobo</small></div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active" data-tab="dash"><span class="ic">📊</span> Nadzorna plošča</div>
+      <div class="nav-item" data-tab="rides"><span class="ic">🚴</span> Vožnje</div>
+      <div class="nav-item" data-tab="plan"><span class="ic">📅</span> Tedenski plan</div>
+      <div class="nav-item" data-tab="koledar"><span class="ic">🗓️</span> Koledar</div>
+      <div class="nav-item" data-tab="forma"><span class="ic">💪</span> Moč — FORMA</div>
+      <div class="nav-item" data-tab="settings"><span class="ic">⚙️</span> Nastavitve</div>
+    </nav>
+    <div class="side-foot">
+      <div class="form-badge">
+        <div class="lbl">Trenutna forma</div>
+        <div class="val" id="sbFormVal">–</div>
+        <div class="desc" id="sbFormDesc">Dodaj vožnje za izračun</div>
+      </div>
+      <div style="text-align:center;font-size:10.5px;color:var(--dim);margin-top:8px">Trener AI · v2.1</div>
+    </div>
+  </aside>
+
+  <!-- ======= GLAVNI DEL ======= -->
+  <main class="main">
+
+    <!-- ===== NADZORNA PLOŠČA ===== -->
+    <section class="tab active" id="tab-dash">
+      <div class="page-head head-row">
+        <div>
+          <h1 id="dashHello">Zdravo! 👋</h1>
+          <p id="dashSub">Pregled tvoje forme in treningov</p>
+        </div>
+        <div class="row">
+          <button class="btn btn-ghost" onclick="syncAll()" title="Sinhroniziraj s Stravo/Intervals">⟳</button>
+          <button class="btn btn-primary" onclick="openRideModal()">+ Dodaj vožnjo</button>
+        </div>
+      </div>
+
+      <div id="onboardCard"></div>
+      <div class="grid-stats" id="dashStats"></div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Forma (zadnjih 90 dni) <span class="sub">Kondicija · Utrujenost · Svežina</span></h3>
+          <div style="position:relative;height:225px"><canvas id="chartForm"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Tedenski obseg <span class="sub">ure na teden</span></h3>
+          <div style="position:relative;height:225px"><canvas id="chartWeekly"></canvas></div>
+        </div>
+      </div>
+
+      <div class="grid-2 mt">
+        <div class="card" style="padding:0">
+          <h3 style="padding:18px 20px 0">Zadnje vožnje</h3>
+          <div id="dashRides"></div>
+        </div>
+        <div class="card">
+          <h3>Danes na planu</h3>
+          <div id="dashToday"></div>
+        </div>
+      </div>
+
+      <div class="card mt" id="riderCard"></div>
+    </section>
+    <!-- ===== VOŽNJE ===== -->
+    <section class="tab" id="tab-rides">
+      <div class="page-head head-row">
+        <div>
+          <h1>Vožnje</h1>
+          <p>Prilepi screenshot (Ctrl+V), povleci sliko sem ali vnesi ročno</p>
+        </div>
+        <div class="row">
+          <button class="btn btn-ghost" id="btnStravaImport" onclick="syncAll()">⟳ Sinhroniziraj</button>
+          <button class="btn btn-primary" onclick="openRideModal()">+ Dodaj vožnjo</button>
+        </div>
+      </div>
+
+      <div class="dropzone mb" id="dropzone" onclick="document.getElementById('fileInput').click()">
+        <span class="big">📸</span>
+        <b>Prilepi screenshot ture</b> (Ctrl+V kjerkoli) ali <b>klikni / povleci sliko sem</b><br>
+        <span style="font-size:12.5px">Gemini bo sam prebral razdaljo, čas, višince, utrip …</span>
+        <input type="file" id="fileInput" accept="image/*" style="display:none" multiple>
+      </div>
+
+      <div class="card" style="padding:0">
+        <div class="rides-head">
+          <div></div><div>Vožnja</div>
+          <div style="text-align:center">Razdalja</div>
+          <div style="text-align:center">Čas</div>
+          <div style="text-align:center" class="hide-sm">Višinci</div>
+          <div style="text-align:center" class="hide-sm">Utrip</div>
+          <div style="text-align:center">Obrem.</div><div></div>
+        </div>
+        <div id="ridesList"></div>
+      </div>
+    </section>
+
+    <!-- ===== TEDENSKI PLAN ===== -->
+    <section class="tab" id="tab-plan">
+      <div class="page-head head-row">
+        <div>
+          <h1>Tedenski plan</h1>
+          <p id="planWeekLabel">–</p>
+        </div>
+        <div class="row">
+          <button class="btn btn-ghost btn-sm" onclick="shiftWeek(-1)">‹ Prejšnji</button>
+          <button class="btn btn-ghost btn-sm" onclick="shiftWeek(0)">Aktualni</button>
+          <button class="btn btn-ghost btn-sm" onclick="shiftWeek(1)">Naslednji ›</button>
+          <button class="btn btn-danger btn-sm" id="btnDelPlan" onclick="deleteViewedPlan()" style="display:none">🗑 Izbriši plan</button>
+          <button class="btn btn-primary" id="btnGenPlan" onclick="generatePlan()">✨ Generiraj plan</button>
+          <button class="btn btn-ghost" id="btnMacro" onclick="generateMacro()">🎯 Plan do cilja</button>
+        </div>
+      </div>
+
+      <div class="card mb">
+        <label class="fld"><span>Želje za ta teden (neobvezno — npr. "v soboto imam čas za 4 ure", "sredo izpusti")</span>
+          <input id="planWishes" placeholder="Vpiši posebnosti tedna …">
+        </label>
+        <div class="ai-note">✨ Plan se prilagodi tvoji formi, preteklim vožnjam in realizaciji prejšnjega tedna.</div>
+      </div>
+
+      <div id="planSummary"></div>
+      <div class="week-grid" id="weekGrid"></div>
+    </section>
+
+    <!-- ===== KOLEDAR ===== -->
+    <section class="tab" id="tab-koledar">
+      <div class="page-head head-row">
+        <div>
+          <h1>Koledar</h1>
+          <p>Samo za pregled — kaj si v preteklosti že naredil in kaj je plan ta teden. Klikni dan za podrobnosti.</p>
+        </div>
+        <div class="row">
+          <button class="btn btn-ghost btn-sm" onclick="shiftCal(-1)">‹</button>
+          <button class="btn btn-ghost btn-sm" onclick="shiftCal(0)">Danes</button>
+          <button class="btn btn-ghost btn-sm" onclick="shiftCal(1)">›</button>
+        </div>
+      </div>
+      <h2 id="calLabel" style="font-size:19px;font-weight:800;margin-bottom:10px"></h2>
+      <div id="macroBar"></div>
+      <div class="cal-head"><div>Pon</div><div>Tor</div><div>Sre</div><div>Čet</div><div>Pet</div><div>Sob</div><div>Ned</div></div>
+      <div class="cal-grid" id="calGrid"></div>
+    </section>
+
+    <!-- ===== FORMA: MOČ ===== -->
+    <section class="tab" id="tab-forma">
+      <div class="page-head">
+        <h1>FORMA — moč</h1>
+        <p>🎯 Progresija do <b>MUSCLE-UPA</b>: sklece, zgibi, dipsi, trebušnjaki — težavnost se prilagaja počutju (barvna pikica)</p>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Današnji trening moči <span class="sub" id="formaDotLbl"></span></h3>
+          <div id="formaWorkout"></div>
+          <div class="row mt" id="formaActions">
+            <button class="btn btn-primary" onclick="formaDone()">✅ Opravil trening</button>
+            <button class="btn btn-ghost" id="btnFormaAI" onclick="formaAI()">✨ AI prilagodi vaje</button>
+          </div>
+          <div id="formaFb" class="mt"></div>
+        </div>
+        <div>
+          <div class="card mb">
+            <h3>Kako se počutiš danes?</h3>
+            <div class="seg" id="segSore">
+              <button data-v="0" class="on">💪 Nič</button>
+              <button data-v="1">🙂 Malo</button>
+              <button data-v="2">😖 Precej</button>
+              <button data-v="3">🥵 Zelo</button>
+            </div>
+            <p class="hint mt" style="margin-bottom:8px">"Nič me ne boli" dvigne težavnost (rdeča pikica), bolečina jo zniža (modra). Bolečina z dnevi sama upada.</p>
+            <button class="btn btn-ghost btn-sm" onclick="formaCheckin()">Shrani počutje</button>
+          </div>
+          <div class="card">
+            <h3>Napredek</h3>
+            <div id="formaStats"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== NASTAVITVE ===== -->
+    <section class="tab" id="tab-settings">
+      <div class="page-head">
+        <h1>Nastavitve</h1>
+        <p>Profil, Gemini API in povezava s Stravo</p>
+      </div>
+
+      <div class="set-grid">
+        <div class="card">
+          <h3>👤 Tvoj profil</h3>
+          <div class="frm-grid">
+            <label class="fld"><span>Ime</span><input id="pIme" placeholder="Blaž"></label>
+            <label class="fld"><span>Starost</span><input type="number" id="pStarost"></label>
+            <label class="fld"><span>Teža (kg)</span><input type="number" id="pTeza"></label>
+            <label class="fld"><span>Max utrip</span><input type="number" id="pMaxHr" placeholder="npr. 190"></label>
+            <label class="fld"><span>Utrip v mirovanju</span><input type="number" id="pRestHr" placeholder="npr. 55"></label>
+            <label class="fld"><span>Prag – LTHR (neobvezno)</span><input type="number" id="pLthr" placeholder="izračunam sam"></label>
+            <label class="fld"><span>Šema con</span>
+              <select id="pShema"><option value="5" selected>5 con (C1–C5)</option><option value="7">7 con (Z1–Z7)</option></select>
+            </label>
+            <label class="fld"><span>FTP – moč (W, če imaš merilec)</span><input type="number" id="pFtp" placeholder="npr. 250"></label>
+            <label class="fld"><span>Nivo</span>
+              <select id="pNivo">
+                <option value="začetnik">Začetnik</option>
+                <option value="rekreativni" selected>Rekreativni</option>
+                <option value="resen rekreativec">Resen rekreativec</option>
+                <option value="tekmovalec">Tekmovalec</option>
+              </select>
+            </label>
+            <label class="fld"><span>Ur na teden (cilj)</span><input type="number" id="pUre" value="6"></label>
+            <label class="fld"><span>🎯 Ciljni datum</span><input type="date" id="pCiljDatum"></label>
+            <label class="fld"><span>🎯 Ciljna teža (kg)</span><input type="number" step="0.5" id="pCiljTeza"></label>
+          </div>
+          <div class="zones-box" id="zonesBox"></div>
+          <label class="fld"><span>Cilji (za AI trenerja)</span>
+            <textarea id="pCilj" placeholder="npr. jeseni maraton Franja, rad bi izboljšal vzpone …"></textarea>
+          </label>
+          <div class="row">
+            <button class="btn btn-primary" onclick="saveProfile()">Shrani profil</button>
+            <button class="btn btn-ghost" id="btnFtp" onclick="estimateThresholds()">✨ Oceni FTP/prag iz voženj</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="card mb">
+            <h3>✨ Gemini API</h3>
+            <label class="fld"><span>API ključ</span><input type="password" id="gKey" placeholder="AIza…"></label>
+            <p class="hint">Brezplačen ključ dobiš na <b>aistudio.google.com</b> → Get API key. Ključ ostane samo v tvojem brskalniku.</p>
+            <label class="fld"><span>Model</span>
+              <select id="gModel">
+                <option value="gemini-flash-latest" selected>gemini-flash-latest (priporočeno)</option>
+                <option value="gemini-3.5-flash">gemini-3.5-flash</option>
+                <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+                <option value="gemini-2.5-pro">gemini-2.5-pro</option>
+              </select>
+            </label>
+            <div class="row">
+              <button class="btn btn-primary" onclick="saveGemini()">Shrani</button>
+              <button class="btn btn-ghost" id="btnTestG" onclick="testGemini()">Preizkusi povezavo</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>🟠 Strava povezava</h3>
+            <div id="stravaStatus"></div>
+            <details id="stravaSetup">
+              <summary style="cursor:pointer;font-weight:700;font-size:13.5px;color:var(--acc2)">Kako se povežem? (enkratna nastavitev, ~5 min)</summary>
+              <ol class="steps">
+                <li>Pojdi na <code>strava.com/settings/api</code> in ustvari aplikacijo (ime poljubno, kategorija "Training").</li>
+                <li>Pod <b>Authorization Callback Domain</b> vpiši <code>localhost</code>.</li>
+                <li>Prepiši <b>Client ID</b> in <b>Client Secret</b> spodaj in klikni <b>Poveži</b>.</li>
+                <li>Odpre se Strava — potrdi dostop. Preusmerilo te bo na "localhost" (stran se ne odpre — to je v redu!). Iz naslovne vrstice skopiraj cel naslov (ali samo kodo za <code>code=</code>) in jo prilepi nazaj sem.</li>
+              </ol>
+            </details>
+            <div class="frm-grid mt">
+              <label class="fld"><span>Client ID</span><input id="sCid"></label>
+              <label class="fld"><span>Client Secret</span><input type="password" id="sSec"></label>
+            </div>
+            <div class="row">
+              <button class="btn btn-primary" onclick="stravaConnect()">Poveži s Stravo</button>
+              <button class="btn btn-danger btn-sm" id="btnStravaOff" onclick="stravaDisconnect()" style="display:none">Prekini</button>
+            </div>
+            <div id="stravaCodeBox" style="display:none" class="mt">
+              <label class="fld"><span>Prilepi naslov (URL) ali kodo iz naslovne vrstice</span>
+                <input id="sCode" placeholder="http://localhost/?state=&code=XXXX… ali samo koda">
+              </label>
+              <button class="btn btn-primary" id="btnSCode" onclick="stravaExchange()">Potrdi kodo</button>
+            </div>
+            <p class="hint mt">Pozor: Strava od junija 2026 za API dostop zahteva Strava naročnino. Iz brskalnika gre prek javnega proxyja (CORS). Če nimaš naročnine, uporabi Intervals.icu spodaj — je brezplačen.</p>
+          </div>
+
+          <div class="card mt">
+            <h3>📈 Intervals.icu <span class="sub">brezplačna alternativa</span></h3>
+            <div id="icuStatus"></div>
+            <details>
+              <summary style="cursor:pointer;font-weight:700;font-size:13.5px;color:var(--acc2)">Kako se povežem? (~2 min, brezplačno)</summary>
+              <ol class="steps">
+                <li>Registriraj se na <code>intervals.icu</code> in poveži svojo Stravo/Garmin (vožnje se sinhronizirajo same).</li>
+                <li>Pojdi v <b>Settings</b> → čisto spodaj <b>Developer Settings</b> → <b>API Key</b> (generiraj ključ).</li>
+                <li><b>Athlete ID</b> najdeš v naslovu strani, npr. <code>intervals.icu/athlete/i12345</code> → vpiši <code>i12345</code>.</li>
+              </ol>
+            </details>
+            <div class="frm-grid mt">
+              <label class="fld"><span>Athlete ID</span><input id="icuId" placeholder="i12345"></label>
+              <label class="fld"><span>API ključ</span><input type="password" id="icuKey"></label>
+            </div>
+            <div class="row">
+              <button class="btn btn-primary" id="btnIcu" onclick="icuConnect()">Poveži</button>
+              <button class="btn btn-ghost" onclick="icuImport(false)">Uvozi vožnje</button>
+            </div>
+          </div>
+
+          <div class="card mt">
+            <h3>💾 Podatki</h3>
+            <div class="row">
+              <button class="btn btn-ghost" onclick="exportData()">Izvozi varnostno kopijo</button>
+              <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">Uvozi kopijo</button>
+              <input type="file" id="importFile" accept=".json" style="display:none">
+            </div>
+            <hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
+            <label class="fld"><span>🔄 Sinhronizacija s telefonom (jsonbin.io)</span><input id="sSyncF" placeholder="Master Key ALI koda bin|key z druge naprave"></label>
+            <div class="row">
+              <button class="btn btn-ghost btn-sm" onclick="syncConnectF()">Poveži</button>
+              <button class="btn btn-ghost btn-sm" onclick="syncPullF(true)">⟳ Osveži zdaj</button>
+            </div>
+            <p class="hint" id="syncStatus2" style="margin-top:8px"></p>
+            <p class="hint">Enkratno: brezplačen račun na <b>jsonbin.io</b> → API Keys → Master Key prilepi sem. Kodo, ki jo dobiš, prilepi še v aplikacijo KalorijeAI na telefonu — plan in spremembe se potem prenašajo v obe smeri.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ======= MODAL: VOŽNJA ======= -->
+<div class="modal-back" id="rideModalBack">
+  <div class="modal">
+    <h2><span id="rideModalTitle">Nova vožnja</span><span class="x" onclick="closeModal('rideModalBack')">✕</span></h2>
+    <img id="shotPrev" class="shot-prev" style="display:none">
+    <div class="row mb" id="shotActions" style="display:none">
+      <button class="btn btn-primary" id="btnAnalyzeShot" onclick="analyzeShot()">✨ Preberi podatke s slike</button>
+      <span style="font-size:12.5px;color:var(--dim)">Gemini izlušči podatke, ti jih le potrdiš.</span>
+    </div>
+    <div class="frm-grid">
+      <label class="fld"><span>Datum</span><input type="date" id="rDate"></label>
+      <label class="fld"><span>Šport</span>
+        <select id="rSport"><option value="kolo" selected>🚴 Kolo</option><option value="pohod">🥾 Pohod/hribi</option><option value="moc">💪 Moč</option></select>
+      </label>
+      <label class="fld"><span>Ime aktivnosti</span><input id="rName" placeholder="npr. Sv. Jakob"></label>
+    </div>
+    <div class="frm-grid">
+      <label class="fld"><span>Razdalja (km)</span><input type="number" step="0.1" id="rDist"></label>
+      <label class="fld"><span>Čas (min)</span><input type="number" id="rTime"></label>
+      <label class="fld"><span>Višinci (m)</span><input type="number" id="rElev"></label>
+      <label class="fld"><span>Povp. utrip</span><input type="number" id="rHr"></label>
+      <label class="fld"><span>Max utrip</span><input type="number" id="rMaxHr"></label>
+      <label class="fld"><span>Povp. hitrost (km/h)</span><input type="number" step="0.1" id="rSpeed"></label>
+      <label class="fld"><span>Povp. moč (W)</span><input type="number" id="rPower"></label>
+    </div>
+    <label class="fld"><span>Občutek / opombe</span><input id="rNotes" placeholder="npr. dobre noge, veter …"></label>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('rideModalBack')">Prekliči</button>
+      <button class="btn btn-primary" onclick="saveRide()">Shrani vožnjo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======= MODAL: OCENA ======= -->
+<div class="modal-back" id="evalModalBack">
+  <div class="modal">
+    <h2>Ocena vožnje<span class="x" onclick="closeModal('evalModalBack')">✕</span></h2>
+    <div id="evalBody"></div>
+  </div>
+</div>
+
+<!-- ======= MODAL: PODROBNOSTI VOŽNJE ======= -->
+<div class="modal-back" id="rideDetailBack">
+  <div class="modal" style="max-width:780px">
+    <h2><span id="rdTitle">Vožnja</span><span class="x" onclick="closeRideDetail()">✕</span></h2>
+    <div id="rdBody"></div>
+  </div>
+</div>
+
+<!-- ======= MODAL: DAN V KOLEDARJU ======= -->
+<div class="modal-back" id="dayModalBack">
+  <div class="modal">
+    <h2>Podrobnosti dneva<span class="x" onclick="closeModal('dayModalBack')">✕</span></h2>
+    <div id="dayBody"></div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+/* ================================================================
+   STANJE IN SHRAMBA
+================================================================ */
+const DB_KEY = 'forma_trener_v1';
+const defaultState = () => ({
+  settings: {
+    geminiKey:'', geminiModel:'gemini-flash-latest', proxy:'',
+    profile:{ ime:'', starost:null, teza:null, maxHr:null, restHr:null, lthr:null, ftp:null, shema:5, nivo:'rekreativni', ure:6, cilj:'', ciljDatum:null, ciljTeza:null }
+  },
+  strava:{ clientId:'', clientSecret:'', accessToken:'', refreshToken:'', expiresAt:0, athleteName:'' },
+  icu:{ athleteId:'', apiKey:'', name:'' },
+  forma:{ level:1, soreness:0, sorenessIso:null, lastFb:null, lastFbIso:null, history:[], custom:null },
+  macro:null, // {cilj, ciljDatum, povzetek, weeks:[{zacetek, faza, fokus, ure}]}
+  riderProfile:null, // AI analiza: {tip, ocena_nivoja, moci[], sibkosti[], v_kaj_se_razviti, komentar}
+  rides:[],   // {id, date, name, source, dist, time, elev, avgHr, maxHr, speed, notes, tss, analysis, stravaId}
+  plans:[]    // {weekStart, summary, focus, days:[{date, dan, tip, naslov, trajanje, opis, tss, doneRideId}], generatedAt}
+});
+let state = defaultState();
+try {
+  const raw = localStorage.getItem(DB_KEY);
+  if (raw) state = Object.assign(defaultState(), JSON.parse(raw));
+} catch(e){ console.warn('Ne morem naložiti stanja', e); }
+// enkratna migracija podatkov iz kolesarske aplikacije (če FORMA še nima svojih)
+try{
+  if (!localStorage.getItem(DB_KEY) && localStorage.getItem('kolesarski_trener_v1')){
+    state = Object.assign(defaultState(), JSON.parse(localStorage.getItem('kolesarski_trener_v1')));
+    save();
+  }
+}catch(_){}
+state.forma = Object.assign(defaultState().forma, state.forma||{});
+for (const p of state.plans||[]) if (p.weekStart && !p.start) p.start = p.weekStart;  // migracija starih planov
+const save = () => {
+  state._ts = Date.now();
+  localStorage.setItem(DB_KEY, JSON.stringify(state));
+  if (typeof syncPush==='function') syncPush();
+};
+
+/* ================================================================
+   POMOŽNE FUNKCIJE
+================================================================ */
+const $ = id => document.getElementById(id);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const MESECI = ['jan','feb','mar','apr','maj','jun','jul','avg','sep','okt','nov','dec'];
+const DNEVI = ['ponedeljek','torek','sreda','četrtek','petek','sobota','nedelja'];
+const pad = n => String(n).padStart(2,'0');
+const isoDate = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const todayIso = () => isoDate(new Date());
+function parseIso(s){ const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
+function fmtDate(s){ const d = parseIso(s); return `${d.getDate()}. ${MESECI[d.getMonth()]} ${d.getFullYear()}`; }
+function fmtDur(min){ if(min==null) return '–'; const h = Math.floor(min/60), m = Math.round(min%60); return h ? `${h}h ${pad(m)}m` : `${m} min`; }
+function weekStart(d){ const x = new Date(d); const day = (x.getDay()+6)%7; x.setDate(x.getDate()-day); x.setHours(0,0,0,0); return x; }
+function addDays(d,n){ const x = new Date(d); x.setDate(x.getDate()+n); return x; }
+const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nl2br = s => esc(s).replace(/\n/g,'<br>');
+const opisHtml = s => s ? esc(s).split(/\n/).filter(x=>x.trim()).map(l=>`<div class="opis-line">${l}</div>`).join('') : '';
+
+function toast(msg, type=''){
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  $('toasts').appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .4s'; setTimeout(()=>t.remove(),400); }, 4200);
+}
+function busy(btn, on, txt){
+  if(!btn) return;
+  if(on){ btn.dataset.orig = btn.innerHTML; btn.disabled = true; btn.innerHTML = `<span class="spin"></span> ${txt||'Razmišljam …'}`; }
+  else { btn.disabled = false; btn.innerHTML = btn.dataset.orig || btn.innerHTML; }
+}
+function closeModal(id){ $(id).classList.remove('open'); }
+
+/* ================================================================
+   OBREMENITEV (TSS) IN FORMA (CTL/ATL/TSB)
+================================================================ */
+function estimateTss(r){
+  const hours = (r.time||0)/60;
+  if (!hours) return 0;
+  const p = state.settings.profile;
+  if (r.avgPower && p.ftp){
+    const np = r.avgPower * 1.05;                        // ocena normalizirane moči
+    const IF = Math.max(.4, Math.min(1.2, np/p.ftp));
+    return Math.round(hours * IF * IF * 100);
+  }
+  if (r.avgHr && p.maxHr){
+    const rest = p.restHr || 60;
+    const lthr = rest + 0.85*(p.maxHr - rest);           // ocena laktatnega praga iz rezerve utripa
+    const intensity = Math.max(.45, Math.min(1.15, r.avgHr / lthr));
+    return Math.round(hours * intensity * intensity * 100);
+  }
+  // brez utripa: ocena iz športa, hitrosti in višincev
+  if (r.sport==='moc') return Math.round(hours*70) || 35;
+  if (r.sport==='pohod'){
+    let ph = 55;
+    if (r.dist && r.elev && (r.elev/r.dist) > 60) ph += 15;   // strm pohod
+    return Math.round(hours*ph);
+  }
+  let perHour = 50;
+  if (r.speed){ if(r.speed > 30) perHour = 75; else if(r.speed > 25) perHour = 62; else if(r.speed < 18) perHour = 42; }
+  if (r.dist && r.elev && (r.elev/r.dist) > 12) perHour += 12;  // hribovita tura
+  return Math.round(hours * perHour);
+}
+function dailyTssMap(){
+  const m = {};
+  for (const r of state.rides){ m[r.date] = (m[r.date]||0) + (r.tss||0); }
+  return m;
+}
+// vrne serijo {date, ctl, atl, tsb} od prve vožnje do danes
+function formSeries(){
+  if (!state.rides.length) return [];
+  const m = dailyTssMap();
+  const dates = state.rides.map(r=>r.date).sort();
+  let d = addDays(parseIso(dates[0]), -1);
+  const end = new Date(); end.setHours(0,0,0,0);
+  let ctl = 0, atl = 0; const out = [];
+  while (d <= end){
+    const key = isoDate(d);
+    const tss = m[key] || 0;
+    ctl += (tss - ctl)/42;
+    atl += (tss - atl)/7;
+    out.push({ date:key, ctl:+ctl.toFixed(1), atl:+atl.toFixed(1), tsb:+(ctl-atl).toFixed(1), tss });
+    d = addDays(d,1);
+  }
+  return out;
+}
+function currentForm(){
+  const s = formSeries();
+  if (!s.length) return null;
+  const last = s[s.length-1];
+  let opis, barva;
+  if (last.tsb >= 10){ opis='Svež in spočit'; barva='var(--green)'; }
+  else if (last.tsb >= -5){ opis='Dobra forma'; barva='var(--blue)'; }
+  else if (last.tsb >= -20){ opis='Priden trening, rahla utrujenost'; barva='var(--yellow)'; }
+  else { opis='Velika utrujenost — pazi!'; barva='var(--red)'; }
+  return { ...last, opis, barva };
+}
+/* ================================================================
+   NAVIGACIJA
+================================================================ */
+document.querySelectorAll('.nav-item').forEach(el=>{
+  el.addEventListener('click', ()=> switchTab(el.dataset.tab));
+});
+function switchTab(name){
+  document.querySelectorAll('.nav-item').forEach(e=>e.classList.toggle('active', e.dataset.tab===name));
+  document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('active', e.id==='tab-'+name));
+}
+
+/* ================================================================
+   PRIKAZ — NADZORNA PLOŠČA
+================================================================ */
+let chartFormObj = null, chartWeeklyObj = null;
+
+function renderSidebar(){
+  const f = currentForm();
+  if (!f){ $('sbFormVal').textContent='–'; $('sbFormDesc').textContent='Dodaj vožnje za izračun'; return; }
+  $('sbFormVal').textContent = (f.tsb>0?'+':'') + f.tsb;
+  $('sbFormVal').style.color = f.barva;
+  $('sbFormDesc').textContent = f.opis;
+}
+
+function renderDash(){
+  const p = state.settings.profile;
+  $('dashHello').textContent = p.ime ? `Zdravo, ${p.ime}! 👋` : 'Zdravo! 👋';
+
+  // vodič za začetek
+  const steps = [
+    { ok: !!state.settings.geminiKey, t:'Vpiši Gemini API ključ (brezplačen na aistudio.google.com)', tab:'settings' },
+    { ok: state.rides.length>0, t:'Dodaj vožnje — poveži Stravo/Intervals.icu ali prilepi screenshot', tab:'rides' },
+    { ok: !!(p.maxHr || p.ftp), t:'Dopolni profil (max utrip ali FTP → cone za treninge)', tab:'settings' },
+    { ok: !!state.riderProfile, t:'Zaženi AI analizo: kakšen kolesar si', tab:'dash' },
+    { ok: state.plans.length>0, t:'Generiraj prvi plan (ali Plan do cilja v Koledarju)', tab:'plan' }
+  ];
+  $('onboardCard').innerHTML = steps.every(s=>s.ok) ? '' :
+    `<div class="card mb" style="border-color:rgba(252,76,2,.35)"><h3>🚀 Začni tukaj <span class="sub">${steps.filter(s=>s.ok).length}/${steps.length}</span></h3>` +
+    steps.map(s=>`<div class="onb ${s.ok?'ok':''}" onclick="switchTab('${s.tab}')">${s.ok?'✅':'⬜'} ${s.t}</div>`).join('') + `</div>`;
+
+  const ws = weekStart(new Date()), weIso = isoDate(addDays(ws,6)), wsIso = isoDate(ws);
+  const thisWeek = state.rides.filter(r=> r.date>=wsIso && r.date<=weIso);
+  const km   = thisWeek.reduce((a,r)=>a+(+r.dist||0),0);
+  const min  = thisWeek.reduce((a,r)=>a+(+r.time||0),0);
+  const tssW = thisWeek.reduce((a,r)=>a+(r.tss||0),0);
+  const f = currentForm();
+
+  $('dashStats').innerHTML = `
+    <div class="card stat"><div class="k">Ta teden</div><div class="v">${km.toFixed(0)} <small>km</small></div><div class="t">${thisWeek.length} voženj</div></div>
+    <div class="card stat"><div class="k">Čas ta teden</div><div class="v">${fmtDur(min)}</div><div class="t">cilj: ${p.ure||'?'} h</div></div>
+    <div class="card stat"><div class="k">Obremenitev tedna</div><div class="v">${tssW} <small>TSS</small></div><div class="t">skupna doza treninga</div></div>
+    <div class="card stat"><div class="k">Kondicija (CTL)</div><div class="v">${f?f.ctl:'–'}</div><div class="t">dolgoročna pripravljenost</div></div>
+    <div class="card stat"><div class="k">Svežina (TSB)</div><div class="v" style="color:${f?f.barva:'inherit'}">${f?(f.tsb>0?'+':'')+f.tsb:'–'}</div><div class="t">${f?f.opis:'—'}</div></div>` +
+    (p.ciljDatum ? `<div class="card stat" style="border-color:rgba(252,76,2,.4)"><div class="k">🎯 Do cilja</div><div class="v">${Math.max(0,Math.round((parseIso(p.ciljDatum)-new Date())/864e5))} <small>dni</small></div><div class="t">${(p.ciljTeza&&p.teza)?`še ${Math.max(0,p.teza-p.ciljTeza).toFixed(1)} kg`:esc((p.cilj||'cilj').slice(0,28))}</div></div>` : '');
+
+  // zadnje vožnje
+  const last5 = [...state.rides].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  $('dashRides').innerHTML = last5.length ? last5.map(rideRowHtml).join('')
+    : `<div class="empty"><span class="big">🚴</span>Še ni voženj. Prilepi screenshot ali dodaj ročno.</div>`;
+
+  // danes na planu
+  const day = planDayFor(todayIso());
+  $('dashToday').innerHTML = day ? `
+    <span class="chip ${chipClass(day.tip)}">${esc(day.tip)}</span>
+    <div style="font-weight:800;font-size:16px;margin:9px 0 5px">${esc(day.naslov)}</div>
+    <div style="color:var(--muted);font-size:13.5px">${opisHtml(day.opis||'')}</div>
+    ${day.vaje?`<div style="font-size:12.5px;color:var(--muted);margin-top:6px">🏋️ ${esc(day.vaje)}</div>`:''}
+    ${day.kcal_vnos?`<div style="font-size:12.5px;color:var(--yellow);margin-top:4px">🔥 vnos ~${day.kcal_vnos} · poraba ~${day.kcal_poraba||'?'} kcal</div>`:''}
+    <div style="margin-top:10px;font-size:12.5px;color:var(--dim);font-weight:600">${fmtDur(day.trajanje_min)} · ~${day.tss_ocena||'?'} TSS</div>
+    <button class="btn btn-ghost btn-sm mt" onclick="switchTab('plan')">📅 Odpri tedenski plan</button>`
+    : `<div class="empty" style="padding:24px"><span class="big">📅</span>Za danes ni plana.<br><button class="btn btn-primary btn-sm mt" onclick="switchTab('plan')">Generiraj tedenski plan</button></div>`;
+
+  renderCharts();
+  renderRiderCard();
+}
+
+function renderCharts(){
+  if (typeof Chart === 'undefined') return;
+  Chart.defaults.color = '#8b9bab';
+  Chart.defaults.borderColor = 'rgba(45,61,80,.5)';
+  Chart.defaults.font.family = 'Inter, sans-serif';
+
+  const s = formSeries().slice(-90);
+  if (chartFormObj) chartFormObj.destroy();
+  chartFormObj = new Chart($('chartForm'), {
+    type:'line',
+    data:{ labels:s.map(x=>{const d=parseIso(x.date);return `${d.getDate()}.${d.getMonth()+1}.`}),
+      datasets:[
+        {label:'Kondicija', data:s.map(x=>x.ctl), borderColor:'#4da3ff', backgroundColor:'rgba(77,163,255,.12)', fill:true, tension:.35, pointRadius:0, borderWidth:2},
+        {label:'Utrujenost', data:s.map(x=>x.atl), borderColor:'#ffc247', tension:.35, pointRadius:0, borderWidth:2},
+        {label:'Svežina', data:s.map(x=>x.tsb), borderColor:'#3fce6b', tension:.35, pointRadius:0, borderWidth:2, borderDash:[5,4]}
+      ]},
+    options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{boxWidth:10,boxHeight:10,usePointStyle:true}}},
+      scales:{x:{ticks:{maxTicksLimit:9},grid:{display:false}}, y:{grid:{color:'rgba(45,61,80,.35)'}}} }
+  });
+
+  // tedenski obseg — zadnjih 8 tednov
+  const weeks = [];
+  for (let i=7;i>=0;i--){
+    const ws = weekStart(addDays(new Date(), -7*i));
+    const we = addDays(ws,6);
+    const rid = state.rides.filter(r=> r.date>=isoDate(ws) && r.date<=isoDate(we));
+    weeks.push({ lbl:`${ws.getDate()}.${ws.getMonth()+1}.`, h:+(rid.reduce((a,r)=>a+(+r.time||0),0)/60).toFixed(1) });
+  }
+  if (chartWeeklyObj) chartWeeklyObj.destroy();
+  chartWeeklyObj = new Chart($('chartWeekly'), {
+    type:'bar',
+    data:{ labels:weeks.map(w=>w.lbl), datasets:[{label:'ur', data:weeks.map(w=>w.h),
+      backgroundColor:weeks.map((w,i)=> i===weeks.length-1 ? '#fc4c02' : 'rgba(252,76,2,.45)'), borderRadius:6, maxBarThickness:34}]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false}}, y:{grid:{color:'rgba(45,61,80,.35)'}, title:{display:true,text:'ure'}}} }
+  });
+}
+
+/* ================================================================
+   PRIKAZ — VOŽNJE
+================================================================ */
+const srcLabel = s => ({strava:'🟠 Strava', intervals:'📈 Intervals.icu', screenshot:'📸 screenshot', manual:'✍️ ročni vnos'}[s] || s);
+
+function rideRowHtml(r){
+  const d = parseIso(r.date);
+  const oc = r.analysis ? ` · <span style="color:var(--acc2)">ocena ${r.analysis.ocena}/10</span>` : '';
+  return `<div class="ride-row" style="cursor:pointer" onclick="openRideDetail('${r.id}')" title="Klikni za podrobnosti">
+    <div class="ride-date"><div class="d">${d.getDate()}.</div><div class="m">${MESECI[d.getMonth()]}</div></div>
+    <div class="ride-name">${sportEmoji(r.sport)}${esc(r.name||'Vožnja')}<div class="src">${srcLabel(r.source)}${oc}</div></div>
+    <div class="ride-met"><div class="a">${r.dist!=null?(+r.dist).toFixed(1):'–'}</div><div class="b">km</div></div>
+    <div class="ride-met"><div class="a">${fmtDur(r.time)}</div><div class="b">čas</div></div>
+    <div class="ride-met hide-sm"><div class="a">${r.elev!=null?Math.round(r.elev):'–'}</div><div class="b">m</div></div>
+    <div class="ride-met hide-sm"><div class="a">${r.avgHr||'–'}</div><div class="b">utrip</div></div>
+    <div style="text-align:center"><span class="chip orange">${r.tss||0} TSS</span></div>
+    <div class="ride-acts">
+      <button class="icon-btn" title="Oceni turo z AI" onclick="event.stopPropagation();evalRide('${r.id}')">✨</button>
+      <button class="icon-btn" title="Uredi" onclick="event.stopPropagation();openRideModal('${r.id}')">✎</button>
+      <button class="icon-btn del" title="Izbriši" onclick="event.stopPropagation();delRide('${r.id}')">🗑</button>
+    </div>
+  </div>`;
+}
+function renderRides(){
+  const sorted = [...state.rides].sort((a,b)=>b.date.localeCompare(a.date));
+  $('ridesList').innerHTML = sorted.length ? sorted.map(rideRowHtml).join('')
+    : `<div class="empty"><span class="big">📸</span>Ni še nobene vožnje.<br>Prilepi screenshot s Strave/Garmina (Ctrl+V) in Gemini prebere podatke.</div>`;
+}
+
+/* ---------- modal za vožnjo ---------- */
+let editingRideId = null, pendingShot = null;
+
+function openRideModal(id){
+  editingRideId = (typeof id==='string') ? id : null;
+  pendingShot = null;
+  $('shotPrev').style.display='none'; $('shotActions').style.display='none';
+  const r = editingRideId ? state.rides.find(x=>x.id===editingRideId) : null;
+  $('rideModalTitle').textContent = r ? 'Uredi vožnjo' : 'Nova vožnja';
+  $('rDate').value = r?.date || todayIso();
+  $('rSport').value = r?.sport || 'kolo';
+  $('rName').value = r?.name || '';
+  $('rDist').value = r?.dist ?? ''; $('rTime').value = r?.time ?? ''; $('rElev').value = r?.elev ?? '';
+  $('rHr').value = r?.avgHr ?? ''; $('rMaxHr').value = r?.maxHr ?? ''; $('rSpeed').value = r?.speed ?? '';
+  $('rPower').value = r?.avgPower ?? '';
+  $('rNotes').value = r?.notes || '';
+  $('rideModalBack').classList.add('open');
+}
+function saveRide(){
+  const date = $('rDate').value;
+  if (!date){ toast('Vpiši datum vožnje.','err'); return; }
+  const num = v => v==='' ? null : +v;
+  const data = {
+    date, sport: $('rSport').value || 'kolo', name: $('rName').value.trim() || 'Aktivnost',
+    dist:num($('rDist').value), time:num($('rTime').value), elev:num($('rElev').value),
+    avgHr:num($('rHr').value), maxHr:num($('rMaxHr').value), speed:num($('rSpeed').value), avgPower:num($('rPower').value),
+    notes: $('rNotes').value.trim()
+  };
+  if (data.dist==null && data.time==null){ toast('Vpiši vsaj razdaljo ali čas.','err'); return; }
+  if (data.time && data.dist && !data.speed) data.speed = +(data.dist/(data.time/60)).toFixed(1);
+  if (!editingRideId && state.rides.some(x=>x.date===data.date && x.dist!=null && data.dist!=null && Math.abs(x.dist-data.dist)<0.5)){
+    if (!confirm('Za ta dan že obstaja podobna vožnja (verjetno uvožena). Vseeno shranim?')) return;
+  }
+  if (editingRideId){
+    const r = state.rides.find(x=>x.id===editingRideId);
+    Object.assign(r, data); r.tss = estimateTss(r);
+  } else {
+    const r = { id:uid(), source: pendingShot ? 'screenshot' : 'manual', ...data };
+    r.tss = estimateTss(r);
+    state.rides.push(r);
+  }
+  save(); renderAll(); closeModal('rideModalBack');
+  toast('Vožnja shranjena. 🚴','ok');
+}
+function delRide(id){
+  if (!confirm('Izbrišem to vožnjo?')) return;
+  state.rides = state.rides.filter(r=>r.id!==id);
+  save(); renderAll();
+}
+
+/* ================================================================
+   PRIKAZ — TEDENSKI PLAN
+================================================================ */
+let planIdx = null; // null = aktualni plan
+const sortedPlans = () => [...state.plans].sort((a,b)=>(a.start||'').localeCompare(b.start||''));
+const planEnd = p => p.days?.length ? p.days[p.days.length-1].datum : p.start;
+function currentPlanIndex(){
+  const ps = sortedPlans(); if (!ps.length) return -1;
+  const t = todayIso();
+  let i = ps.findIndex(p => p.start<=t && planEnd(p)>=t);       // plan, ki pokriva danes
+  if (i<0) i = ps.findIndex(p => p.start>t);                     // sicer prvi prihodnji
+  return i<0 ? ps.length-1 : i;                                  // sicer zadnji
+}
+function viewedPlan(){
+  const ps = sortedPlans(); if (!ps.length) return null;
+  return ps[planIdx==null ? currentPlanIndex() : Math.min(ps.length-1, Math.max(0, planIdx))];
+}
+function shiftWeek(dir){
+  const ps = sortedPlans();
+  if (dir===0 || !ps.length){ planIdx = null; renderPlan(); return; }
+  let i = planIdx==null ? currentPlanIndex() : planIdx;
+  planIdx = Math.min(ps.length-1, Math.max(0, i+dir));
+  renderPlan();
+}
+function deleteViewedPlan(){
+  const p = viewedPlan(); if (!p) return;
+  if (!confirm('Izbrišem cel ta plan?')) return;
+  state.plans = state.plans.filter(x=>x!==p);
+  planIdx = null; save(); renderAll();
+  toast('Plan izbrisan.','ok');
+}
+function removePlanDay(iso){
+  if (!confirm('Odstranim planirani trening za ta dan?')) return;
+  for (const p of state.plans){
+    const i = (p.days||[]).findIndex(d=>d.datum===iso);
+    if (i>-1){ p.days.splice(i,1); if (!p.days.length) state.plans = state.plans.filter(x=>x!==p); break; }
+  }
+  save(); renderAll(); closeModal('dayModalBack');
+  toast('Trening odstranjen iz plana.','ok');
+}
+function markDayDone(iso){
+  const d = planDayFor(iso); if (!d) return;
+  d.done = true;
+  save(); renderAll(); closeModal('dayModalBack');
+  toast('Označeno kot opravljeno. ✓','ok');
+}
+function moveDay(iso){
+  const target = $('moveDayTo')?.value;
+  if (!target){ toast('Izberi datum, na katerega naj prestavim.','err'); return; }
+  if (target===iso) return;
+  const src = planDayFor(iso); if (!src) return;
+  const tgt = planDayFor(target);
+  if (tgt) tgt.datum = iso;   // zamenjaj
+  src.datum = target;
+  for (const p of state.plans){ p.days.sort((a,b)=>a.datum.localeCompare(b.datum)); p.start = p.days[0]?.datum || p.start; }
+  save(); renderAll(); closeModal('dayModalBack');
+  toast(tgt ? 'Treninga zamenjana med dnevoma. ↔' : 'Trening prestavljen. ↔','ok');
+}
+
+function chipClass(tip){
+  const t = (tip||'').toLowerCase();
+  if (t.includes('interval')) return 'intervali';
+  if (t.includes('vzdr')) return 'vzdrzljivost';
+  if (t.includes('tempo')) return 'tempo';
+  if (t.includes('regener')) return 'regeneracija';
+  if (t.includes('poči')||t.includes('poci')||t.includes('prosto')) return 'pocitek';
+  if (t.includes('moč')||t.includes('moc')) return 'moc';
+  if (t.includes('pohod')||t.includes('hrib')) return 'pohod';
+  return 'gray';
+}
+const sportEmoji = s => s==='pohod' ? '🥾 ' : s==='moc' ? '💪 ' : '';
+function sportLabel(tip){
+  const c = chipClass(tip);
+  return c==='pohod' ? {i:'🥾', l:'POHOD'} : c==='moc' ? {i:'💪', l:'TRENING MOČI'} : c==='pocitek' ? {i:'🛌', l:'POČITEK'} : {i:'🚴', l:'KOLO'};
+}
+
+function renderPlan(){
+  const plan = viewedPlan();
+  const delBtn = $('btnDelPlan'); if (delBtn) delBtn.style.display = plan ? 'inline-flex' : 'none';
+
+  if (!plan){
+    $('planWeekLabel').textContent = 'Še ni plana';
+    $('planSummary').innerHTML = '';
+    $('weekGrid').innerHTML = `<div class="empty" style="grid-column:1/-1"><span class="big">📅</span>Še ni plana.<br>Klikni <b>✨ Generiraj plan</b> — AI naredi plan za <b>naslednjih 7 dni od danes</b> iz tvoje forme, profila in metodologije trenerja.</div>`;
+    return;
+  }
+  const s = parseIso(plan.start), e = parseIso(planEnd(plan));
+  const today = todayIso();
+  const aktualni = plan.start<=today && planEnd(plan)>=today;
+  $('planWeekLabel').textContent = `Plan ${s.getDate()}. ${MESECI[s.getMonth()]} – ${e.getDate()}. ${MESECI[e.getMonth()]} ${e.getFullYear()}` + (aktualni?' (aktualni)':'');
+
+  const ph = macroPhaseFor(isoDate(weekStart(s)));
+  const totMin = plan.days.filter(d=>chipClass(d.tip)!=='pocitek').reduce((a,d)=>a+(+d.trajanje_min||0),0);
+  const totTss = plan.days.reduce((a,d)=>a+(+d.tss_ocena||0),0);
+  const past = plan.days.filter(d=>d.datum<=today && chipClass(d.tip)!=='pocitek');
+  const doneN = past.filter(d=>d.done || state.rides.some(r=>r.date===d.datum)).length;
+  const kcalDays = plan.days.filter(d=>d.kcal_vnos);
+  $('planSummary').innerHTML =
+    (ph ? `<div class="plan-summary" style="margin-bottom:10px;border-color:${fazaColor(ph.faza)||'var(--border2)'}">🎯 <b>Faza priprave:</b> ${esc(ph.faza)} — ${esc(ph.fokus)} (~${ph.ure} h ta teden)</div>` : '') +
+    (plan?.summary ? `<div class="plan-summary" style="margin-bottom:10px"><b>Fokus:</b> ${esc(plan.focus||'')}<br>${esc(plan.summary)}</div>` : '') +
+    `<div class="plan-summary" style="margin-bottom:14px">Σ <b>${fmtDur(totMin)}</b> na kolesu · ~<b>${totTss} TSS</b>${past.length?` · realizacija <b>${doneN}/${past.length}</b>`:''}${kcalDays.length?` · 🍽 povpr. vnos ~<b>${Math.round(kcalDays.reduce((a,d)=>a+d.kcal_vnos,0)/kcalDays.length)} kcal/dan</b>`:''}</div>`;
+  const grid = $('weekGrid');
+  grid.className = 'week-list';
+  grid.innerHTML = plan.days.map(d=>{
+    const dd = parseIso(d.datum);
+    const done = d.done || state.rides.some(r=>r.date===d.datum);
+    const isRest = chipClass(d.tip)==='pocitek';
+    const sl = sportLabel(d.tip);
+    const cols = [];
+    if (d.opis) cols.push(`<div class="dr-col"><div class="dr-lbl">${sl.i} ${sl.l}</div>${opisHtml(d.opis)}</div>`);
+    if (d.vaje) cols.push(`<div class="dr-col"><div class="dr-lbl">🏋️ Vaje (muscle-up)</div>${d.vaje.includes('\n')?opisHtml(d.vaje):esc(d.vaje).split(/,\s(?=[A-ZČŠŽ])/).join('<br>')}</div>`);
+    if (d.prehrana || d.kcal_vnos) cols.push(`<div class="dr-col"><div class="dr-lbl">🍽 Prehrana</div>${esc(d.prehrana||'').split(/\s*\|\s*/).filter(x=>x).map(x=>`<div class="opis-line">${x}</div>`).join('')}${d.kcal_vnos?`<div class="dr-kcal">🔥 vnos ~${d.kcal_vnos} · poraba ~${d.kcal_poraba||'?'} kcal</div>`:''}</div>`);
+    return `<div class="day-row ${d.datum===today?'today':''} ${done?'done':''}">
+      <div class="dr-head">
+        <span class="dr-day">${DNEVI[(dd.getDay()+6)%7].slice(0,3)} ${dd.getDate()}.${dd.getMonth()+1}.</span>
+        <span class="dr-sport">${sl.i} ${sl.l}</span>
+        <span class="chip ${chipClass(d.tip)}">${esc(d.tip)}</span>
+        <span class="dr-title">${esc(d.naslov)}</span>
+        <span class="dr-meta">${isRest?'—':fmtDur(d.trajanje_min)+' · ~'+(d.tss_ocena||'?')+' TSS'}${done?'<span class="okk">✓ opravljeno</span>':''}</span>
+      </div>
+      ${cols.length?`<div class="dr-body" style="grid-template-columns:${cols.length===3?'1.25fr 1fr 1fr':'repeat('+cols.length+',1fr)'}">${cols.join('')}</div>`:''}
+    </div>`;
+  }).join('');
+}
+/* ================================================================
+   GEMINI API
+================================================================ */
+async function gemini(parts, {json=true, temp=0.4}={}){
+  const key = state.settings.geminiKey;
+  if (!key) { switchTab('settings'); throw new Error('Najprej vpiši Gemini API ključ v Nastavitvah.'); }
+  const model = state.settings.geminiModel || 'gemini-flash-latest';
+  const body = {
+    contents:[{ role:'user', parts }],
+    generationConfig:{ temperature:temp, ...(json?{response_mime_type:'application/json'}:{}) }
+  };
+  const call = m => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`, {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'x-goog-api-key':key },
+    body: JSON.stringify(body)
+  });
+  let res = await call(model);
+  if (res.status===404 && model!=='gemini-flash-latest') res = await call('gemini-flash-latest');   // neznano ime modela → varni model
+  if (!res.ok){
+    let msg = `Gemini napaka (${res.status})`;
+    try{ const e = await res.json(); msg += ': ' + (e.error?.message||'').slice(0,180); }catch(_){}
+    if (res.status===400 || res.status===403) msg += ' — preveri API ključ.';
+    if (res.status===429) msg = 'Gemini: presežena kvota — počakaj minuto in poskusi znova.';
+    throw new Error(msg);
+  }
+  const data = await res.json();
+  let txt = data.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('') || '';
+  if (!txt) throw new Error('Gemini ni vrnil odgovora.');
+  if (!json) return txt;
+  txt = txt.trim().replace(/^```(json)?/i,'').replace(/```$/,'').trim();
+  const a = txt.indexOf('{'), b = txt.lastIndexOf('}');
+  if (a>-1 && b>a) txt = txt.slice(a, b+1);
+  return JSON.parse(txt);
+}
+
+function saveGemini(){
+  state.settings.geminiKey = $('gKey').value.trim();
+  state.settings.geminiModel = $('gModel').value;
+  save(); toast('Gemini nastavitve shranjene.','ok');
+}
+async function testGemini(){
+  saveGemini();
+  const btn = $('btnTestG'); busy(btn, true, 'Preverjam …');
+  try{
+    const r = await gemini([{text:'Odgovori samo z JSON: {"ok": true}'}]);
+    toast(r.ok ? 'Povezava z Gemini deluje! ✨' : 'Nepričakovan odgovor.', r.ok?'ok':'err');
+  }catch(e){ toast(e.message,'err'); }
+  busy(btn, false);
+}
+
+/* ================================================================
+   KONTEKST ZA AI TRENERJA
+================================================================ */
+function buildContext(){
+  const p = state.settings.profile;
+  const f = currentForm();
+  const L = [];
+  L.push(`DANES JE: ${todayIso()} (${DNEVI[(new Date().getDay()+6)%7]})`);
+  L.push(`\nPROFIL KOLESARJA:`);
+  L.push(`- ime: ${p.ime||'?'} | starost: ${p.starost||'?'} | teža: ${p.teza||'?'} kg | nivo: ${p.nivo}`);
+  L.push(`- max utrip: ${p.maxHr||'?'} | utrip v mirovanju: ${p.restHr||'?'} (trenira po srčnem utripu, NIMA merilca moči)`);
+  L.push(`- ciljni obseg: ~${p.ure||6} ur/teden | cilji: ${p.cilj||'splošna forma'}`);
+  const z = hrZones();
+  if (z) L.push(`- CONE UTRIPA (šema ${+p.shema===7?'7 con, Z1–Z7':'5 con, C1–C5'}): ${zonesText()}${lthrVal()?` | prag (LTHR) ~${lthrVal()}`:''}`);
+  if (powerZones()) L.push(`- MOČNOSTNE CONE (FTP ${p.ftp} W): ${powerZonesText()}`);
+  L.push(`- merilec moči: ${p.ftp ? 'DA (FTP nastavljen) — ključne intervale predpiši v wattih' : hasPower() ? 'ima podatke o moči, a FTP še ni nastavljen — predpiši po utripu' : 'NE — vse po utripu/občutku'}`);
+  if (p.ciljDatum){
+    const wk = Math.max(0, Math.ceil((parseIso(p.ciljDatum) - new Date())/(7*864e5)));
+    L.push(`- ⚑ GLAVNI CILJ Z ROKOM: "${p.cilj||'cilj'}" do ${p.ciljDatum} (še ${wk} tednov)${p.ciljTeza?` | ciljna teža ${p.ciljTeza} kg, trenutna ${p.teza||'?'} kg`:''}`);
+    const gd = goalDeficit();
+    if (gd) L.push(`- IZRAČUN HUJŠANJA: ${gd.kg.toFixed(1)} kg v ${gd.dni} dneh → potreben povprečen dnevni kalorijski deficit ~${gd.deficit} kcal`);
+  }
+  if (state.macro?.weeks?.length){
+    const ph = macroPhaseFor(isoDate(weekStart(new Date())));
+    L.push(`\nMAKRO PLAN DO CILJA: ${state.macro.povzetek||''}`);
+    L.push('Tedni: ' + state.macro.weeks.map(w=>`${w.zacetek}=${w.faza}(${w.ure}h)`).join(' | '));
+    if (ph) L.push(`TA TEDEN JE FAZA: ${ph.faza} — ${ph.fokus} (~${ph.ure} h)`);
+  }
+  if (f) L.push(`\nTRENUTNA FORMA: kondicija CTL=${f.ctl}, akutna utrujenost ATL=${f.atl}, svežina TSB=${f.tsb} → ${f.opis}`);
+
+  const cutoff = isoDate(addDays(new Date(), -28));
+  const recent = state.rides.filter(r=>r.date>=cutoff).sort((a,b)=>a.date.localeCompare(b.date));
+  const km = recent.reduce((a,r)=>a+(+r.dist||0),0), min = recent.reduce((a,r)=>a+(+r.time||0),0), tss = recent.reduce((a,r)=>a+(r.tss||0),0);
+  L.push(`\nZADNJIH 28 DNI: ${recent.length} voženj, ${km.toFixed(0)} km, ${(min/60).toFixed(1)} h, skupni TSS ${tss}`);
+  if (recent.length){
+    L.push(`ZADNJE VOŽNJE (najnovejše zadnje):`);
+    for (const r of recent.slice(-12))
+      L.push(`- ${r.date}: "${r.name}" ${r.dist??'?'} km, ${fmtDur(r.time)}, ${r.elev??'?'} m višincev, povp. utrip ${r.avgHr??'?'}, TSS ${r.tss}${r.notes?` | občutek: ${r.notes}`:''}${r.analysis?` | AI ocena: ${r.analysis.ocena}/10, ${r.analysis.skladnost}`:''}`);
+  } else L.push(`(še ni zabeleženih voženj)`);
+
+  if (state.riderProfile){
+    const rp = state.riderProfile;
+    L.push(`\nAI PROFIL KOLESARJA (iz analize njegovih voženj): tip: ${rp.tip} | nivo: ${rp.ocena_nivoja||'?'}`);
+    L.push(`- moči: ${(rp.moci||[]).join('; ')}`);
+    L.push(`- šibkosti: ${(rp.sibkosti||[]).join('; ')}`);
+    L.push(`- v kaj naj se razvija: ${rp.v_kaj_se_razviti||''}`);
+  }
+
+  const from = isoDate(addDays(new Date(),-14)), to = isoDate(addDays(new Date(),7));
+  const pdays = [];
+  for (const p of state.plans) for (const d of (p.days||[])) if (d.datum>=from && d.datum<=to) pdays.push(d);
+  pdays.sort((a,b)=>a.datum.localeCompare(b.datum));
+  if (pdays.length){
+    L.push(`\nPLANIRANI TRENINGI (zadnjih 14 dni in naprej) IN REALIZACIJA:`);
+    for (const d of pdays){
+      const done = d.done || state.rides.some(r=>r.date===d.datum);
+      const rest = chipClass(d.tip)==='pocitek';
+      const fut = d.datum > todayIso();
+      L.push(`- ${d.datum} ${d.tip}: ${d.naslov} (${d.trajanje_min||0} min)${(rest||fut)?'':done?' → OPRAVLJENO':' → NI opravljeno'}`);
+    }
+  } else L.push(`\n(planov še ni bilo)`);
+  return L.join('\n');
+}
+
+/* ================================================================
+   AI: ANALIZA SCREENSHOTA
+================================================================ */
+function loadShot(file){
+  if (!file || !file.type.startsWith('image/')) return;
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = () => {
+    const MAX = 1600;
+    const sc = Math.min(1, MAX/Math.max(img.width, img.height));
+    const c = document.createElement('canvas');
+    c.width = Math.round(img.width*sc); c.height = Math.round(img.height*sc);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    const dataUrl = c.toDataURL('image/jpeg', .88);
+    URL.revokeObjectURL(url);
+    if (!$('rideModalBack').classList.contains('open')) openRideModal();
+    pendingShot = { mime:'image/jpeg', data: dataUrl.split(',')[1] };  // po openRideModal, ki ga ponastavi
+    $('shotPrev').src = dataUrl; $('shotPrev').style.display='block';
+    $('shotActions').style.display='flex';
+    analyzeShot(); // samodejno preberi
+  };
+  img.src = url;
+}
+async function analyzeShot(){
+  if (!pendingShot){ toast('Najprej prilepi ali izberi sliko.','err'); return; }
+  const btn = $('btnAnalyzeShot'); busy(btn, true, 'Berem sliko …');
+  try{
+    const r = await gemini([
+      { inline_data:{ mime_type:pendingShot.mime, data:pendingShot.data } },
+      { text:`Na sliki je posnetek zaslona kolesarske aktivnosti (Strava, Garmin, Wahoo ipd.). Natančno izlušči podatke.
+Vrni SAMO JSON:
+{"ime":string|null,"datum":"YYYY-MM-DD"|null,"razdalja_km":number|null,"cas_min":number|null,"visinci_m":number|null,"povp_hitrost_kmh":number|null,"povp_utrip":number|null,"max_utrip":number|null,"povp_moc_w":number|null}
+Pravila: cas_min = čas gibanja v minutah (npr. "1:45:30" → 106). Če je datum relativen ("danes","včeraj"), izračunaj glede na to, da je danes ${todayIso()}. Če podatka ni na sliki, vrni null.` }
+    ]);
+    if (r.ime) $('rName').value = r.ime;
+    if (r.datum) $('rDate').value = r.datum;
+    if (r.razdalja_km!=null) $('rDist').value = r.razdalja_km;
+    if (r.cas_min!=null) $('rTime').value = Math.round(r.cas_min);
+    if (r.visinci_m!=null) $('rElev').value = Math.round(r.visinci_m);
+    if (r.povp_hitrost_kmh!=null) $('rSpeed').value = r.povp_hitrost_kmh;
+    if (r.povp_utrip!=null) $('rHr').value = Math.round(r.povp_utrip);
+    if (r.max_utrip!=null) $('rMaxHr').value = Math.round(r.max_utrip);
+    if (r.povp_moc_w!=null) $('rPower').value = Math.round(r.povp_moc_w);
+    toast('Podatki prebrani — preveri in shrani. ✨','ok');
+  }catch(e){ toast(e.message,'err'); }
+  busy(btn, false);
+}
+
+/* ================================================================
+   STIL PROFESIONALNEGA TRENERJA (po vzoru realnih planov)
+================================================================ */
+const STIL = `STIL PISANJA TRENINGOV — piši PREPROSTO IN RAZUMLJIVO, kot da razlagaš prijatelju. Metodologija profesionalnega trenerja, ampak BREZ žargona. TO VELJA ZA POPOLNOMA VSAK DAN — KOLO, POHOD IN MOČ ENAKO, brez izjeme:
+- STROGO PREPOVEDANO v vsakem opisu (za kolo, pohod ali moč): znak "=" kot ločilo med koraki, puščice/nagibi tipa "C1>2" ali "Z3>4", VELIKE TISKANE besede kot "KLANEC", "RAVNINA", "SESTOP" namesto navadnih besed, kratice con brez razlage ("C1","C4","Z2" ipd. brez besede zraven), zapis tipa "o/min." brez besede "obratov". Primeri NAPAČNEGA zapisa (nikoli ne piši tako): "15' = C1>2 = segrevanje = 95 o/min. RAVNINA", "120' pohod = KLANEC = zmeren tempo v C1>2 (utrip 137-163) = premagovanje višinske razlike", "Sestop = nadzorovan in počasen tempo".
+- Vsaka vrstica = en cel stavek v navadni slovenščini, utrip VEDNO s številkami v oklepaju (nikoli samo črka+številka cone). Primeri PRAVILNEGA zapisa:
+  "Ogrevanje: 15 min lahkotno po ravnini (utrip do 130)"
+  "Glavni del: 3× 5 min močno v klanec (utrip 165–180), vmes 4 min mirne vožnje navzdol"
+  "Zaključek: 15 min sproščeno domov (utrip pod 125)"
+  "Zgibi: 4 serije × 6 ponovitev, odmor 2 min med serijami"
+  "Vzpon: 90 min v hrib v zmernem, a stalnem tempu (utrip 135–160), diha naj bo naporno a še vedno pogovorno"
+  "Sestop: 40 min počasi in previdno navzdol, pazi na kolena in korak (utrip pod 130)"
+- Vrtenje pedal povej z besedami: "lahek prenos, hitro vrtenje" ali "težek prenos, počasno poganjanje (za moč)".
+- Če ima kolesar merilec moči, dodaj še watte v oklepaj.
+- Struktura vedno: ogrevanje → glavni del (jasne ponovitve in odmori) → zaključek. Postopnost iz tedna v teden (~+10 %).
+- Vsak korak mora biti razumljiv na prvi pogled, brez slovarja, tudi babici bi razumela.
+- Dnevi so treh vrst: KOLO, MOČ (zgibi, sklece, dipsi, trebušnjaki — serije × ponovitve, muscle-up progresija) in POHOD. Brez teka. Ob slabem vremenu kolo → trenažer.`;
+
+const STRATEGIJA = `POČITNIŠKA STRATEGIJA "LEAN" — razkrij mišico pod maščobo (STRIKTNO upoštevaj pri vsakem planiranju):
+1. KALORIČNI DEFICIT + PREHRANA: maščoba gre dol le ob deficitu, VISOK vnos beljakovin ščiti mišice. POMEMBNO: obroke pripravlja mama — NIKOLI ne predpisuj jedilnikov! Svetuj samo tisto, kar lahko kolesar SAM kontrolira ob serviranih obrokih: velikost porcije (manj priloge, več mesa/zelenjave), beljakovinski dodatki, ki si jih vzame sam (skuta, jajca, grški jogurt, tuna, mleko), brez sladkarij/sladkih pijač/prigrizkov, kruh zmerno, 2,5 l vode.
+2. MOČ JE KLJUČNA (3× tedensko) in ima KONKRETEN CILJ: naučiti se MUSCLE-UP. Vsak moč trening je korak progresije: sklece + zgibi + dipsi + trebušnjaki/dvigi nog (osnove) → eksplozivni zgibi do prsi → negativni muscle-upi → poskusi prehoda čez drog. Zgibi dajo V-hrbet, dipsi in sklece prsa/triceps, trup pa prehod. Brez treninga z odporom telo v deficitu izgublja mišice.
+3. ZMAGOVALNA KOMBINACIJA VSAK TEDEN:
+   - 2–3× KOLO (~1 h): regeneracija sklepov, poraba kalorij, kondicija.
+   - 2× POHOD/HRIBI (npr. Sv. Jakob): intenzivno za noge in pljuča; med pohodoma vsaj dan pavze od spustov.
+   - 3× MOČ: zgibi, sklece, trup (lahko isti dan kot kolo — v polju "vaje" oz. kot samostojen dan tipa "moč").
+Teden razporedi pametno: težki dnevi ne zaporedoma, moč lahko kombiniran s kolesom.`;
+
+/* ---------- cone utripa in moči iz profila ---------- */
+function hrZones(){
+  const p = state.settings.profile;
+  if (!p.maxHr) return null;
+  const max = p.maxHr, rest = p.restHr;
+  const rng = (lo,hi) => rest!=null
+    ? [Math.round(rest+(max-rest)*lo), hi>=1?max:Math.round(rest+(max-rest)*hi)]
+    : [Math.round(max*lo), hi>=1?max:Math.round(max*hi)];
+  if (+p.shema === 7){
+    const b = rest!=null ? [.50,.60,.68,.76,.83,.90,.95] : [.55,.65,.72,.79,.86,.92,.96];
+    const out = {};
+    for (let i=0;i<7;i++) out['Z'+(i+1)] = rng(b[i], i===6?1:b[i+1]);
+    return out;
+  }
+  return rest!=null
+    ? { C1:rng(.50,.60), C2:rng(.60,.70), C3:rng(.70,.80), C4:rng(.80,.90), C5:rng(.90,1) }
+    : { C1:rng(.60,.68), C2:rng(.68,.76), C3:rng(.76,.84), C4:rng(.84,.92), C5:rng(.92,1) };
+}
+function powerZones(){
+  const p = state.settings.profile;
+  if (!p.ftp) return null;
+  const f = p.ftp, r = (lo,hi)=>[Math.round(f*lo), hi?Math.round(f*hi):null];
+  if (+p.shema === 7)
+    return { Z1:r(0,.55), Z2:r(.56,.75), Z3:r(.76,.90), Z4:r(.91,1.05), Z5:r(1.06,1.20), Z6:r(1.21,1.50), Z7:r(1.51,null) };
+  return { C1:r(0,.60), C2:r(.61,.75), C3:r(.76,.90), C4:r(.91,1.05), C5:r(1.06,null) };
+}
+function lthrVal(){
+  const p = state.settings.profile;
+  if (p.lthr) return p.lthr;
+  if (!p.maxHr) return null;
+  return Math.round(p.restHr!=null ? p.restHr + .85*(p.maxHr-p.restHr) : .9*p.maxHr);
+}
+function zonesText(){
+  const z = hrZones(); if (!z) return '';
+  return Object.entries(z).map(([k,[a,b]])=>`${k}: ${a}–${b}`).join(' · ');
+}
+function powerZonesText(){
+  const z = powerZones(); if (!z) return '';
+  return Object.entries(z).map(([k,[a,b]])=>`${k}: ${a}${b?'–'+b:'+'} W`).join(' · ');
+}
+function hasPower(){ return !!(state.settings.profile.ftp || state.rides.some(r=>r.avgPower)); }
+function renderZones(){
+  const el = $('zonesBox'); if (!el) return;
+  const z = hrZones(), pz = powerZones();
+  let h = '';
+  if (z) h += `<b>Cone – utrip (${+state.settings.profile.shema===7?'Z1–Z7':'C1–C5'}):</b> ${zonesText()}${lthrVal()?` · <b>prag ~${lthrVal()}</b>`:''}`;
+  if (pz) h += `${h?'<br>':''}<b>Cone – moč (FTP ${state.settings.profile.ftp} W):</b> ${powerZonesText()}`;
+  el.innerHTML = h || 'Vpiši max utrip (in po možnosti utrip v mirovanju ali FTP) — izračunam cone, po katerih so pisani treningi. Lahko pa klikneš "✨ Oceni FTP/prag iz voženj".';
+}
+
+/* ================================================================
+   MAKRO PLAN DO CILJA (periodizacija)
+================================================================ */
+function macroPhaseFor(wsIso){ return state.macro?.weeks?.find(w=>w.zacetek===wsIso) || null; }
+
+function goalDeficit(){
+  const p = state.settings.profile;
+  if (!p.ciljDatum || !p.ciljTeza || !p.teza) return null;
+  const dni = Math.max(1, Math.round((parseIso(p.ciljDatum) - new Date())/864e5));
+  const kg = p.teza - p.ciljTeza;
+  if (kg <= 0) return null;
+  return { dni, kg, deficit: Math.min(1100, Math.round(kg*7700/dni)) };
+}
+const normDay = (d, datum) => ({ datum: datum||d.datum, tip:d.tip||'vzdržljivost', naslov:d.naslov||'Trening',
+  trajanje_min:+d.trajanje_min||0, opis:d.opis||'', tss_ocena:+d.tss_ocena||0,
+  prehrana:d.prehrana||'', vaje:d.vaje||'', kcal_vnos:+d.kcal_vnos||null, kcal_poraba:+d.kcal_poraba||null });
+function upsertPlanDays(newDays, meta){
+  const dates = newDays.map(d=>d.datum);
+  for (const p of state.plans) p.days = (p.days||[]).filter(d=>!dates.includes(d.datum));
+  state.plans = state.plans.filter(p=>p.days.length);
+  state.plans.push({ start:dates[0], summary:meta?.summary||'', focus:meta?.focus||'', days:newDays, generatedAt:new Date().toISOString() });
+  planIdx = null;
+}
+function lastPlannedDate(){
+  return state.plans.flatMap(p=>p.days||[]).reduce((m,d)=>d.datum>m?d.datum:m, '');
+}
+function extendGoal(){
+  const last = lastPlannedDate();
+  const from = last ? isoDate(addDays(parseIso(last),1)) : todayIso();
+  generatePlan(from < todayIso() ? undefined : from);
+}
+
+async function generateMacro(){
+  const p = state.settings.profile;
+  if (!p.ciljDatum){ toast('Najprej v Nastavitvah nastavi 🎯 ciljni datum (in cilj).','err'); switchTab('settings'); return; }
+  const start = weekStart(new Date());
+  const endW = weekStart(parseIso(p.ciljDatum));
+  let n = Math.round((endW - start)/(7*864e5)) + 1;
+  if (n < 1){ toast('Ciljni datum je v preteklosti — popravi ga v Nastavitvah.','err'); return; }
+  if (n > 24) n = 24;
+  const starts = Array.from({length:n}, (_,i)=>isoDate(addDays(start, i*7)));
+  const btn = $('btnMacro'); busy(btn, true, 'Gradim plan do cilja …');
+  try{
+    const gd = goalDeficit();
+    const dnevi14 = Array.from({length:14}, (_,i)=>isoDate(addDays(new Date(), i)));
+    const r = await gemini([{ text:
+`Si profesionalni kolesarski trener IN športni nutricionist. Kolesar ima CILJ Z ROKOM. Naredi POPOLN NAČRT DO CILJA — če ga bo upošteval "v nulo", MORA priti do cilja:
+1) MAKRO periodizacijo po tednih (faze), od ${starts[0]} do ${p.ciljDatum} (${n} tednov), in
+2) PODROBEN DNEVNI PLAN za prvih 14 dni (od danes, ${todayIso()}).
+
+${buildContext()}
+
+${gd ? `IZRAČUN: ${gd.kg.toFixed(1)} kg v ${gd.dni} dneh → povprečen dnevni deficit ~${gd.deficit} kcal.` : ''}
+
+NAVODILA:
+- Faze priprave prilagodi cilju (pri izgubi mase: velik obseg C1–C2 + prehranska disciplina, a 1–2 intenzivna dneva/teden, da forma ne pade). Tedenske ure: osnova ~${p.ure||6} h.
+- DNEVNI PLAN za VSAK dan (tudi za dneve počitka od kolesa!) vsebuje:
+  · "opis" = kolesarski trening po metodologiji trenerja (STIL spodaj); ob počitku od kolesa: "ODDIH od kolesa".
+  · "vaje" = 10–20 min domačih vaj za trup in moč (trebušnjaki, plank, sklece, izpadni koraki …) s konkretnimi serijami × ponovitvami, progresivno iz dneva v dan — cilj je tudi vidno izklesan trup. Brez teka.
+  · "prehrana" = 1–3 KRATKI nasveti za ta dan, ki jih lahko izvede sam (obroke mu pripravi mama — NE predpisuj jedilnikov!): velikost porcije, lasten beljakovinski dodatek (skuta/jajca/jogurt/tuna — več po treningu moči), brez sladkarij in sladkih pijač, 2,5 l vode. Nasvete loči z |.
+  · "kcal_vnos" in "kcal_poraba" = številki za ta dan (poraba = bazalna + trening), ki skupaj dasta potreben deficit.
+- Deficit dosleden, a NE večji od ~1000 kcal/dan. Če cilj v roku ni realen, to ISKRENO napiši v "povzetek" in naredi najboljši realno možni plan.
+
+${STIL}
+
+${STRATEGIJA}
+
+Vrni SAMO JSON:
+{"povzetek":"strategija + ali je cilj realen","tedni":[{"zacetek":"YYYY-MM-DD","faza":"...","fokus":"zelo kratko","ure":number}],"dnevi":[{"datum":"YYYY-MM-DD","tip":"...","naslov":"...","trajanje_min":number,"opis":"vrstice loči z \\n","tss_ocena":number,"vaje":"...","prehrana":"Z: … | K: … | M: … | V: …","kcal_vnos":number,"kcal_poraba":number}]}
+"tedni": točno ${n} po vrsti (${starts.join(', ')}). "dnevi": točno 14, datumi ${dnevi14[0]} do ${dnevi14[13]}.` }], {temp:.4});
+
+    state.macro = {
+      cilj:p.cilj, ciljDatum:p.ciljDatum, povzetek:r.povzetek||'',
+      weeks:(r.tedni||[]).map((w,i)=>({ zacetek:starts[i]||w.zacetek, faza:w.faza||'Priprava', fokus:w.fokus||'', ure:+w.ure||p.ure||6 })),
+      generatedAt:new Date().toISOString()
+    };
+    if (r.dnevi?.length) upsertPlanDays(r.dnevi.map((d,i)=>normDay(d, dnevi14[i]||d.datum)), { summary:r.povzetek, focus:'Plan do cilja' });
+    save(); renderAll();
+    toast('Plan do cilja je v koledarju: kolo + vaje + prehrana za vsak dan! 🎯','ok');
+    if (r.povzetek) toast(r.povzetek.slice(0,180));
+  }catch(e){ toast(e.message,'err'); }
+  busy(btn, false);
+}
+
+/* ================================================================
+   KOLEDAR
+================================================================ */
+let calOffset = 0;
+const FAZA_BARVE = ['#4da3ff','#b48cff','#ffc247','#fc4c02','#3fce6b','#ff5c5c','#5cd6d6'];
+function fazaColor(faza){
+  if (!state.macro?.weeks) return null;
+  const fs = [...new Set(state.macro.weeks.map(w=>w.faza))];
+  const i = fs.indexOf(faza);
+  return i<0 ? null : FAZA_BARVE[i % FAZA_BARVE.length];
+}
+function shiftCal(d){ calOffset = d===0 ? 0 : calOffset+d; renderCal(); }
+function planDayFor(iso){
+  for (const p of state.plans){ const d = p.days?.find(x=>x.datum===iso); if (d) return d; }
+  return null;
+}
+function renderCal(){
+  const grid = $('calGrid'); if (!grid) return;
+  const now = new Date();
+  const view = new Date(now.getFullYear(), now.getMonth()+calOffset, 1);
+  const mn = view.toLocaleDateString('sl-SI', {month:'long', year:'numeric'});
+  $('calLabel').textContent = mn.charAt(0).toUpperCase()+mn.slice(1);
+
+  if (state.macro?.weeks?.length){
+    const fs = [...new Set(state.macro.weeks.map(w=>w.faza))];
+    const last = lastPlannedDate();
+    const needExtend = last && state.macro.ciljDatum > last && Math.round((parseIso(last)-new Date())/864e5) < 5;
+    $('macroBar').innerHTML = `<div class="macro-bar"><span style="font-size:11px;color:var(--dim);font-weight:700;align-self:center">FAZE:</span>` + fs.map(f=>{
+      const c = fazaColor(f), cnt = state.macro.weeks.filter(w=>w.faza===f).length;
+      return `<span class="macro-pill" style="border-color:${c};color:${c}">${esc(f)} · ${cnt} ted.</span>`;
+    }).join('') + `<span class="macro-pill">🎯 ${esc(state.macro.ciljDatum)}</span>` +
+    (needExtend ? `<button class="btn btn-primary btn-sm" onclick="extendGoal()">➕ Podaljšaj dnevni plan</button>` : '') + `</div>`;
+  } else {
+    $('macroBar').innerHTML = `<div class="hint" style="margin:0 0 12px">🎯 V Nastavitvah določi ciljni datum (npr. do kdaj želiš izgubiti maso ali datum dirke), nato klikni "Makro plan do cilja" — koledar se obarva po fazah priprave.</div>`;
+  }
+
+  const first = weekStart(view);
+  const lastDay = new Date(view.getFullYear(), view.getMonth()+1, 0);
+  const nWeeks = Math.ceil(((lastDay - first)/864e5 + 1)/7);
+  const today = todayIso();
+  let html = '';
+  for (let i=0; i<nWeeks*7; i++){
+    const d = addDays(first, i), iso = isoDate(d);
+    const out = d.getMonth() !== view.getMonth();
+    const pd = planDayFor(iso);
+    const rides = state.rides.filter(r=>r.date===iso);
+    const ph = macroPhaseFor(isoDate(weekStart(d)));
+    const col = ph ? fazaColor(ph.faza) : null;
+    let items = '';
+    if (pd){
+      const rest = chipClass(pd.tip)==='pocitek';
+      items += `<div class="cal-item">${rest ? '🛌 ODDIH' : `${sportLabel(pd.tip).i} ${esc(pd.naslov)}<span style="color:var(--dim)"> · ${fmtDur(pd.trajanje_min)}</span>`}</div>`;
+    }
+    if (pd && (pd.kcal_vnos || pd.vaje)) items += `<div class="cal-item">${pd.kcal_vnos?`🍽 ${pd.kcal_vnos}`:''}${(pd.kcal_vnos&&pd.vaje)?' · ':''}${pd.vaje?'🏋️ vaje':''}</div>`;
+    if (pd?.done && !rides.length) items += `<div class="cal-item done">✓ opravljeno</div>`;
+    for (const r of rides) items += `<div class="cal-item done">✓ ${r.dist??'?'} km · ${fmtDur(r.time)}</div>`;
+    html += `<div class="cal-cell ${out?'out':''} ${iso===today?'today':''}" onclick="showDay('${iso}')">
+      ${col?`<div class="cal-stripe" style="background:${col}"></div>`:''}
+      <div class="num">${d.getDate()}.</div>${items}</div>`;
+  }
+  grid.innerHTML = html;
+}
+function showDay(iso){
+  const pd = planDayFor(iso);
+  const rides = state.rides.filter(r=>r.date===iso);
+  const ph = macroPhaseFor(isoDate(weekStart(parseIso(iso))));
+  const dd = parseIso(iso);
+  let h = `<div style="font-weight:800;font-size:15px;margin-bottom:10px">${DNEVI[(dd.getDay()+6)%7]}, ${fmtDate(iso)}
+    ${ph?`<span class="chip gray" style="margin-left:8px;border:1px solid ${fazaColor(ph.faza)};color:${fazaColor(ph.faza)}">${esc(ph.faza)}</span>`:''}</div>`;
+  if (pd){
+    h += `<div><span class="dr-sport" style="margin-right:8px">${sportLabel(pd.tip).i} ${sportLabel(pd.tip).l}</span><span class="chip ${chipClass(pd.tip)}">${esc(pd.tip)}</span></div>
+      <div style="font-weight:800;font-size:16px;margin:9px 0 4px">${esc(pd.naslov)}</div>
+      <div class="analysis-box">${opisHtml(pd.opis||'—')}</div>
+      ${pd.vaje?`<div class="analysis-box">🏋️ <b>Dodatne vaje danes:</b><br>${opisHtml(pd.vaje)||esc(pd.vaje)}</div>`:''}
+      ${pd.prehrana?`<div class="analysis-box">🍽 <b>Prehrana:</b> ${esc(pd.prehrana)}${pd.kcal_vnos?`<br>🔥 <b>Kalorije:</b> vnos ~${pd.kcal_vnos} kcal · poraba ~${pd.kcal_poraba||'?'} kcal`:''}</div>`:''}
+      <div class="dc-meta mt">${fmtDur(pd.trajanje_min)} · ~${pd.tss_ocena||'?'} TSS${pd.done?' · <span style="color:var(--green)">✓ označeno kot opravljeno</span>':''}</div>
+      <div class="row mt">
+        ${(!pd.done && iso<=todayIso() && !rides.length && chipClass(pd.tip)!=='pocitek')?`<button class="btn btn-ghost btn-sm" onclick="markDayDone('${iso}')">✓ Opravljeno (brez beleženja)</button>`:''}
+        <input type="date" id="moveDayTo" style="width:auto;padding:6px 10px;font-size:12.5px">
+        <button class="btn btn-ghost btn-sm" onclick="moveDay('${iso}')">↔ Prestavi</button>
+        <button class="btn btn-danger btn-sm" onclick="removePlanDay('${iso}')">🗑 Odstrani</button>
+      </div>`;
+  } else {
+    h += `<div class="empty" style="padding:16px">Za ta dan ni planiranega treninga.</div>`;
+  }
+  if (rides.length){
+    h += `<div style="font-weight:800;font-size:13px;margin-top:14px;color:var(--green)">✓ Opravljeno:</div>`;
+    for (const r of rides)
+      h += `<div class="analysis-box">${esc(r.name)} — ${r.dist??'?'} km, ${fmtDur(r.time)}, ${r.elev??'?'} m višincev, utrip ${r.avgHr??'?'}, TSS ${r.tss}${r.analysis?`<br><b>AI ocena:</b> ${r.analysis.ocena}/10 (${esc(r.analysis.skladnost)})`:''}</div>`;
+  }
+  $('dayBody').innerHTML = h;
+  $('dayModalBack').classList.add('open');
+}
+
+/* ================================================================
+   AI: TEDENSKI PLAN
+================================================================ */
+async function generatePlan(fromIso){
+  const start = fromIso ? parseIso(fromIso) : new Date();
+  const days = Array.from({length:7}, (_,i)=>isoDate(addDays(start,i)));
+  const dayLbl = d => `${d} (${DNEVI[(parseIso(d).getDay()+6)%7]})`;
+  const startNote = fromIso
+    ? `od ${dayLbl(days[0])} do ${dayLbl(days[6])} — NADALJEVANJE obstoječega plana proti cilju (nadaljuj progresijo)`
+    : `od ${dayLbl(days[0])} — to je DANES — do ${dayLbl(days[6])}`;
+  const btn = $('btnGenPlan'); busy(btn, true, 'Sestavljam plan …');
+  try{
+    const phase = macroPhaseFor(isoDate(weekStart(start)));
+    const gd = goalDeficit();
+    const r = await gemini([{ text:
+`Si profesionalni kolesarski trener. Sestavi trening plan za 7 DNI: ${startNote}.
+
+${buildContext()}
+
+ŽELJE ZA TA TEDEN: ${$('planWishes').value.trim() || 'ni posebnih želja'}
+${phase ? `FAZA MAKRO PLANA ZA TA TEDEN: ${phase.faza} — ${phase.fokus} (~${phase.ure} h skupaj)` : ''}
+
+${STIL}
+
+${STRATEGIJA}
+
+NAVODILA:
+- Plan gradi PO METODOLOGIJI TRENERJA (STIL zgoraj — enaki tipi treningov in struktura kot v profesionalnih planih), a ga PRILAGODI temu kolesarju: njegovemu AI profilu (krepi šibkosti, izkoristi moči), formi in ciljem.
+- Plan se začne DANES, ne v ponedeljek! Prvi dan določi po TRENUTNI svežini (TSB) in zadnjih vožnjah: če je svež in ni treniral, lahko takoj kakovosten trening; če je utrujen ali je danes že treniral, začni z regeneracijo/oddihom. NE začenjaj avtomatsko z oddihom.
+- Kolesar trenira po srčnem utripu — cone C1–C5 iz konteksta (ključnim intervalom pripiši tudi utrip, npr. "C4 = utrip 160–172").
+- Postopnost obsega (~+10 % max glede na zadnje tedne).
+- ČE OBSTAJA GLAVNI CILJ Z ROKOM (npr. izguba mase${gd?` — potreben deficit ~${gd.deficit} kcal/dan`:''}): za VSAK dan obvezno dodaj tudi "vaje" (10–20 min domačih vaj za trup/moč s serijami × ponovitvami, progresivno; brez teka), "prehrana" (1–3 KRATKI nasveti, ki jih lahko izvede ob obrokih, ki mu jih pripravi mama — npr. "manjša porcija priloge | zvečer dodaj skuto (beljakovine) | brez sladkarij in sokov" — NE predpisuj jedilnikov, loči nasvete z |) ter "kcal_vnos" in "kcal_poraba". Deficit dosleden, a ne več kot ~1000 kcal/dan. Če cilja ni, pusti ta polja prazna.
+- Vključi 1–2 dneva ODDIHA ali regeneracije, razporejena pametno (po težkih dneh), ne po fiksni shemi.
+- Tipi: intervali, vzdržljivost, tempo, regeneracija, moč, pohod, počitek. Teden sestavi po POČITNIŠKI STRATEGIJI zgoraj (2–3× kolo + 2× pohod + 3× moč).
+- VSAK dan mora povedati TOČNO, kaj naredi: dan tipa "moč" ima v "opis" CEL trening iz muscle-up progresije (vaje × serije × ponovitve, npr. "Zgibi 4×6\\nSklece 4×15\\nDipsi 3×8\\nDvigi nog na drogu 3×10\\nNegativni muscle-up 2×3"); dan kolesa/pohoda ima "opis" po stilu trenerja, morebitne dodatne vaje pa v polju "vaje". Nič ne sme biti ohlapno.
+- "opis": vsaka vrstica en korak (loči z \\n), npr.: "Ogrevanje: 15 min lahkotno (utrip do 130)\\nGlavni del: 3× 8 min v klanec (utrip 160–175), vmes 5 min mirno\\nZaključek: 15 min sproščeno domov".
+
+Vrni SAMO JSON:
+{"povzetek":"2-3 stavki o tednu","fokus":"kratek fokus","dnevi":[{"datum":"YYYY-MM-DD","tip":"...","naslov":"naslov v slogu trenerja","trajanje_min":number,"opis":"...","tss_ocena":number,"vaje":"","prehrana":"","kcal_vnos":number|null,"kcal_poraba":number|null}]}
+Točno 7 dni s temi datumi po vrsti: ${days.map(dayLbl).join(', ')}.` }], {temp:.5});
+
+    upsertPlanDays((r.dnevi||[]).map((d,i)=>normDay(d, days[i])), { summary:r.povzetek, focus:r.fokus });
+    save(); renderAll();
+    toast(fromIso ? 'Plan podaljšan za 7 dni. 📅' : 'Plan za naslednjih 7 dni je pripravljen! 📅','ok');
+  }catch(e){ toast(e.message,'err'); }
+  busy(btn, false);
+}
+
+/* ================================================================
+   AI: DANAŠNJI TRENING
+================================================================ */
+let lastWorkout = null;
+const segVal = id => $(id).querySelector('.on')?.dataset.v || '';
+
+function renderTodayBox(){
+  const el = $('todayPlanBox'); if (!el) return;
+  const d = planDayFor(todayIso());
+  el.innerHTML = d ? `<div class="card mb">
+    <h3>📅 Danes v koledarju <span class="sub">izhodišče — spodaj ga prilagodiš svojemu času</span></h3>
+    <span class="chip ${chipClass(d.tip)}">${esc(d.tip)}</span>
+    <div style="font-weight:800;font-size:15px;margin:8px 0 4px">${esc(d.naslov)} · ${fmtDur(d.trajanje_min)}</div>
+    <div style="font-size:13px">${opisHtml(d.opis||'')}</div>
+    ${d.vaje?`<div class="dc-meta mt">🏋️ ${esc(d.vaje)}</div>`:''}
+    ${d.kcal_vnos?`<div class="dc-meta" style="color:var(--yellow)">🔥 vnos ~${d.kcal_vnos} · poraba ~${d.kcal_poraba||'?'} kcal</div>`:''}
+  </div>` : '';
+}
+
+async function suggestToday(){
+  const btn = $('btnToday'); busy(btn, true, 'Sestavljam trening …');
+  try{
+    const day = planDayFor(todayIso());
+    const r = await gemini([{ text:
+`Si izkušen kolesarski trener. Predlagaj KONKRETEN današnji trening.
+
+${buildContext()}
+
+DANAŠNJA SITUACIJA:
+- Na voljo ima: ${$('todayMins').value} minut
+- Počutje: ${segVal('segFeel')}
+- Želja: ${segVal('segWish')}
+- Opomba: ${$('todayNote').value.trim()||'—'}
+- V KOLEDARJU je za danes: ${day ? `${day.tip} — ${day.naslov} (${day.trajanje_min} min): ${day.opis}${day.vaje?` | dodatne vaje: ${day.vaje}`:''}${day.kcal_vnos?` | prehrana: ${day.prehrana} (vnos ~${day.kcal_vnos} kcal, poraba ~${day.kcal_poraba||'?'})`:''}` : 'ni plana'}
+- POMEMBNO: če v koledarju obstaja plan za danes (še posebej pri cilju z rokom), ga vzemi kot IZHODIŠČE in ga le prilagodi času in počutju — dnevni cilj (obremenitev, kalorije) mora ostati dosežen.
+
+${STIL}
+
+${STRATEGIJA}
+
+NAVODILA: Prilagodi planirani trening razpoložljivemu času in počutju (skrajšaj/olajšaj/zamenjaj, če je treba). Cone C1–C5 po utripu iz konteksta, vedno z obrati (o/min.). Polja "ogrevanje", "glavni_del" in "zakljucek" napiši v slogu trenerja, vsaka postavka v svoji vrstici (loči z \\n). Skupni čas NE sme preseči razpoložljivega. SAMO kolo.
+
+Vrni SAMO JSON:
+{"naslov":"...","tip":"intervali|vzdržljivost|tempo|regeneracija|počitek","trajanje_min":number,"ogrevanje":"...","glavni_del":"...","zakljucek":"...","vaje":"domače vaje danes, če so v planu cilja (sicer prazno)","razlaga":"zakaj tak trening glede na formo, plan in cilj, 2-3 stavki","tss_ocena":number}` }], {temp:.5});
+
+    lastWorkout = r;
+    $('todayResult').innerHTML = `
+      <div class="card">
+        <div class="spread">
+          <div>
+            <span class="chip ${chipClass(r.tip)}">${esc(r.tip)}</span>
+            <div style="font-size:20px;font-weight:800;margin-top:8px">${esc(r.naslov)}</div>
+            <div style="color:var(--dim);font-weight:600;font-size:13px;margin-top:2px">${fmtDur(r.trajanje_min)} · ~${r.tss_ocena||'?'} TSS</div>
+          </div>
+          <button class="btn btn-ghost" onclick="insertTodayWorkout()">📅 Vstavi v tedenski plan</button>
+        </div>
+        <div class="mt">
+          <div class="wo-part"><div class="tag">Ogrevanje</div><div class="txt">${esc(r.ogrevanje||'—')}</div></div>
+          <div class="wo-part"><div class="tag">Glavni del</div><div class="txt">${esc(r.glavni_del||'—')}</div></div>
+          <div class="wo-part"><div class="tag">Zaključek</div><div class="txt">${esc(r.zakljucek||'—')}</div></div>
+          ${r.vaje?`<div class="wo-part"><div class="tag">🏋️ Vaje</div><div class="txt">${esc(r.vaje)}</div></div>`:''}
+          ${day&&day.kcal_vnos?`<div class="wo-part"><div class="tag">🍽 Prehrana</div><div class="txt">${esc(day.prehrana||'')}\nVnos ~${day.kcal_vnos} kcal · poraba ~${day.kcal_poraba||'?'} kcal</div></div>`:''}
+          <div class="wo-part"><div class="tag">Zakaj</div><div class="txt" style="color:var(--muted)">${esc(r.razlaga||'')}</div></div>
+        </div>
+      </div>`;
+  }catch(e){ toast(e.message,'err'); }
+  busy(btn, false);
+}
+function insertTodayWorkout(){
+  if (!lastWorkout) return;
+  const today = todayIso();
+  let plan = state.plans.find(p=>(p.days||[]).some(d=>d.datum===today));
+  if (!plan){
+    plan = { start:today, summary:'', focus:'', generatedAt:new Date().toISOString(),
+      days: Array.from({length:7},(_,i)=>({datum:isoDate(addDays(new Date(),i)),tip:'počitek',naslov:'Prosto',trajanje_min:0,opis:'',tss_ocena:0,prehrana:''})) };
+    state.plans.push(plan);
+  }
+  const d = plan.days.find(x=>x.datum===today);
+  if (d) Object.assign(d, { tip:lastWorkout.tip, naslov:lastWorkout.naslov, trajanje_min:lastWorkout.trajanje_min,
+    opis:[lastWorkout.ogrevanje,lastWorkout.glavni_del,lastWorkout.zakljucek].filter(Boolean).join('\n'), tss_ocena:lastWorkout.tss_ocena });
+  planIdx = null;
+  save(); renderAll();
+  toast('Trening vstavljen v današnji plan. 📅','ok');
+}
+
+/* ================================================================
+   AI: OCENA VOŽNJE
+================================================================ */
+async function analyzeRideAI(r){
+  const day = planDayFor(r.date);
+  const a = await gemini([{ text:
+`Si kolesarski trener. Oceni opravljeno vožnjo glede na plan in kolesarjevo formo.
+
+${buildContext()}
+
+OPRAVLJENA VOŽNJA (${r.date}): "${r.name}" — ${r.dist??'?'} km, ${fmtDur(r.time)}, ${r.elev??'?'} m višincev, povp. utrip ${r.avgHr??'?'}, max utrip ${r.maxHr??'?'}, povp. hitrost ${r.speed??'?'} km/h, TSS ${r.tss}. Občutek: ${r.notes||'—'}
+PLANIRANO ZA TA DAN: ${day ? `${day.tip} — ${day.naslov} (${day.trajanje_min} min): ${day.opis}` : 'ni bilo plana'}
+
+Vrni SAMO JSON:
+{"ocena":number (1-10, kako dobra je bila tura ZA TRENUTNI namen treninga),"skladnost":"odlično|dobro|delno|mimo plana","komentar":"3-4 stavki konkretne analize (intenzivnost po utripu, trajanje, ali je bilo preveč/premalo)","priporocilo":"1-2 stavka, kaj naj upošteva naslednjič ali jutri"}` }]);
+
+  r.analysis = a; save(); renderAll();
+  return a;
+}
+const sklClass = s => { const x=(s||'').toLowerCase(); return x.startsWith('odli')?'green':x.startsWith('dob')?'orange':'gray'; };
+function aiBoxHtml(r){
+  const a = r.analysis;
+  return `<div class="analysis-box"><b>✨ AI ocena: ${a.ocena}/10</b> <span class="chip ${sklClass(a.skladnost)}" style="margin-left:6px">${esc(a.skladnost)}</span><br>${esc(a.komentar)}<br><i style="color:var(--dim)">${esc(a.priporocilo)}</i></div>`;
+}
+async function evalRide(id){
+  const r = state.rides.find(x=>x.id===id);
+  if (!r) return;
+  $('evalModalBack').classList.add('open');
+  $('evalBody').innerHTML = `<div class="empty"><span class="big">✨</span>AI trener analizira vožnjo …</div>`;
+  try{
+    const a = await analyzeRideAI(r);
+    $('evalBody').innerHTML = `
+      <div class="row mb"><span class="score-ring">${a.ocena}/10</span>
+        <span class="chip ${sklClass(a.skladnost)}">${esc(a.skladnost)}</span>
+        <span style="color:var(--dim);font-size:13px">"${esc(r.name)}" · ${fmtDate(r.date)}</span></div>
+      <div class="analysis-box"><b>Analiza:</b> ${esc(a.komentar)}</div>
+      <div class="analysis-box"><b>Priporočilo:</b> ${esc(a.priporocilo)}</div>
+      <div class="modal-foot"><button class="btn btn-primary" onclick="closeModal('evalModalBack')">V redu</button></div>`;
+  }catch(e){
+    $('evalBody').innerHTML = `<div class="analysis-box" style="border-color:rgba(255,92,92,.4)">${esc(e.message)}</div>`;
+  }
+}
+async function evalFromDetail(id){
+  const r = state.rides.find(x=>x.id===id); if (!r) return;
+  const btn = $('btnRdEval'); busy(btn, true, 'Analiziram …');
+  try{ await analyzeRideAI(r); openRideDetail(id); }
+  catch(e){ toast(e.message,'err'); busy(btn, false); }
+}
+
+/* ================================================================
+   PODROBNOSTI VOŽNJE: zemljevid + grafi (Strava streams)
+================================================================ */
+let rdMap = null, rdCharts = [];
+function decodePolyline(str){
+  let i=0, lat=0, lng=0; const pts=[];
+  while (i < str.length){
+    let b, sh=0, res=0;
+    do{ b=str.charCodeAt(i++)-63; res|=(b&0x1f)<<sh; sh+=5; }while(b>=0x20);
+    lat += (res&1) ? ~(res>>1) : (res>>1);
+    sh=0; res=0;
+    do{ b=str.charCodeAt(i++)-63; res|=(b&0x1f)<<sh; sh+=5; }while(b>=0x20);
+    lng += (res&1) ? ~(res>>1) : (res>>1);
+    pts.push([lat/1e5, lng/1e5]);
+  }
+  return pts;
+}
+async function fetchStreams(r){
+  if (r.streams || !r.stravaId) return;
+  await stravaEnsureToken();
+  const res = await stravaFetch(`https://www.strava.com/api/v3/activities/${r.stravaId}/streams?keys=time,distance,heartrate,velocity_smooth,altitude&key_by_type=true`,
+    { headers:{ Authorization:'Bearer '+state.strava.accessToken } });
+  if (!res.ok) throw new Error('Strava streams: HTTP '+res.status);
+  const s = await res.json();
+  const n = s.time?.data?.length || s.distance?.data?.length || 0;
+  if (!n){ r.streams = {empty:true}; save(); return; }
+  const step = Math.max(1, Math.floor(n/300));
+  const pick = a => a?.data ? a.data.filter((_,i)=>i%step===0) : null;
+  r.streams = {
+    t: pick(s.time),
+    d: pick(s.distance)?.map(x=>+(x/1000).toFixed(2)),
+    hr: pick(s.heartrate),
+    v: pick(s.velocity_smooth)?.map(x=>+(x*3.6).toFixed(1)),
+    alt: pick(s.altitude)?.map(x=>Math.round(x))
+  };
+  save();
+}
+const rdChOpt = (xl,yl) => ({ responsive:true, maintainAspectRatio:false, animation:false,
+  plugins:{ legend:{display:false} }, interaction:{mode:'index',intersect:false},
+  scales:{ x:{ title:{display:true,text:xl}, ticks:{maxTicksLimit:8}, grid:{display:false} },
+           y:{ title:{display:true,text:yl}, grid:{color:'rgba(45,61,80,.35)'} } } });
+function cleanupRideDetail(){
+  if (rdMap){ try{ rdMap.remove(); }catch(_){} rdMap=null; }
+  rdCharts.forEach(c=>{ try{ c.destroy(); }catch(_){} }); rdCharts=[];
+}
+function closeRideDetail(){ cleanupRideDetail(); closeModal('rideDetailBack'); }
+async function openRideDetail(id){
+  const r = state.rides.find(x=>x.id===id); if (!r) return;
+  cleanupRideDetail();
+  $('rdTitle').textContent = r.name || 'Vožnja';
+  const stats = [
+    [r.dist!=null ? (+r.dist).toFixed(1)+' km' : null, 'razdalja'],
+    [r.time!=null ? fmtDur(r.time) : null, 'čas'],
+    [r.elev!=null ? Math.round(r.elev)+' m' : null, 'višinci'],
+    [r.speed ? r.speed+' km/h' : null, 'povp. hitrost'],
+    [r.avgPower ? r.avgPower+' W' : null, 'povp. moč'],
+    [r.avgHr ? r.avgHr : null, 'povp. utrip'],
+    [r.maxHr ? r.maxHr : null, 'max utrip'],
+    [(r.tss||0)+' TSS', 'obremenitev']
+  ].filter(s=>s[0]!=null);
+  $('rdBody').innerHTML = `
+    <div style="color:var(--dim);font-size:12.5px;margin:-8px 0 12px">${fmtDate(r.date)} · ${srcLabel(r.source)}${r.notes?` · „${esc(r.notes)}"`:''}</div>
+    <div class="rd-stats">${stats.map(s=>`<div class="rd-stat"><div class="a">${s[0]}</div><div class="b">${s[1]}</div></div>`).join('')}</div>
+    ${r.polyline ? '<div id="rdMap"></div>' : ''}
+    <div id="rdStreams"></div>
+    <div id="rdAi">${r.analysis ? aiBoxHtml(r) : ''}</div>
+    <div class="modal-foot" style="justify-content:space-between">
+      <div class="row">
+        <button class="btn btn-ghost btn-sm" onclick="closeRideDetail();openRideModal('${r.id}')">✎ Uredi</button>
+        <button class="btn btn-danger btn-sm" onclick="closeRideDetail();delRide('${r.id}')">🗑 Izbriši</button>
+      </div>
+      <button class="btn btn-primary btn-sm" id="btnRdEval" onclick="evalFromDetail('${r.id}')">✨ ${r.analysis?'Ponovno oceni':'Kako dobra je bila?'}</button>
+    </div>`;
+  $('rideDetailBack').classList.add('open');
+
+  if (r.polyline && typeof L !== 'undefined'){
+    try{
+      const pts = decodePolyline(r.polyline);
+      rdMap = L.map('rdMap', { attributionControl:false });
+      L.tileLayer('https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', { maxZoom:19 }).addTo(rdMap);
+      const pl = L.polyline(pts, { color:'#fc4c02', weight:3.5 }).addTo(rdMap);
+      L.circleMarker(pts[0], {radius:5,color:'#3fce6b',fillColor:'#3fce6b',fillOpacity:1}).addTo(rdMap);
+      L.circleMarker(pts[pts.length-1], {radius:5,color:'#ff5c5c',fillColor:'#ff5c5c',fillOpacity:1}).addTo(rdMap);
+      rdMap.fitBounds(pl.getBounds(), { padding:[20,20] });
+    }catch(e){ console.warn('Zemljevid:', e); }
+  }
+  renderRideStreams(r);
+  if (r.stravaId && !r.streams && state.strava.accessToken){
+    $('rdStreams').innerHTML = '<div class="hint" style="margin:4px 0 10px">Nalagam grafe utripa in hitrosti s Strave …</div>';
+    try{ await fetchStreams(r); renderRideStreams(r); }
+    catch(e){ $('rdStreams').innerHTML = `<div class="hint" style="margin:4px 0 10px">Grafov ni bilo mogoče naložiti (${esc(e.message)}).</div>`; }
+  }
+}
+function renderRideStreams(r){
+  const el = $('rdStreams'); if (!el) return;
+  const s = r.streams;
+  if (!s || s.empty || (!s.hr && !s.v)){ el.innerHTML=''; return; }
+  const x = s.d || (s.t ? s.t.map(t=>+(t/60).toFixed(1)) : null);
+  const xl = s.d ? 'km' : 'min';
+  if (!x){ el.innerHTML=''; return; }
+  el.innerHTML = (s.hr?'<div class="rd-chart"><canvas id="rdHr"></canvas></div>':'') +
+                 (s.v ?'<div class="rd-chart"><canvas id="rdV"></canvas></div>' :'');
+  if (typeof Chart === 'undefined') return;
+  if (s.hr) rdCharts.push(new Chart($('rdHr'), { type:'line',
+    data:{ labels:x, datasets:[{ label:'Utrip', data:s.hr, borderColor:'#ff5c5c', backgroundColor:'rgba(255,92,92,.1)', fill:true, pointRadius:0, borderWidth:1.6, tension:.3 }]},
+    options: rdChOpt(xl,'utrip/min') }));
+  if (s.v){
+    const o = rdChOpt(xl,'km/h');
+    const ds = [{ label:'Hitrost', data:s.v, borderColor:'#4da3ff', pointRadius:0, borderWidth:1.6, tension:.3, yAxisID:'y' }];
+    if (s.alt){ ds.push({ label:'Višina', data:s.alt, borderColor:'transparent', backgroundColor:'rgba(139,155,171,.16)', fill:true, pointRadius:0, yAxisID:'y2' }); o.scales.y2 = { position:'right', display:false }; }
+    rdCharts.push(new Chart($('rdV'), { type:'line', data:{ labels:x, datasets:ds }, options:o }));
+  }
+}
+
+/* ================================================================
+   AI PROFIL KOLESARJA
+================================================================ */
+function buildRiderStats(){
+  const rs = state.rides.filter(r=>r.time>0);
+  if (rs.length < 3) return '(premalo voženj za statistiko)';
+  const flat = rs.filter(r=>r.dist && r.elev!=null && r.elev/r.dist<8 && r.speed);
+  const hilly = rs.filter(r=>r.dist && r.elev!=null && r.elev/r.dist>=12);
+  const avg = (a,f)=>a.length ? +(a.reduce((s,x)=>s+f(x),0)/a.length).toFixed(1) : null;
+  const L = [`IZRAČUNANA STATISTIKA (${rs.length} voženj):`];
+  const fs = avg(flat, r=>r.speed);
+  if (fs) L.push(`- ravninske ture (<8 m višincev/km): ${flat.length}x, povp. hitrost ${fs} km/h ob utripu ${avg(flat.filter(r=>r.avgHr), r=>r.avgHr)||'?'}`);
+  if (hilly.length){
+    L.push(`- hribovite ture (≥12 m/km): ${hilly.length}x, povp. vzpenjanje ${avg(hilly, r=>r.elev/(r.time/60))||'?'} višinskih m/h, hitrost ${avg(hilly.filter(r=>r.speed), r=>r.speed)||'?'} km/h ob utripu ${avg(hilly.filter(r=>r.avgHr), r=>r.avgHr)||'?'}`);
+  }
+  L.push(`- najdaljša vožnja: ${fmtDur(Math.max(...rs.map(r=>r.time||0)))}; povprečna: ${fmtDur(avg(rs, r=>r.time))}`);
+  const eff = rs.filter(r=>r.speed && r.avgHr);
+  if (eff.length>=3) L.push(`- aerobna učinkovitost (km/h ÷ utrip × 100): ${(avg(eff, r=>r.speed/r.avgHr)*100).toFixed(0)}`);
+  return L.join('\n');
+}
+function renderRiderCard(){
+  const el = $('riderCard'); if (!el) return;
+  const rp = state.riderProfile;
+  el.innerHTML = `<h3>🔍 Tvoj kolesarski profil <span class="sub">AI analiza tvojih voženj</span></h3>` + (rp ? `
+    <div class="row mb"><span class="chip orange">${esc(rp.tip||'')}</span><span class="chip gray">${esc(rp.ocena_nivoja||'')}</span>
+      <span style="font-size:11.5px;color:var(--dim)">analizirano ${new Date(rp.generatedAt).toLocaleDateString('sl-SI')}</span></div>
+    <div class="grid-2" style="gap:10px">
+      <div class="analysis-box" style="margin-top:0"><b>💪 Moči:</b><br>${(rp.moci||[]).map(esc).join('<br>')}</div>
+      <div class="analysis-box" style="margin-top:0"><b>🎯 Šibkosti:</b><br>${(rp.sibkosti||[]).map(esc).join('<br>')}</div>
+    </div>
+    <div class="analysis-box"><b>Razvoj:</b> ${esc(rp.v_kaj_se_razviti||'')}</div>
+    <p style="color:var(--muted);font-size:13px;margin:10px 2px">${esc(rp.komentar||'')}</p>
+    <button class="btn btn-ghost btn-sm" id="btnRider" onclick="analyzeRider()">↻ Ponovna analiza</button>` : `
+    <p style="color:var(--muted);font-size:13.5px;margin-bottom:12px">AI iz tvojih voženj (hitrosti, utripi, višinci) ugotovi, kakšen tip kolesarja si, kje si močan in kaj moraš razvijati — vsi plani se nato gradijo po metodologiji trenerja, prilagojeni TEBI.</p>
+    <button class="btn btn-primary" id="btnRider" onclick="analyzeRider()">🔍 Analiziraj moje vožnje</button>`);
+}
+async function analyzeRider(){
+  if (state.rides.length < 3){ toast('Za analizo dodaj vsaj 3 vožnje.','err'); return; }
+  const btn = $('btnRider'); busy(btn, true, 'Analiziram tvoje vožnje …');
+  try{
+    const r = await gemini([{ text:
+`Si profesionalni kolesarski trener. Na podlagi podatkov analiziraj, kakšen kolesar je to — bodi konkreten in iskren, brez olepševanja.
+
+${buildContext()}
+
+${buildRiderStats()}
+
+Ugotovi: TIP kolesarja (vzdržljivostni / hribolazec / ravninec-tempo / sprinter / vsestranski), kje je MOČAN in kje ŠIBAK (klanci, ravnina, dolge ture, eksplozivnost — sklepaj iz hitrosti ob utripu, višincev, trajanja voženj), približen NIVO ter V KAJ naj se razvija glede na svoje cilje.
+
+Vrni SAMO JSON:
+{"tip":"...","ocena_nivoja":"...","moci":["2-4 kratke alineje"],"sibkosti":["2-4 kratke alineje"],"v_kaj_se_razviti":"2-3 stavki","komentar":"3-4 stavki iskrenega povzetka"}` }], {temp:.4});
+    state.riderProfile = { ...r, generatedAt:new Date().toISOString() };
+    save(); renderRiderCard();
+    toast('Profil kolesarja izdelan. 🔍 Vsi plani ga bodo zdaj upoštevali.','ok');
+  }catch(e){ toast(e.message,'err'); busy($('btnRider'), false); }
+}
+async function estimateThresholds(){
+  if (state.rides.length < 3){ toast('Za oceno dodaj vsaj 3 vožnje.','err'); return; }
+  const btn = $('btnFtp'); busy(btn, true, 'Ocenjujem prag …');
+  try{
+    const withPow = state.rides.filter(r=>r.avgPower).slice(-15)
+      .map(r=>`- ${r.date}: ${r.dist} km, ${fmtDur(r.time)}, povp. moč ${r.avgPower} W, utrip ${r.avgHr||'?'}`).join('\n');
+    const r = await gemini([{ text:
+`Si športni fiziolog. Iz podatkov o vožnjah OCENI kolesarjev laktatni prag utripa (LTHR), realni max utrip in — če obstajajo podatki o moči — FTP v wattih. Bodi konservativen in realen.
+
+${buildContext()}
+
+${buildRiderStats()}
+${withPow ? 'VOŽNJE Z MOČJO:\n'+withPow : '(ni podatkov o moči — FTP vrni null)'}
+
+Vrni SAMO JSON:
+{"lthr_utrip":number,"max_utrip_ocena":number,"ftp_w":number|null,"komentar":"2-3 stavki, kako si ocenil in kako zanesljivo"}` }], {temp:.3});
+    const p = state.settings.profile;
+    if (r.lthr_utrip) p.lthr = Math.round(r.lthr_utrip);
+    if (r.max_utrip_ocena && !p.maxHr) p.maxHr = Math.round(r.max_utrip_ocena);
+    if (r.ftp_w) p.ftp = Math.round(r.ftp_w);
+    for (const x of state.rides) x.tss = estimateTss(x);
+    save(); fillSettings(); renderAll();
+    toast(`Ocenjeno: prag ~${p.lthr||'?'}${p.ftp?`, FTP ~${p.ftp} W`:''}. ${r.komentar||''}`.slice(0,200),'ok');
+  }catch(e){ toast(e.message,'err'); }
+  busy(btn, false);
+}
+/* ================================================================
+   STRAVA
+================================================================ */
+async function stravaFetch(url, opts={}){
+  const wraps = [ u=>u, u=>'https://corsproxy.io/?url='+encodeURIComponent(u), u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u) ];
+  let last;
+  for (const w of wraps){
+    try{
+      const res = await fetch(w(url), opts);
+      if (res.ok || (res.status>=400 && res.status<500)) return res;   // 4xx = prava napaka Strave, ne CORS
+      last = new Error('HTTP '+res.status);
+    }catch(e){ last = e; }
+  }
+  throw new Error('Strava ni dosegljiva iz brskalnika (CORS). Vožnje dodaj s screenshoti — delujejo vedno.');
+}
+function stravaConnect(){
+  const cid = $('sCid').value.trim(), sec = $('sSec').value.trim();
+  if (!cid || !sec){ toast('Vpiši Client ID in Client Secret (navodila zgoraj).','err'); return; }
+  state.strava.clientId = cid; state.strava.clientSecret = sec; save();
+  const url = `https://www.strava.com/oauth/authorize?client_id=${cid}&response_type=code&redirect_uri=${encodeURIComponent('http://localhost')}&approval_prompt=auto&scope=${encodeURIComponent('read,activity:read_all')}`;
+  window.open(url, '_blank');
+  $('stravaCodeBox').style.display = 'block';
+  toast('Potrdi dostop v Stravi, nato prilepi naslov iz vrstice sem.');
+}
+async function stravaExchange(){
+  let code = $('sCode').value.trim();
+  const m = code.match(/code=([^&\s]+)/); if (m) code = m[1];
+  if (!code){ toast('Prilepi kodo ali cel naslov.','err'); return; }
+  const btn = $('btnSCode'); busy(btn, true, 'Povezujem …');
+  try{
+    const body = new URLSearchParams({ client_id:state.strava.clientId, client_secret:state.strava.clientSecret, code, grant_type:'authorization_code' });
+    const res = await stravaFetch('https://www.strava.com/oauth/token', { method:'POST', body });
+    const d = await res.json();
+    if (!res.ok || !d.access_token) throw new Error('Strava: ' + (d.message || JSON.stringify(d.errors||d).slice(0,140)));
+    Object.assign(state.strava, { accessToken:d.access_token, refreshToken:d.refresh_token, expiresAt:d.expires_at,
+      athleteName: d.athlete ? `${d.athlete.firstname||''} ${d.athlete.lastname||''}`.trim() : '' });
+    save(); renderStrava();
+    $('stravaCodeBox').style.display='none';
+    toast('Povezano s Stravo! 🟠 Zdaj lahko uvoziš vožnje.','ok');
+  }catch(e){ toast(e.message,'err'); }
+  busy(btn, false);
+}
+async function stravaEnsureToken(){
+  const s = state.strava;
+  if (!s.accessToken) throw new Error('Najprej se poveži s Stravo (Nastavitve).');
+  if (s.expiresAt && s.expiresAt - 300 < Date.now()/1000){
+    const body = new URLSearchParams({ client_id:s.clientId, client_secret:s.clientSecret, refresh_token:s.refreshToken, grant_type:'refresh_token' });
+    const res = await stravaFetch('https://www.strava.com/oauth/token', { method:'POST', body });
+    const d = await res.json();
+    if (!d.access_token) throw new Error('Osvežitev Strava žetona ni uspela — poveži se znova.');
+    Object.assign(s, { accessToken:d.access_token, refreshToken:d.refresh_token||s.refreshToken, expiresAt:d.expires_at });
+    save();
+  }
+}
+async function stravaImport(quiet){
+  const btn = $('btnStravaImport'); if (!quiet) busy(btn, true, 'Uvažam …');
+  try{
+    await stravaEnsureToken();
+    const res = await stravaFetch('https://www.strava.com/api/v3/athlete/activities?per_page=100', {
+      headers:{ Authorization:'Bearer '+state.strava.accessToken } });
+    if (!res.ok) throw new Error('Strava uvoz ni uspel (HTTP '+res.status+').');
+    const acts = await res.json();
+    let n = 0;
+    for (const a of acts){
+      const typ = a.type||a.sport_type||'';
+      if (!/Ride|Hike|Walk/i.test(typ)) continue;
+      const ex = state.rides.find(r=>r.stravaId===a.id);
+      if (ex){ if (!ex.polyline && a.map?.summary_polyline) ex.polyline = a.map.summary_polyline; continue; }
+      const r = {
+        id:uid(), stravaId:a.id, source:'strava', sport:/Hike|Walk/i.test(typ)?'pohod':'kolo',
+        date:(a.start_date_local||a.start_date||'').slice(0,10),
+        name:a.name||'Vožnja',
+        dist:+(a.distance/1000).toFixed(1),
+        time:Math.round(a.moving_time/60),
+        elev:Math.round(a.total_elevation_gain||0),
+        avgHr:a.average_heartrate?Math.round(a.average_heartrate):null,
+        maxHr:a.max_heartrate?Math.round(a.max_heartrate):null,
+        avgPower:a.average_watts?Math.round(a.average_watts):null,
+        speed:a.average_speed?+(a.average_speed*3.6).toFixed(1):null,
+        polyline:a.map?.summary_polyline||null,
+        notes:''
+      };
+      r.tss = estimateTss(r);
+      state.rides.push(r); n++;
+    }
+    save(); renderAll();
+    if (n) toast(`${quiet?'Samodejno u':'U'}voženih ${n} novih voženj iz Strave. 🟠`,'ok');
+    else if (!quiet) toast('Ni novih voženj za uvoz.','ok');
+  }catch(e){ if (quiet) console.warn('Strava sync:', e.message); else toast(e.message,'err'); }
+  if (!quiet) busy(btn, false);
+}
+async function syncAll(){
+  const s = !!state.strava.accessToken, i = !!(state.icu?.athleteId && state.icu?.apiKey);
+  if (!s && !i){ toast('Poveži Stravo ali Intervals.icu v Nastavitvah.','err'); switchTab('settings'); return; }
+  if (s) await stravaImport(false);
+  if (i) await icuImport(false);
+}
+function stravaDisconnect(){
+  Object.assign(state.strava, { accessToken:'', refreshToken:'', expiresAt:0, athleteName:'' });
+  save(); renderStrava(); toast('Strava povezava prekinjena.');
+}
+function renderStrava(){
+  const s = state.strava, ok = !!s.accessToken;
+  $('stravaStatus').innerHTML = ok
+    ? `<div class="conn-status ok">✓ Povezano${s.athleteName?' kot <b>&nbsp;'+esc(s.athleteName)+'</b>':''}</div>`
+    : `<div class="conn-status no">○ Ni povezave — vožnje lahko vedno dodaš s screenshoti.</div>`;
+  $('btnStravaOff').style.display = ok ? 'inline-flex' : 'none';
+  if (s.clientId) $('sCid').value = s.clientId;
+  if (s.clientSecret) $('sSec').value = s.clientSecret;
+}
+
+/* ================================================================
+   PROFIL, PODATKI
+================================================================ */
+function saveProfile(){
+  const p = state.settings.profile;
+  const num = v => v==='' ? null : +v;
+  p.ime = $('pIme').value.trim(); p.starost = num($('pStarost').value); p.teza = num($('pTeza').value);
+  p.maxHr = num($('pMaxHr').value); p.restHr = num($('pRestHr').value);
+  p.nivo = $('pNivo').value; p.ure = num($('pUre').value)||6; p.cilj = $('pCilj').value.trim();
+  p.ciljDatum = $('pCiljDatum').value || null; p.ciljTeza = num($('pCiljTeza').value);
+  p.lthr = num($('pLthr').value); p.ftp = num($('pFtp').value); p.shema = +$('pShema').value || 5;
+  for (const r of state.rides) r.tss = estimateTss(r);   // TSS se z novim profilom spremeni
+  save(); renderZones(); renderAll();
+  toast('Profil shranjen.','ok');
+  if (p.ciljDatum && !state.macro) toast('Namig: v Koledarju klikni "🎯 Makro plan do cilja".');
+}
+function fillSettings(){
+  const p = state.settings.profile;
+  $('pIme').value=p.ime||''; $('pStarost').value=p.starost??''; $('pTeza').value=p.teza??'';
+  $('pMaxHr').value=p.maxHr??''; $('pRestHr').value=p.restHr??'';
+  $('pNivo').value=p.nivo||'rekreativni'; $('pUre').value=p.ure??6; $('pCilj').value=p.cilj||'';
+  $('pCiljDatum').value=p.ciljDatum||''; $('pCiljTeza').value=p.ciljTeza??'';
+  $('pLthr').value=p.lthr??''; $('pFtp').value=p.ftp??''; $('pShema').value=String(p.shema||5);
+  $('gKey').value=state.settings.geminiKey||''; $('gModel').value=state.settings.geminiModel||'gemini-flash-latest';
+  renderZones(); renderStrava(); renderIcu();
+}
+function exportData(){
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `kolesarski-trener-kopija-${todayIso()}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+}
+$('importFile').addEventListener('change', e=>{
+  const f = e.target.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try{ state = Object.assign(defaultState(), JSON.parse(rd.result)); save(); fillSettings(); renderAll(); toast('Podatki uvoženi.','ok'); }
+    catch(_){ toast('Neveljavna datoteka.','err'); }
+  };
+  rd.readAsText(f);
+});
+
+/* ================================================================
+   DOGODKI: prilepi / povleci / izberi sliko
+================================================================ */
+document.addEventListener('paste', e=>{
+  const it = [...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));
+  if (it){ e.preventDefault(); loadShot(it.getAsFile()); }
+});
+const dz = $('dropzone');
+['dragover','dragenter'].forEach(ev=>dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.add('over'); }));
+['dragleave','drop'].forEach(ev=>dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.remove('over'); }));
+dz.addEventListener('drop', e=>{ const f = e.dataTransfer.files[0]; if (f) loadShot(f); });
+$('fileInput').addEventListener('change', e=>{ if (e.target.files[0]) loadShot(e.target.files[0]); e.target.value=''; });
+
+document.querySelectorAll('.seg').forEach(seg=>{
+  seg.addEventListener('click', e=>{
+    const b = e.target.closest('button'); if (!b) return;
+    seg.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+  });
+});
+document.querySelectorAll('.modal-back').forEach(mb=>{
+  mb.addEventListener('mousedown', e=>{
+    if (e.target!==mb) return;
+    if (mb.id==='rideDetailBack') closeRideDetail(); else mb.classList.remove('open');
+  });
+});
+document.addEventListener('keydown', e=>{
+  if (e.key!=='Escape') return;
+  if ($('rideDetailBack').classList.contains('open')) closeRideDetail();
+  else document.querySelectorAll('.modal-back.open').forEach(m=>m.classList.remove('open'));
+});
+
+/* ================================================================
+   INTERVALS.ICU (brezplačna alternativa Strava API-ju)
+================================================================ */
+const icuAuth = () => 'Basic ' + btoa('API_KEY:' + (state.icu?.apiKey||''));
+async function icuConnect(){
+  state.icu = state.icu || {};
+  state.icu.athleteId = $('icuId').value.trim();
+  state.icu.apiKey = $('icuKey').value.trim();
+  if (!state.icu.athleteId || !state.icu.apiKey){ toast('Vpiši Athlete ID in API ključ.','err'); return; }
+  save();
+  const btn = $('btnIcu'); busy(btn, true, 'Preverjam …');
+  try{
+    const res = await stravaFetch(`https://intervals.icu/api/v1/athlete/${encodeURIComponent(state.icu.athleteId)}`, { headers:{ Authorization: icuAuth() } });
+    if (!res.ok) throw new Error('Intervals.icu: HTTP '+res.status+' — preveri ID in ključ.');
+    const d = await res.json();
+    state.icu.name = d.name || [d.firstname,d.lastname].filter(Boolean).join(' ') || 'povezan';
+    const p = state.settings.profile;
+    if (!p.restHr && d.icu_resting_hr) p.restHr = d.icu_resting_hr;
+    save(); renderIcu(); renderZones();
+    toast(`Povezano z Intervals.icu (${state.icu.name}). 📈`,'ok');
+  }catch(e){ toast(e.message,'err'); }
+  busy(btn, false);
+}
+async function icuImport(quiet){
+  if (!state.icu?.athleteId || !state.icu?.apiKey){ if(!quiet) toast('Najprej poveži Intervals.icu.','err'); return; }
+  const btn = $('btnStravaImport'); if (!quiet) busy(btn, true, 'Uvažam …');
+  try{
+    const oldest = isoDate(addDays(new Date(), -120));
+    const res = await stravaFetch(`https://intervals.icu/api/v1/athlete/${encodeURIComponent(state.icu.athleteId)}/activities?oldest=${oldest}&newest=${isoDate(addDays(new Date(),1))}`,
+      { headers:{ Authorization: icuAuth() } });
+    if (!res.ok) throw new Error('Intervals.icu uvoz: HTTP '+res.status);
+    const acts = await res.json();
+    let n = 0;
+    for (const a of (Array.isArray(acts)?acts:[])){
+      if (!/Ride|Cycling|VirtualRide|Gravel|MountainBike|Hike|Walk/i.test(a.type||'')) continue;
+      if (state.rides.some(r=>r.icuId===a.id)) continue;
+      const date = (a.start_date_local||a.start_date||'').slice(0,10);
+      const dist = a.distance!=null ? +(a.distance/1000).toFixed(1) : null;
+      if (state.rides.some(r=>r.date===date && r.dist!=null && dist!=null && Math.abs(r.dist-dist)<0.3)) continue;
+      const timeMin = Math.round((a.moving_time||a.elapsed_time||0)/60);
+      const r = {
+        id:uid(), icuId:a.id, source:'intervals', sport:/Hike|Walk/i.test(a.type||'')?'pohod':'kolo',
+        date, name:a.name||'Vožnja', dist, time:timeMin||null,
+        elev: a.total_elevation_gain!=null ? Math.round(a.total_elevation_gain) : (a.icu_climb!=null?Math.round(a.icu_climb):null),
+        avgHr: a.average_heartrate?Math.round(a.average_heartrate):null,
+        maxHr: a.max_heartrate?Math.round(a.max_heartrate):null,
+        avgPower: a.icu_average_watts?Math.round(a.icu_average_watts):(a.average_watts?Math.round(a.average_watts):null),
+        speed: (dist && timeMin) ? +(dist/(timeMin/60)).toFixed(1) : null,
+        notes:''
+      };
+      r.tss = (a.icu_training_load && a.icu_training_load>0) ? Math.round(a.icu_training_load) : estimateTss(r);
+      state.rides.push(r); n++;
+    }
+    save(); renderAll();
+    if (n) toast(`${quiet?'Samodejno u':'U'}voženih ${n} voženj iz Intervals.icu. 📈`,'ok');
+    else if (!quiet) toast('Ni novih voženj (Intervals.icu).','ok');
+  }catch(e){ if (quiet) console.warn('ICU sync:', e.message); else toast(e.message,'err'); }
+  if (!quiet) busy(btn, false);
+}
+function renderIcu(){
+  const el = $('icuStatus'); if (!el) return;
+  const ok = !!(state.icu?.athleteId && state.icu?.apiKey && state.icu?.name);
+  el.innerHTML = ok
+    ? `<div class="conn-status ok">✓ Povezano (${esc(state.icu.name)})</div>`
+    : `<div class="conn-status no">○ Ni povezave — brezplačna alternativa, če nimaš Strava naročnine.</div>`;
+  if (state.icu?.athleteId) $('icuId').value = state.icu.athleteId;
+  if (state.icu?.apiKey) $('icuKey').value = state.icu.apiKey;
+}
+
+/* ================================================================
+   FORMA — MOČ (prilagodljiv trening z lastno težo)
+================================================================ */
+function sorenessNow(){
+  const f = state.forma;
+  if (!f.sorenessIso || !f.soreness) return 0;
+  const d = Math.round((parseIso(todayIso()) - parseIso(f.sorenessIso))/864e5);
+  return Math.max(0, f.soreness - d);   // bolečina upada 1/dan
+}
+function formaScore(){
+  const f = state.forma;
+  let s = 50;
+  const sor = sorenessNow();
+  if (sor===0 && f.sorenessIso===todayIso()) s += 15;          // "nič me ne boli" danes = svež
+  s -= [0,12,25,40][sor]||0;
+  if (f.lastFb && f.lastFbIso && (parseIso(todayIso())-parseIso(f.lastFbIso))/864e5 <= 4){
+    if (f.lastFb==='easy') s += 18; else if (f.lastFb==='hard') s -= 15;
+  }
+  const t7 = f.history.filter(h=>h.date>=isoDate(addDays(new Date(),-7))).length;
+  if (t7>=2) s += 6;                                            // redna vadba
+  return s;
+}
+function formaDotInfo(){ const s=formaScore(); return s<35?{c:'easy',t:'lažji dan',m:.7}:s<65?{c:'med',t:'normalen dan',m:1}:{c:'hard',t:'napadaj! 🔥',m:1.25}; }
+function formaExercises(){
+  const f=state.forma, d=formaDotInfo(), L=f.level, m=d.m;
+  if (f.custom && f.custom.date===todayIso() && f.custom.vaje?.length) return f.custom.vaje;
+  const R=x=>Math.max(1,Math.round(x*m));
+  const serije = d.c==='hard'?4:3;
+  const ex = [];
+  ex.push({ime: L>=3?'Eksplozivni zgibi (do prsi)':'Zgibi na drogu', serije, pon:R(L>=3?3+Math.floor(L/2):3+L)+' pon.', op:L>=3?'poteg čim višje — priprava na prehod čez drog':'cela amplituda, kontrolirano dol'});
+  ex.push({ime:'Sklece', serije, pon:R(10+3*L)+' pon.', op:'do prsi, komolci ob telesu'});
+  ex.push({ime: L>=2?'Dipsi (bradlja ali drog)':'Dipsi na klopi/stolu', serije, pon:R(4+2*L)+' pon.', op:'globoko dol, moč za zgornji del muscle-upa'});
+  ex.push({ime:'Trebušnjaki + dvigi nog na drogu', serije, pon:R(10+2*L)+' pon.', op:'napet trup — nujen za prehod čez drog'});
+  if (L>=4) ex.push({ime:'Negativni muscle-up', serije:2, pon:R(2+Math.floor((L-3)/2))+' pon.', op:"skoči/splezaj gor, POČASI (5'') spuščaj dol"});
+  if (L>=7) ex.push({ime:'Muscle-up poskusi', serije:3, pon:R(1+Math.floor((L-6)/2))+' posk.', op:'eksploziven poteg do prsi + hiter preklop zapestij'});
+  return ex;
+}
+function renderForma(){
+  const box=$('formaWorkout'); if(!box) return;
+  const f=state.forma, d=formaDotInfo(), sor=sorenessNow();
+  $('formaDotLbl').innerHTML = `<span class="dot ${d.c}"></span>${d.t} · nivo ${f.level}`;
+  const doneToday = f.history.some(h=>h.date===todayIso());
+  box.innerHTML =
+    (sor>=3 ? `<div class="analysis-box" style="border-color:rgba(255,92,92,.4);margin-bottom:10px">🥵 Zelo te boli — danes raje počitek ali samo kratek plank. Bolečina z dnevi upade in trening se sam olajša.</div>` : '') +
+    formaExercises().map(e=>`<div class="ex-row"><div class="nm">${esc(e.ime)}<small>${esc(e.op||'')}</small></div><div class="rp">${e.serije}× ${esc(String(e.pon))}</div></div>`).join('') +
+    ((f.custom&&f.custom.date===todayIso()&&f.custom.nasvet)?`<div class="hint" style="margin-top:8px">✨ ${esc(f.custom.nasvet)}</div>`:'') +
+    (doneToday?`<div class="conn-status ok mt">✓ Danes že opravljeno — bravo!</div>`:'');
+  const t7=f.history.filter(h=>h.date>=isoDate(addDays(new Date(),-7))).length;
+  $('formaStats').innerHTML = `
+    <div style="margin-bottom:10px"><div class="stat" style="padding:0;border:none;background:none"><div class="k">Ta teden</div><div class="v" style="color:${t7>=3?'var(--green)':'inherit'}">${t7} <small>/ 3 cilj</small></div></div></div>
+    <div style="margin-bottom:10px"><div class="k" style="font-size:11px;color:var(--dim);font-weight:700;text-transform:uppercase">Skupaj treningov</div><div style="font-size:22px;font-weight:800">${f.history.length}</div></div>
+    <div><div class="k" style="font-size:11px;color:var(--dim);font-weight:700;text-transform:uppercase">Nivo</div><div style="font-size:22px;font-weight:800">${f.level}<small style="font-size:12px;color:var(--dim)"> — vsakih 4 treningi +1</small></div></div>
+    <div class="hint" style="margin-top:12px">🎯 Pot do muscle-upa: ${f.level<4?'faza 1/3 — osnove (zgibi, sklece, dipsi, trup)':f.level<7?'faza 2/3 — eksplozivni zgibi + negativni muscle-upi':f.level<10?'faza 3/3 — poskusi muscle-upa!':'MUSCLE-UP osvojen 💪'}</div>`;
+}
+function formaCheckin(){
+  const v=+($('segSore').querySelector('.on')?.dataset.v||0);
+  state.forma.soreness=v; state.forma.sorenessIso=todayIso();
+  save(); renderForma();
+  toast(v===0?'Svež si — pikica gre proti rdeči. 💪':'Zabeleženo — trening se ustrezno olajša.','ok');
+}
+function formaDone(){
+  const f=state.forma;
+  if (f.history.some(h=>h.date===todayIso())){ toast('Danes je trening moči že zabeležen.'); return; }
+  const d=formaDotInfo();
+  f.history.push({date:todayIso(), dot:d.c});
+  if (f.history.length % 4 === 0 && f.level<10){ f.level++; toast(`Nivo ${f.level}! Vaje postanejo težje. 📈`,'ok'); }
+  const r={ id:uid(), source:'manual', sport:'moc', date:todayIso(), name:'Trening moči (FORMA)', dist:null,
+    time:25, elev:null, avgHr:null, maxHr:null, avgPower:null, speed:null, notes:'zgibi/sklece/trup', tss: d.c==='hard'?45:d.c==='med'?35:25 };
+  state.rides.push(r);
+  save(); renderAll();
+  $('formaFb').innerHTML = `<div class="analysis-box"><b>Kakšen je bil trening?</b>
+    <div class="row" style="margin-top:8px">
+      <button class="btn btn-ghost btn-sm" onclick="formaFb('easy')">😎 Prelahek</button>
+      <button class="btn btn-ghost btn-sm" onclick="formaFb('ok')">🙂 Ravno prav</button>
+      <button class="btn btn-ghost btn-sm" onclick="formaFb('hard')">🥵 Pretežek</button>
+    </div></div>`;
+}
+function formaFb(v){
+  state.forma.lastFb=v; state.forma.lastFbIso=todayIso();
+  save(); $('formaFb').innerHTML=''; renderForma();
+  toast(v==='easy'?'Naslednjič dobiš več — pikica proti rdeči. 🔴':v==='hard'?'Naslednjič olajšam — pikica proti modri. 🔵':'Super, nadaljujemo. ✔','ok');
+}
+async function formaAI(){
+  const btn=$('btnFormaAI'); busy(btn,true,'Prilagajam vaje …');
+  try{
+    const d=formaDotInfo();
+    const r=await gemini([{ text:
+`Si trener za moč. Sestavi DANAŠNJI 15–25 min trening z lastno težo za kolesarja. Oprema: drog za zgibe, ab wheel, tla. Nivo: ${state.forma.level}/10. Današnja težavnost: ${d.t} (${d.c}). Bolečine: ${sorenessNow()}/3. Zadnji feedback: ${state.forma.lastFb||'ni'}.
+
+${buildContext()}
+
+${STRATEGIJA}
+
+GLAVNI CILJ: naučiti se MUSCLE-UP (+ razkrita mišica pod maščobo). Trening sestavi kot korak muscle-up progresije za ta nivo: sklece, zgibi (eksplozivni pri višjem nivoju), dipsi, trebušnjaki/dvigi nog, od nivoja 4 negativni muscle-upi, od 7 poskusi. Konkretne serije in ponovitve. Brez teka.
+Vrni SAMO JSON: {"vaje":[{"ime":"...","serije":number,"pon":"npr. 8 pon. ali 40''","op":"kratek nasvet"}],"nasvet":"1-2 stavka"}` }],{temp:.5});
+    state.forma.custom={ date:todayIso(), vaje:(r.vaje||[]).map(v=>({ime:v.ime||'Vaja',serije:+v.serije||3,pon:v.pon||'',op:v.op||''})), nasvet:r.nasvet||'' };
+    save(); renderForma();
+    toast('Vaje prilagojene zate. ✨','ok');
+  }catch(e){ toast(e.message,'err'); }
+  busy(btn,false);
+}
+
+/* ================================================================
+   SINHRONIZACIJA MED NAPRAVAMI (jsonbin.io)
+================================================================ */
+const SYNC_API = 'https://api.jsonbin.io/v3/b';
+function renderSyncF(){
+  const el = $('syncStatus2'); if (!el) return;
+  const c = state.sync;
+  el.innerHTML = c?.bin
+    ? `✅ Aktivna. <b>Koda za telefon:</b> <code style="user-select:all;background:#0e1520;padding:2px 7px;border-radius:6px">${c.bin}|${c.key}</code>`
+    : 'Ni nastavljena — plan živi samo na tem računalniku.';
+  if (c?.bin && $('sSyncF') && !$('sSyncF').value) $('sSyncF').value = c.bin+'|'+c.key;
+}
+async function syncConnectF(){
+  const code = $('sSyncF').value.trim();
+  if (!code){ state.sync=null; save(); renderSyncF(); toast('Sinhronizacija izklopljena.'); return; }
+  try{
+    if (code.includes('|')){
+      const [bin,key] = code.split('|').map(x=>x.trim());
+      state.sync = {bin,key}; save();
+      await syncPullF(true);
+    } else {
+      const res = await fetch(SYNC_API, { method:'POST',
+        headers:{ 'Content-Type':'application/json', 'X-Master-Key':code, 'X-Bin-Name':'forma-sync', 'X-Bin-Private':'true' },
+        body: JSON.stringify({ forma:state, forma_ts:Date.now(), kalorije:null, kalorije_ts:0 }) });
+      if (!res.ok) throw new Error('jsonbin: HTTP '+res.status+' — preveri Master Key.');
+      const d = await res.json();
+      state.sync = { bin:d.metadata?.id, key:code }; save();
+      toast('Sinhronizacija vklopljena! Kodo spodaj prilepi v KalorijeAI na telefonu. 🔄','ok');
+    }
+    renderSyncF();
+  }catch(e){ toast(e.message,'err'); }
+}
+async function syncGetF(){
+  const c=state.sync; if(!c?.bin) return null;
+  const res = await fetch(`${SYNC_API}/${c.bin}/latest`, { headers:{'X-Master-Key':c.key} });
+  if (!res.ok) throw new Error('Sync branje: HTTP '+res.status);
+  return (await res.json()).record || {};
+}
+async function syncPullF(manual){
+  const c=state.sync; if(!c?.bin){ if(manual) toast('Najprej nastavi sinhronizacijo (spodaj).','err'); return; }
+  try{
+    const rec = await syncGetF();
+    if (rec?.forma && (rec.forma_ts||0) > (state._ts||0)){
+      const keep = state.sync;
+      state = Object.assign(defaultState(), rec.forma);
+      state.forma = Object.assign(defaultState().forma, state.forma||{});
+      state.sync = keep;
+      localStorage.setItem(DB_KEY, JSON.stringify(state));   // brez ponovnega pusha
+      fillSettings(); renderAll(); renderSyncF();
+      toast('Prevzete spremembe s telefona. 🔄','ok');
+    } else if (manual) toast('Plan je že usklajen. ✓','ok');
+    if (rec?.kalorije){
+      let localK=null; try{ localK=JSON.parse(localStorage.getItem('kalorije_v1')||'null'); }catch(_){}
+      if ((rec.kalorije_ts||0) > (localK?._ts||0)) localStorage.setItem('kalorije_v1', JSON.stringify(rec.kalorije));
+    }
+  }catch(e){ if(manual) toast(e.message,'err'); else console.warn('sync:', e.message); }
+}
+let syncTimerF=null;
+function syncPush(){
+  const c=state.sync; if(!c?.bin) return;
+  clearTimeout(syncTimerF);
+  syncTimerF = setTimeout(async ()=>{
+    try{
+      const rec = (await syncGetF()) || {};
+      rec.forma = state; rec.forma_ts = state._ts || Date.now();
+      await fetch(`${SYNC_API}/${c.bin}`, { method:'PUT',
+        headers:{'Content-Type':'application/json','X-Master-Key':c.key}, body:JSON.stringify(rec) });
+    }catch(e){ console.warn('sync push:', e.message); }
+  }, 1500);
+}
+
+/* ================================================================
+   ZAGON
+================================================================ */
+function renderAll(){ renderSidebar(); renderDash(); renderRides(); renderPlan(); renderCal(); renderTodayBox(); renderForma(); }
+fillSettings();
+renderAll();
+// samodejna sinhronizacija ob odprtju
+if (state.strava.accessToken) stravaImport(true);
+if (state.icu?.athleteId && state.icu?.apiKey) icuImport(true);
+renderSyncF();
+syncPullF();
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) syncPullF(); });
+</script>
+</body>
+</html>

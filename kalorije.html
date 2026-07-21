@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KalorijeAI — štetje s sliko</title>
+<meta name="theme-color" content="#0a0e13">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2224%22 fill=%22%233fce6b%22/><text x=%2250%22 y=%2270%22 font-size=%2258%22 text-anchor=%22middle%22>🍽️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0a0e13; --panel:#141b24; --panel2:#1a2330;
+  --border:#22303f; --border2:#2d3d50;
+  --text:#e8eef4; --muted:#8b9bab; --dim:#5c6b7a;
+  --acc:#3fce6b; --acc2:#6ee7a0; --accSoft:rgba(63,206,107,.12);
+  --orange:#fc4c02; --red:#ff5c5c; --redSoft:rgba(255,92,92,.12);
+  --yellow:#ffc247; --blue:#4da3ff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Inter',system-ui,sans-serif;color:var(--text);font-size:15px;line-height:1.55;
+  background:
+    radial-gradient(1000px 500px at 85% -10%, rgba(63,206,107,.08), transparent 60%),
+    radial-gradient(800px 400px at -10% 110%, rgba(77,163,255,.05), transparent 60%),
+    var(--bg);
+  min-height:100vh;
+}
+::selection{background:var(--acc);color:#04140a}
+::-webkit-scrollbar{width:10px}::-webkit-scrollbar-thumb{background:#26364a;border-radius:8px}
+.wrap{max-width:900px;margin:0 auto;padding:26px 18px 80px}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.logo{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,var(--acc),#2aa855);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 18px rgba(63,206,107,.35)}
+.top h1{font-size:20px;font-weight:900;letter-spacing:-.02em}
+.top small{display:block;font-size:12px;color:var(--muted);font-weight:500}
+.top .right{margin-left:auto;display:flex;gap:8px}
+.card{background:linear-gradient(180deg,var(--panel),rgba(20,27,36,.7));border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px}
+.card h3{font-size:13.5px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3 .sub{font-weight:500;color:var(--dim);font-size:11.5px;margin-left:auto}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 16px;border-radius:10px;font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;border:1px solid transparent;transition:all .15s;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,var(--acc),#2aa855);color:#04140a;box-shadow:0 3px 14px rgba(63,206,107,.3)}
+.btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-ghost{background:var(--panel2);color:var(--text);border-color:var(--border2)}
+.btn-ghost:hover{border-color:#3d5065}
+.btn-sm{padding:8px 13px;font-size:12.5px;border-radius:8px;min-height:34px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.spin{width:13px;height:13px;border:2px solid rgba(0,0,0,.3);border-top-color:#04140a;border-radius:50%;animation:rot .7s linear infinite;display:inline-block}
+.sping{width:13px;height:13px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite;display:inline-block}
+@keyframes rot{to{transform:rotate(360deg)}}
+input,select{width:100%;background:#0e1520;border:1px solid var(--border2);border-radius:9px;color:var(--text);padding:9px 12px;font-family:inherit;font-size:14px;outline:none}
+input:focus,select:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(63,206,107,.15)}
+label.fld{display:block;margin-bottom:12px}
+label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:4px}
+.hint{font-size:12px;color:var(--dim)}
+
+/* povezava s FORMA */
+.link-banner{display:block;padding:11px 15px;border-radius:11px;font-size:13px;font-weight:600;line-height:1.55;margin-bottom:14px;border:1px solid}
+.link-banner.ok{background:var(--accSoft);color:var(--acc2);border-color:rgba(63,206,107,.3)}
+.link-banner.no{background:rgba(139,155,171,.07);color:var(--muted);border-color:var(--border)}
+.link-banner b{white-space:nowrap}
+
+/* glavni pregled */
+.hero{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center}
+@media(max-width:640px){.hero{grid-template-columns:1fr;justify-items:center;text-align:center;gap:16px}}
+.ring-wrap{position:relative;width:170px;height:170px;flex-shrink:0}
+.ring-wrap svg{width:100%;height:100%;transform:rotate(-90deg)}
+@media(max-width:400px){
+  .ring-wrap{width:142px;height:142px}
+  .ring-txt .big{font-size:26px}
+  .wrap{padding-top:18px}
+  .card{padding:15px}
+}
+.ring-c{fill:none;stroke:#1d2836;stroke-width:13}
+.ring-p{fill:none;stroke-width:13;stroke-linecap:round;transition:stroke-dashoffset .6s ease}
+.ring-txt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-txt .big{font-size:30px;font-weight:900;letter-spacing:-.03em}
+.ring-txt .sm{font-size:11px;color:var(--muted);font-weight:600}
+.hstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;width:100%}
+.hstat{background:#0e1520;border:1px solid var(--border2);border-radius:11px;padding:11px 13px}
+.hstat .k{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+.hstat .v{font-size:19px;font-weight:800;margin-top:2px}
+.hstat .t{font-size:11px;color:var(--muted)}
+.pbar{height:7px;background:#1d2836;border-radius:99px;overflow:hidden;margin-top:6px}
+.pbar div{height:100%;border-radius:99px;background:var(--blue);transition:width .5s}
+
+/* dropzone */
+.dz{border:2px dashed var(--border2);border-radius:14px;padding:26px 18px;text-align:center;color:var(--muted);cursor:pointer;transition:all .2s;background:rgba(255,255,255,.015)}
+.dz:hover,.dz.over{border-color:var(--acc);background:var(--accSoft);color:var(--acc2)}
+.dz b{color:var(--text)}
+.dz .big{font-size:30px;display:block;margin-bottom:6px}
+.queue{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.q-item{display:flex;align-items:center;gap:12px;background:#0e1520;border:1px solid var(--border2);border-radius:11px;padding:9px 12px;font-size:13px}
+.q-item img{width:46px;height:46px;object-fit:cover;border-radius:8px}
+.q-item .st{margin-left:auto;font-weight:700;font-size:12px;white-space:nowrap}
+
+/* obroki */
+.meal{margin-bottom:6px}
+.meal-head{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--border)}
+.meal-head .nm{font-weight:800;font-size:13.5px}
+.meal-head .bud{margin-left:auto;font-size:12px;color:var(--muted);font-weight:600}
+.meal-head .bud b{color:var(--text)}
+.entry{display:flex;align-items:center;gap:11px;padding:9px 4px;border-bottom:1px solid rgba(34,48,63,.5);cursor:pointer}
+.entry:hover{background:rgba(255,255,255,.02)}
+.entry img{width:42px;height:42px;object-fit:cover;border-radius:8px;flex-shrink:0}
+.entry .noimg{width:42px;height:42px;border-radius:8px;background:#1d2836;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.entry .nm{font-weight:700;font-size:13.5px;flex:1;min-width:0}
+.entry .nm small{display:block;font-weight:500;color:var(--dim);font-size:11.5px}
+.entry .kc{font-weight:800;font-size:14.5px;white-space:nowrap}
+.entry .kc small{font-weight:600;color:var(--dim);font-size:11px;display:block;text-align:right}
+.entry .del{width:26px;height:26px;border-radius:7px;border:1px solid var(--border2);background:transparent;color:var(--dim);cursor:pointer;font-size:12px;flex-shrink:0}
+.entry .del:hover{color:var(--red);border-color:rgba(255,92,92,.4)}
+.empty{text-align:center;padding:26px;color:var(--dim);font-size:13.5px}
+.empty .big{font-size:30px;display:block;margin-bottom:6px}
+
+/* modal */
+.modal-back{position:fixed;inset:0;background:rgba(4,8,12,.72);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:40px 16px;overflow-y:auto}
+.modal-back.open{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:460px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.55)}
+.modal h2{font-size:17px;font-weight:800;margin-bottom:14px;display:flex;justify-content:space-between}
+.modal .x{cursor:pointer;color:var(--dim);font-size:19px}
+.modal .x:hover{color:var(--text)}
+.frm2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+@media(max-width:380px){.frm2{grid-template-columns:1fr}}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:14px}
+.toasts{position:fixed;bottom:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:9px}
+.toast{background:var(--panel2);border:1px solid var(--border2);border-left:3px solid var(--acc);border-radius:10px;padding:11px 15px;font-size:13px;font-weight:600;max-width:340px;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.toast.err{border-left-color:var(--red)}
+.chart-wrap{position:relative;height:180px}
+.day-nav{display:flex;gap:8px;align-items:center}
+.day-nav b{font-size:13.5px}
+
+/* ---------- zavihki (telefon) ---------- */
+.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:60;display:flex;background:rgba(13,18,25,.92);backdrop-filter:blur(12px);border-top:1px solid var(--border)}
+.tabbar button{flex:1;background:none;border:none;color:var(--dim);font-family:inherit;font-weight:800;font-size:11.5px;padding:9px 4px max(9px, env(safe-area-inset-bottom));cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tabbar button .ic{font-size:20px}
+.tabbar button.on{color:var(--acc2)}
+.tabpane{display:none}
+.tabpane.active{display:block}
+.wrap{padding-bottom:96px}
+
+/* ---------- plan zavihek ---------- */
+.pday{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:14px 16px;margin-bottom:10px}
+.pday.today{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange)}
+.pday.done{opacity:.7}
+.pd-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.pd-day{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);min-width:64px}
+.pday.today .pd-day{color:var(--orange)}
+.pd-sport{font-size:10.5px;font-weight:900;background:rgba(255,255,255,.06);border:1px solid var(--border2);padding:2px 9px;border-radius:7px;white-space:nowrap}
+.pd-title{font-weight:800;font-size:14px;flex:1;min-width:120px}
+.pd-meta{font-size:11.5px;color:var(--dim);font-weight:700;white-space:nowrap}
+.pd-meta .okk{color:var(--acc2)}
+.opis-line{padding:2px 0 2px 9px;border-left:2px solid var(--border2);margin:4px 0;line-height:1.45;font-size:13px;color:#cfd8e0}
+.pd-sec{margin-top:9px}
+.pd-lbl{font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--acc2);margin-bottom:3px}
+.sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px}
+.sync-dot.on{background:var(--acc);box-shadow:0 0 7px rgba(63,206,107,.7)}
+.sync-dot.off{background:var(--dim)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="logo">🍽️</div>
+    <div><h1>KalorijeAI</h1><small>slikaj → AI prešteje kalorije</small></div>
+    <div class="right">
+      <button class="btn btn-ghost btn-sm" onclick="openSettings()">⚙️ Nastavitve</button>
+    </div>
+  </div>
+
+  <div id="linkBanner"></div>
+
+  <div class="tabpane active" id="pane-kcal">
+  <!-- ===== DANAŠNJI PREGLED ===== -->
+  <div class="card">
+    <h3>Danes, <span id="todayLbl"></span><span class="sub" id="planLbl"></span></h3>
+    <div class="hero">
+      <div class="ring-wrap">
+        <svg width="170" height="170" viewBox="0 0 170 170">
+          <circle class="ring-c" cx="85" cy="85" r="74"></circle>
+          <circle class="ring-p" id="ringP" cx="85" cy="85" r="74" stroke="#3fce6b"></circle>
+        </svg>
+        <div class="ring-txt">
+          <div class="big" id="ringKcal">0</div>
+          <div class="sm" id="ringSub">/ 0 kcal</div>
+        </div>
+      </div>
+      <div class="hstats">
+        <div class="hstat"><div class="k">Še lahko poješ</div><div class="v" id="stLeft">–</div><div class="t">do cilja</div></div>
+        <div class="hstat"><div class="k">Cilj vnosa</div><div class="v" id="stTarget">–</div><div class="t" id="stTargetSrc"></div></div>
+        <div class="hstat"><div class="k">Poraba danes</div><div class="v" id="stBurn">–</div><div class="t" id="stBurnSrc"></div></div>
+        <div class="hstat"><div class="k">Beljakovine</div><div class="v" id="stProt">–</div><div class="pbar"><div id="protBar" style="width:0%"></div></div><div class="t" id="stProtT"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DODAJ S SLIKO ===== -->
+  <div class="card">
+    <div class="dz" id="dz" onclick="document.getElementById('fileGal').click()">
+      <span class="big">📸</span>
+      <b>Prilepi (Ctrl+V), povleci ali klikni za galerijo</b> — lahko več slik naenkrat (cel dan!)<br>
+      <span class="hint">Najbolje: hrana na tehtnici, da AI prebere grame z zaslona. Deluje tudi brez.</span>
+      <div class="row" style="justify-content:center;gap:10px;margin-top:12px;display:flex">
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();document.getElementById('fileIn').click()">📷 Slikaj</button>
+        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();document.getElementById('fileGal').click()">🖼️ Iz galerije</button>
+      </div>
+      <input type="file" id="fileIn" accept="image/*" capture="environment" style="display:none">
+      <input type="file" id="fileGal" accept="image/*" multiple style="display:none">
+    </div>
+    <div class="queue" id="queue"></div>
+    <div class="hint" style="margin-top:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">
+      <span>Vsaka slika se doda kot vnos — klikni vnos za popravek.</span>
+      <a style="color:var(--acc2);cursor:pointer;font-weight:700" onclick="openManual()">+ ročni vnos brez slike</a>
+    </div>
+  </div>
+
+  <!-- ===== DNEVNIK PO OBROKIH ===== -->
+  <div class="card">
+    <h3>
+      <span class="day-nav">
+        <button class="btn btn-ghost btn-sm" onclick="shiftDay(-1)">‹</button>
+        <b id="logDayLbl"></b>
+        <button class="btn btn-ghost btn-sm" onclick="shiftDay(1)">›</button>
+        <button class="btn btn-ghost btn-sm" onclick="shiftDay(0)">Danes</button>
+      </span>
+      <span class="sub" id="logSum"></span>
+    </h3>
+    <div id="mealsBox"></div>
+  </div>
+
+  <!-- ===== ZGODOVINA ===== -->
+  <div class="card">
+    <h3>Zadnjih 14 dni <span class="sub">vnos proti cilju</span></h3>
+    <div class="chart-wrap"><canvas id="histChart"></canvas></div>
+  </div>
+  </div><!-- /pane-kcal -->
+
+  <!-- ===== ZAVIHEK: PLAN ===== -->
+  <div class="tabpane" id="pane-plan">
+    <div class="card">
+      <h3>📅 Moj trening plan <span class="sub" id="planSyncLbl"></span></h3>
+      <div class="hint" style="margin-bottom:12px">Iz FORMA Trenerja — kolo 🚴, pohod 🥾, moč 💪. Klikni "⏱ Nimam toliko časa", če je dan prekratek.</div>
+      <div id="planList"></div>
+      <button class="btn btn-ghost btn-sm" onclick="syncPull(true)" style="margin-top:6px">⟳ Osveži plan</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== SPODNJI ZAVIHKI ===== -->
+<div class="tabbar">
+  <button class="on" id="tabBtnKcal" onclick="showPane('kcal')"><span class="ic">🍽️</span>Kalorije</button>
+  <button id="tabBtnPlan" onclick="showPane('plan')"><span class="ic">📅</span>Plan</button>
+  <button onclick="openSettings()"><span class="ic">⚙️</span>Nastavitve</button>
+</div>
+
+<!-- ===== MODAL: PRILAGODI ČAS ===== -->
+<div class="modal-back" id="adaptBack">
+  <div class="modal">
+    <h2>⏱ Koliko časa imaš danes?<span class="x" onclick="document.getElementById('adaptBack').classList.remove('open')">✕</span></h2>
+    <label class="fld"><span>Minut na voljo</span><input type="number" id="aMin" value="30" step="5" min="10"></label>
+    <label class="fld"><span>Opomba (neobvezno)</span><input id="aNote" placeholder="npr. sem utrujen / samo kolo, brez vaj"></label>
+    <div class="modal-foot"><button class="btn btn-primary" id="btnAdapt" onclick="adaptToday()">✨ Prilagodi današnji trening</button></div>
+  </div>
+</div>
+
+<!-- ===== MODAL: UREDI/ROČNI VNOS ===== -->
+<div class="modal-back" id="editBack">
+  <div class="modal">
+    <h2><span id="editTitle">Vnos</span><span class="x" onclick="closeEdit()">✕</span></h2>
+    <img id="editImg" style="display:none;max-width:100%;max-height:170px;border-radius:10px;margin:0 auto 12px;display:block">
+    <label class="fld"><span>Jed</span><input id="eJed"></label>
+    <div class="frm2">
+      <label class="fld"><span>Grami</span><input type="number" id="eGrami"></label>
+      <label class="fld"><span>Kalorije (kcal)</span><input type="number" id="eKcal"></label>
+      <label class="fld"><span>Beljakovine (g)</span><input type="number" id="eB"></label>
+      <label class="fld"><span>Obrok</span>
+        <select id="eObrok">
+          <option value="zajtrk">Zajtrk</option><option value="kosilo">Kosilo</option>
+          <option value="malica">Malica</option><option value="vecerja">Večerja</option>
+        </select>
+      </label>
+    </div>
+    <div class="hint" id="eOpomba" style="margin-bottom:8px"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeEdit()">Prekliči</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Shrani</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: NASTAVITVE ===== -->
+<div class="modal-back" id="setBack">
+  <div class="modal">
+    <h2>Nastavitve<span class="x" onclick="closeModalS()">✕</span></h2>
+    <div id="setLink" class="hint" style="margin-bottom:12px"></div>
+    <label class="fld"><span>Gemini API ključ <span style="color:var(--dim)">(pusti prazno = vzame iz FORMA Trenerja)</span></span><input type="password" id="sKey" placeholder="samodejno iz FORMA"></label>
+    <label class="fld"><span>Model</span>
+      <select id="sModel">
+        <option value="">samodejno (iz FORMA / flash-latest)</option>
+        <option value="gemini-flash-latest">gemini-flash-latest</option>
+        <option value="gemini-3.5-flash">gemini-3.5-flash</option>
+        <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+      </select>
+    </label>
+    <div class="frm2">
+      <label class="fld"><span>Ročni cilj kcal/dan <span style="color:var(--dim)">(prazno = iz plana)</span></span><input type="number" id="sKcal"></label>
+      <label class="fld"><span>Teža (kg) <span style="color:var(--dim)">(prazno = iz FORMA)</span></span><input type="number" id="sTeza"></label>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:6px 0 12px">
+    <label class="fld"><span>🔄 Sinhronizacija med napravami (jsonbin.io)</span><input id="sSync" placeholder="Master Key ALI koda bin|key z druge naprave"></label>
+    <div class="hint" style="margin-bottom:10px">Enkratno: registriraj se brezplačno na <b>jsonbin.io</b> → API Keys → kopiraj <b>Master Key</b> in ga prilepi sem (ustvarim shrambo in ti dam kodo za drugo napravo). Na drugi napravi prilepi celotno kodo.</div>
+    <div class="hint" id="syncStatus" style="margin-bottom:10px"></div>
+    <div class="modal-foot"><button class="btn btn-primary" onclick="saveSettings()">Shrani</button></div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+/* ================================================================
+   OSNOVE
+================================================================ */
+const $ = id => document.getElementById(id);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const pad = n => String(n).padStart(2,'0');
+const isoDate = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const todayIso = () => isoDate(new Date());
+function parseIso(s){ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
+function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
+const MESECI=['jan','feb','mar','apr','maj','jun','jul','avg','sep','okt','nov','dec'];
+const DNEVI=['ponedeljek','torek','sreda','četrtek','petek','sobota','nedelja'];
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(msg,type=''){ const t=document.createElement('div'); t.className='toast '+type; t.textContent=msg; $('toasts').appendChild(t); setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(()=>t.remove(),400)},4500); }
+
+/* ================================================================
+   SHRAMBA + POVEZAVA S FORMA TRENERJEM
+================================================================ */
+const DB = 'kalorije_v1';
+let db = { settings:{ key:'', model:'', kcalManual:null, tezaManual:null }, days:{} };
+try{ const raw=localStorage.getItem(DB); if(raw) db=Object.assign(db,JSON.parse(raw)); }catch(_){}
+// stare sličice počisti (varčevanje prostora): thumb ostane samo za zadnja 2 dni
+(function prune(){
+  const keep=[todayIso(), isoDate(addDays(new Date(),-1))];
+  for (const d in db.days) if (!keep.includes(d)) for (const e of db.days[d].entries||[]) delete e.thumb;
+})();
+const save = () => {
+  db._ts = Date.now();
+  try{ localStorage.setItem(DB, JSON.stringify(db)); }
+  catch(e){ toast('Shramba polna — brišem stare sličice.','err'); for(const d in db.days) for(const e of db.days[d].entries||[]) delete e.thumb; localStorage.setItem(DB, JSON.stringify(db)); }
+  if (typeof syncPush==='function') syncPush('kalorije');
+};
+
+function formaState(){
+  try{ return JSON.parse(localStorage.getItem('forma_trener_v1')||'null'); }catch(_){ return null; }
+}
+let F = formaState();
+const refreshF = () => { F = formaState(); };
+const geminiKey = () => db.settings.key || F?.settings?.geminiKey || '';
+const geminiModel = () => db.settings.model || F?.settings?.geminiModel || 'gemini-flash-latest';
+const teza = () => db.settings.tezaManual || F?.settings?.profile?.teza || 75;
+
+function planToday(){
+  if (!F?.plans) return null;
+  for (const p of F.plans){ const d=(p.days||[]).find(x=>x.datum===todayIso()); if(d) return d; }
+  return null;
+}
+function goalDeficit(){
+  const p=F?.settings?.profile; if(!p?.ciljDatum||!p?.ciljTeza||!p?.teza) return 400;
+  const dni=Math.max(1,Math.round((parseIso(p.ciljDatum)-new Date())/864e5));
+  const kg=p.teza-p.ciljTeza; if(kg<=0) return 300;
+  return Math.min(1000, Math.round(kg*7700/dni));
+}
+function targetKcal(){
+  if (db.settings.kcalManual) return db.settings.kcalManual;
+  const pd=planToday(); if (pd?.kcal_vnos) return pd.kcal_vnos;
+  return Math.max(1400, Math.round(teza()*30 - goalDeficit()));
+}
+function burnKcal(){
+  const pd=planToday(); if (pd?.kcal_poraba) return {v:pd.kcal_poraba, src:'iz plana FORMA'};
+  return {v:Math.round(teza()*24*1.35), src:'ocena (osnovna poraba)'};
+}
+const protTarget = () => Math.round(teza()*1.8);
+
+/* ================================================================
+   DNEVNIK
+================================================================ */
+let viewDay = todayIso();
+const dayData = iso => { db.days[iso] = db.days[iso] || {entries:[]}; return db.days[iso]; };
+const MEALS = [ ['zajtrk','🌅 Zajtrk',.25], ['kosilo','🍲 Kosilo',.35], ['malica','🍎 Malica',.15], ['vecerja','🌙 Večerja',.25] ];
+function autoMeal(){
+  const h = new Date().getHours() + new Date().getMinutes()/60;
+  return h<10.5?'zajtrk':h<14.5?'kosilo':h<17.5?'malica':'vecerja';
+}
+const sumK = arr => arr.reduce((a,e)=>a+(+e.kcal||0),0);
+const sumB = arr => arr.reduce((a,e)=>a+(+e.b||0),0);
+
+function shiftDay(dir){
+  viewDay = dir===0 ? todayIso() : isoDate(addDays(parseIso(viewDay),dir));
+  renderLog();
+}
+
+/* ================================================================
+   GEMINI VISION
+================================================================ */
+async function gemini(parts){
+  const key = geminiKey();
+  if (!key){ openSettings(); throw new Error('Vpiši Gemini API ključ (ali odpri FORMA Trener, da ga prevzamem).'); }
+  const body = { contents:[{role:'user',parts}], generationConfig:{ temperature:.2, response_mime_type:'application/json' } };
+  const call = m => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`,{
+    method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':key}, body:JSON.stringify(body) });
+  let res = await call(geminiModel());
+  if (res.status===404 && geminiModel()!=='gemini-flash-latest') res = await call('gemini-flash-latest');
+  if (!res.ok){
+    let msg='Gemini napaka ('+res.status+')';
+    try{ const e=await res.json(); msg+=': '+(e.error?.message||'').slice(0,140); }catch(_){}
+    if (res.status===429) msg='Gemini: presežena kvota — počakaj minuto.';
+    throw new Error(msg);
+  }
+  const data = await res.json();
+  let txt = data.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'';
+  txt = txt.trim().replace(/^```(json)?/i,'').replace(/```$/,'').trim();
+  const a=txt.indexOf('{'), b=txt.lastIndexOf('}');
+  if (a>-1&&b>a) txt=txt.slice(a,b+1);
+  return JSON.parse(txt);
+}
+
+function fileToImages(file, cb){
+  const img=new Image(); const url=URL.createObjectURL(file);
+  img.onload=()=>{
+    const mk=(max,q)=>{ const sc=Math.min(1,max/Math.max(img.width,img.height)); const c=document.createElement('canvas');
+      c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height); return c.toDataURL('image/jpeg',q); };
+    cb({ big: mk(1280,.85), thumb: mk(110,.7) });
+    URL.revokeObjectURL(url);
+  };
+  img.src=url;
+}
+
+/* zaporedna vrsta za več slik */
+const queue = [];
+let qBusy = false;
+function enqueue(file){
+  if (!file || !file.type?.startsWith('image/')) return;
+  fileToImages(file, imgs=>{
+    const q={ id:uid(), imgs, status:'čaka …' };
+    queue.push(q); renderQueue(); processQueue();
+  });
+}
+function renderQueue(){
+  $('queue').innerHTML = queue.map(q=>`
+    <div class="q-item"><img src="${q.imgs.thumb}">
+      <span>${q.status==='čaka …'?'V vrsti':q.status==='analiza'?'AI analizira …':q.status}</span>
+      <span class="st">${q.status==='analiza'?'<span class="sping"></span>':q.status==='čaka …'?'⏳':q.status.startsWith('✓')?'✅':'⚠️'}</span>
+    </div>`).join('');
+}
+async function processQueue(){
+  if (qBusy) return; qBusy = true;
+  while (queue.some(q=>q.status==='čaka …')){
+    const q = queue.find(x=>x.status==='čaka …');
+    q.status='analiza'; renderQueue();
+    try{
+      const r = await gemini([
+        { inline_data:{ mime_type:'image/jpeg', data:q.imgs.big.split(',')[1] } },
+        { text:`Na fotografiji je hrana — pogosto na kuhinjski tehtnici. Analiziraj zelo natančno:
+1. Če je viden ZASLON TEHTNICE, preberi točno številko (grami). To je najpomembnejši podatek!
+2. Prepoznaj jed oz. živila na sliki (če jih je več, jih naštej v opombi).
+3. Oceni kalorije in beljakovine ZA TOČNO TO KOLIČINO (uporabi grame s tehtnice; brez tehtnice oceni porcijo po videzu; upoštevaj olje/omako, če je verjetna).
+Trenutni čas: ${new Date().toLocaleTimeString('sl-SI',{hour:'2-digit',minute:'2-digit'})}.
+Vrni SAMO JSON:
+{"jed":"kratko ime v slovenščini","grami_tehtnica":number|null,"grami_ocena":number,"kcal":number,"beljakovine_g":number,"obrok":"zajtrk|kosilo|malica|vecerja","zanesljivost":"visoka|srednja|nizka","opomba":"kaj vidiš, zelo kratko"}` }
+      ]);
+      const grami = r.grami_tehtnica ?? r.grami_ocena ?? null;
+      const e = { id:uid(), time:new Date().toTimeString().slice(0,5),
+        meal: ['zajtrk','kosilo','malica','vecerja'].includes(r.obrok) ? r.obrok : autoMeal(),
+        jed: r.jed||'Hrana', grami: grami?Math.round(grami):null,
+        kcal: Math.round(+r.kcal||0), b: Math.round(+r.beljakovine_g||0),
+        zan: r.zanesljivost||'', op: r.opomba||'', thumb: q.imgs.thumb };
+      dayData(todayIso()).entries.push(e);
+      save(); renderAll();
+      q.status = `✓ ${e.jed} · ${e.kcal} kcal${r.grami_tehtnica?` (tehtnica: ${e.grami} g)`:''}`;
+    }catch(err){ q.status='⚠️ '+err.message.slice(0,60); toast(err.message,'err'); }
+    renderQueue();
+  }
+  qBusy=false;
+  setTimeout(()=>{ for(let i=queue.length-1;i>=0;i--) if(queue[i].status.startsWith('✓')) queue.splice(i,1); renderQueue(); }, 6000);
+}
+
+/* ================================================================
+   IZRIS
+================================================================ */
+function renderHero(){
+  const d = dayData(todayIso());
+  const eaten = sumK(d.entries), target = targetKcal(), left = target - eaten;
+  const prot = sumB(d.entries), pt = protTarget();
+  const burn = burnKcal();
+  const pd = planToday();
+
+  $('todayLbl').textContent = `${DNEVI[(new Date().getDay()+6)%7]} ${new Date().getDate()}. ${MESECI[new Date().getMonth()]}`;
+  $('planLbl').textContent = pd ? `plan: ${pd.naslov||pd.tip}` : '';
+
+  const r=74, C=2*Math.PI*r, frac=Math.min(1.25, eaten/Math.max(1,target));
+  const ring=$('ringP');
+  ring.setAttribute('stroke-dasharray', C);
+  ring.setAttribute('stroke-dashoffset', C*(1-Math.min(1,frac)));
+  ring.setAttribute('stroke', eaten>target ? 'var(--red)' : eaten>target*.85 ? 'var(--yellow)' : '#3fce6b');
+  $('ringKcal').textContent = eaten;
+  $('ringSub').textContent = `/ ${target} kcal`;
+
+  $('stLeft').textContent = (left>=0?left:0) + ' kcal';
+  $('stLeft').style.color = left<0 ? 'var(--red)' : left<200 ? 'var(--yellow)' : 'var(--acc2)';
+  if (left<0) $('stLeft').textContent = `${-left} čez!`;
+  $('stTarget').textContent = target+' kcal';
+  $('stTargetSrc').textContent = db.settings.kcalManual ? 'ročno nastavljen' : pd?.kcal_vnos ? 'iz FORMA plana ✓' : 'ocena (teža − deficit)';
+  $('stBurn').textContent = '~'+burn.v+' kcal';
+  $('stBurnSrc').textContent = burn.src;
+  $('stProt').textContent = `${prot} / ${pt} g`;
+  $('protBar').style.width = Math.min(100, prot/pt*100)+'%';
+  $('protBar').style.background = prot>=pt ? 'var(--acc)' : 'var(--blue)';
+  $('stProtT').textContent = prot>=pt ? 'cilj dosežen 💪' : `še ${pt-prot} g (skuta, jajca, jogurt)`;
+}
+
+function renderLog(){
+  const iso = viewDay, d = dayData(iso), today = iso===todayIso();
+  const dd = parseIso(iso);
+  $('logDayLbl').textContent = (today?'Danes, ':'')+`${DNEVI[(dd.getDay()+6)%7].slice(0,3)} ${dd.getDate()}. ${MESECI[dd.getMonth()]}`;
+  const target = today ? targetKcal() : (d.target||targetKcal());
+  $('logSum').textContent = `Σ ${sumK(d.entries)} / ${target} kcal · ${sumB(d.entries)} g beljakovin`;
+
+  const eaten = sumK(d.entries);
+  let html='';
+  for (const [key,label,share] of MEALS){
+    const es = d.entries.filter(e=>e.meal===key);
+    const mBud = Math.round(target*share), mEat = sumK(es);
+    const still = Math.max(0, mBud-mEat);
+    html += `<div class="meal">
+      <div class="meal-head"><span class="nm">${label}</span>
+        <span class="bud">${mEat?`<b>${mEat}</b> / `:''}priporočeno ~${mBud} kcal${(today&&!mEat)?` · <b style="color:var(--acc2)">na voljo ~${Math.min(still, Math.max(0,target-eaten))}</b>`:''}</span></div>
+      ${es.map(e=>`<div class="entry" onclick="openEdit('${iso}','${e.id}')">
+        ${e.thumb?`<img src="${e.thumb}">`:`<div class="noimg">🍽️</div>`}
+        <div class="nm">${esc(e.jed)}<small>${e.time||''}${e.grami?` · ${e.grami} g`:''}${e.zan==='nizka'?' · ⚠️ groba ocena':''}</small></div>
+        <div class="kc">${e.kcal} kcal<small>${e.b||0} g belj.</small></div>
+        <button class="del" onclick="event.stopPropagation();delEntry('${iso}','${e.id}')">🗑</button>
+      </div>`).join('')}
+    </div>`;
+  }
+  if (!d.entries.length) html = `<div class="empty"><span class="big">📸</span>Ni še vnosov za ta dan.<br>Slikaj hrano na tehtnici in jo prilepi zgoraj.</div>`;
+  $('mealsBox').innerHTML = html;
+}
+
+let histChart=null;
+function renderHist(){
+  if (typeof Chart==='undefined') return;
+  Chart.defaults.color='#8b9bab'; Chart.defaults.font.family='Inter, sans-serif';
+  const days=[]; for(let i=13;i>=0;i--) days.push(isoDate(addDays(new Date(),-i)));
+  const vals = days.map(d=> db.days[d] ? sumK(db.days[d].entries) : 0);
+  const tgt = targetKcal();
+  if (histChart) histChart.destroy();
+  histChart = new Chart($('histChart'), { type:'bar',
+    data:{ labels:days.map(d=>{const x=parseIso(d);return x.getDate()+'.'+(x.getMonth()+1)+'.'}),
+      datasets:[
+        {label:'kcal', data:vals, backgroundColor:vals.map(v=> v===0?'rgba(139,155,171,.15)': v>tgt?'rgba(255,92,92,.75)':'rgba(63,206,107,.75)'), borderRadius:5, maxBarThickness:26},
+        {label:'cilj', data:days.map(()=>tgt), type:'line', borderColor:'#ffc247', borderDash:[6,4], pointRadius:0, borderWidth:1.6}
+      ]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{ x:{grid:{display:false}}, y:{grid:{color:'rgba(45,61,80,.35)'}} } }
+  });
+}
+
+function renderLink(){
+  const pd = planToday();
+  $('linkBanner').innerHTML = F
+    ? `<div class="link-banner ok">🔗 Povezano s <b>&nbsp;FORMA Trener&nbsp;</b> ${pd?`— danes: ${esc(pd.naslov||pd.tip)} · cilj vnosa <b>&nbsp;${targetKcal()} kcal</b>${pd.kcal_poraba?` · poraba ~${pd.kcal_poraba} kcal`:''}`:'— za danes ni plana, cilj izračunan iz profila'}</div>`
+    : `<div class="link-banner no">○ FORMA Trener ni zaznan (odpri ga vsaj enkrat v istem brskalniku) — cilj lahko nastaviš ročno v ⚙️ Nastavitvah.</div>`;
+}
+
+function renderAll(){ renderLink(); renderHero(); renderLog(); renderHist(); renderPlanTab(); }
+
+/* ================================================================
+   ZAVIHKI + PLAN (iz FORMA Trenerja)
+================================================================ */
+function showPane(name){
+  document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('active', p.id==='pane-'+name));
+  $('tabBtnKcal').classList.toggle('on', name==='kcal');
+  $('tabBtnPlan').classList.toggle('on', name==='plan');
+}
+function chipTip(tip){
+  const t=(tip||'').toLowerCase();
+  if (t.includes('pohod')||t.includes('hrib')) return {i:'🥾', l:'POHOD'};
+  if (t.includes('moč')||t.includes('moc')) return {i:'💪', l:'TRENING MOČI'};
+  if (t.includes('poči')||t.includes('poci')||t.includes('prosto')) return {i:'🛌', l:'POČITEK'};
+  return {i:'🚴', l:'KOLO'};
+}
+const opisHtml = s => s ? esc(s).split(/\n/).filter(x=>x.trim()).map(l=>`<div class="opis-line">${l}</div>`).join('') : '';
+const fmtDur = min => { if(!min) return '–'; const h=Math.floor(min/60), m=Math.round(min%60); return h?`${h}h ${pad(m)}m`:`${m} min`; };
+
+function renderPlanTab(){
+  const el=$('planList'); if(!el) return;
+  $('planSyncLbl').innerHTML = db.settings.sync?.bin ? '<span class="sync-dot on"></span>sinhronizirano' : '<span class="sync-dot off"></span>samo ta naprava';
+  if (!F?.plans?.length){
+    el.innerHTML = `<div class="empty"><span class="big">📅</span>Ni plana.<br>${db.settings.sync?.bin?'Klikni ⟳ Osveži, ali generiraj plan v FORMA Trenerju.':'Odpri FORMA Trener na tej napravi ali nastavi 🔄 sinhronizacijo v ⚙️.'}</div>`;
+    return;
+  }
+  const from = isoDate(addDays(new Date(),-1)), to = isoDate(addDays(new Date(),7));
+  const days = [];
+  for (const p of F.plans) for (const d of (p.days||[])) if (d.datum>=from && d.datum<=to) days.push(d);
+  days.sort((a,b)=>a.datum.localeCompare(b.datum));
+  if (!days.length){ el.innerHTML = `<div class="empty"><span class="big">📅</span>Za naslednje dni ni plana — generiraj ga v FORMA Trenerju.</div>`; return; }
+  const today = todayIso();
+  el.innerHTML = days.map(d=>{
+    const dd = parseIso(d.datum), ct = chipTip(d.tip);
+    const done = d.done || (F.rides||[]).some(r=>r.date===d.datum);
+    const isToday = d.datum===today;
+    return `<div class="pday ${isToday?'today':''} ${done?'done':''}">
+      <div class="pd-head">
+        <span class="pd-day">${DNEVI[(dd.getDay()+6)%7].slice(0,3)} ${dd.getDate()}.${dd.getMonth()+1}.</span>
+        <span class="pd-sport">${ct.i} ${ct.l}</span>
+        <span class="pd-title">${esc(d.naslov||'')}</span>
+        <span class="pd-meta">${ct.l==='POČITEK'?'—':fmtDur(d.trajanje_min)+' · ~'+(d.tss_ocena||'?')+' TSS'}${done?'<span class="okk"> ✓</span>':''}</span>
+      </div>
+      ${d.opis?`<div class="pd-sec">${opisHtml(d.opis)}</div>`:''}
+      ${d.vaje?`<div class="pd-sec"><div class="pd-lbl">🏋️ Vaje (muscle-up)</div>${d.vaje.includes('\n')?opisHtml(d.vaje):`<div class="opis-line">${esc(d.vaje)}</div>`}</div>`:''}
+      ${(d.prehrana||d.kcal_vnos)?`<div class="pd-sec"><div class="pd-lbl">🍽 Prehrana</div>${esc(d.prehrana||'').split(/\s*\|\s*/).filter(x=>x).map(x=>`<div class="opis-line">${x}</div>`).join('')}${d.kcal_vnos?`<div class="hint" style="color:var(--yellow);font-weight:700;margin-top:4px">🔥 vnos ~${d.kcal_vnos} · poraba ~${d.kcal_poraba||'?'} kcal</div>`:''}</div>`:''}
+      ${isToday && ct.l!=='POČITEK' ? `<button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="$('adaptBack').classList.add('open')">⏱ Nimam toliko časa</button>`:''}
+    </div>`;
+  }).join('');
+}
+
+/* prilagoditev današnjega treninga času */
+async function adaptToday(){
+  const min = +$('aMin').value||30, note = $('aNote').value.trim();
+  const day = planToday();
+  if (!day){ toast('Za danes ni plana.','err'); return; }
+  const btn=$('btnAdapt'); const orig=btn.innerHTML; btn.disabled=true; btn.innerHTML='<span class="spin"></span> Prilagajam …';
+  try{
+    const r = await gemini([{ text:
+`Si trener. Kolesar ima danes v planu: ${day.tip} — ${day.naslov} (${day.trajanje_min} min).
+Vsebina: ${day.opis||'—'}
+Vaje: ${day.vaje||'—'}
+Na voljo ima SAMO ${min} minut.${note?` Opomba: ${note}.`:''} Teža: ${teza()} kg. Cilj: ${F?.settings?.profile?.cilj||'forma'}.
+Prilagodi današnji trening tem minutam — ohrani namen dneva, obdrži najpomembnejše, izpusti manj pomembno. Piši preprosto slovensko, vsak korak v svoji vrstici (loči z \\n), utrip s številkami v oklepaju. Brez žargona.
+Vrni SAMO JSON: {"naslov":"...","trajanje_min":${min},"opis":"...","vaje":"skrajšane vaje ali prazno","tss_ocena":number,"razlaga":"1 stavek zakaj tako"}` }]);
+    // zapiši nazaj v FORMA plan
+    for (const p of (F.plans||[])){
+      const d = (p.days||[]).find(x=>x.datum===todayIso());
+      if (d){ Object.assign(d, { naslov:r.naslov||d.naslov, trajanje_min:+r.trajanje_min||min, opis:r.opis||d.opis, vaje:r.vaje??d.vaje, tss_ocena:+r.tss_ocena||d.tss_ocena }); break; }
+    }
+    F._ts = Date.now();
+    localStorage.setItem('forma_trener_v1', JSON.stringify(F));
+    syncPush('forma');
+    $('adaptBack').classList.remove('open');
+    renderAll();
+    toast('Trening prilagojen na '+min+' min. '+(r.razlaga||''),'');
+  }catch(e){ toast(e.message,'err'); }
+  btn.disabled=false; btn.innerHTML=orig;
+}
+
+/* ================================================================
+   SINHRONIZACIJA MED NAPRAVAMI (jsonbin.io)
+================================================================ */
+const SYNC_API = 'https://api.jsonbin.io/v3/b';
+async function syncSetup(code){
+  code = code.trim();
+  if (!code){ db.settings.sync=null; save(); return; }
+  if (code.includes('|')){
+    const [bin,key] = code.split('|').map(x=>x.trim());
+    db.settings.sync = {bin,key}; save();
+    await syncPull(true);
+    toast('Povezano z obstoječo sinhronizacijo. 🔄','');
+    return;
+  }
+  // Master key → ustvari nov bin
+  const res = await fetch(SYNC_API, { method:'POST',
+    headers:{ 'Content-Type':'application/json', 'X-Master-Key':code, 'X-Bin-Name':'forma-sync', 'X-Bin-Private':'true' },
+    body: JSON.stringify({ forma: F||null, forma_ts: F?._ts||Date.now(), kalorije: db, kalorije_ts: Date.now() }) });
+  if (!res.ok) throw new Error('jsonbin: HTTP '+res.status+' — preveri Master Key.');
+  const d = await res.json();
+  db.settings.sync = { bin:d.metadata?.id, key:code }; save();
+  toast('Sinhronizacija vklopljena! Koda za drugo napravo je v ⚙️ Nastavitvah.','');
+}
+async function syncGet(){
+  const c=db.settings.sync; if(!c?.bin) return null;
+  const res = await fetch(`${SYNC_API}/${c.bin}/latest`, { headers:{'X-Master-Key':c.key} });
+  if (!res.ok) throw new Error('Sync branje: HTTP '+res.status);
+  return (await res.json()).record || {};
+}
+async function syncPull(manual){
+  const c=db.settings.sync; if(!c?.bin){ if(manual) toast('Sinhronizacija ni nastavljena (⚙️).','err'); return; }
+  try{
+    const rec = await syncGet();
+    let changed=false;
+    if (rec.forma && (rec.forma_ts||0) > (F?._ts||0)){
+      localStorage.setItem('forma_trener_v1', JSON.stringify(rec.forma)); refreshF(); changed=true;
+    }
+    if (rec.kalorije && (rec.kalorije_ts||0) > (db._ts||0)){
+      const mySync = db.settings.sync, myKey = db.settings.key;
+      db = Object.assign(db, rec.kalorije);
+      db.settings.sync = mySync; if(myKey) db.settings.key = myKey;
+      save(); changed=true;
+    }
+    if (changed){ renderAll(); if(manual) toast('Plan in podatki osveženi. 🔄',''); }
+    else if (manual) toast('Vse je že usklajeno. ✓','');
+  }catch(e){ if(manual) toast(e.message,'err'); else console.warn('sync:',e.message); }
+}
+let pushTimer=null;
+function syncPush(part){
+  const c=db.settings.sync; if(!c?.bin) return;
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(async ()=>{
+    try{
+      const rec = await syncGet() || {};
+      if (part==='forma' || !part){ rec.forma = formaState(); rec.forma_ts = rec.forma?._ts || Date.now(); }
+      if (part==='kalorije' || !part){ db._ts = Date.now(); rec.kalorije = db; rec.kalorije_ts = db._ts; }
+      await fetch(`${SYNC_API}/${c.bin}`, { method:'PUT',
+        headers:{'Content-Type':'application/json','X-Master-Key':c.key}, body: JSON.stringify(rec) });
+    }catch(e){ console.warn('sync push:', e.message); }
+  }, 1200);
+}
+
+/* ================================================================
+   UREJANJE VNOSOV
+================================================================ */
+let editRef = null; // {iso, id} ali null=nov ročni
+function openEdit(iso,id){
+  const e = dayData(iso).entries.find(x=>x.id===id); if(!e) return;
+  editRef = {iso,id};
+  $('editTitle').textContent='Uredi vnos';
+  if (e.thumb){ $('editImg').src=e.thumb; $('editImg').style.display='block'; } else $('editImg').style.display='none';
+  $('eJed').value=e.jed; $('eGrami').value=e.grami??''; $('eKcal').value=e.kcal; $('eB').value=e.b||''; $('eObrok').value=e.meal;
+  $('eOpomba').textContent = e.op ? 'AI: '+e.op : '';
+  $('editBack').classList.add('open');
+}
+function openManual(){
+  editRef = null;
+  $('editTitle').textContent='Ročni vnos';
+  $('editImg').style.display='none';
+  $('eJed').value=''; $('eGrami').value=''; $('eKcal').value=''; $('eB').value=''; $('eObrok').value=autoMeal();
+  $('eOpomba').textContent='';
+  $('editBack').classList.add('open');
+}
+function saveEdit(){
+  const vals = { jed:$('eJed').value.trim()||'Hrana', grami:+$('eGrami').value||null, kcal:Math.round(+$('eKcal').value||0), b:Math.round(+$('eB').value||0), meal:$('eObrok').value };
+  if (!vals.kcal){ toast('Vpiši kalorije.','err'); return; }
+  if (editRef){
+    const e = dayData(editRef.iso).entries.find(x=>x.id===editRef.id);
+    Object.assign(e, vals);
+  } else {
+    dayData(viewDay).entries.push({ id:uid(), time:new Date().toTimeString().slice(0,5), ...vals });
+  }
+  save(); renderAll(); closeEdit();
+}
+function closeEdit(){ $('editBack').classList.remove('open'); }
+function delEntry(iso,id){
+  if (!confirm('Izbrišem ta vnos?')) return;
+  const d=dayData(iso); d.entries=d.entries.filter(x=>x.id!==id);
+  save(); renderAll();
+}
+
+/* ================================================================
+   NASTAVITVE
+================================================================ */
+function openSettings(){
+  $('sKey').value=db.settings.key||''; $('sModel').value=db.settings.model||'';
+  $('sKcal').value=db.settings.kcalManual??''; $('sTeza').value=db.settings.tezaManual??'';
+  const sc=db.settings.sync;
+  $('sSync').value = sc?.bin ? `${sc.bin}|${sc.key}` : '';
+  $('syncStatus').innerHTML = sc?.bin
+    ? `✅ Sinhronizacija aktivna. <b>Koda za drugo napravo</b> (kopiraj celo vrstico zgoraj): <code style="user-select:all">${sc.bin}|${sc.key.slice(0,6)}…</code>`
+    : 'Sinhronizacija ni nastavljena — deluje samo na tej napravi.';
+  $('setLink').innerHTML = F
+    ? `🔗 FORMA Trener zaznan — ključ, teža in dnevni cilj se samodejno prevzamejo iz njega.${F?.settings?.geminiKey?' (API ključ najden ✓)':' (v FORMA ni ključa!)'}`
+    : `FORMA Trener ni zaznan v tem brskalniku — vpiši ključ in cilj ročno.`;
+  $('setBack').classList.add('open');
+}
+async function saveSettings(){
+  db.settings.key=$('sKey').value.trim(); db.settings.model=$('sModel').value;
+  db.settings.kcalManual=+$('sKcal').value||null; db.settings.tezaManual=+$('sTeza').value||null;
+  save();
+  const code=$('sSync').value.trim();
+  const cur=db.settings.sync ? `${db.settings.sync.bin}|${db.settings.sync.key}` : '';
+  if (code!==cur){
+    try{ await syncSetup(code); }catch(e){ toast(e.message,'err'); }
+  }
+  renderAll(); closeModalS();
+  toast('Shranjeno.','');
+}
+function closeModalS(){ $('setBack').classList.remove('open'); }
+
+/* ================================================================
+   DOGODKI + ZAGON
+================================================================ */
+document.addEventListener('paste', e=>{
+  const items=[...(e.clipboardData?.items||[])].filter(i=>i.type.startsWith('image/'));
+  if (items.length){ e.preventDefault(); items.forEach(i=>enqueue(i.getAsFile())); }
+});
+const dz=$('dz');
+['dragover','dragenter'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('over')}));
+['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('over')}));
+dz.addEventListener('drop', e=>{ [...e.dataTransfer.files].forEach(enqueue); });
+$('fileIn').addEventListener('change', e=>{ [...e.target.files].forEach(enqueue); e.target.value=''; });
+$('fileGal').addEventListener('change', e=>{ [...e.target.files].forEach(enqueue); e.target.value=''; });
+document.querySelectorAll('.modal-back').forEach(mb=>mb.addEventListener('mousedown',e=>{ if(e.target===mb) mb.classList.remove('open'); }));
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') document.querySelectorAll('.modal-back.open').forEach(m=>m.classList.remove('open')); });
+
+// shrani današnji cilj v zgodovino dneva (za pregled nazaj)
+dayData(todayIso()).target = targetKcal();
+save();
+renderAll();
+// sinhronizacija: potegni ob zagonu, ob vrnitvi v aplikacijo in vsakih 90 s
+syncPull();
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) syncPull(); });
+</script>
+</body>
+</html>
