@@ -210,6 +210,9 @@ textarea{resize:vertical;min-height:70px}
 .day-row.today .dr-day{color:var(--acc2)}
 .dr-title{font-weight:800;font-size:15px;flex:1;min-width:180px}
 .dr-meta{font-size:12px;color:var(--dim);font-weight:700;white-space:nowrap}
+.dr-wx{font-size:11.5px;font-weight:800;background:rgba(255,255,255,.05);border:1px solid var(--border2);padding:3px 9px;border-radius:7px;white-space:nowrap}
+.dr-wx.warn{color:var(--blue);border-color:rgba(77,163,255,.5);background:rgba(77,163,255,.1)}
+.dr-wxwarn{font-size:12px;font-weight:600;color:var(--blue);background:rgba(77,163,255,.08);border:1px solid rgba(77,163,255,.3);border-radius:8px;padding:7px 11px;margin-top:9px}
 .dr-meta .okk{color:var(--green);margin-left:6px}
 .dr-body{display:grid;gap:16px;margin-top:11px}
 @media(max-width:950px){.dr-body{grid-template-columns:1fr!important}}
@@ -272,6 +275,13 @@ textarea{resize:vertical;min-height:70px}
 }
 .empty .big{font-size:34px;display:block;margin-bottom:8px}
 .ai-note{font-size:12px;color:var(--dim);display:flex;gap:6px;align-items:center;margin-top:10px}
+.weather-strip{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px}
+.wx{flex:1;min-width:58px;text-align:center;background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:11px;padding:9px 4px}
+.wx.bad{border-color:rgba(77,163,255,.45);background:rgba(77,163,255,.08)}
+.wx-d{font-size:10.5px;font-weight:800;text-transform:uppercase;color:var(--dim);letter-spacing:.04em}
+.wx-e{font-size:23px;line-height:1.2;margin:2px 0}
+.wx-t{font-size:14px;font-weight:800}
+.wx-p{font-size:10px;color:var(--blue);font-weight:700}
 .mt{margin-top:16px}.mb{margin-bottom:16px}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .spread{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
@@ -385,7 +395,7 @@ h2#calLabel{letter-spacing:-.02em}
         <div class="val" id="sbFormVal">–</div>
         <div class="desc" id="sbFormDesc">Dodaj vožnje za izračun</div>
       </div>
-      <div style="text-align:center;font-size:10.5px;color:var(--dim);margin-top:8px">Trener AI · v2.7</div>
+      <div style="text-align:center;font-size:10.5px;color:var(--dim);margin-top:8px">Trener AI · v2.8</div>
     </div>
   </aside>
 
@@ -480,6 +490,12 @@ h2#calLabel{letter-spacing:-.02em}
           <button class="btn btn-primary" id="btnGenPlan" onclick="generatePlan()">✨ Generiraj plan</button>
           <button class="btn btn-ghost" id="btnMacro" onclick="generateMacro()">🎯 Plan do cilja</button>
         </div>
+      </div>
+
+      <div class="card mb">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><b style="font-size:13.5px">🌦️ Napoved — Vodice in okolica</b><span class="chip" style="font-size:10.5px">7 dni</span></div>
+        <div class="weather-strip" id="weatherStrip"></div>
+        <div class="ai-note" style="margin-top:8px">Plan se prilagaja vremenu: pohodi in kolo na suhe dni, ob dežju trenažer ali moč.</div>
       </div>
 
       <div class="card mb">
@@ -763,7 +779,8 @@ const defaultState = () => ({
   macro:null, // {cilj, ciljDatum, povzetek, weeks:[{zacetek, faza, fokus, ure}]}
   riderProfile:null, // AI analiza: {tip, ocena_nivoja, moci[], sibkosti[], v_kaj_se_razviti, komentar}
   rides:[],   // {id, date, name, source, dist, time, elev, avgHr, maxHr, speed, notes, tss, analysis, stravaId}
-  plans:[]    // {weekStart, summary, focus, days:[{date, dan, tip, naslov, trajanje, opis, tss, doneRideId}], generatedAt}
+  plans:[],   // {weekStart, summary, focus, days:[{date, dan, tip, naslov, trajanje, opis, tss, doneRideId}], generatedAt}
+  weather:null // {ts, days:[{date,code,tmax,tmin,pop,rain,wind}]}
 });
 let state = defaultState();
 try {
@@ -891,6 +908,7 @@ document.querySelectorAll('.nav-item').forEach(el=>{
 function switchTab(name){
   document.querySelectorAll('.nav-item').forEach(e=>e.classList.toggle('active', e.dataset.tab===name));
   document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('active', e.id==='tab-'+name));
+  if (name==='plan') renderWeather();   // osveži vremenski trak ob odprtju plana
 }
 
 /* ================================================================
@@ -1197,6 +1215,11 @@ function renderPlan(){
     const done = d.done || state.rides.some(r=>r.date===d.datum);
     const isRest = chipClass(d.tip)==='pocitek';
     const sl = sportLabel(d.tip);
+    const wd = weatherByDate(d.datum);
+    const wi = wd ? weatherInfo(wd.code) : null;
+    const outdoor = chipClass(d.tip)==='pohod' || (['vzdrzljivost','tempo','intervali','regeneracija'].includes(chipClass(d.tip)) || (sl.l==='KOLO'));
+    const wxBadge = wi ? `<span class="dr-wx ${(wi.bad&&outdoor)?'warn':''}" title="${wi.t}, dež ${wd.pop}%">${wi.e} ${wd.tmax}°${wd.pop>=40?` · ${wd.pop}%💧`:''}</span>` : '';
+    const wxWarn = (wi && wi.bad && outdoor && !isRest && !done) ? `<div class="dr-wxwarn">${wi.e} Napoved: ${wi.t} (dež ${wd.pop}%) — ${chipClass(d.tip)==='pohod'?'razmisli o prestavitvi pohoda na lepši dan':'ob dežju raje trenažer ali trening moči'}.</div>` : '';
     const cols = [];
     if (d.opis) cols.push(`<div class="dr-col"><div class="dr-lbl">${sl.i} ${sl.l}</div>${opisHtml(d.opis)}</div>`);
     if (d.vaje) cols.push(`<div class="dr-col"><div class="dr-lbl">🏋️ Vaje (muscle-up)</div>${d.vaje.includes('\n')?opisHtml(d.vaje):esc(d.vaje).split(/,\s(?=[A-ZČŠŽ])/).join('<br>')}</div>`);
@@ -1207,8 +1230,10 @@ function renderPlan(){
         <span class="dr-sport">${sl.i} ${sl.l}</span>
         <span class="chip ${chipClass(d.tip)}">${esc(d.tip)}</span>
         <span class="dr-title">${esc(d.naslov)}</span>
+        ${wxBadge}
         <span class="dr-meta">${isRest?'—':fmtDur(d.trajanje_min)+' · ~'+(d.tss_ocena||'?')+' TSS'}${done?'<span class="okk">✓ opravljeno</span>':''}</span>
       </div>
+      ${wxWarn}
       ${cols.length?`<div class="dr-body" style="grid-template-columns:${cols.length===3?'1.25fr 1fr 1fr':'repeat('+cols.length+',1fr)'}">${cols.join('')}</div>`:''}
     </div>`;
   }).join('');
@@ -1253,6 +1278,48 @@ async function gemini(parts, {json=true, temp=0.4}={}){
   const a = txt.indexOf('{'), b = txt.lastIndexOf('}');
   if (a>-1 && b>a) txt = txt.slice(a, b+1);
   return JSON.parse(txt);
+}
+
+/* ================================================================
+   VREME (Open-Meteo, brezplačno, brez ključa) — Vodice in okolica
+================================================================ */
+const VODICE = { lat:46.19, lon:14.49 };
+function weatherInfo(c){
+  if(c===0) return {e:'☀️',t:'jasno',bad:0};
+  if(c<=2)  return {e:'🌤️',t:'pretežno jasno',bad:0};
+  if(c===3) return {e:'☁️',t:'oblačno',bad:0};
+  if(c<=48) return {e:'🌫️',t:'megla',bad:0};
+  if(c<=57) return {e:'🌦️',t:'rosenje',bad:1};
+  if(c<=67) return {e:'🌧️',t:'dež',bad:1};
+  if(c<=77) return {e:'🌨️',t:'sneg',bad:1};
+  if(c<=82) return {e:'🌧️',t:'plohe',bad:1};
+  if(c<=86) return {e:'🌨️',t:'snežne plohe',bad:1};
+  return {e:'⛈️',t:'nevihta',bad:2};
+}
+const weatherByDate = iso => (state.weather?.days||[]).find(d=>d.date===iso) || null;
+async function getWeather(force){
+  const w=state.weather;
+  if(!force && w && (Date.now()-(w.ts||0) < 3*3600e3) && (w.days||[]).some(d=>d.date>=todayIso())) return w;
+  try{
+    const u=`https://api.open-meteo.com/v1/forecast?latitude=${VODICE.lat}&longitude=${VODICE.lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,windspeed_10m_max&timezone=Europe%2FLjubljana&forecast_days=7`;
+    const d=await (await fetch(u)).json(), dd=d.daily;
+    const days=(dd.time||[]).map((t,i)=>({date:t, code:dd.weathercode[i], tmax:Math.round(dd.temperature_2m_max[i]), tmin:Math.round(dd.temperature_2m_min[i]), pop:dd.precipitation_probability_max[i]??0, rain:dd.precipitation_sum[i]??0, wind:Math.round(dd.windspeed_10m_max[i]??0)}));
+    state.weather={ts:Date.now(), days}; save();
+    return state.weather;
+  }catch(e){ console.warn('vreme:',e.message); return w||null; }
+}
+function weatherText(){
+  const w=state.weather; if(!w?.days?.length) return '';
+  const rows=w.days.filter(d=>d.date>=todayIso()).map(d=>{ const wi=weatherInfo(d.code);
+    return `- ${d.date}: ${wi.t}, ${d.tmin}–${d.tmax}°C, verjetnost padavin ${d.pop}%${d.rain>=2?` (${d.rain} mm)`:''}${d.wind>=35?`, veter ${d.wind} km/h`:''}`; }).join('\n');
+  return `VREMENSKA NAPOVED (Vodice in okolica, naslednji dnevi):\n${rows}`;
+}
+async function renderWeather(){
+  const el=$('weatherStrip'); if(!el) return;
+  const w=await getWeather();
+  if(!w?.days?.length){ el.innerHTML=''; return; }
+  el.innerHTML = w.days.filter(d=>d.date>=todayIso()).slice(0,7).map(d=>{ const wi=weatherInfo(d.code), dd=parseIso(d.date);
+    return `<div class="wx ${wi.bad?'bad':''}"><div class="wx-d">${DNEVI[(dd.getDay()+6)%7].slice(0,3)}</div><div class="wx-e">${wi.e}</div><div class="wx-t">${d.tmax}°</div><div class="wx-p">${d.pop}%💧</div></div>`; }).join('');
 }
 
 function saveGemini(){
@@ -1678,14 +1745,17 @@ async function generatePlan(fromIso){
   const startNote = fromIso
     ? `od ${dayLbl(days[0])} do ${dayLbl(days[6])} — NADALJEVANJE obstoječega plana proti cilju (nadaljuj progresijo)`
     : `od ${dayLbl(days[0])} — to je DANES — do ${dayLbl(days[6])}`;
-  const btn = $('btnGenPlan'); busy(btn, true, 'Sestavljam plan …');
+  const btn = $('btnGenPlan'); busy(btn, true, 'Preverjam vreme in sestavljam plan …');
   try{
+    await getWeather();
     const phase = macroPhaseFor(isoDate(weekStart(start)));
     const gd = goalDeficit();
     const r = await gemini([{ text:
 `Si profesionalni kolesarski trener. Sestavi trening plan za 7 DNI: ${startNote}.
 
 ${buildContext()}
+
+${weatherText()}
 
 ŽELJE ZA TA TEDEN: ${$('planWishes').value.trim() || 'ni posebnih želja'}
 ${phase ? `FAZA MAKRO PLANA ZA TA TEDEN: ${phase.faza} — ${phase.fokus} (~${phase.ure} h skupaj)` : ''}
@@ -1695,6 +1765,7 @@ ${STIL}
 ${STRATEGIJA}
 
 NAVODILA:
+- UPOŠTEVAJ VREME (napoved zgoraj, Vodice in okolica): pohode in kolo načrtuj na SUHE/lepe dni. Ob dežju, plohah ali nevihti (padavine >60 % ali koda nevihte) NE načrtuj pohoda; kolo tak dan prestavi na trenažer (v "opis" napiši "ob dežju: trenažer") ali ga zamenjaj z dnevom moči/regeneracije. Najtežje/najdaljše dneve (dolg pohod, intervali) postavi na NAJLEPŠE dni v tednu. Ob vročini (>30 °C) svetuj zgodnji termin in več vode. Pri vsakem zunanjem dnevu na kratko omeni vreme (npr. "sončno ~25°, idealno za hribe").
 - Plan gradi PO METODOLOGIJI TRENERJA (STIL zgoraj — enaki tipi treningov in struktura kot v profesionalnih planih), a ga PRILAGODI temu kolesarju: njegovemu AI profilu (krepi šibkosti, izkoristi moči), formi in ciljem.
 - Plan se začne DANES, ne v ponedeljek! Prvi dan določi po TRENUTNI svežini (TSB) in zadnjih vožnjah: če je svež in ni treniral, lahko takoj kakovosten trening; če je utrujen ali je danes že treniral, začni z regeneracijo/oddihom. NE začenjaj avtomatsko z oddihom.
 - Kolesar trenira po srčnem utripu — cone C1–C5 iz konteksta (ključnim intervalom pripiši tudi utrip, npr. "C4 = utrip 160–172").
@@ -2523,6 +2594,7 @@ function syncPush(){
 function renderAll(){ renderSidebar(); renderDash(); renderRides(); renderPlan(); renderCal(); renderTodayBox(); renderForma(); }
 fillSettings();
 renderAll();
+getWeather().then(()=>{ renderWeather(); renderPlan(); });   // vreme ob zagonu → osveži trak in dnevne oznake
 // samodejna sinhronizacija ob odprtju
 if (state.strava.accessToken) stravaImport(true);
 if (state.icu?.athleteId && state.icu?.apiKey) icuImport(true);

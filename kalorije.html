@@ -155,6 +155,9 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 .pd-title{font-weight:800;font-size:14px;flex:1;min-width:120px}
 .pd-title2{font-weight:800;font-size:15px;margin-top:7px;line-height:1.3}
 .pd-time{display:inline-block;margin-top:7px;font-size:12.5px;font-weight:800;color:var(--acc2);background:var(--accSoft);border:1px solid rgba(63,206,107,.25);padding:3px 10px;border-radius:8px}
+.pd-wx{font-size:11px;font-weight:800;background:rgba(255,255,255,.05);border:1px solid var(--border2);padding:2px 8px;border-radius:7px;white-space:nowrap}
+.pd-wx.warn{color:var(--blue);border-color:rgba(77,163,255,.5);background:rgba(77,163,255,.1)}
+.pd-wxwarn{font-size:12px;font-weight:600;color:var(--blue);background:rgba(77,163,255,.08);border:1px solid rgba(77,163,255,.3);border-radius:8px;padding:6px 10px;margin-top:8px}
 .pday.today .pd-time{color:var(--orange);background:rgba(252,76,2,.1);border-color:rgba(252,76,2,.3)}
 .pd-meta{font-size:11.5px;color:var(--dim);font-weight:700;white-space:nowrap;margin-left:auto}
 .pd-meta .okk{color:var(--acc2)}
@@ -163,6 +166,13 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 .pd-lbl{font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--acc2);margin-bottom:3px}
 .pd-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
 .pd-actions .btn{flex:1;justify-content:center;min-width:130px}
+.weather-strip{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px}
+.wx{flex:1;min-width:52px;text-align:center;background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:11px;padding:8px 3px}
+.wx.bad{border-color:rgba(77,163,255,.45);background:rgba(77,163,255,.08)}
+.wx-d{font-size:10px;font-weight:800;text-transform:uppercase;color:var(--dim)}
+.wx-e{font-size:21px;line-height:1.2;margin:1px 0}
+.wx-t{font-size:13px;font-weight:800}
+.wx-p{font-size:9.5px;color:var(--blue);font-weight:700}
 .sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px}
 .sync-dot.on{background:var(--acc);box-shadow:0 0 7px rgba(63,206,107,.7)}
 .sync-dot.off{background:var(--dim)}
@@ -223,7 +233,7 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 
   <div class="top">
     <div class="logo">🍽️</div>
-    <div><h1>KalorijeAI</h1><small>slikaj → AI prešteje kalorije · <b style="color:var(--acc2)">v2.7</b></small></div>
+    <div><h1>KalorijeAI</h1><small>slikaj → AI prešteje kalorije · <b style="color:var(--acc2)">v2.8</b></small></div>
     <div class="right">
       <button class="btn btn-ghost btn-sm" id="btnSyncTop" onclick="forceSync()" title="Sinhroniziraj zdaj (pošlji + prejmi)">⟳</button>
       <button class="btn btn-ghost btn-sm" onclick="openSettings()">⚙️ Nastavitve</button>
@@ -309,6 +319,8 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
   <div class="tabpane" id="pane-plan">
     <div class="card">
       <h3>📅 Moj trening plan <span class="sub" id="planSyncLbl"></span></h3>
+      <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px">🌦️ Napoved — Vodice in okolica</div>
+      <div class="weather-strip" id="weatherStripK" style="margin-bottom:12px"></div>
       <div class="hint" style="margin-bottom:12px">Iz FORMA Trenerja — kolo 🚴, pohod 🥾, moč 💪. Klikni "⏱ Nimam toliko časa", če je dan prekratek.</div>
       <div id="planList"></div>
       <div id="rebalMsg"></div>
@@ -832,6 +844,36 @@ function showPane(name){
   $('tabBtnPlan').classList.toggle('on', name==='plan');
   if (typeof syncPull==='function') syncPull(false);   // ob preklopu zavihka poberi najnovejše
 }
+/* --- VREME (Open-Meteo, Vodice) --- */
+function weatherInfo(c){
+  if(c===0) return {e:'☀️',t:'jasno',bad:0};
+  if(c<=2)  return {e:'🌤️',t:'pretežno jasno',bad:0};
+  if(c===3) return {e:'☁️',t:'oblačno',bad:0};
+  if(c<=48) return {e:'🌫️',t:'megla',bad:0};
+  if(c<=57) return {e:'🌦️',t:'rosenje',bad:1};
+  if(c<=67) return {e:'🌧️',t:'dež',bad:1};
+  if(c<=77) return {e:'🌨️',t:'sneg',bad:1};
+  if(c<=82) return {e:'🌧️',t:'plohe',bad:1};
+  if(c<=86) return {e:'🌨️',t:'snežne plohe',bad:1};
+  return {e:'⛈️',t:'nevihta',bad:2};
+}
+let wxCache=null;
+async function getWeatherK(){
+  if(wxCache && (Date.now()-wxCache.ts < 3*3600e3)) return wxCache;
+  try{
+    const u='https://api.open-meteo.com/v1/forecast?latitude=46.19&longitude=14.49&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Europe%2FLjubljana&forecast_days=7';
+    const d=await (await fetch(u)).json(), dd=d.daily;
+    wxCache={ts:Date.now(), days:(dd.time||[]).map((t,i)=>({date:t,code:dd.weathercode[i],tmax:Math.round(dd.temperature_2m_max[i]),pop:dd.precipitation_probability_max[i]??0}))};
+    return wxCache;
+  }catch(e){ return F?.weather || null; }   // rezerva: iz sinhroniziranega plana
+}
+async function renderWeatherK(){
+  const el=$('weatherStripK'); if(!el) return;
+  const w=await getWeatherK();
+  if(!w?.days?.length){ el.innerHTML='<span class="hint">Napovedi trenutno ni.</span>'; return; }
+  el.innerHTML=w.days.filter(d=>d.date>=todayIso()).slice(0,7).map(d=>{ const wi=weatherInfo(d.code), dd=parseIso(d.date);
+    return `<div class="wx ${wi.bad?'bad':''}"><div class="wx-d">${DNEVI[(dd.getDay()+6)%7].slice(0,3)}</div><div class="wx-e">${wi.e}</div><div class="wx-t">${d.tmax}°</div><div class="wx-p">${d.pop}%💧</div></div>`; }).join('');
+}
 function chipTip(tip){
   const t=(tip||'').toLowerCase();
   if (t.includes('pohod')||t.includes('hrib')) return {i:'🥾', l:'POHOD'};
@@ -844,6 +886,7 @@ const fmtDur = min => { if(!min) return '–'; const h=Math.floor(min/60), m=Mat
 
 function renderPlanTab(){
   const el=$('planList'); if(!el) return;
+  renderWeatherK();
   $('planSyncLbl').innerHTML = db.settings.sync?.bin ? '<span class="sync-dot on"></span>sinhronizirano' : '<span class="sync-dot off"></span>samo ta naprava';
   if (!F?.plans?.length){
     el.innerHTML = `<div class="empty"><span class="big">📅</span>Ni plana.<br>${db.settings.sync?.bin?'Klikni ⟳ Osveži, ali generiraj plan v FORMA Trenerju.':'Odpri FORMA Trener na tej napravi ali nastavi 🔄 sinhronizacijo v ⚙️.'}</div>`;
@@ -859,12 +902,17 @@ function renderPlanTab(){
     const dd = parseIso(d.datum), ct = chipTip(d.tip);
     const done = d.done || (F.rides||[]).some(r=>r.date===d.datum);
     const isToday = d.datum===today;
+    const wxd = (wxCache?.days||[]).find(x=>x.date===d.datum);
+    const wxi = wxd ? weatherInfo(wxd.code) : null;
+    const outdoor = ct.l==='POHOD' || ct.l==='KOLO';
     return `<div class="pday ${isToday?'today':''} ${done?'done':''}">
       <div class="pd-head">
         <span class="pd-day">${DNEVI[(dd.getDay()+6)%7].slice(0,3)} ${dd.getDate()}.${dd.getMonth()+1}.</span>
         <span class="pd-sport">${ct.i} ${ct.l}</span>
+        ${wxi?`<span class="pd-wx ${(wxi.bad&&outdoor)?'warn':''}">${wxi.e} ${wxd.tmax}°${wxd.pop>=40?` ${wxd.pop}%💧`:''}</span>`:''}
         ${done?'<span class="pd-meta"><span class="okk">✓ opravljeno</span></span>':''}
       </div>
+      ${(wxi&&wxi.bad&&outdoor&&!done)?`<div class="pd-wxwarn">${wxi.e} ${wxi.t} (dež ${wxd.pop}%) — ${ct.l==='POHOD'?'razmisli o prestavitvi pohoda':'ob dežju raje trenažer ali moč'}.</div>`:''}
       <div class="pd-title2">${esc(d.naslov||'')}</div>
       ${ct.l!=='POČITEK' && d.trajanje_min?`<div class="pd-time">⏱ Skupaj ~${fmtDur(d.trajanje_min)}${d.tss_ocena?` · ~${d.tss_ocena} TSS`:''}</div>`:''}
       ${d.opis?`<div class="pd-sec">${opisHtml(d.opis)}</div>`:''}
@@ -926,15 +974,19 @@ async function rebalanceWeek(){
   }
   const btn=$('btnRebal'); const orig=btn.innerHTML; btn.disabled=true; btn.innerHTML='<span class="spin"></span> Prilagajam teden …';
   try{
+    const wx = await getWeatherK();
+    const wxText = wx?.days?.length ? 'VREMENSKA NAPOVED (Vodice):\n'+wx.days.filter(d=>d.date>=today).map(d=>{const wi=weatherInfo(d.code);return `- ${d.datum||d.date}: ${wi.t}, ${d.tmax}°, dež ${d.pop}%`;}).join('\n') : '';
     const prof=F?.settings?.profile||{};
-    const r=await gemini([{text:`Si kolesarski trener. Kolesar želi, da glede na to, KAKO je dejansko izvedel treninge ta teden (v primerjavi s predpisanim), PAMETNO prilagodiš PREOSTANEK tedna, da tedenski cilj ostane smiseln.
+    const r=await gemini([{text:`Si kolesarski trener. Kolesar želi, da glede na to, KAKO je dejansko izvedel treninge ta teden (v primerjavi s predpisanim) IN glede na VREME, PAMETNO prilagodiš PREOSTANEK tedna, da tedenski cilj ostane smiseln.
 Profil: ${prof.teza||'?'} kg, višina ${prof.visina||'?'} cm, cilj "${prof.cilj||'lean-fit'}", tedenski obseg ~${prof.ure||6} h. Danes je ${today}.
 IZVEDBA DO DANES ta teden:
 ${exec.length?exec.join('\n'):'(ni preteklih dni tega tedna)'}
+${wxText}
 PREOSTANEK TEDNA (te dni prilagodi):
 ${future.map(d=>`- ${d.datum}: ${d.tip} — ${d.naslov} (${d.trajanje_min} min, ~${d.tss_ocena} TSS)`).join('\n')}
 PRAVILA:
 - Če je kolesar IZPUSTIL dneve, smiselno prerazporedi manjkajočo obremenitev na preostale dni — a NE vse naenkrat: brez dveh težkih dni zapored, brez pretreniranja. Če je danes izpustil, jutri lahko malo več.
+- UPOŠTEVAJ VREME: pohode/kolo daj na suhe dni; ob dežju/nevihti (padavine >60 %) kolo prestavi na trenažer ali zamenjaj z močjo/regeneracijo, pohod prestavi na lepši dan.
 - Če je naredil VEČ kot predpisano, dodaj več regeneracije.
 - Ohrani značaj tedna: jedro = izmenjava KOLO/POHOD, MOČ je krajši dodatek. Za pohode predlagaj konkreten bližnji hrib blizu VODIC (Šmarna gora, Rašica, Sv. Jakob, Sv. Miklavž, Gobavica) s časom vzpona, ki ustreza trajanju.
 - Piši PREPROSTO slovensko, vsak korak v svoji vrstici (loči z \\n), utrip vedno s številkami v oklepaju, brez žargona in brez znaka "=".
