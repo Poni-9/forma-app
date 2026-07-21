@@ -435,14 +435,39 @@ function goalDeficit(){
   const kg=p.teza-p.ciljTeza; if(kg<=0) return 300;
   return Math.min(1000, Math.round(kg*7700/dni));
 }
-function targetKcal(){
+/* --- dejanska poraba iz aktivnosti (Strava/Intervals/moč) --- */
+function rideKcal(r){
+  const kg = teza();
+  if (r.kcal) return Math.round(r.kcal);                 // Strava/ICU je dal kalorije
+  if (r.kj)   return Math.round(r.kj);                   // kolo z močjo: 1 kJ ≈ 1 kcal
+  const min = r.time || 0; if (!min) return 0;
+  const met = r.sport==='pohod' ? 6.5 : r.sport==='moc' ? 5 : 8;   // privzeti MET
+  let kcal = met * 3.5 * kg / 200 * min;
+  const maxHr = F?.settings?.profile?.maxHr;
+  if (r.avgHr && maxHr) kcal *= Math.min(1.45, Math.max(.7, (r.avgHr/maxHr)/0.75)); // popravek po utripu
+  return Math.round(kcal);
+}
+function actualBurnToday(){
+  return (F?.rides||[]).filter(r=>r.date===todayIso()).reduce((a,r)=>a+rideKcal(r),0);
+}
+const basalKcal = () => Math.round(teza()*24*1.35);      // groba dnevna poraba brez treninga
+function baseTargetKcal(){
   if (db.settings.kcalManual) return db.settings.kcalManual;
   const pd=planToday(); if (pd?.kcal_vnos) return pd.kcal_vnos;
   return Math.max(1400, Math.round(teza()*30 - goalDeficit()));
 }
+/* koliko VEČ si pokuril, kot je bilo predpisano → toliko več smeš pojesti (deficit ostane isti) */
+function bonusKcal(){
+  const pd=planToday();
+  const plannedTrain = pd?.kcal_poraba ? Math.max(0, pd.kcal_poraba - basalKcal()) : 0;
+  return Math.max(0, Math.min(1200, Math.round(actualBurnToday() - plannedTrain)));
+}
+function targetKcal(){ return baseTargetKcal() + bonusKcal(); }
 function burnKcal(){
+  const act = actualBurnToday();
+  if (act>0) return {v: basalKcal()+act, src:'dejansko (Strava + aktivnosti)'};
   const pd=planToday(); if (pd?.kcal_poraba) return {v:pd.kcal_poraba, src:'iz plana FORMA'};
-  return {v:Math.round(teza()*24*1.35), src:'ocena (osnovna poraba)'};
+  return {v:basalKcal(), src:'ocena (osnovna poraba)'};
 }
 const protTarget = () => Math.round(teza()*1.8);
 
@@ -613,8 +638,10 @@ function renderHero(){
   $('stLeft').textContent = (left>=0?left:0) + ' kcal';
   $('stLeft').style.color = left<0 ? 'var(--red)' : left<200 ? 'var(--yellow)' : 'var(--acc2)';
   if (left<0) $('stLeft').textContent = `${-left} čez!`;
+  const bonus = bonusKcal();
   $('stTarget').textContent = target+' kcal';
-  $('stTargetSrc').textContent = db.settings.kcalManual ? 'ročno nastavljen' : pd?.kcal_vnos ? 'iz FORMA plana ✓' : 'ocena (teža − deficit)';
+  $('stTargetSrc').innerHTML = (db.settings.kcalManual ? 'ročno nastavljen' : pd?.kcal_vnos ? 'iz FORMA plana ✓' : 'ocena (teža − deficit)')
+    + (bonus>0 ? ` · <b style="color:var(--acc2)">+${bonus} od vožnje 🚴</b>` : '');
   $('stBurn').textContent = '~'+burn.v+' kcal';
   $('stBurnSrc').textContent = burn.src;
   $('stProt').textContent = `${prot} / ${pt} g`;

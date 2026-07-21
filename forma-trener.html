@@ -2068,6 +2068,8 @@ async function stravaImport(quiet){
         maxHr:a.max_heartrate?Math.round(a.max_heartrate):null,
         avgPower:a.average_watts?Math.round(a.average_watts):null,
         speed:a.average_speed?+(a.average_speed*3.6).toFixed(1):null,
+        kj:a.kilojoules?Math.round(a.kilojoules):null,
+        kcal:a.calories?Math.round(a.calories):null,
         polyline:a.map?.summary_polyline||null,
         notes:''
       };
@@ -2223,6 +2225,8 @@ async function icuImport(quiet){
         maxHr: a.max_heartrate?Math.round(a.max_heartrate):null,
         avgPower: a.icu_average_watts?Math.round(a.icu_average_watts):(a.average_watts?Math.round(a.average_watts):null),
         speed: (dist && timeMin) ? +(dist/(timeMin/60)).toFixed(1) : null,
+        kj: a.icu_joules?Math.round(a.icu_joules/1000):null,
+        kcal: a.calories?Math.round(a.calories):null,
         notes:''
       };
       r.tss = (a.icu_training_load && a.icu_training_load>0) ? Math.round(a.icu_training_load) : estimateTss(r);
