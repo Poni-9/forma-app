@@ -220,7 +220,7 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 
   <div class="top">
     <div class="logo">🍽️</div>
-    <div><h1>KalorijeAI</h1><small>slikaj → AI prešteje kalorije</small></div>
+    <div><h1>KalorijeAI</h1><small>slikaj → AI prešteje kalorije · <b style="color:var(--acc2)">v2.4</b></small></div>
     <div class="right">
       <button class="btn btn-ghost btn-sm" id="btnSyncTop" onclick="syncPull(true)" title="Sinhroniziraj zdaj">⟳</button>
       <button class="btn btn-ghost btn-sm" onclick="openSettings()">⚙️ Nastavitve</button>
@@ -255,14 +255,15 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 
   <!-- ===== DODAJ S SLIKO ===== -->
   <div class="card">
-    <div class="dz" id="dz" onclick="document.getElementById('fileGal').click()">
+    <div class="dz" id="dz">
       <span class="big">📸</span>
-      <b>Prilepi (Ctrl+V), povleci ali klikni za galerijo</b> — lahko več slik naenkrat (cel dan!)<br>
+      <b>Slikaj hrano ali izberi iz galerije</b> — lahko več slik naenkrat (cel dan!)<br>
       <span class="hint">Najbolje: hrana na tehtnici, da AI prebere grame z zaslona. Deluje tudi brez.</span>
       <div class="row" style="justify-content:center;gap:10px;margin-top:12px;display:flex">
-        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();document.getElementById('fileIn').click()">📷 Slikaj</button>
-        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();document.getElementById('fileGal').click()">🖼️ Iz galerije</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="openCamera()">📷 Slikaj</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="openGallery()">🖼️ Iz galerije</button>
       </div>
+      <span class="hint" style="display:block;margin-top:10px">Lahko tudi prilepiš (Ctrl+V) ali povlečeš sliko sem.</span>
       <input type="file" id="fileIn" accept="image/*" capture="environment" style="display:none">
       <input type="file" id="fileGal" accept="image/*" multiple style="display:none">
     </div>
@@ -1175,6 +1176,17 @@ function mergeDays(localDays, remoteDays, tomb){
   }
   return out;
 }
+/* --- ZDRUŽEVANJE forma stanja: vožnje po ID-ju (da se ne izgubijo), ostalo novejše --- */
+function mergeForma(local, remote){
+  if(!remote) return local;
+  if(!local) return remote;
+  const base = ((remote._ts||0) >= (local._ts||0)) ? JSON.parse(JSON.stringify(remote)) : JSON.parse(JSON.stringify(local));
+  const map={};
+  for(const r of (local.rides||[]))  if(r&&r.id) map[r.id]=r;
+  for(const r of (remote.rides||[])) if(r&&r.id && !map[r.id]) map[r.id]=r;   // dodaj manjkajoče, ne povozi
+  base.rides = Object.values(map).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  return base;
+}
 function mergeKalorije(r){
   if(!r) return;
   const tomb=Object.assign({}, db.deleted||{}, r.deleted||{});
@@ -1217,8 +1229,10 @@ async function syncPull(manual){
   try{
     const rec = await syncGet();
     let changed=false;
-    if (rec.forma && (rec.forma_ts||0) > (F?._ts||0)){
-      localStorage.setItem('forma_trener_v1', JSON.stringify(rec.forma)); refreshF(); changed=true;
+    if (rec.forma){
+      const local = formaState();
+      const merged = mergeForma(local, rec.forma);   // vožnje VEDNO združi (da telefon dobi vožnjo z računalnika za znižanje cilja)
+      if (JSON.stringify(merged)!==JSON.stringify(local)){ localStorage.setItem('forma_trener_v1', JSON.stringify(merged)); refreshF(); changed=true; }
     }
     if (rec.kalorije){
       const before = JSON.stringify(db.days)+JSON.stringify(db.deleted);
@@ -1237,7 +1251,12 @@ function syncPush(part){
   pushTimer = setTimeout(async ()=>{
     try{
       const rec = await syncGet() || {};
-      if (part==='forma' || !part){ rec.forma = formaState(); rec.forma_ts = rec.forma?._ts || Date.now(); }
+      if (part==='forma' || !part){
+        let f = formaState();
+        if (rec.forma) f = mergeForma(f, rec.forma);   // ohrani vožnje z druge naprave
+        if (f){ try{ localStorage.setItem('forma_trener_v1', JSON.stringify(f)); refreshF(); }catch(_){}}
+        rec.forma = f; rec.forma_ts = f?._ts || Date.now();
+      }
       if (part==='kalorije' || !part){
         if (rec.kalorije) mergeKalorije(rec.kalorije);   // najprej poberi tuje vnose, da jih ne povozimo
         db._ts = Date.now(); rec.kalorije = db; rec.kalorije_ts = db._ts;
@@ -1331,6 +1350,8 @@ const dz=$('dz');
 dz.addEventListener('drop', e=>{ [...e.dataTransfer.files].forEach(enqueue); });
 $('fileIn').addEventListener('change', e=>{ [...e.target.files].forEach(enqueue); e.target.value=''; });
 $('fileGal').addEventListener('change', e=>{ [...e.target.files].forEach(enqueue); e.target.value=''; });
+function openCamera(){ const el=$('fileIn'); el.value=''; el.click(); }     // fotoaparat (capture)
+function openGallery(){ const el=$('fileGal'); el.value=''; el.click(); }   // galerija (več slik)
 document.querySelectorAll('.modal-back').forEach(mb=>mb.addEventListener('mousedown',e=>{ if(e.target===mb) mb.classList.remove('open'); }));
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') document.querySelectorAll('.modal-back.open').forEach(m=>m.classList.remove('open')); });
 

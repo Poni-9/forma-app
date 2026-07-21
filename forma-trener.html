@@ -385,7 +385,7 @@ h2#calLabel{letter-spacing:-.02em}
         <div class="val" id="sbFormVal">–</div>
         <div class="desc" id="sbFormDesc">Dodaj vožnje za izračun</div>
       </div>
-      <div style="text-align:center;font-size:10.5px;color:var(--dim);margin-top:8px">Trener AI · v2.1</div>
+      <div style="text-align:center;font-size:10.5px;color:var(--dim);margin-top:8px">Trener AI · v2.4</div>
     </div>
   </aside>
 
@@ -2429,18 +2429,30 @@ async function syncGetF(){
   if (!res.ok) throw new Error('Sync branje: HTTP '+res.status);
   return (await res.json()).record || {};
 }
+function mergeForma(local, remote){
+  if(!remote) return local; if(!local) return remote;
+  const base = ((remote._ts||0) >= (local._ts||0)) ? JSON.parse(JSON.stringify(remote)) : JSON.parse(JSON.stringify(local));
+  const map={};
+  for(const r of (local.rides||[]))  if(r&&r.id) map[r.id]=r;
+  for(const r of (remote.rides||[])) if(r&&r.id && !map[r.id]) map[r.id]=r;   // dodaj manjkajoče, ne povozi
+  base.rides = Object.values(map).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  return base;
+}
 async function syncPullF(manual){
   const c=state.sync; if(!c?.bin){ if(manual) toast('Najprej nastavi sinhronizacijo (spodaj).','err'); return; }
   try{
     const rec = await syncGetF();
-    if (rec?.forma && (rec.forma_ts||0) > (state._ts||0)){
+    if (rec?.forma){
       const keep = state.sync;
-      state = Object.assign(defaultState(), rec.forma);
-      state.forma = Object.assign(defaultState().forma, state.forma||{});
-      state.sync = keep;
-      localStorage.setItem(DB_KEY, JSON.stringify(state));   // brez ponovnega pusha
-      fillSettings(); renderAll(); renderSyncF();
-      toast('Prevzete spremembe s telefona. 🔄','ok');
+      const merged = mergeForma(state, rec.forma);   // vožnje VEDNO združi (dobi tudi moč-treninge s telefona)
+      if (JSON.stringify(merged)!==JSON.stringify(state)){
+        state = Object.assign(defaultState(), merged);
+        state.forma = Object.assign(defaultState().forma, state.forma||{});
+        state.sync = keep;
+        localStorage.setItem(DB_KEY, JSON.stringify(state));   // brez ponovnega pusha
+        fillSettings(); renderAll(); renderSyncF();
+        if(manual) toast('Prevzete spremembe s telefona. 🔄','ok');
+      } else if (manual) toast('Plan je že usklajen. ✓','ok');
     } else if (manual) toast('Plan je že usklajen. ✓','ok');
     if (rec?.kalorije){
       let localK=null; try{ localK=JSON.parse(localStorage.getItem('kalorije_v1')||'null'); }catch(_){}
@@ -2455,7 +2467,8 @@ function syncPush(){
   syncTimerF = setTimeout(async ()=>{
     try{
       const rec = (await syncGetF()) || {};
-      rec.forma = state; rec.forma_ts = state._ts || Date.now();
+      const f = rec.forma ? mergeForma(state, rec.forma) : state;   // ohrani vožnje z druge naprave
+      rec.forma = f; rec.forma_ts = f._ts || Date.now();
       await fetch(`${SYNC_API}/${c.bin}`, { method:'PUT',
         headers:{'Content-Type':'application/json','X-Master-Key':c.key}, body:JSON.stringify(rec) });
     }catch(e){ console.warn('sync push:', e.message); }
