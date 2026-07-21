@@ -55,10 +55,15 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 .hint{font-size:12px;color:var(--dim)}
 
 /* povezava s FORMA */
-.link-banner{display:block;padding:11px 15px;border-radius:11px;font-size:13px;font-weight:600;line-height:1.55;margin-bottom:14px;border:1px solid}
-.link-banner.ok{background:var(--accSoft);color:var(--acc2);border-color:rgba(63,206,107,.3)}
+.link-banner{display:block;padding:12px 15px;border-radius:12px;font-size:13px;font-weight:600;line-height:1.5;margin-bottom:14px;border:1px solid}
+.link-banner.ok{background:var(--accSoft);border-color:rgba(63,206,107,.3)}
 .link-banner.no{background:rgba(139,155,171,.07);color:var(--muted);border-color:var(--border)}
-.link-banner b{white-space:nowrap}
+.lb-top{display:flex;align-items:center;gap:8px;color:var(--acc2);font-size:12.5px}
+.lb-top b{color:var(--acc2)}
+.lb-dot{width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px rgba(63,206,107,.8);flex-shrink:0}
+.lb-plan{color:var(--text);font-weight:800;font-size:14.5px;margin-top:5px;line-height:1.35}
+.lb-nums{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:5px;color:var(--muted);font-weight:600;font-size:12.5px}
+.lb-nums b{color:var(--text)}
 
 /* glavni pregled */
 .hero{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center}
@@ -153,9 +158,58 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 .opis-line{padding:2px 0 2px 9px;border-left:2px solid var(--border2);margin:4px 0;line-height:1.45;font-size:13px;color:#cfd8e0}
 .pd-sec{margin-top:9px}
 .pd-lbl{font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--acc2);margin-bottom:3px}
+.pd-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+.pd-actions .btn{flex:1;justify-content:center;min-width:130px}
 .sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px}
 .sync-dot.on{background:var(--acc);box-shadow:0 0 7px rgba(63,206,107,.7)}
 .sync-dot.off{background:var(--dim)}
+
+/* ---------- vodeni trening (player) ---------- */
+.play{position:fixed;inset:0;z-index:150;display:none;flex-direction:column;
+  padding:14px 18px calc(16px + env(safe-area-inset-bottom));
+  background:radial-gradient(800px 500px at 50% -10%, rgba(63,206,107,.14), transparent 60%), #070b10}
+.play.open{display:flex}
+.play-top{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.play-prog{flex:1;display:flex;gap:4px}
+.play-prog span{flex:1;height:4px;border-radius:99px;background:#1d2836;transition:background .3s}
+.play-prog span.d{background:var(--acc)}
+.play-prog span.a{background:var(--acc2);box-shadow:0 0 8px rgba(63,206,107,.8);animation:pwpulse 1.2s infinite}
+.play-x{width:36px;height:36px;border-radius:10px;border:1px solid var(--border2);background:var(--panel2);color:var(--muted);font-size:15px;cursor:pointer;flex-shrink:0}
+.pw-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:9px;animation:pwfade .35s ease}
+@keyframes pwfade{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes pwpulse{0%,100%{opacity:1}50%{opacity:.45}}
+@keyframes pwbounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-13px)}}
+@keyframes pwparty{0%{transform:scale(.5) rotate(-8deg);opacity:0}60%{transform:scale(1.18) rotate(4deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+.pw-big{font-size:62px;line-height:1;animation:pwbounce 1.7s ease-in-out infinite}
+.pw-done-emo{font-size:76px;line-height:1;animation:pwparty .7s ease}
+.pw-title{font-size:21px;font-weight:900;letter-spacing:-.02em;max-width:340px}
+.pw-sub{color:var(--muted);font-weight:600;font-size:13px}
+.pw-phase{font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--acc2)}
+.pw-phase.rest{color:var(--yellow)}
+.pw-set{font-size:13px;font-weight:700;color:var(--muted)}
+.pw-set b{color:var(--acc2);font-size:16px}
+.pw-reps{font-size:46px;font-weight:900;letter-spacing:-.03em;line-height:1.1}
+.pw-reps small{display:block;font-size:13px;color:var(--muted);font-weight:700;letter-spacing:0}
+.pw-note{color:#cfd8e0;font-size:13px;max-width:330px;line-height:1.5}
+.pw-ring{position:relative;width:205px;height:205px;margin:4px 0}
+.pw-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.pw-ring .c{fill:none;stroke:#1d2836;stroke-width:12}
+.pw-ring .p{fill:none;stroke:var(--acc);stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset .95s linear}
+.pw-ring.rest .p{stroke:var(--yellow)}
+.pw-time{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.pw-time b{font-size:44px;font-weight:900;letter-spacing:-.02em}
+.pw-time small{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.pw-list{width:100%;max-width:380px;margin-top:6px;display:flex;flex-direction:column;gap:6px;max-height:36vh;overflow-y:auto}
+.pw-li{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 13px;font-size:13px;font-weight:600;text-align:left}
+.pw-li b{color:var(--acc2);white-space:nowrap}
+.pw-next{background:var(--panel);border:1px solid var(--border);border-radius:11px;padding:9px 14px;font-size:13px;color:var(--muted);font-weight:600;max-width:330px}
+.pw-next b{color:var(--text)}
+.pw-cta{margin-top:12px;font-size:15.5px;padding:14px 32px;border-radius:14px}
+.pw-row{display:flex;gap:9px;margin-top:10px;flex-wrap:wrap;justify-content:center}
+.pw-stats{display:flex;gap:10px;margin-top:8px}
+.pw-stat{background:var(--panel);border:1px solid var(--border);border-radius:11px;padding:10px 16px}
+.pw-stat b{display:block;font-size:19px;font-weight:900}
+.pw-stat span{font-size:11px;color:var(--muted);font-weight:700}
 </style>
 </head>
 <body>
@@ -316,6 +370,15 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
   </div>
 </div>
 
+<!-- ===== VODENI TRENING (player) ===== -->
+<div class="play" id="playBack">
+  <div class="play-top">
+    <div class="play-prog" id="playProg"></div>
+    <button class="play-x" onclick="pwClose()">✕</button>
+  </div>
+  <div id="playBody" style="flex:1;display:flex;flex-direction:column"></div>
+</div>
+
 <div class="toasts" id="toasts"></div>
 
 <script>
@@ -391,7 +454,38 @@ const dayData = iso => { db.days[iso] = db.days[iso] || {entries:[]}; return db.
 const MEALS = [ ['zajtrk','🌅 Zajtrk',.25], ['kosilo','🍲 Kosilo',.35], ['malica','🍎 Malica',.15], ['vecerja','🌙 Večerja',.25] ];
 function autoMeal(){
   const h = new Date().getHours() + new Date().getMinutes()/60;
-  return h<10.5?'zajtrk':h<14.5?'kosilo':h<17.5?'malica':'vecerja';
+  return mealFromH(h);
+}
+const mealFromH = h => h<11?'zajtrk':h<14.5?'kosilo':h<17.5?'malica':'vecerja';
+
+/* prebere uro fotografiranja iz EXIF (za pravilno razvrstitev v obrok pri večernem nalaganju) */
+async function exifHour(file){
+  try{
+    const buf = new DataView(await file.slice(0, 262144).arrayBuffer());
+    if (buf.getUint16(0)!==0xFFD8) return null;
+    let o=2;
+    while (o < buf.byteLength-4){
+      if (buf.getUint8(o)!==0xFF) return null;
+      const marker=buf.getUint8(o+1), len=buf.getUint16(o+2);
+      if (marker===0xE1 && buf.getUint32(o+4)===0x45786966){
+        const t=o+10;
+        const little = buf.getUint16(t)===0x4949;
+        const g16=p=>buf.getUint16(t+p, little), g32=p=>buf.getUint32(t+p, little);
+        const readAsc=(p,n)=>{ let s=''; for(let i=0;i<n;i++){ const c=buf.getUint8(t+p+i); if(!c) break; s+=String.fromCharCode(c);} return s; };
+        const findTag=(ifd,tag)=>{ const n=g16(ifd); for(let i=0;i<n;i++){ const e=ifd+2+i*12; if(g16(e)===tag) return e; } return null; };
+        const ifd0=g32(4);
+        let dt=null;
+        const exifPtr=findTag(ifd0,0x8769);
+        if (exifPtr){ const sub=g32(exifPtr+8); const e=findTag(sub,0x9003); if(e) dt=readAsc(g32(e+8),19); }
+        if (!dt){ const e=findTag(ifd0,0x0132); if(e) dt=readAsc(g32(e+8),19); }
+        const m = dt && dt.match(/^(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2})/);
+        if (m) return { h:+m[4]+ +m[5]/60, hm:`${m[4]}:${m[5]}`, iso:`${m[1]}-${m[2]}-${m[3]}` };
+        return null;
+      }
+      o += 2+len;
+    }
+  }catch(_){}
+  return null;
 }
 const sumK = arr => arr.reduce((a,e)=>a+(+e.kcal||0),0);
 const sumB = arr => arr.reduce((a,e)=>a+(+e.b||0),0);
@@ -443,9 +537,11 @@ const queue = [];
 let qBusy = false;
 function enqueue(file){
   if (!file || !file.type?.startsWith('image/')) return;
-  fileToImages(file, imgs=>{
-    const q={ id:uid(), imgs, status:'čaka …' };
-    queue.push(q); renderQueue(); processQueue();
+  exifHour(file).then(ex=>{
+    fileToImages(file, imgs=>{
+      const q={ id:uid(), imgs, ex, status:'čaka …' };
+      queue.push(q); renderQueue(); processQueue();
+    });
   });
 }
 function renderQueue(){
@@ -467,13 +563,19 @@ async function processQueue(){
 1. Če je viden ZASLON TEHTNICE, preberi točno številko (grami). To je najpomembnejši podatek!
 2. Prepoznaj jed oz. živila na sliki (če jih je več, jih naštej v opombi).
 3. Oceni kalorije in beljakovine ZA TOČNO TO KOLIČINO (uporabi grame s tehtnice; brez tehtnice oceni porcijo po videzu; upoštevaj olje/omako, če je verjetna).
-Trenutni čas: ${new Date().toLocaleTimeString('sl-SI',{hour:'2-digit',minute:'2-digit'})}.
+Čas fotografije: ${q.ex?q.ex.hm:new Date().toLocaleTimeString('sl-SI',{hour:'2-digit',minute:'2-digit'})}.
+PRAVILO za polje "obrok" po uri: pred 11:00 VEDNO zajtrk; 11:00–14:30 kosilo; 14:30–17:30 malica; po 17:30 večerja.
 Vrni SAMO JSON:
 {"jed":"kratko ime v slovenščini","grami_tehtnica":number|null,"grami_ocena":number,"kcal":number,"beljakovine_g":number,"obrok":"zajtrk|kosilo|malica|vecerja","zanesljivost":"visoka|srednja|nizka","opomba":"kaj vidiš, zelo kratko"}` }
       ]);
       const grami = r.grami_tehtnica ?? r.grami_ocena ?? null;
-      const e = { id:uid(), time:new Date().toTimeString().slice(0,5),
-        meal: ['zajtrk','kosilo','malica','vecerja'].includes(r.obrok) ? r.obrok : autoMeal(),
+      const nowH = new Date().getHours()+new Date().getMinutes()/60;
+      let meal;
+      if (q.ex) meal = mealFromH(q.ex.h);                       // ura s fotografije = najbolj zanesljiva
+      else { meal = ['zajtrk','kosilo','malica','vecerja'].includes(r.obrok) ? r.obrok : autoMeal();
+             if (nowH<11) meal='zajtrk'; }                      // pred 11.00 vedno zajtrk
+      const e = { id:uid(), time: q.ex?q.ex.hm:new Date().toTimeString().slice(0,5),
+        meal,
         jed: r.jed||'Hrana', grami: grami?Math.round(grami):null,
         kcal: Math.round(+r.kcal||0), b: Math.round(+r.beljakovine_g||0),
         zan: r.zanesljivost||'', op: r.opomba||'', thumb: q.imgs.thumb };
@@ -570,9 +672,17 @@ function renderHist(){
 
 function renderLink(){
   const pd = planToday();
-  $('linkBanner').innerHTML = F
-    ? `<div class="link-banner ok">🔗 Povezano s <b>&nbsp;FORMA Trener&nbsp;</b> ${pd?`— danes: ${esc(pd.naslov||pd.tip)} · cilj vnosa <b>&nbsp;${targetKcal()} kcal</b>${pd.kcal_poraba?` · poraba ~${pd.kcal_poraba} kcal`:''}`:'— za danes ni plana, cilj izračunan iz profila'}</div>`
-    : `<div class="link-banner no">○ FORMA Trener ni zaznan (odpri ga vsaj enkrat v istem brskalniku) — cilj lahko nastaviš ročno v ⚙️ Nastavitvah.</div>`;
+  if (F){
+    $('linkBanner').innerHTML = `<div class="link-banner ok">
+      <div class="lb-top"><span class="lb-dot"></span>Povezano s <b>FORMA Trener</b></div>
+      ${pd
+        ? `<div class="lb-plan">${esc(pd.naslov||pd.tip)}</div>
+           <div class="lb-nums"><span>🎯 cilj vnosa <b>${targetKcal()} kcal</b></span>${pd.kcal_poraba?`<span>🔥 poraba <b>~${pd.kcal_poraba} kcal</b></span>`:''}</div>`
+        : `<div class="lb-plan" style="color:var(--muted);font-weight:600">Za danes ni plana — cilj izračunan iz profila.</div>`}
+    </div>`;
+  } else {
+    $('linkBanner').innerHTML = `<div class="link-banner no">○ FORMA Trener ni zaznan — nastavi 🔄 sinhronizacijo ali cilj ročno v ⚙️ Nastavitvah.</div>`;
+  }
 }
 
 function renderAll(){ renderLink(); renderHero(); renderLog(); renderHist(); renderPlanTab(); }
@@ -622,7 +732,10 @@ function renderPlanTab(){
       ${d.opis?`<div class="pd-sec">${opisHtml(d.opis)}</div>`:''}
       ${d.vaje?`<div class="pd-sec"><div class="pd-lbl">🏋️ Vaje (muscle-up)</div>${d.vaje.includes('\n')?opisHtml(d.vaje):`<div class="opis-line">${esc(d.vaje)}</div>`}</div>`:''}
       ${(d.prehrana||d.kcal_vnos)?`<div class="pd-sec"><div class="pd-lbl">🍽 Prehrana</div>${esc(d.prehrana||'').split(/\s*\|\s*/).filter(x=>x).map(x=>`<div class="opis-line">${x}</div>`).join('')}${d.kcal_vnos?`<div class="hint" style="color:var(--yellow);font-weight:700;margin-top:4px">🔥 vnos ~${d.kcal_vnos} · poraba ~${d.kcal_poraba||'?'} kcal</div>`:''}</div>`:''}
-      ${isToday && ct.l!=='POČITEK' ? `<button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="$('adaptBack').classList.add('open')">⏱ Nimam toliko časa</button>`:''}
+      <div class="pd-actions">
+        ${hasSets(d) ? `<button class="btn btn-primary btn-sm" onclick='pwStartFor("${d.datum}")'>▶ Začni vodeni trening</button>`:''}
+        ${isToday && ct.l!=='POČITEK' ? `<button class="btn btn-ghost btn-sm" onclick="$('adaptBack').classList.add('open')">⏱ Nimam toliko časa</button>`:''}
+      </div>
     </div>`;
   }).join('');
 }
@@ -654,6 +767,207 @@ Vrni SAMO JSON: {"naslov":"...","trajanje_min":${min},"opis":"...","vaje":"skraj
     toast('Trening prilagojen na '+min+' min. '+(r.razlaga||''),'');
   }catch(e){ toast(e.message,'err'); }
   btn.disabled=false; btn.innerHTML=orig;
+}
+
+/* ================================================================
+   VODENI TRENING MOČI (player s časovniki)
+================================================================ */
+let PW = null, actx;
+function beep(freq=880, dur=.12, vol=.2){
+  try{ actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(), g=actx.createGain();
+    o.frequency.value=freq; o.type='sine'; o.connect(g); g.connect(actx.destination);
+    g.gain.setValueAtTime(vol, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.0001, actx.currentTime+dur);
+    o.start(); o.stop(actx.currentTime+dur);
+  }catch(_){}
+}
+const fmtClock = s=>{ s=Math.max(0,Math.round(s)); return Math.floor(s/60)+':'+pad(s%60); };
+
+function extractNote(s){
+  const cue = s.split(/[,.]/).map(x=>x.trim()).find(x=>/(poudark|nadzor|počasi|pocasi|globoko|napet|eksploziv|čim|cim|kontrolir|amplitud|previdno|pazi|ravno|zapestj|preklop)/i.test(x));
+  return cue ? cue.charAt(0).toUpperCase()+cue.slice(1) : '';
+}
+function parseWorkout(day){
+  const blocks=[];
+  const lines = String(day.opis||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  if (day.vaje) String(day.vaje).split(/\n/).forEach(v=>{ if(v.trim()) lines.push(v.trim()); });
+  for (const raw of lines){
+    let s = raw.replace(/^(Ogrevanje|Glavni del|Zaključek|Zakljucek|Sklop|Serija|Vaje?)\s*:?\s*/i,'').trim();
+    const isWarm=/^ogrevanj/i.test(raw), isCool=/^(zaključ|zakljuc|raztez|ohlaj)/i.test(raw);
+    let sets, reps, repsIsTime=false;
+    let m = s.match(/(\d+)\s*[×x]\s*(\d+)/);
+    if (m){ sets=+m[1]; reps=+m[2]; }
+    else {
+      const ms=s.match(/(\d+)\s*serij/i), mr=s.match(/po\s*(\d+)\s*(ponovit|sekund|s\b|'')/i);
+      if(ms) sets=+ms[1];
+      if(mr){ reps=+mr[1]; if(/sekund|s\b|''/i.test(mr[2])) repsIsTime=true; }
+    }
+    let rest=90;
+    const mo=s.match(/odmor[^0-9]*(\d+)\s*(min|sekund|s\b|'')?/i);
+    if(mo){ rest=+mo[1]; if(/min/i.test(mo[2]||'')) rest*=60; }
+    if (sets){
+      let name=s.split(/\s+v\s+\d+\s*serij/i)[0].split(/\s*\d+\s*[×x]\s*\d+/)[0].split(/[:,]/)[0];
+      name=name.replace(/[–-]\s*$/,'').replace(/\s{2,}/g,' ').trim() || 'Vaja';
+      blocks.push({kind:'sets', name, sets, reps:reps||10, repsIsTime, rest, note:extractNote(s)});
+    } else {
+      const mm=s.match(/(\d+)\s*min/i);
+      if (isWarm||isCool||mm) blocks.push({kind:'timed', name:isWarm?'Ogrevanje':isCool?'Raztezanje':(s.slice(0,42)), dur: mm?+mm[1]*60:300, note: mm?s:''});
+    }
+  }
+  return blocks;
+}
+const hasSets = d => parseWorkout(d).some(b=>b.kind==='sets');
+
+async function pwStartFor(datum){
+  refreshF(); let day=null;
+  for(const p of (F?.plans||[])){ const d=(p.days||[]).find(x=>x.datum===datum); if(d){day=d;break;} }
+  if(day) pwStart(day); else toast('Ni najden dan.','err');
+}
+async function pwStart(day){
+  let blocks=parseWorkout(day);
+  if (blocks.filter(b=>b.kind==='sets').length < 2){
+    openPlay(); pwLoading();
+    try{
+      const r=await gemini([{text:`Pretvori ta trening moči v strukturiran seznam za vodeni player.
+Naslov: "${day.naslov||'Trening moči'}".
+Opis:\n${day.opis||''}\n${day.vaje||''}
+Vrni SAMO JSON: {"blocks":[{"kind":"timed"|"sets","name":"kratko ime vaje","dur":sekunde_za_timed,"sets":stevilo_serij,"reps":ponovitve,"repsIsTime":true_ce_je_reps_v_sekundah,"rest":sekunde_odmora,"note":"kratek namig za pravilno izvedbo"}]}
+Ogrevanje in zaključek/raztezanje = "timed". Vsaka vaja = "sets" z odmorom (obicajno 60-120 s). Če v opisu ni vaj za moč, sestavi smiseln trening za zgornji del telesa proti muscle-upu (zgibi, sklece, dipsi, trebušnjaki).`}]);
+      const b=(r.blocks||[]).map(x=>({kind:x.kind==='timed'?'timed':'sets', name:x.name||'Vaja', dur:+x.dur||300, sets:+x.sets||3, reps:+x.reps||10, repsIsTime:!!x.repsIsTime, rest:+x.rest||90, note:x.note||''}));
+      if(b.length) blocks=b;
+    }catch(e){ /* obdržimo lokalno razčlembo */ }
+  }
+  if(!blocks.length){ toast('Tega dneva ne znam razčleniti v vaje.','err'); pwClose(); return; }
+  PW={ day, blocks, bi:-1, phase:'intro', tid:null };
+  openPlay(); pwWake(true); pwRenderIntro();
+}
+function openPlay(){ $('playBack').classList.add('open'); }
+function pwClose(){ if(PW){ clearInterval(PW.tid); pwWake(false);} PW=null; $('playBack').classList.remove('open'); }
+function pwLoading(){ $('playProg').innerHTML=''; $('playBody').innerHTML=`<div class="pw-screen"><div class="pw-big">⏳</div><div class="pw-title">Pripravljam vaje …</div><div class="pw-sub">AI ureja trening v korake</div></div>`; }
+async function pwWake(on){ try{ if(on){ PW.wake=await navigator.wakeLock?.request('screen'); } else { await PW?.wake?.release?.(); if(PW) PW.wake=null; } }catch(_){}}
+
+function pwRenderProg(){ if(!PW) return; $('playProg').innerHTML = PW.blocks.map((b,i)=>`<span class="${i<PW.bi?'d':i===PW.bi?'a':''}"></span>`).join(''); }
+function pwWorkLabel(bi){ let k=0; for(let i=0;i<=bi;i++) if(PW.blocks[i].kind==='sets') k++; return `${k}/${PW.blocks.filter(b=>b.kind==='sets').length}`; }
+
+function pwRenderIntro(){
+  PW.bi=-1; pwRenderProg();
+  const list=PW.blocks.map(b=> b.kind==='timed'
+    ? `<div class="pw-li"><span>🔥 ${esc(b.name)}</span><b>${Math.round(b.dur/60)} min</b></div>`
+    : `<div class="pw-li"><span>💪 ${esc(b.name)}</span><b>${b.sets}×${b.repsIsTime?b.reps+'s':b.reps}</b></div>`).join('');
+  const setsN=PW.blocks.filter(b=>b.kind==='sets').length;
+  $('playBody').innerHTML=`<div class="pw-screen">
+    <div class="pw-phase">Vodeni trening moči</div>
+    <div class="pw-big">🏋️</div>
+    <div class="pw-title">${esc(PW.day.naslov||'Trening moči')}</div>
+    <div class="pw-sub">${setsN} vaj · telefon te vodi skozi vsako serijo in odmor</div>
+    <div class="pw-list">${list}</div>
+    <button class="btn btn-primary pw-cta" onclick="pwBegin()">▶ Začni</button>
+  </div>`;
+}
+function pwBegin(){ try{actx=actx||new (window.AudioContext||window.webkitAudioContext)(); actx.resume?.();}catch(_){} beep(660,.08); PW.tStart=Date.now(); PW.bi=0; pwEnterBlock(); }
+
+function pwEnterBlock(){
+  const b=PW.blocks[PW.bi];
+  if(b.kind==='timed'){ PW.phase='timed'; PW.total=b.dur; PW.remain=b.dur; PW.onZero=pwNext; pwRenderTimed(); pwStartTimer(); }
+  else { PW.phase='work'; PW.setIdx=1; pwWork(); }
+}
+function pwWork(){
+  const b=PW.blocks[PW.bi]; pwRenderProg();
+  $('playBody').innerHTML=`<div class="pw-screen">
+    <div class="pw-phase">Vaja ${pwWorkLabel(PW.bi)} · serija ${PW.setIdx}/${b.sets}</div>
+    <div class="pw-big">💪</div>
+    <div class="pw-title">${esc(b.name)}</div>
+    <div class="pw-reps">${b.repsIsTime?b.reps:b.reps}<small>${b.repsIsTime?'sekund drži':'ponovitev'}</small></div>
+    ${b.note?`<div class="pw-note">💡 ${esc(b.note)}</div>`:''}
+    <button class="btn btn-primary pw-cta" onclick="pwSetDone()">✓ Serija opravljena</button>
+    <div class="pw-row"><button class="btn btn-ghost btn-sm" onclick="pwSkipBlock()">Preskoči vajo »</button></div>
+  </div>`;
+}
+function pwSetDone(){
+  beep(760,.1,.15); navigator.vibrate?.(40);
+  const b=PW.blocks[PW.bi];
+  if(PW.setIdx<b.sets){
+    PW.phase='rest'; PW.total=b.rest; PW.remain=b.rest;
+    PW.onZero=()=>{ PW.setIdx++; PW.phase='work'; pwWork(); };
+    pwRenderRest(); pwStartTimer();
+  } else pwNext();
+}
+function pwRenderTimed(){
+  const b=PW.blocks[PW.bi]; pwRenderProg();
+  $('playBody').innerHTML=`<div class="pw-screen">
+    <div class="pw-phase">${esc(b.name)}</div>
+    <div class="pw-ring"><svg viewBox="0 0 210 210"><circle class="c" cx="105" cy="105" r="94"/><circle class="p" id="pwArc" cx="105" cy="105" r="94"/></svg>
+      <div class="pw-time"><b id="pwT">${fmtClock(PW.remain)}</b><small>preostane</small></div></div>
+    ${b.note?`<div class="pw-note">${esc(b.note)}</div>`:''}
+    <div class="pw-row"><button class="btn btn-ghost btn-sm" onclick="pwAdd(15)">+15 s</button><button class="btn btn-primary btn-sm" onclick="pwSkipTimer()">Preskoči »</button></div>
+  </div>`;
+  pwArc();
+}
+function pwRenderRest(){
+  const b=PW.blocks[PW.bi]; pwRenderProg();
+  $('playBody').innerHTML=`<div class="pw-screen">
+    <div class="pw-phase rest">Odmor</div>
+    <div class="pw-ring rest"><svg viewBox="0 0 210 210"><circle class="c" cx="105" cy="105" r="94"/><circle class="p" id="pwArc" cx="105" cy="105" r="94"/></svg>
+      <div class="pw-time"><b id="pwT">${fmtClock(PW.remain)}</b><small>odmor</small></div></div>
+    <div class="pw-next">Sledi: <b>${esc(b.name)}</b> — serija ${PW.setIdx+1}/${b.sets}</div>
+    <div class="pw-row"><button class="btn btn-ghost btn-sm" onclick="pwAdd(-15)">−15 s</button><button class="btn btn-ghost btn-sm" onclick="pwAdd(15)">+15 s</button><button class="btn btn-primary btn-sm" onclick="pwSkipTimer()">Naprej »</button></div>
+  </div>`;
+  pwArc();
+}
+function pwStartTimer(){
+  clearInterval(PW.tid);
+  PW.tid=setInterval(()=>{
+    PW.remain--;
+    if(PW.remain<=3 && PW.remain>0) beep(720,.08,.16);
+    if(PW.remain<=0){ clearInterval(PW.tid); beep(940,.2,.25); navigator.vibrate?.([80,40,80]); (PW.onZero||pwNext)(); return; }
+    const t=$('pwT'); if(t) t.textContent=fmtClock(PW.remain);
+    pwArc();
+  },1000);
+}
+function pwArc(){ const a=$('pwArc'); if(!a) return; const C=2*Math.PI*94; a.setAttribute('stroke-dasharray',C); a.setAttribute('stroke-dashoffset', C*(1-Math.max(0,PW.remain)/Math.max(1,PW.total))); }
+function pwAdd(s){ PW.remain=Math.max(1,PW.remain+s); PW.total=Math.max(PW.total,PW.remain); const t=$('pwT'); if(t) t.textContent=fmtClock(PW.remain); pwArc(); }
+function pwSkipTimer(){ clearInterval(PW.tid); (PW.onZero||pwNext)(); }
+function pwSkipBlock(){ clearInterval(PW.tid); pwNext(); }
+function pwNext(){ clearInterval(PW.tid); PW.bi++; if(PW.bi>=PW.blocks.length) pwFinish(); else pwEnterBlock(); }
+function pwFinish(){
+  clearInterval(PW.tid); pwWake(false);
+  const mins=Math.max(1,Math.round((Date.now()-(PW.tStart||Date.now()))/60000));
+  const setsN=PW.blocks.filter(b=>b.kind==='sets').reduce((a,b)=>a+b.sets,0);
+  const vajN=PW.blocks.filter(b=>b.kind==='sets').length;
+  $('playProg').innerHTML=PW.blocks.map(()=>`<span class="d"></span>`).join('');
+  $('playBody').innerHTML=`<div class="pw-screen">
+    <div class="pw-done-emo">🎉</div>
+    <div class="pw-title">Trening opravljen!</div>
+    <div class="pw-sub">Odlično — spet korak bližje muscle-upu.</div>
+    <div class="pw-stats">
+      <div class="pw-stat"><b>${mins}</b><span>minut</span></div>
+      <div class="pw-stat"><b>${setsN}</b><span>serij</span></div>
+      <div class="pw-stat"><b>${vajN}</b><span>vaj</span></div>
+    </div>
+    <button class="btn btn-primary pw-cta" onclick="pwLog()">✓ Zabeleži v FORMA</button>
+    <div class="pw-row"><button class="btn btn-ghost btn-sm" onclick="pwClose()">Zapri brez beleženja</button></div>
+  </div>`;
+  beep(880,.15,.25); setTimeout(()=>beep(1180,.22,.25),160);
+}
+function pwLog(){
+  refreshF();
+  if(F){
+    F.forma = F.forma || {level:1,history:[]};
+    F.forma.history = F.forma.history || [];
+    if(!F.forma.history.some(h=>h.date===todayIso())){
+      F.forma.history.push({date:todayIso(),dot:'med'});
+      if(F.forma.history.length%4===0 && (F.forma.level||F.forma.level===0?F.forma.level:1)<10){ F.forma.level=(F.forma.level||1)+1; }
+    }
+    F.rides = F.rides || [];
+    if(!F.rides.some(r=>r.date===todayIso() && r.sport==='moc'))
+      F.rides.push({id:'pw'+Date.now(), source:'manual', sport:'moc', date:todayIso(), name:(PW.day.naslov||'Trening moči (vodeni)'), dist:null, time:Math.max(1,Math.round((Date.now()-(PW.tStart||Date.now()))/60000)), elev:null, avgHr:null, tss:40});
+    for(const p of (F.plans||[])){ const d=(p.days||[]).find(x=>x.datum===todayIso()); if(d){ d.done=true; break; } }
+    F._ts=Date.now(); localStorage.setItem('forma_trener_v1', JSON.stringify(F));
+    if(typeof syncPush==='function') syncPush('forma');
+  }
+  toast('Trening zabeležen! 💪','');
+  pwClose(); renderAll();
 }
 
 /* ================================================================

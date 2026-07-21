@@ -1377,12 +1377,11 @@ const STIL = `STIL PISANJA TRENINGOV — piši PREPROSTO IN RAZUMLJIVO, kot da r
 
 const STRATEGIJA = `POČITNIŠKA STRATEGIJA "LEAN" — razkrij mišico pod maščobo (STRIKTNO upoštevaj pri vsakem planiranju):
 1. KALORIČNI DEFICIT + PREHRANA: maščoba gre dol le ob deficitu, VISOK vnos beljakovin ščiti mišice. POMEMBNO: obroke pripravlja mama — NIKOLI ne predpisuj jedilnikov! Svetuj samo tisto, kar lahko kolesar SAM kontrolira ob serviranih obrokih: velikost porcije (manj priloge, več mesa/zelenjave), beljakovinski dodatki, ki si jih vzame sam (skuta, jajca, grški jogurt, tuna, mleko), brez sladkarij/sladkih pijač/prigrizkov, kruh zmerno, 2,5 l vode.
-2. MOČ JE KLJUČNA (3× tedensko) in ima KONKRETEN CILJ: naučiti se MUSCLE-UP. Vsak moč trening je korak progresije: sklece + zgibi + dipsi + trebušnjaki/dvigi nog (osnove) → eksplozivni zgibi do prsi → negativni muscle-upi → poskusi prehoda čez drog. Zgibi dajo V-hrbet, dipsi in sklece prsa/triceps, trup pa prehod. Brez treninga z odporom telo v deficitu izgublja mišice.
-3. ZMAGOVALNA KOMBINACIJA VSAK TEDEN:
-   - 2–3× KOLO (~1 h): regeneracija sklepov, poraba kalorij, kondicija.
-   - 2× POHOD/HRIBI (npr. Sv. Jakob): intenzivno za noge in pljuča; med pohodoma vsaj dan pavze od spustov.
-   - 3× MOČ: zgibi, sklece, trup (lahko isti dan kot kolo — v polju "vaje" oz. kot samostojen dan tipa "moč").
-Teden razporedi pametno: težki dnevi ne zaporedoma, moč lahko kombiniran s kolesom.`;
+2. MOČ ima KONKRETEN CILJ: naučiti se MUSCLE-UP. Vsak moč trening je korak progresije: sklece + zgibi + dipsi + trebušnjaki/dvigi nog (osnove) → eksplozivni zgibi do prsi → negativni muscle-upi → poskusi prehoda čez drog. Zgibi dajo V-hrbet, dipsi in sklece prsa/triceps, trup pa prehod. Brez treninga z odporom telo v deficitu izgublja mišice.
+3. STRUKTURA TEDNA:
+   - JEDRO TEDNA = IZMENJAVA KOLESA IN POHODA (to je glavna, aktivna vsebina). Čez teden se izmenjujeta kolo in hoja v hribe — npr. kolo, pohod, kolo, pohod … skupaj 4–5× tedensko. To gradi kondicijo in kuri maščobo in je glavna postavka večine dni.
+   - MOČ JE DODATEK (2–3× tedensko, 20–40 min): krajši trening za zgornji del telesa proti muscle-upu, dodan POLEG glavne aktivnosti — lahko isti dan kot lažje kolo (v polju "vaje") ali kot kratek samostojen dan tipa "moč". Ni glavna postavka dneva, ampak nadgradnja.
+   - PRAVILO RAZPOREDA: dva težka dneva NE zaporedoma; po napornem pohodu ali intenzivnem kolesu lažji dan, samo moč ali regeneracija. 1 dan v tednu prosto/lahka regeneracija.`;
 
 /* ---------- cone utripa in moči iz profila ---------- */
 function hrZones(){
@@ -1645,8 +1644,8 @@ NAVODILA:
 - Postopnost obsega (~+10 % max glede na zadnje tedne).
 - ČE OBSTAJA GLAVNI CILJ Z ROKOM (npr. izguba mase${gd?` — potreben deficit ~${gd.deficit} kcal/dan`:''}): za VSAK dan obvezno dodaj tudi "vaje" (10–20 min domačih vaj za trup/moč s serijami × ponovitvami, progresivno; brez teka), "prehrana" (1–3 KRATKI nasveti, ki jih lahko izvede ob obrokih, ki mu jih pripravi mama — npr. "manjša porcija priloge | zvečer dodaj skuto (beljakovine) | brez sladkarij in sokov" — NE predpisuj jedilnikov, loči nasvete z |) ter "kcal_vnos" in "kcal_poraba". Deficit dosleden, a ne več kot ~1000 kcal/dan. Če cilja ni, pusti ta polja prazna.
 - Vključi 1–2 dneva ODDIHA ali regeneracije, razporejena pametno (po težkih dneh), ne po fiksni shemi.
-- Tipi: intervali, vzdržljivost, tempo, regeneracija, moč, pohod, počitek. Teden sestavi po POČITNIŠKI STRATEGIJI zgoraj (2–3× kolo + 2× pohod + 3× moč).
-- VSAK dan mora povedati TOČNO, kaj naredi: dan tipa "moč" ima v "opis" CEL trening iz muscle-up progresije (vaje × serije × ponovitve, npr. "Zgibi 4×6\\nSklece 4×15\\nDipsi 3×8\\nDvigi nog na drogu 3×10\\nNegativni muscle-up 2×3"); dan kolesa/pohoda ima "opis" po stilu trenerja, morebitne dodatne vaje pa v polju "vaje". Nič ne sme biti ohlapno.
+- Tipi: intervali, vzdržljivost, tempo, regeneracija, moč, pohod, počitek. Teden sestavi po POČITNIŠKI STRATEGIJI zgoraj: JEDRO = izmenjava kolo/pohod 4–5×, MOČ 2–3× kot krajši dodatek (ne kot glavna postavka), 1 dan regeneracija/prosto. Dva težka dneva ne zaporedoma.
+- VSAK dan mora povedati TOČNO, kaj naredi. Dan tipa "moč" (ali vaje moči na dan kolesa) naj bo v OBLIKI, ki jo zna prebrati vodeni trening: vsaka vaja v svoji vrstici (loči z \\n) kot "Ime: N serij po M ponovitev, odmor X" — npr. "Zgibi: 4 serije po 6 ponovitev, odmor 2 min\\nSklece: 4 serije po 15 ponovitev, odmor 90 sekund\\nDipsi: 3 serije po 8 ponovitev, odmor 2 min\\nDvigi nog na drogu: 3 serije po 10 ponovitev, odmor 90 sekund". Dodaj kratko ogrevanje ("Ogrevanje: 8 minut …") in zaključek ("Zaključek: 5 minut raztezanja"). Dan kolesa/pohoda ima "opis" po stilu trenerja, morebitne dodatne vaje moči pa v polju "vaje" v istem formatu. Nič ohlapno.
 - "opis": vsaka vrstica en korak (loči z \\n), npr.: "Ogrevanje: 15 min lahkotno (utrip do 130)\\nGlavni del: 3× 8 min v klanec (utrip 160–175), vmes 5 min mirno\\nZaključek: 15 min sproščeno domov".
 
 Vrni SAMO JSON:
