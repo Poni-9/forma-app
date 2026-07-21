@@ -760,7 +760,7 @@ function renderPlanTab(){
       ${d.vaje?`<div class="pd-sec"><div class="pd-lbl">🏋️ Vaje (muscle-up)</div>${d.vaje.includes('\n')?opisHtml(d.vaje):`<div class="opis-line">${esc(d.vaje)}</div>`}</div>`:''}
       ${(d.prehrana||d.kcal_vnos)?`<div class="pd-sec"><div class="pd-lbl">🍽 Prehrana</div>${esc(d.prehrana||'').split(/\s*\|\s*/).filter(x=>x).map(x=>`<div class="opis-line">${x}</div>`).join('')}${d.kcal_vnos?`<div class="hint" style="color:var(--yellow);font-weight:700;margin-top:4px">🔥 vnos ~${d.kcal_vnos} · poraba ~${d.kcal_poraba||'?'} kcal</div>`:''}</div>`:''}
       <div class="pd-actions">
-        ${ct.l==='TRENING MOČI' ? `<button class="btn btn-primary btn-sm" onclick='pwStartFor("${d.datum}")'>▶ Začni vodeni trening</button>`:''}
+        ${hasStrength(d) ? `<button class="btn btn-primary btn-sm" onclick='pwStartFor("${d.datum}")'>▶ Začni vodeni trening${ct.l!=='TRENING MOČI'?' (moč)':''}</button>`:''}
         ${isToday && ct.l!=='POČITEK' ? `<button class="btn btn-ghost btn-sm" onclick="$('adaptBack').classList.add('open')">⏱ Nimam toliko časa</button>`:''}
       </div>
     </div>`;
@@ -844,7 +844,15 @@ function parseWorkout(day){
   }
   return blocks;
 }
-const hasSets = d => parseWorkout(d).some(b=>b.kind==='sets');
+// dan je "moč", če ga tip razvrsti kot TRENING MOČI
+const isMocDay = d => chipTip(d.tip).l==='TRENING MOČI';
+// so na tem dnevu vaje za moč? (cel moč dan ALI dodatek "vaje" na dnevu kolesa/pohoda)
+const hasStrength = d => isMocDay(d) || !!(d.vaje && d.vaje.trim());
+// iz katerega besedila naj player vzame vaje: moč dan → opis; sicer → samo polje "vaje" (ne kolo!)
+function strengthSrc(day){
+  if (isMocDay(day)) return { opis:day.opis||'', vaje:day.vaje||'', naslov:day.naslov||'Trening moči' };
+  return { opis:day.vaje||'', vaje:'', naslov:'Vaje za moč (dodatek)' };
+}
 
 async function pwStartFor(datum){
   refreshF(); let day=null;
@@ -852,21 +860,22 @@ async function pwStartFor(datum){
   if(day) pwStart(day); else toast('Ni najden dan.','err');
 }
 async function pwStart(day){
-  let blocks=parseWorkout(day);
+  const src = strengthSrc(day);
+  let blocks=parseWorkout(src);
   if (blocks.filter(b=>b.kind==='sets').length < 2){
     openPlay(); pwLoading();
     try{
-      const r=await gemini([{text:`Pretvori ta trening moči v strukturiran seznam za vodeni player.
-Naslov: "${day.naslov||'Trening moči'}".
-Opis:\n${day.opis||''}\n${day.vaje||''}
+      const r=await gemini([{text:`Pretvori te vaje za moč v strukturiran seznam za vodeni player.
+Naslov: "${src.naslov}".
+Vaje/opis:\n${src.opis||''}\n${src.vaje||''}
 Vrni SAMO JSON: {"blocks":[{"kind":"timed"|"sets","name":"kratko ime vaje","dur":sekunde_za_timed,"sets":stevilo_serij,"reps":ponovitve,"repsIsTime":true_ce_je_reps_v_sekundah,"rest":sekunde_odmora,"note":"kratek namig za pravilno izvedbo"}]}
-Ogrevanje in zaključek/raztezanje = "timed". Vsaka vaja = "sets" z odmorom (obicajno 60-120 s). Če v opisu ni vaj za moč, sestavi smiseln trening za zgornji del telesa proti muscle-upu (zgibi, sklece, dipsi, trebušnjaki).`}]);
+Ogrevanje in zaključek/raztezanje = "timed". Vsaka vaja = "sets" z odmorom (obicajno 60-120 s). Upoštevaj SAMO vaje za moč (zgibi, sklece, dipsi, trebušnjaki, muscle-up progresija) — NE kolesa ali pohoda. Če besedilo ni jasno, sestavi smiseln trening za zgornji del telesa proti muscle-upu.`}]);
       const b=(r.blocks||[]).map(x=>({kind:x.kind==='timed'?'timed':'sets', name:x.name||'Vaja', dur:+x.dur||300, sets:+x.sets||3, reps:+x.reps||10, repsIsTime:!!x.repsIsTime, rest:+x.rest||90, note:x.note||''}));
       if(b.length) blocks=b;
     }catch(e){ /* obdržimo lokalno razčlembo */ }
   }
-  if(!blocks.length){ toast('Tega dneva ne znam razčleniti v vaje.','err'); pwClose(); return; }
-  PW={ day, blocks, bi:-1, phase:'intro', tid:null };
+  if(!blocks.length){ toast('Za ta dan ni vaj za moč.','err'); pwClose(); return; }
+  PW={ day, blocks, bi:-1, phase:'intro', tid:null, title:src.naslov };
   openPlay(); pwWake(true); pwRenderIntro();
 }
 function openPlay(){ $('playBack').classList.add('open'); }
@@ -886,7 +895,7 @@ function pwRenderIntro(){
   $('playBody').innerHTML=`<div class="pw-screen">
     <div class="pw-phase">Vodeni trening moči</div>
     <div class="pw-big">🏋️</div>
-    <div class="pw-title">${esc(PW.day.naslov||'Trening moči')}</div>
+    <div class="pw-title">${esc(PW.title||PW.day.naslov||'Trening moči')}</div>
     <div class="pw-sub">${setsN} vaj · telefon te vodi skozi vsako serijo in odmor</div>
     <div class="pw-list">${list}</div>
     <button class="btn btn-primary pw-cta" onclick="pwBegin()">▶ Začni</button>
@@ -988,7 +997,7 @@ function pwLog(){
     }
     F.rides = F.rides || [];
     if(!F.rides.some(r=>r.date===todayIso() && r.sport==='moc'))
-      F.rides.push({id:'pw'+Date.now(), source:'manual', sport:'moc', date:todayIso(), name:(PW.day.naslov||'Trening moči (vodeni)'), dist:null, time:Math.max(1,Math.round((Date.now()-(PW.tStart||Date.now()))/60000)), elev:null, avgHr:null, tss:40});
+      F.rides.push({id:'pw'+Date.now(), source:'manual', sport:'moc', date:todayIso(), name:(PW.title||'Trening moči (vodeni)'), dist:null, time:Math.max(1,Math.round((Date.now()-(PW.tStart||Date.now()))/60000)), elev:null, avgHr:null, tss:40});
     for(const p of (F.plans||[])){ const d=(p.days||[]).find(x=>x.datum===todayIso()); if(d){ d.done=true; break; } }
     F._ts=Date.now(); localStorage.setItem('forma_trener_v1', JSON.stringify(F));
     if(typeof syncPush==='function') syncPush('forma');
