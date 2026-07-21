@@ -222,6 +222,7 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
     <div class="logo">🍽️</div>
     <div><h1>KalorijeAI</h1><small>slikaj → AI prešteje kalorije</small></div>
     <div class="right">
+      <button class="btn btn-ghost btn-sm" id="btnSyncTop" onclick="syncPull(true)" title="Sinhroniziraj zdaj">⟳</button>
       <button class="btn btn-ghost btn-sm" onclick="openSettings()">⚙️ Nastavitve</button>
     </div>
   </div>
@@ -823,6 +824,7 @@ function showPane(name){
   document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('active', p.id==='pane-'+name));
   $('tabBtnKcal').classList.toggle('on', name==='kcal');
   $('tabBtnPlan').classList.toggle('on', name==='plan');
+  if (typeof syncPull==='function') syncPull(false);   // ob preklopu zavihka poberi najnovejše
 }
 function chipTip(tip){
   const t=(tip||'').toLowerCase();
@@ -1339,6 +1341,7 @@ renderAll();
 // sinhronizacija: potegni ob zagonu, ob vrnitvi v aplikacijo in vsakih 90 s
 syncPull();
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) syncPull(); });
+window.addEventListener('focus', ()=>syncPull());   // ko klikneš nazaj na okno, poberi najnovejše
 </script>
 </body>
 </html>
