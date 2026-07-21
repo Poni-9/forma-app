@@ -222,7 +222,7 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
     <div class="logo">🍽️</div>
     <div><h1>KalorijeAI</h1><small>slikaj → AI prešteje kalorije · <b style="color:var(--acc2)">v2.4</b></small></div>
     <div class="right">
-      <button class="btn btn-ghost btn-sm" id="btnSyncTop" onclick="syncPull(true)" title="Sinhroniziraj zdaj">⟳</button>
+      <button class="btn btn-ghost btn-sm" id="btnSyncTop" onclick="forceSync()" title="Sinhroniziraj zdaj (pošlji + prejmi)">⟳</button>
       <button class="btn btn-ghost btn-sm" onclick="openSettings()">⚙️ Nastavitve</button>
     </div>
   </div>
@@ -1223,6 +1223,27 @@ async function syncGet(){
   const res = await fetch(`${SYNC_API}/${c.bin}/latest`, { headers:{'X-Master-Key':c.key} });
   if (!res.ok) throw new Error('Sync branje: HTTP '+res.status);
   return (await res.json()).record || {};
+}
+/* GUMB ⟳: hkrati POŠLJE (piščanec gor) in PREJME (vožnja dol) — zagotovljena uskladitev */
+async function forceSync(){
+  const c=db.settings.sync;
+  if(!c?.bin){ toast('Ta naprava ni povezana! V ⚙️ Nastavitvah prilepi kodo z druge naprave.','err'); openSettings(); return; }
+  const b=$('btnSyncTop'); const o=b?b.innerHTML:''; if(b){b.disabled=true; b.innerHTML='<span class="spin"></span>';}
+  try{
+    const rec = await syncGet() || {};
+    if (rec.kalorije) mergeKalorije(rec.kalorije);          // poberi tuje obroke
+    let f = formaState(); if (rec.forma) f = mergeForma(f, rec.forma);   // poberi tuje vožnje
+    if (f){ try{ localStorage.setItem('forma_trener_v1', JSON.stringify(f)); refreshF(); }catch(_){}}
+    db._ts = Date.now();
+    rec.kalorije = db;  rec.kalorije_ts = db._ts;
+    rec.forma = f;      rec.forma_ts = f?._ts || Date.now();
+    try{ localStorage.setItem(DB, JSON.stringify(db)); }catch(_){}
+    await fetch(`${SYNC_API}/${c.bin}`, { method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':c.key}, body: JSON.stringify(rec) });
+    renderAll();
+    toast('Sinhronizirano ↔ (poslano in prejeto). ✓','');
+  }catch(e){ toast(e.message,'err'); }
+  if(b){b.disabled=false; b.innerHTML=o;}
 }
 async function syncPull(manual){
   const c=db.settings.sync; if(!c?.bin){ if(manual) toast('Sinhronizacija ni nastavljena (⚙️).','err'); return; }
