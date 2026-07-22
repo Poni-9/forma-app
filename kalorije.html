@@ -88,6 +88,7 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 .hstat .t{font-size:11px;color:var(--muted)}
 .pbar{height:7px;background:#1d2836;border-radius:99px;overflow:hidden;margin-top:6px}
 .pbar div{height:100%;border-radius:99px;background:var(--blue);transition:width .5s}
+.steps-row{display:flex;align-items:center;gap:11px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
 
 /* dropzone */
 .dz{border:2px dashed var(--border2);border-radius:14px;padding:26px 18px;text-align:center;color:var(--muted);cursor:pointer;transition:all .2s;background:rgba(255,255,255,.015)}
@@ -233,7 +234,7 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 
   <div class="top">
     <div class="logo">🍽️</div>
-    <div><h1>KalorijeAI</h1><small>slikaj → AI prešteje kalorije · <b style="color:var(--acc2)">v2.9</b></small></div>
+    <div><h1>KalorijeAI</h1><small>slikaj → AI prešteje kalorije · <b style="color:var(--acc2)">v3.0</b></small></div>
     <div class="right">
       <button class="btn btn-ghost btn-sm" id="btnSyncTop" onclick="forceSync()" title="Sinhroniziraj zdaj (pošlji + prejmi)">⟳</button>
       <button class="btn btn-ghost btn-sm" onclick="openSettings()">⚙️ Nastavitve</button>
@@ -263,6 +264,12 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
         <div class="hstat"><div class="k">Poraba danes</div><div class="v" id="stBurn">–</div><div class="t" id="stBurnSrc"></div></div>
         <div class="hstat"><div class="k">Beljakovine</div><div class="v" id="stProt">–</div><div class="pbar"><div id="protBar" style="width:0%"></div></div><div class="t" id="stProtT"></div></div>
       </div>
+    </div>
+    <div class="steps-row">
+      <span style="font-size:22px">👟</span>
+      <div style="flex:1;min-width:110px"><b style="font-size:13px">Koraki danes</b><div class="hint" id="stepsKcalLbl">vpiši korake z ure/telefona</div></div>
+      <input type="number" id="stepsInput" placeholder="npr. 10000" inputmode="numeric" style="width:110px" onchange="saveSteps()">
+      <button class="btn btn-ghost btn-sm" id="btnSteps" onclick="fetchSteps()" title="Poberi iz Garmina prek Intervals.icu">⤓ Garmin</button>
     </div>
   </div>
 
@@ -518,15 +525,40 @@ function trainAdjust(){
 const bonusKcal = () => Math.max(0, trainAdjust());   // (nazaj-združljivost)
 function targetKcal(){
   const adj = Math.max(-800, Math.min(1200, trainAdjust()));
-  return Math.max(basalKcal()-100, baseTargetKcal() + adj);   // nikoli pod ~bazalno porabo
+  return Math.max(basalKcal()-100, baseTargetKcal() + adj + stepsKcal());   // + koraki (smeš pojesti nazaj); nikoli pod ~bazalno porabo
 }
 function burnKcal(){
-  const act = actualBurnToday();
-  if (act>0) return {v: basalKcal()+act, src:'dejansko (Strava + aktivnosti)'};
-  const pd=planToday(); if (pd?.kcal_poraba) return {v:pd.kcal_poraba, src:'iz plana FORMA'};
-  return {v:basalKcal(), src:'ocena (osnovna poraba)'};
+  const act = actualBurnToday(), sk = stepsKcal();
+  let v, src;
+  if (act>0){ v=basalKcal()+act; src='dejansko (Strava + aktivnosti)'; }
+  else { const pd=planToday(); if (pd?.kcal_poraba){ v=pd.kcal_poraba; src='iz plana FORMA'; } else { v=basalKcal(); src='ocena (osnovna poraba)'; } }
+  if (sk){ v+=sk; src+=` + ${sk} koraki`; }
+  return {v, src};
 }
 const protTarget = () => Math.round(teza()*2.2);   // lean-fit: ohranja/gradi mišice v deficitu
+
+/* --- KORAKI → dodatna dnevna poraba (smeš pojesti nazaj) --- */
+const stepsToday = () => dayData(todayIso()).steps || 0;
+const stepsKcal  = () => Math.round(stepsToday() * 0.0005 * teza());   // ~0.5 kcal na korak na kg (10k korakov @77kg ≈ 385 kcal)
+function saveSteps(){
+  const v = Math.max(0, Math.round(+$('stepsInput').value||0));
+  dayData(todayIso()).steps = v; dayData(todayIso()).stepsTs = Date.now();
+  save(); renderAll();
+}
+async function fetchSteps(){
+  refreshF(); const icu = F?.icu;
+  if(!icu?.athleteId || !icu?.apiKey){ toast('Za samodejne korake poveži Intervals.icu v FORMA Trener (Garmin → Intervals.icu → koraki).','err'); return; }
+  const b=$('btnSteps'); const o=b.innerHTML; b.disabled=true; b.innerHTML='<span class="sping"></span>';
+  try{
+    const auth='Basic '+btoa('API_KEY:'+icu.apiKey);
+    const r=await fetch(`https://intervals.icu/api/v1/athlete/${icu.athleteId}/wellness/${todayIso()}`,{headers:{Authorization:auth}});
+    if(!r.ok) throw new Error('Intervals.icu: HTTP '+r.status);
+    const d=await r.json();
+    if(d && d.steps){ dayData(todayIso()).steps=d.steps; dayData(todayIso()).stepsTs=Date.now(); save(); renderAll(); toast('Koraki iz Garmina: '+d.steps.toLocaleString('sl')+' 👟','');}
+    else toast('Za danes še ni podatka o korakih (Garmin morda še ni sinhroniziral z Intervals.icu).','');
+  }catch(e){ toast(e.message,'err'); }
+  b.disabled=false; b.innerHTML=o;
+}
 
 /* ================================================================
    DNEVNIK
@@ -758,13 +790,16 @@ function renderHero(){
   $('stLeft').textContent = (left>=0?left:0) + ' kcal';
   $('stLeft').style.color = left<0 ? 'var(--red)' : left<200 ? 'var(--yellow)' : 'var(--acc2)';
   if (left<0) $('stLeft').textContent = `${-left} čez!`;
-  const adj = trainAdjust();
+  const adj = trainAdjust(), sk = stepsKcal(), steps = stepsToday();
   $('stTarget').textContent = target+' kcal';
   $('stTargetSrc').innerHTML = (db.settings.kcalManual ? 'ročno nastavljen' : pd?.kcal_vnos ? 'iz FORMA plana ✓' : 'ocena (teža − deficit)')
     + (adj>0 ? ` · <b style="color:var(--acc2)">+${adj} (pokuril več) 🚴</b>`
-     : adj<0 ? ` · <b style="color:var(--orange)">${adj} (krajši trening — ostani v deficitu)</b>` : '');
+     : adj<0 ? ` · <b style="color:var(--orange)">${adj} (krajši trening — ostani v deficitu)</b>` : '')
+    + (sk ? ` · <b style="color:var(--acc2)">+${sk} od korakov 👟</b>` : '');
   $('stBurn').textContent = '~'+burn.v+' kcal';
   $('stBurnSrc').textContent = burn.src;
+  if ($('stepsInput') && document.activeElement!==$('stepsInput')) $('stepsInput').value = steps || '';
+  if ($('stepsKcalLbl')) $('stepsKcalLbl').innerHTML = steps ? `${steps.toLocaleString('sl')} korakov ≈ <b style="color:var(--acc2)">+${sk} kcal</b> (smeš pojesti)` : 'vpiši korake z ure/telefona (ali ⤓ Garmin)';
   $('stProt').textContent = `${prot} / ${pt} g`;
   $('protBar').style.width = Math.min(100, prot/pt*100)+'%';
   $('protBar').style.background = prot>=pt ? 'var(--acc)' : 'var(--blue)';
@@ -1276,9 +1311,15 @@ function mergeDays(localDays, remoteDays, tomb){
   for(const iso of isos){
     const byId={};
     const add = arr => { for(const e of (arr||[])){ if(!e||!e.id||tomb[e.id]) continue; const cur=byId[e.id]; if(!cur || (e.ts||0)>=(cur.ts||0)){ let ne=e; if(cur&&cur.thumb&&!e.thumb) ne={...e,thumb:cur.thumb}; byId[e.id]=ne; } } };
-    add((localDays[iso]||{}).entries); add((remoteDays[iso]||{}).entries);
+    const L=localDays[iso]||{}, R=remoteDays[iso]||{};
+    add(L.entries); add(R.entries);
     const entries=Object.values(byId);
-    if(entries.length) out[iso]={ entries };
+    // koraki/cilj: vzemi novejše (po stepsTs), sicer katerikoli obstaja
+    const steps = (R.steps!=null && (R.stepsTs||0)>=(L.stepsTs||0)) ? R : L;
+    const rec = { entries };
+    if(steps.steps!=null){ rec.steps=steps.steps; rec.stepsTs=steps.stepsTs; }
+    if((L.target??R.target)!=null) rec.target = L.target??R.target;
+    if(entries.length || rec.steps!=null) out[iso]=rec;
   }
   return out;
 }
@@ -1318,6 +1359,7 @@ function slimKalorije(d){
     if(iso<cut) continue;
     c.days[iso] = { entries:(day.entries||[]).map(e=>{ const {thumb,...rest}=e; return rest; }) };
     if(day.target!=null) c.days[iso].target=day.target;
+    if(day.steps!=null){ c.days[iso].steps=day.steps; c.days[iso].stepsTs=day.stepsTs; }
   }
   for(const [id,ts] of Object.entries(d.deleted||{})) if(ts>=cutTs) c.deleted[id]=ts;
   return c;
