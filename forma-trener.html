@@ -395,7 +395,7 @@ h2#calLabel{letter-spacing:-.02em}
         <div class="val" id="sbFormVal">–</div>
         <div class="desc" id="sbFormDesc">Dodaj vožnje za izračun</div>
       </div>
-      <div style="text-align:center;font-size:10.5px;color:var(--dim);margin-top:8px">Trener AI · v2.9</div>
+      <div style="text-align:center;font-size:10.5px;color:var(--dim);margin-top:8px">Trener AI · v3.1</div>
     </div>
   </aside>
 
@@ -2597,14 +2597,15 @@ renderAll();
 getWeather().then(()=>{ renderWeather(); renderPlan(); });   // vreme ob zagonu → osveži trak in dnevne oznake
 window.addEventListener('focus', ()=>{ getWeather().then(()=>{ renderWeather(); renderPlan(); }); });
 setInterval(()=>{ if(document.visibilityState==='visible'){ getWeather(true).then(()=>{ renderWeather(); renderPlan(); }); } }, 2*3600e3);   // vreme vsaki 2 h
-// samodejna sinhronizacija ob odprtju
-if (state.strava.accessToken) stravaImport(true);
-if (state.icu?.athleteId && state.icu?.apiKey) icuImport(true);
+// samodejni uvoz aktivnosti (ob zagonu, fokusu in vsakih 15 min → nova vožnja se takoj naloži)
+function autoImport(){ if (state.strava.accessToken) stravaImport(true); if (state.icu?.athleteId && state.icu?.apiKey) icuImport(true); }
+autoImport();
 renderSyncF();
 syncPullF();
-document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) syncPullF(); });
-window.addEventListener('focus', ()=>{ if(state.sync?.bin) syncPullF(); });
-setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) syncPullF(); }, 60000);   // samodejno vsakih 60 s
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ syncPullF(); autoImport(); } });
+window.addEventListener('focus', ()=>{ if(state.sync?.bin) syncPullF(); autoImport(); });
+setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) syncPullF(); }, 60000);   // sync vsakih 60 s
+setInterval(()=>{ if(document.visibilityState==='visible') autoImport(); }, 15*60000);   // uvoz aktivnosti vsakih 15 min
 </script>
 </body>
 </html>

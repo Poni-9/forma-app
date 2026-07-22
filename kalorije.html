@@ -234,7 +234,7 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 
   <div class="top">
     <div class="logo">🍽️</div>
-    <div><h1>KalorijeAI</h1><small>slikaj → AI prešteje kalorije · <b style="color:var(--acc2)">v3.0</b></small></div>
+    <div><h1>KalorijeAI</h1><small>slikaj → AI prešteje kalorije · <b style="color:var(--acc2)">v3.1</b></small></div>
     <div class="right">
       <button class="btn btn-ghost btn-sm" id="btnSyncTop" onclick="forceSync()" title="Sinhroniziraj zdaj (pošlji + prejmi)">⟳</button>
       <button class="btn btn-ghost btn-sm" onclick="openSettings()">⚙️ Nastavitve</button>
@@ -550,14 +550,26 @@ async function fetchSteps(){
   if(!icu?.athleteId || !icu?.apiKey){ toast('Za samodejne korake poveži Intervals.icu v FORMA Trener (Garmin → Intervals.icu → koraki).','err'); return; }
   const b=$('btnSteps'); const o=b.innerHTML; b.disabled=true; b.innerHTML='<span class="sping"></span>';
   try{
-    const auth='Basic '+btoa('API_KEY:'+icu.apiKey);
-    const r=await fetch(`https://intervals.icu/api/v1/athlete/${icu.athleteId}/wellness/${todayIso()}`,{headers:{Authorization:auth}});
-    if(!r.ok) throw new Error('Intervals.icu: HTTP '+r.status);
-    const d=await r.json();
-    if(d && d.steps){ dayData(todayIso()).steps=d.steps; dayData(todayIso()).stepsTs=Date.now(); save(); renderAll(); toast('Koraki iz Garmina: '+d.steps.toLocaleString('sl')+' 👟','');}
+    const d=await icuSteps(todayIso());
+    if(d!=null){ dayData(todayIso()).steps=d; dayData(todayIso()).stepsTs=Date.now(); save(); renderAll(); toast('Koraki iz Garmina: '+d.toLocaleString('sl')+' 👟','');}
     else toast('Za danes še ni podatka o korakih (Garmin morda še ni sinhroniziral z Intervals.icu).','');
   }catch(e){ toast(e.message,'err'); }
   b.disabled=false; b.innerHTML=o;
+}
+async function icuSteps(iso){
+  refreshF(); const icu=F?.icu; if(!icu?.athleteId||!icu?.apiKey) return null;
+  const auth='Basic '+btoa('API_KEY:'+icu.apiKey);
+  const r=await fetch(`https://intervals.icu/api/v1/athlete/${icu.athleteId}/wellness/${iso}`,{headers:{Authorization:auth}});
+  if(!r.ok) return null;
+  const d=await r.json();
+  return (d && typeof d.steps==='number') ? d.steps : null;
+}
+/* samodejno (tiho) potegni današnje korake iz Garmina/Intervals — kliče se pogosto */
+async function autoSteps(){
+  try{
+    const s=await icuSteps(todayIso());
+    if(s!=null && s!==stepsToday()){ dayData(todayIso()).steps=s; dayData(todayIso()).stepsTs=Date.now(); save(); renderAll(); }
+  }catch(_){}
 }
 
 /* ================================================================
@@ -1572,9 +1584,11 @@ save();
 renderAll();
 // sinhronizacija: potegni ob zagonu, ob vrnitvi v aplikacijo in vsakih 90 s
 syncPull();
-document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ syncPull(); renderWeatherK(true); } });
-window.addEventListener('focus', ()=>{ syncPull(); renderWeatherK(true); });   // ko klikneš nazaj na okno, poberi najnovejše + vreme
+autoSteps();   // koraki iz Garmina ob zagonu
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ syncPull(); renderWeatherK(true); autoSteps(); } });
+window.addEventListener('focus', ()=>{ syncPull(); renderWeatherK(true); autoSteps(); });   // ko klikneš nazaj na okno: sync + vreme + koraki
 setInterval(()=>{ if(document.visibilityState==='visible' && db.settings.sync?.bin) syncPull(); }, 60000);   // sync vsakih 60 s
+setInterval(()=>{ if(document.visibilityState==='visible') autoSteps(); }, 15*60000);   // koraki vsakih 15 min
 setInterval(()=>{ if(document.visibilityState==='visible'){ wxCache=null; renderWeatherK(true); } }, 2*3600e3);   // vreme vsaki 2 h
 renderWeatherK(true);   // preveri vreme ob zagonu
 </script>
