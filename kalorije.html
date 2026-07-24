@@ -1556,7 +1556,9 @@ renderWeatherK(true);   // preveri vreme ob zagonu
 <script>
 /* ===== Google sinhronizacija (Firebase) — isti račun kot FORMA Trener ===== */
 (function(){
-  const FB_CONFIG = null;   /* RAZVIJALEC: prilepi firebaseConfig sem (isti kot v forma-trener.html) */
+  const FB_CONFIG = { apiKey:"AIzaSyAY1WM27EA9qzxXpTQ6N5AkTgX3UFR1MUs", authDomain:"c-vaje.firebaseapp.com",
+    projectId:"c-vaje", storageBucket:"c-vaje.firebasestorage.app", messagingSenderId:"602565779369",
+    appId:"1:602565779369:web:9a50487da9f4d515f1eeb8" };   /* javen config — isti kot v forma-trener.html */
   const LS_CFG='forma_fb_config';
   const getCfg=()=>{ try{ return FB_CONFIG||JSON.parse(localStorage.getItem(LS_CFG)||'null'); }catch(_){ return FB_CONFIG; } };
   const fb={ready:false,auth:null,db:null,uid:null,timer:null,last:''};

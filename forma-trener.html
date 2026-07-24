@@ -2829,9 +2829,10 @@ setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) sy
 
 /* ===== Google sinhronizacija (Firebase) — samostojen dodatek ===== */
 (function(){
-  /* RAZVIJALEC: prilepi svoj firebaseConfig sem (enkrat), da imajo vse stranke isto sinhronizacijo.
-     Pusti null, da se config vnese v Nastavitvah. */
-  const FB_CONFIG = null;
+  /* Firebase config (javen) — vse stranke imajo isto Google sinhronizacijo. */
+  const FB_CONFIG = { apiKey:"AIzaSyAY1WM27EA9qzxXpTQ6N5AkTgX3UFR1MUs", authDomain:"c-vaje.firebaseapp.com",
+    projectId:"c-vaje", storageBucket:"c-vaje.firebasestorage.app", messagingSenderId:"602565779369",
+    appId:"1:602565779369:web:9a50487da9f4d515f1eeb8" };
   const LS_CFG = 'forma_fb_config';
   const getCfg = () => { try { return FB_CONFIG || JSON.parse(localStorage.getItem(LS_CFG)||'null'); } catch(_) { return FB_CONFIG; } };
   const fb = { ready:false, auth:null, db:null, uid:null, timer:null, last:'' };
