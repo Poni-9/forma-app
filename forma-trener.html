@@ -416,6 +416,7 @@ h2#calLabel{letter-spacing:-.02em}
       </div>
 
       <div id="onboardCard"></div>
+      <div id="coachReport"></div>
       <div class="grid-stats" id="dashStats"></div>
 
       <div class="grid-2">
@@ -919,7 +920,7 @@ document.querySelectorAll('.nav-item').forEach(el=>{
 function switchTab(name){
   document.querySelectorAll('.nav-item').forEach(e=>e.classList.toggle('active', e.dataset.tab===name));
   document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('active', e.id==='tab-'+name));
-  if (name==='plan') renderWeather();   // osveži vremenski trak ob odprtju plana
+  if (name==='plan'){ renderWeather(); setTimeout(()=>{ document.querySelector('.day-card.today')?.scrollIntoView({behavior:'smooth',block:'center'}); },200); }
   if (name==='kalorije') renderKalorije();
 }
 
@@ -986,6 +987,74 @@ function renderDash(){
 
   renderCharts();
   renderRiderCard();
+  renderCoachReport();
+}
+
+/* ================================================================
+   TRENERJEVO POROČILO — "kako mi gre" (deluje brez AI ključa)
+================================================================ */
+function weekAgg(offset){
+  const ws=weekStart(addDays(new Date(),-7*offset)), a=isoDate(ws), b=isoDate(addDays(ws,6));
+  const rs=state.rides.filter(r=>r.date>=a&&r.date<=b);
+  return { n:rs.length, km:rs.reduce((x,r)=>x+(+r.dist||0),0), min:rs.reduce((x,r)=>x+(+r.time||0),0), tss:rs.reduce((x,r)=>x+(r.tss||0),0) };
+}
+function planRealizacija(){
+  const today=todayIso(); let planned=0, done=0;
+  for(const p of state.plans){
+    for(const d of (p.days||[])){
+      if(d.datum> today) continue;
+      if(d.datum < isoDate(addDays(new Date(),-13))) continue;   // zadnjih 14 dni
+      if(chipClass(d.tip)==='pocitek') continue;
+      planned++; if(d.done || state.rides.some(r=>r.date===d.datum)) done++;
+    }
+  }
+  return planned? {planned, done, pct:Math.round(done/planned*100)} : null;
+}
+function renderCoachReport(){
+  const box=$('coachReport'); if(!box) return;
+  if(state.rides.length<1){ box.innerHTML=''; return; }
+  const t=weekAgg(0), l=weekAgg(1), f=currentForm();
+  const s=formSeries(); const prev=s.length>8? s[s.length-8] : null;
+  const ctlD = (f&&prev)? (f.ctl-prev.ctl) : 0;
+  const rp=planRealizacija();
+  const trendTxt = ctlD>0.5? `Kondicija raste (+${ctlD.toFixed(1)} CTL v tednu) 📈` : ctlD<-0.5? `Kondicija rahlo pada (${ctlD.toFixed(1)} CTL) 📉` : `Kondicija stabilna ➡️`;
+  const kmD = l.km? Math.round((t.km-l.km)/l.km*100) : null;
+  let msg, mood;
+  if (f && f.tsb<-20) { mood='🥵'; msg='Precej si utrujen — vzemi lahek dan ali dva, potem boš močnejši. Utrujenost je del procesa, sveži dnevi so tam, kjer se forma pokaže.'; }
+  else if (rp && rp.pct>=80) { mood='🔥'; msg=`Odlično držiš plan (${rp.done}/${rp.planned} treningov). Tako se gradi forma — kar nadaljuj.`; }
+  else if (rp && rp.pct>=50) { mood='💪'; msg=`Realiziral si ${rp.done}/${rp.planned} načrtovanih treningov. Solidno — če ta teden ujameš še ključni dolgi trening, je teden odličen.`; }
+  else if (rp) { mood='🎯'; msg=`Zadnjih 14 dni si opravil ${rp.done}/${rp.planned} načrtovanih treningov. Nič hudega — klikni ✨ Generiraj plan, da ga prilagodim tvojemu urniku, raje manj in redno kot veliko in nikoli.`; }
+  else if (kmD!=null && kmD>=15) { mood='🔥'; msg=`Ta teden si na ${Math.round(t.km)} km — ${kmD}% več kot prejšnji. Lepa rast, samo pazi da dodaš tudi počitek.`; }
+  else if (kmD!=null && kmD<=-30) { mood='🌱'; msg=`Ta teden je mirnejši (${Math.round(t.km)} km). Če je bil namen počitek — super. Če ne, te jutri čaka dober dan za vožnjo.`; }
+  else { mood='👍'; msg=`Ta teden: ${Math.round(t.km)} km v ${fmtDur(t.min)}. ${trendTxt}`; }
+  box.innerHTML = `<div class="card mb" style="border-color:rgba(252,76,2,.35);background:linear-gradient(135deg,rgba(252,76,2,.07),transparent)">
+    <div class="head-row" style="align-items:flex-start">
+      <div style="flex:1">
+        <h3 style="margin-bottom:6px">${mood} Trenerjevo poročilo <span class="sub">${new Date().toLocaleDateString('sl-SI',{weekday:'long'})}</span></h3>
+        <div style="font-size:14.5px;line-height:1.55">${esc(msg)}</div>
+        <div style="font-size:12.5px;color:var(--muted);margin-top:8px">
+          ${trendTxt}${f?` · svežina <b style="color:${f.barva}">${f.tsb>0?'+':''}${f.tsb}</b> (${esc(f.opis)})`:''}${rp?` · plan ${rp.pct}%`:''}
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="btnCoachAI" onclick="coachReportAI()">✨ AI poročilo</button>
+    </div>
+    <div id="coachAIout"></div>
+  </div>`;
+}
+async function coachReportAI(){
+  const btn=$('btnCoachAI'); busy(btn,true,'Pišem …');
+  try{
+    const t=weekAgg(0), l=weekAgg(1), rp=planRealizacija(), f=currentForm();
+    const txt = await gemini([{text:
+`Si moj kolesarski trener. Napiši mi kratko osebno poročilo (5-7 stavkov, slovensko, prijateljsko a konkretno):
+1) kako mi gre glede na podatke, 2) kaj sem naredil dobro, 3) ENO stvar, ki naj jo ta teden izboljšam, 4) spodbuda.
+Ta teden: ${t.n} voženj, ${Math.round(t.km)} km, ${t.min} min, ${t.tss} TSS. Prejšnji teden: ${l.n} voženj, ${Math.round(l.km)} km, ${l.tss} TSS.
+${rp?`Realizacija plana (14 dni): ${rp.done}/${rp.planned}.`:''} ${f?`Forma: CTL ${f.ctl}, TSB ${f.tsb} (${f.opis}).`:''}
+${buildContext()}
+Vrni SAMO čisto besedilo, brez naslova.`}], {json:false, temp:.6});
+    $('coachAIout').innerHTML = `<div class="analysis-box" style="margin-top:12px">${nl2br(String(txt).trim())}</div>`;
+  }catch(e){ toast(e.message,'err'); }
+  busy(btn,false);
 }
 
 function renderCharts(){
