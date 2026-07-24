@@ -395,8 +395,13 @@ input:focus,select:focus{box-shadow:none!important}
     <div class="card" style="display:flex;flex-direction:column;min-height:62vh">
       <h3>AI trener <span class="sub">pozna tvoj plan, formo in prehrano</span></h3>
       <div class="chat-box" id="chatBoxK" style="flex:1"></div>
+      <div style="display:flex;gap:6px;overflow-x:auto;padding:10px 0 0">
+        <div style="border:1px solid var(--border2);padding:7px 11px;font-size:11.5px;color:#c9c3ce;white-space:nowrap;cursor:pointer" onclick="chatAskK('Kaj naj jem pred dolgo turo?')">Kaj jem pred dolgo?</div>
+        <div style="border:1px solid var(--border2);padding:7px 11px;font-size:11.5px;color:#c9c3ce;white-space:nowrap;cursor:pointer" onclick="chatAskK('Zakaj je jutrišnji trening tak?')">Zakaj jutri tak trening?</div>
+        <div style="border:1px solid var(--border2);padding:7px 11px;font-size:11.5px;color:#c9c3ce;white-space:nowrap;cursor:pointer" onclick="chatAskK('Lahko soboto zamenjam z nedeljo?')">Zamenjaj sob/ned</div>
+      </div>
       <div class="chat-input">
-        <input id="chatInpK" placeholder="Napiši sporočilo …" onkeydown="if(event.key==='Enter')chatSendK()">
+        <input id="chatInpK" placeholder="Vprašaj karkoli …" onkeydown="if(event.key==='Enter')chatSendK()">
         <button class="btn btn-primary" id="btnChatK" onclick="chatSendK()">→</button>
       </div>
     </div>
@@ -1029,6 +1034,7 @@ function chatCtxK(){
     `DANES NA PLANU: ${pd? pd.tip+' — '+pd.naslov+' ('+(pd.trajanje_min||'?')+' min)' : 'ni plana'}\n`+
     `DANES POJEDENO: ~${eaten} kcal`;
 }
+function chatAskK(q){ const i=$('chatInpK'); if(i){ i.value=q; chatSendK(); } }
 async function chatSendK(){
   const inp=$('chatInpK'); const q=(inp.value||'').trim(); if(!q) return;
   const msgs=chatLoadK(); msgs.push({r:'me',t:q,ts:Date.now()}); chatSaveK(msgs); inp.value=''; renderChatK();
