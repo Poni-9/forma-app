@@ -639,7 +639,7 @@ function shiftDay(dir){
 /* ================================================================
    GEMINI VISION
 ================================================================ */
-const AI_PROXY = '';   // ← po deployu Cloud Run proxyja (forma-server) prilepi URL sem — stranke ne rabijo svojega ključa
+const AI_PROXY = 'https://forma-ai-proxy-602565779369.europe-west1.run.app';   // Cloud Run proxy — prijavljeni uporabniki AI uporabljajo brez lastnega ključa
 function aiLogPush(ok){ try{ const L=JSON.parse(localStorage.getItem('forma_ailog')||'[]'); L.push({t:Date.now(),kind:'kalorije',ok:ok!==false}); localStorage.setItem('forma_ailog',JSON.stringify(L.slice(-500))); }catch(_){} }
 
 async function gemini(parts){

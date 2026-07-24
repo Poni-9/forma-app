@@ -1322,7 +1322,7 @@ function renderPlan(){
 /* ================================================================
    GEMINI API
 ================================================================ */
-const AI_PROXY = '';   // ← po deployu Cloud Run proxyja (forma-server) prilepi URL sem — stranke ne rabijo svojega ključa
+const AI_PROXY = 'https://forma-ai-proxy-602565779369.europe-west1.run.app';   // Cloud Run proxy — prijavljeni uporabniki AI uporabljajo brez lastnega ključa
 
 function aiLogPush(kind, ok){
   try{
