@@ -14,7 +14,7 @@
   --bg:#0a0e13; --panel:#141b24; --panel2:#1a2330;
   --border:#22303f; --border2:#2d3d50;
   --text:#e8eef4; --muted:#8b9bab; --dim:#5c6b7a;
-  --acc:#3fce6b; --acc2:#6ee7a0; --accSoft:rgba(63,206,107,.12);
+  --acc:#fc4c02; --acc2:#ff7a3d; --accSoft:rgba(252,76,2,.12);
   --orange:#fc4c02; --red:#ff5c5c; --redSoft:rgba(255,92,92,.12);
   --yellow:#ffc247; --blue:#4da3ff;
 }
@@ -22,16 +22,16 @@
 body{
   font-family:'Inter',system-ui,sans-serif;color:var(--text);font-size:15px;line-height:1.55;
   background:
-    radial-gradient(1000px 500px at 85% -10%, rgba(63,206,107,.08), transparent 60%),
+    radial-gradient(1000px 500px at 85% -10%, rgba(252,76,2,.08), transparent 60%),
     radial-gradient(800px 400px at -10% 110%, rgba(77,163,255,.05), transparent 60%),
     var(--bg);
   min-height:100vh;
 }
-::selection{background:var(--acc);color:#04140a}
+::selection{background:var(--acc);color:#ffffff}
 ::-webkit-scrollbar{width:10px}::-webkit-scrollbar-thumb{background:#26364a;border-radius:8px}
 .wrap{max-width:900px;margin:0 auto;padding:26px 18px 80px}
 .top{display:flex;align-items:center;gap:12px;margin-bottom:20px}
-.logo{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,var(--acc),#2aa855);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 18px rgba(63,206,107,.35)}
+.logo{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,var(--acc),#d63e00);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 18px rgba(252,76,2,.35)}
 .top h1{font-size:20px;font-weight:900;letter-spacing:-.02em}
 .top small{display:block;font-size:12px;color:var(--muted);font-weight:500}
 .top .right{margin-left:auto;display:flex;gap:8px}
@@ -39,28 +39,28 @@ body{
 .card h3{font-size:13.5px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .card h3 .sub{font-weight:500;color:var(--dim);font-size:11.5px;margin-left:auto}
 .btn{display:inline-flex;align-items:center;gap:7px;padding:10px 16px;border-radius:10px;font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;border:1px solid transparent;transition:all .15s;white-space:nowrap}
-.btn-primary{background:linear-gradient(135deg,var(--acc),#2aa855);color:#04140a;box-shadow:0 3px 14px rgba(63,206,107,.3)}
+.btn-primary{background:linear-gradient(135deg,var(--acc),#d63e00);color:#ffffff;box-shadow:0 3px 14px rgba(252,76,2,.3)}
 .btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
 .btn-ghost{background:var(--panel2);color:var(--text);border-color:var(--border2)}
 .btn-ghost:hover{border-color:#3d5065}
 .btn-sm{padding:8px 13px;font-size:12.5px;border-radius:8px;min-height:34px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
-.spin{width:13px;height:13px;border:2px solid rgba(0,0,0,.3);border-top-color:#04140a;border-radius:50%;animation:rot .7s linear infinite;display:inline-block}
+.spin{width:13px;height:13px;border:2px solid rgba(0,0,0,.3);border-top-color:#ffffff;border-radius:50%;animation:rot .7s linear infinite;display:inline-block}
 .sping{width:13px;height:13px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite;display:inline-block}
 @keyframes rot{to{transform:rotate(360deg)}}
 input,select{width:100%;background:#0e1520;border:1px solid var(--border2);border-radius:9px;color:var(--text);padding:9px 12px;font-family:inherit;font-size:14px;outline:none}
-input:focus,select:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(63,206,107,.15)}
+input:focus,select:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(252,76,2,.15)}
 label.fld{display:block;margin-bottom:12px}
 label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:4px}
 .hint{font-size:12px;color:var(--dim)}
 
 /* povezava s FORMA */
 .link-banner{display:block;padding:12px 15px;border-radius:12px;font-size:13px;font-weight:600;line-height:1.5;margin-bottom:14px;border:1px solid}
-.link-banner.ok{background:var(--accSoft);border-color:rgba(63,206,107,.3)}
+.link-banner.ok{background:var(--accSoft);border-color:rgba(252,76,2,.3)}
 .link-banner.no{background:rgba(139,155,171,.07);color:var(--muted);border-color:var(--border)}
 .lb-top{display:flex;align-items:center;gap:8px;color:var(--acc2);font-size:12.5px}
 .lb-top b{color:var(--acc2)}
-.lb-dot{width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px rgba(63,206,107,.8);flex-shrink:0}
+.lb-dot{width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px rgba(252,76,2,.8);flex-shrink:0}
 .lb-plan{color:var(--text);font-weight:800;font-size:14.5px;margin-top:5px;line-height:1.35}
 .lb-nums{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:5px;color:var(--muted);font-weight:600;font-size:12.5px}
 .lb-nums b{color:var(--text)}
@@ -88,7 +88,6 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 .hstat .t{font-size:11px;color:var(--muted)}
 .pbar{height:7px;background:#1d2836;border-radius:99px;overflow:hidden;margin-top:6px}
 .pbar div{height:100%;border-radius:99px;background:var(--blue);transition:width .5s}
-.steps-row{display:flex;align-items:center;gap:11px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
 
 /* dropzone */
 .dz{border:2px dashed var(--border2);border-radius:14px;padding:26px 18px;text-align:center;color:var(--muted);cursor:pointer;transition:all .2s;background:rgba(255,255,255,.015)}
@@ -155,7 +154,7 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 .pd-sport{font-size:10.5px;font-weight:900;background:rgba(255,255,255,.06);border:1px solid var(--border2);padding:2px 9px;border-radius:7px;white-space:nowrap}
 .pd-title{font-weight:800;font-size:14px;flex:1;min-width:120px}
 .pd-title2{font-weight:800;font-size:15px;margin-top:7px;line-height:1.3}
-.pd-time{display:inline-block;margin-top:7px;font-size:12.5px;font-weight:800;color:var(--acc2);background:var(--accSoft);border:1px solid rgba(63,206,107,.25);padding:3px 10px;border-radius:8px}
+.pd-time{display:inline-block;margin-top:7px;font-size:12.5px;font-weight:800;color:var(--acc2);background:var(--accSoft);border:1px solid rgba(252,76,2,.25);padding:3px 10px;border-radius:8px}
 .pd-wx{font-size:11px;font-weight:800;background:rgba(255,255,255,.05);border:1px solid var(--border2);padding:2px 8px;border-radius:7px;white-space:nowrap}
 .pd-wx.warn{color:var(--blue);border-color:rgba(77,163,255,.5);background:rgba(77,163,255,.1)}
 .pd-wxwarn{font-size:12px;font-weight:600;color:var(--blue);background:rgba(77,163,255,.08);border:1px solid rgba(77,163,255,.3);border-radius:8px;padding:6px 10px;margin-top:8px}
@@ -175,19 +174,19 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 .wx-t{font-size:13px;font-weight:800}
 .wx-p{font-size:9.5px;color:var(--blue);font-weight:700}
 .sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px}
-.sync-dot.on{background:var(--acc);box-shadow:0 0 7px rgba(63,206,107,.7)}
+.sync-dot.on{background:var(--acc);box-shadow:0 0 7px rgba(252,76,2,.7)}
 .sync-dot.off{background:var(--dim)}
 
 /* ---------- vodeni trening (player) ---------- */
 .play{position:fixed;inset:0;z-index:150;display:none;flex-direction:column;
   padding:14px 18px calc(16px + env(safe-area-inset-bottom));
-  background:radial-gradient(800px 500px at 50% -10%, rgba(63,206,107,.14), transparent 60%), #070b10}
+  background:radial-gradient(800px 500px at 50% -10%, rgba(252,76,2,.14), transparent 60%), #070b10}
 .play.open{display:flex}
 .play-top{display:flex;align-items:center;gap:12px;flex-shrink:0}
 .play-prog{flex:1;display:flex;gap:4px}
 .play-prog span{flex:1;height:4px;border-radius:99px;background:#1d2836;transition:background .3s}
 .play-prog span.d{background:var(--acc)}
-.play-prog span.a{background:var(--acc2);box-shadow:0 0 8px rgba(63,206,107,.8);animation:pwpulse 1.2s infinite}
+.play-prog span.a{background:var(--acc2);box-shadow:0 0 8px rgba(252,76,2,.8);animation:pwpulse 1.2s infinite}
 .play-x{width:36px;height:36px;border-radius:10px;border:1px solid var(--border2);background:var(--panel2);color:var(--muted);font-size:15px;cursor:pointer;flex-shrink:0}
 .pw-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:9px;animation:pwfade .35s ease}
 @keyframes pwfade{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
@@ -226,7 +225,7 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 .pw-stat span{font-size:11px;color:var(--muted);font-weight:700}
 .pw-fb{display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px;margin-top:10px}
 .pw-fb .btn{width:100%;justify-content:flex-start;font-size:14px;padding:12px 16px}
-.pw-prog{font-size:12px;font-weight:700;color:var(--acc2);background:var(--accSoft);border:1px solid rgba(63,206,107,.25);padding:6px 12px;border-radius:9px;margin-top:2px}
+.pw-prog{font-size:12px;font-weight:700;color:var(--acc2);background:var(--accSoft);border:1px solid rgba(252,76,2,.25);padding:6px 12px;border-radius:9px;margin-top:2px}
 </style>
 </head>
 <body>
@@ -234,7 +233,7 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 
   <div class="top">
     <div class="logo">🍽️</div>
-    <div><h1>KalorijeAI</h1><small>slikaj → AI prešteje kalorije · <b style="color:var(--acc2)">v3.1</b></small></div>
+    <div><h1>KalorijeAI</h1><small>slikaj → AI prešteje kalorije · <b style="color:var(--acc2)">v2.9</b></small></div>
     <div class="right">
       <button class="btn btn-ghost btn-sm" id="btnSyncTop" onclick="forceSync()" title="Sinhroniziraj zdaj (pošlji + prejmi)">⟳</button>
       <button class="btn btn-ghost btn-sm" onclick="openSettings()">⚙️ Nastavitve</button>
@@ -251,7 +250,7 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
       <div class="ring-wrap">
         <svg width="170" height="170" viewBox="0 0 170 170">
           <circle class="ring-c" cx="85" cy="85" r="74"></circle>
-          <circle class="ring-p" id="ringP" cx="85" cy="85" r="74" stroke="#3fce6b"></circle>
+          <circle class="ring-p" id="ringP" cx="85" cy="85" r="74" stroke="#fc4c02"></circle>
         </svg>
         <div class="ring-txt">
           <div class="big" id="ringKcal">0</div>
@@ -264,12 +263,6 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
         <div class="hstat"><div class="k">Poraba danes</div><div class="v" id="stBurn">–</div><div class="t" id="stBurnSrc"></div></div>
         <div class="hstat"><div class="k">Beljakovine</div><div class="v" id="stProt">–</div><div class="pbar"><div id="protBar" style="width:0%"></div></div><div class="t" id="stProtT"></div></div>
       </div>
-    </div>
-    <div class="steps-row">
-      <span style="font-size:22px">👟</span>
-      <div style="flex:1;min-width:110px"><b style="font-size:13px">Koraki danes</b><div class="hint" id="stepsKcalLbl">vpiši korake z ure/telefona</div></div>
-      <input type="number" id="stepsInput" placeholder="npr. 10000" inputmode="numeric" style="width:110px" onchange="saveSteps()">
-      <button class="btn btn-ghost btn-sm" id="btnSteps" onclick="fetchSteps()" title="Poberi iz Garmina prek Intervals.icu">⤓ Garmin</button>
     </div>
   </div>
 
@@ -388,6 +381,7 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
   <div class="modal">
     <h2>Nastavitve<span class="x" onclick="closeModalS()">✕</span></h2>
     <div id="setLink" class="hint" style="margin-bottom:12px"></div>
+    <div id="gsyncHostK"></div>
     <label class="fld"><span>Gemini API ključ <span style="color:var(--dim)">(pusti prazno = vzame iz FORMA Trenerja)</span></span><input type="password" id="sKey" placeholder="samodejno iz FORMA"></label>
     <label class="fld"><span>Model</span>
       <select id="sModel">
@@ -406,6 +400,7 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
     <div class="hint" style="margin-bottom:10px">Enkratno: registriraj se brezplačno na <b>jsonbin.io</b> → API Keys → kopiraj <b>Master Key</b> in ga prilepi sem (ustvarim shrambo in ti dam kodo za drugo napravo). Na drugi napravi prilepi celotno kodo.</div>
     <div class="hint" id="syncStatus" style="margin-bottom:10px"></div>
     <div class="modal-foot"><button class="btn btn-primary" onclick="saveSettings()">Shrani</button></div>
+    <div class="hint" style="margin-top:10px;text-align:center"><a href="zasebnost.html" target="_blank" style="color:var(--acc2)">🔒 Zasebnost & pogoji</a> · <a href="mailto:blaz.gregorc05@gmail.com?subject=KalorijeAI%20podpora" style="color:var(--acc2)">📧 Podpora</a></div>
   </div>
 </div>
 
@@ -525,52 +520,15 @@ function trainAdjust(){
 const bonusKcal = () => Math.max(0, trainAdjust());   // (nazaj-združljivost)
 function targetKcal(){
   const adj = Math.max(-800, Math.min(1200, trainAdjust()));
-  return Math.max(basalKcal()-100, baseTargetKcal() + adj + stepsKcal());   // + koraki (smeš pojesti nazaj); nikoli pod ~bazalno porabo
+  return Math.max(basalKcal()-100, baseTargetKcal() + adj);   // nikoli pod ~bazalno porabo
 }
 function burnKcal(){
-  const act = actualBurnToday(), sk = stepsKcal();
-  let v, src;
-  if (act>0){ v=basalKcal()+act; src='dejansko (Strava + aktivnosti)'; }
-  else { const pd=planToday(); if (pd?.kcal_poraba){ v=pd.kcal_poraba; src='iz plana FORMA'; } else { v=basalKcal(); src='ocena (osnovna poraba)'; } }
-  if (sk){ v+=sk; src+=` + ${sk} koraki`; }
-  return {v, src};
+  const act = actualBurnToday();
+  if (act>0) return {v: basalKcal()+act, src:'dejansko (Strava + aktivnosti)'};
+  const pd=planToday(); if (pd?.kcal_poraba) return {v:pd.kcal_poraba, src:'iz plana FORMA'};
+  return {v:basalKcal(), src:'ocena (osnovna poraba)'};
 }
 const protTarget = () => Math.round(teza()*2.2);   // lean-fit: ohranja/gradi mišice v deficitu
-
-/* --- KORAKI → dodatna dnevna poraba (smeš pojesti nazaj) --- */
-const stepsToday = () => dayData(todayIso()).steps || 0;
-const stepsKcal  = () => Math.round(stepsToday() * 0.0005 * teza());   // ~0.5 kcal na korak na kg (10k korakov @77kg ≈ 385 kcal)
-function saveSteps(){
-  const v = Math.max(0, Math.round(+$('stepsInput').value||0));
-  dayData(todayIso()).steps = v; dayData(todayIso()).stepsTs = Date.now();
-  save(); renderAll();
-}
-async function fetchSteps(){
-  refreshF(); const icu = F?.icu;
-  if(!icu?.athleteId || !icu?.apiKey){ toast('Za samodejne korake poveži Intervals.icu v FORMA Trener (Garmin → Intervals.icu → koraki).','err'); return; }
-  const b=$('btnSteps'); const o=b.innerHTML; b.disabled=true; b.innerHTML='<span class="sping"></span>';
-  try{
-    const d=await icuSteps(todayIso());
-    if(d!=null){ dayData(todayIso()).steps=d; dayData(todayIso()).stepsTs=Date.now(); save(); renderAll(); toast('Koraki iz Garmina: '+d.toLocaleString('sl')+' 👟','');}
-    else toast('Za danes še ni podatka o korakih (Garmin morda še ni sinhroniziral z Intervals.icu).','');
-  }catch(e){ toast(e.message,'err'); }
-  b.disabled=false; b.innerHTML=o;
-}
-async function icuSteps(iso){
-  refreshF(); const icu=F?.icu; if(!icu?.athleteId||!icu?.apiKey) return null;
-  const auth='Basic '+btoa('API_KEY:'+icu.apiKey);
-  const r=await fetch(`https://intervals.icu/api/v1/athlete/${icu.athleteId}/wellness/${iso}`,{headers:{Authorization:auth}});
-  if(!r.ok) return null;
-  const d=await r.json();
-  return (d && typeof d.steps==='number') ? d.steps : null;
-}
-/* samodejno (tiho) potegni današnje korake iz Garmina/Intervals — kliče se pogosto */
-async function autoSteps(){
-  try{
-    const s=await icuSteps(todayIso());
-    if(s!=null && s!==stepsToday()){ dayData(todayIso()).steps=s; dayData(todayIso()).stepsTs=Date.now(); save(); renderAll(); }
-  }catch(_){}
-}
 
 /* ================================================================
    DNEVNIK
@@ -681,12 +639,25 @@ function shiftDay(dir){
 /* ================================================================
    GEMINI VISION
 ================================================================ */
+const AI_PROXY = '';   // ← po deployu Cloud Run proxyja (forma-server) prilepi URL sem — stranke ne rabijo svojega ključa
+function aiLogPush(ok){ try{ const L=JSON.parse(localStorage.getItem('forma_ailog')||'[]'); L.push({t:Date.now(),kind:'kalorije',ok:ok!==false}); localStorage.setItem('forma_ailog',JSON.stringify(L.slice(-500))); }catch(_){} }
+
 async function gemini(parts){
   const key = geminiKey();
-  if (!key){ openSettings(); throw new Error('Vpiši Gemini API ključ (ali odpri FORMA Trener, da ga prevzamem).'); }
   const body = { contents:[{role:'user',parts}], generationConfig:{ temperature:.2, response_mime_type:'application/json' } };
-  const call = m => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`,{
-    method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':key}, body:JSON.stringify(body) });
+  let call;
+  if (key){
+    call = m => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`,{
+      method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':key}, body:JSON.stringify(body) });
+  } else if (AI_PROXY && window.FORMASYNC && FORMASYNC.idToken){
+    const tok = await FORMASYNC.idToken();
+    if (!tok){ openSettings(); throw new Error('Prijavi se z Googlom (🔵 v Nastavitvah) — AI je potem vključena, brez ključa.'); }
+    call = m => fetch(AI_PROXY.replace(/\/$/,'')+'/api/gemini',{
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok}, body:JSON.stringify({model:m, body}) });
+  } else {
+    openSettings(); throw new Error('Vpiši Gemini API ključ (ali odpri FORMA Trener, da ga prevzamem).');
+  }
+  aiLogPush();
   const sleep = ms => new Promise(r=>setTimeout(r,ms));
   let res = await call(geminiModel());
   if (res.status===404 && geminiModel()!=='gemini-flash-latest') res = await call('gemini-flash-latest');
@@ -697,6 +668,8 @@ async function gemini(parts){
   if (!res.ok){
     let msg='Gemini napaka ('+res.status+')';
     try{ const e=await res.json(); msg+=': '+(e.error?.message||'').slice(0,140); }catch(_){}
+    if (res.status===402) msg='⭐ Brezplačna dnevna AI kvota porabljena — nadgradi na Pro za neomejeno.';
+    if (res.status===401) msg='Prijava je potekla — v Nastavitvah se znova prijavi z Googlom.';
     if (res.status===429) msg='Gemini: presežena kvota — počakaj minuto.';
     if (res.status===503 || res.status===500) msg='Gemini je trenutno preobremenjen. Poskusil sem večkrat — počakaj minuto in klikni znova. 🔁';
     throw new Error(msg);
@@ -795,23 +768,20 @@ function renderHero(){
   const ring=$('ringP');
   ring.setAttribute('stroke-dasharray', C);
   ring.setAttribute('stroke-dashoffset', C*(1-Math.min(1,frac)));
-  ring.setAttribute('stroke', eaten>target ? 'var(--red)' : eaten>target*.85 ? 'var(--yellow)' : '#3fce6b');
+  ring.setAttribute('stroke', eaten>target ? 'var(--red)' : eaten>target*.85 ? 'var(--yellow)' : '#fc4c02');
   $('ringKcal').textContent = eaten;
   $('ringSub').textContent = `/ ${target} kcal`;
 
   $('stLeft').textContent = (left>=0?left:0) + ' kcal';
   $('stLeft').style.color = left<0 ? 'var(--red)' : left<200 ? 'var(--yellow)' : 'var(--acc2)';
   if (left<0) $('stLeft').textContent = `${-left} čez!`;
-  const adj = trainAdjust(), sk = stepsKcal(), steps = stepsToday();
+  const adj = trainAdjust();
   $('stTarget').textContent = target+' kcal';
   $('stTargetSrc').innerHTML = (db.settings.kcalManual ? 'ročno nastavljen' : pd?.kcal_vnos ? 'iz FORMA plana ✓' : 'ocena (teža − deficit)')
     + (adj>0 ? ` · <b style="color:var(--acc2)">+${adj} (pokuril več) 🚴</b>`
-     : adj<0 ? ` · <b style="color:var(--orange)">${adj} (krajši trening — ostani v deficitu)</b>` : '')
-    + (sk ? ` · <b style="color:var(--acc2)">+${sk} od korakov 👟</b>` : '');
+     : adj<0 ? ` · <b style="color:var(--orange)">${adj} (krajši trening — ostani v deficitu)</b>` : '');
   $('stBurn').textContent = '~'+burn.v+' kcal';
   $('stBurnSrc').textContent = burn.src;
-  if ($('stepsInput') && document.activeElement!==$('stepsInput')) $('stepsInput').value = steps || '';
-  if ($('stepsKcalLbl')) $('stepsKcalLbl').innerHTML = steps ? `${steps.toLocaleString('sl')} korakov ≈ <b style="color:var(--acc2)">+${sk} kcal</b> (smeš pojesti)` : 'vpiši korake z ure/telefona (ali ⤓ Garmin)';
   $('stProt').textContent = `${prot} / ${pt} g`;
   $('protBar').style.width = Math.min(100, prot/pt*100)+'%';
   $('protBar').style.background = prot>=pt ? 'var(--acc)' : 'var(--blue)';
@@ -857,7 +827,7 @@ function renderHist(){
   histChart = new Chart($('histChart'), { type:'bar',
     data:{ labels:days.map(d=>{const x=parseIso(d);return x.getDate()+'.'+(x.getMonth()+1)+'.'}),
       datasets:[
-        {label:'kcal', data:vals, backgroundColor:vals.map(v=> v===0?'rgba(139,155,171,.15)': v>tgt?'rgba(255,92,92,.75)':'rgba(63,206,107,.75)'), borderRadius:5, maxBarThickness:26},
+        {label:'kcal', data:vals, backgroundColor:vals.map(v=> v===0?'rgba(139,155,171,.15)': v>tgt?'rgba(255,92,92,.75)':'rgba(252,76,2,.75)'), borderRadius:5, maxBarThickness:26},
         {label:'cilj', data:days.map(()=>tgt), type:'line', borderColor:'#ffc247', borderDash:[6,4], pointRadius:0, borderWidth:1.6}
       ]},
     options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
@@ -1323,15 +1293,9 @@ function mergeDays(localDays, remoteDays, tomb){
   for(const iso of isos){
     const byId={};
     const add = arr => { for(const e of (arr||[])){ if(!e||!e.id||tomb[e.id]) continue; const cur=byId[e.id]; if(!cur || (e.ts||0)>=(cur.ts||0)){ let ne=e; if(cur&&cur.thumb&&!e.thumb) ne={...e,thumb:cur.thumb}; byId[e.id]=ne; } } };
-    const L=localDays[iso]||{}, R=remoteDays[iso]||{};
-    add(L.entries); add(R.entries);
+    add((localDays[iso]||{}).entries); add((remoteDays[iso]||{}).entries);
     const entries=Object.values(byId);
-    // koraki/cilj: vzemi novejše (po stepsTs), sicer katerikoli obstaja
-    const steps = (R.steps!=null && (R.stepsTs||0)>=(L.stepsTs||0)) ? R : L;
-    const rec = { entries };
-    if(steps.steps!=null){ rec.steps=steps.steps; rec.stepsTs=steps.stepsTs; }
-    if((L.target??R.target)!=null) rec.target = L.target??R.target;
-    if(entries.length || rec.steps!=null) out[iso]=rec;
+    if(entries.length) out[iso]={ entries };
   }
   return out;
 }
@@ -1371,7 +1335,6 @@ function slimKalorije(d){
     if(iso<cut) continue;
     c.days[iso] = { entries:(day.entries||[]).map(e=>{ const {thumb,...rest}=e; return rest; }) };
     if(day.target!=null) c.days[iso].target=day.target;
-    if(day.steps!=null){ c.days[iso].steps=day.steps; c.days[iso].stepsTs=day.stepsTs; }
   }
   for(const [id,ts] of Object.entries(d.deleted||{})) if(ts>=cutTs) c.deleted[id]=ts;
   return c;
@@ -1584,13 +1547,72 @@ save();
 renderAll();
 // sinhronizacija: potegni ob zagonu, ob vrnitvi v aplikacijo in vsakih 90 s
 syncPull();
-autoSteps();   // koraki iz Garmina ob zagonu
-document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ syncPull(); renderWeatherK(true); autoSteps(); } });
-window.addEventListener('focus', ()=>{ syncPull(); renderWeatherK(true); autoSteps(); });   // ko klikneš nazaj na okno: sync + vreme + koraki
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ syncPull(); renderWeatherK(true); } });
+window.addEventListener('focus', ()=>{ syncPull(); renderWeatherK(true); });   // ko klikneš nazaj na okno, poberi najnovejše + vreme
 setInterval(()=>{ if(document.visibilityState==='visible' && db.settings.sync?.bin) syncPull(); }, 60000);   // sync vsakih 60 s
-setInterval(()=>{ if(document.visibilityState==='visible') autoSteps(); }, 15*60000);   // koraki vsakih 15 min
 setInterval(()=>{ if(document.visibilityState==='visible'){ wxCache=null; renderWeatherK(true); } }, 2*3600e3);   // vreme vsaki 2 h
 renderWeatherK(true);   // preveri vreme ob zagonu
 </script>
+<script>
+/* ===== Google sinhronizacija (Firebase) — isti račun kot FORMA Trener ===== */
+(function(){
+  const FB_CONFIG = null;   /* RAZVIJALEC: prilepi firebaseConfig sem (isti kot v forma-trener.html) */
+  const LS_CFG='forma_fb_config';
+  const getCfg=()=>{ try{ return FB_CONFIG||JSON.parse(localStorage.getItem(LS_CFG)||'null'); }catch(_){ return FB_CONFIG; } };
+  const fb={ready:false,auth:null,db:null,uid:null,timer:null,last:''};
+  const loadS=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s);});
+  async function initFB(cfg){
+    if(fb.ready) return true;
+    const B='https://www.gstatic.com/firebasejs/10.12.0/';
+    await loadS(B+'firebase-app-compat.js'); await loadS(B+'firebase-auth-compat.js'); await loadS(B+'firebase-firestore-compat.js');
+    firebase.initializeApp(cfg); fb.auth=firebase.auth(); fb.db=firebase.firestore(); fb.ready=true;
+    fb.auth.onAuthStateChanged(u=>{ fb.uid=u?u.uid:null; render(); if(u) onIn(); else stop(); });
+    return true;
+  }
+  async function signIn(){ const c=getCfg(); if(!c){ alert('Najprej vnesi Firebase config.'); return; } try{ await initFB(c); await fb.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }catch(e){ alert('Prijava ni uspela: '+(e.message||e)); } }
+  async function signOut(){ try{ if(fb.auth) await fb.auth.signOut(); }catch(_){} }
+  const parseK=k=>{ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(_){ return null; } };
+  const readLocal=()=>({ forma:parseK('forma_trener_v1'), kalorije:parseK('kalorije_v1') });
+  async function onIn(){
+    render(); st('Preverjam oblak…');
+    try{
+      const ref=fb.db.collection('formaSync').doc(fb.uid);
+      const snap=await ref.get(); const rem=snap.exists?snap.data():null; const loc=readLocal(); let changed=false;
+      [['forma','forma_trener_v1'],['kalorije','kalorije_v1']].forEach(([k,ls])=>{
+        const r=rem&&rem[k], l=loc[k]; const rt=(r&&r._ts)||0, lt=(l&&l._ts)||0;
+        if(r&&rt>lt){ try{ localStorage.setItem(ls, JSON.stringify(r)); changed=true; }catch(_){} }
+      });
+      if(changed){ st('Prejel novejše podatke — osvežujem…'); setTimeout(()=>location.reload(),800); return; }
+      await push();
+    }catch(e){ st('Napaka: '+(e.message||e)); }
+    start();
+  }
+  async function push(){
+    if(!fb.uid) return; const loc=readLocal(); const j=JSON.stringify(loc); if(j===fb.last) return; fb.last=j;
+    try{ await fb.db.collection('formaSync').doc(fb.uid).set({forma:loc.forma||null,kalorije:loc.kalorije||null,_ts:Date.now()},{merge:true}); st('Sinhronizirano ✓ '+new Date().toLocaleTimeString()); }catch(e){ st('Napaka pri pošiljanju: '+(e.message||e)); }
+  }
+  function start(){ stop(); fb.timer=setInterval(push,15000); window.addEventListener('beforeunload',push); document.addEventListener('visibilitychange',()=>{ if(document.hidden) push(); }); }
+  function stop(){ if(fb.timer) clearInterval(fb.timer); fb.timer=null; }
+  function st(t){ const e=document.getElementById('gsyncStatusK'); if(e) e.textContent=t; }
+  function render(){
+    const host=document.getElementById('gsyncHostK'); if(!host) return;
+    const signed=!!fb.uid, cfg=getCfg();
+    if(signed){
+      host.innerHTML='<div class="hint" style="margin-bottom:12px;padding:10px;border:1px solid rgba(252,76,2,.35);border-radius:10px"><b style="color:var(--acc2)">🔵 Google sinhronizacija</b> — '+((fb.auth.currentUser&&fb.auth.currentUser.email)||'prijavljen')+'<div id="gsyncStatusK" style="margin:5px 0"></div><button class="btn btn-ghost btn-sm" onclick="FORMASYNC.push()">⟳ Sinhroniziraj</button> <button class="btn btn-ghost btn-sm" onclick="FORMASYNC.signOut()">Odjava</button></div>';
+    } else if(cfg){
+      host.innerHTML='<div class="hint" style="margin-bottom:12px;padding:10px;border:1px solid rgba(252,76,2,.35);border-radius:10px"><b style="color:var(--acc2)">🔵 Google sinhronizacija</b> — prijavi se in vse (kalorije + trening) se samodejno sinhronizira z računalnikom, brez ročnih ključev.<div id="gsyncStatusK" style="margin:5px 0"></div><button class="btn btn-primary btn-sm" onclick="FORMASYNC.signIn()">🔵 Prijava z Google</button></div>';
+    } else {
+      host.innerHTML='<div class="hint" style="margin-bottom:12px;padding:10px;border:1px solid var(--border2);border-radius:10px"><b style="color:var(--acc2)">🔵 Google sinhronizacija</b> (enkratna nastavitev) — prilepi firebaseConfig JSON:<textarea id="gsyncCfgK" style="width:100%;min-height:64px;margin:6px 0" placeholder=\'{"apiKey":"...","authDomain":"...","projectId":"...","appId":"..."}\'></textarea><button class="btn btn-primary btn-sm" onclick="FORMASYNC.saveCfg()">Shrani config</button></div>';
+    }
+  }
+  function saveCfg(){ const t=document.getElementById('gsyncCfgK'); if(!t) return; try{ const c=JSON.parse(t.value.trim()); localStorage.setItem(LS_CFG, JSON.stringify(c)); render(); initFB(c).catch(()=>{}); }catch(e){ alert('Neveljaven JSON — prekopiraj cel firebaseConfig.'); } }
+  window.FORMASYNC={ signIn, signOut, push, saveCfg, render,
+    idToken: async ()=>{ try{ return (fb.auth&&fb.auth.currentUser)? await fb.auth.currentUser.getIdToken() : null; }catch(_){ return null; } } };
+  function boot(){ try{ render(); const c=getCfg(); if(c) initFB(c).catch(()=>{}); }catch(_){} }
+  if(document.readyState!=='loading') boot(); else document.addEventListener('DOMContentLoaded', boot);
+})();
+</script>
+<style>body.embed .wrap{max-width:980px;margin:0 auto;padding:10px 14px 30px!important}body.embed{background:var(--bg)}</style>
+<script>(function(){try{if(new URLSearchParams(location.search).get('embed')){document.body.classList.add('embed');}}catch(e){}})();</script>
 </body>
 </html>

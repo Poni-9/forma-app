@@ -1322,19 +1322,42 @@ function renderPlan(){
 /* ================================================================
    GEMINI API
 ================================================================ */
+const AI_PROXY = '';   // ← po deployu Cloud Run proxyja (forma-server) prilepi URL sem — stranke ne rabijo svojega ključa
+
+function aiLogPush(kind, ok){
+  try{
+    const L = JSON.parse(localStorage.getItem('forma_ailog')||'[]');
+    L.push({ t: Date.now(), kind, ok: ok!==false });
+    localStorage.setItem('forma_ailog', JSON.stringify(L.slice(-500)));
+  }catch(_){}
+}
+
 async function gemini(parts, {json=true, temp=0.4}={}){
   const key = state.settings.geminiKey;
-  if (!key) { switchTab('settings'); throw new Error('Najprej vpiši Gemini API ključ v Nastavitvah.'); }
   const model = state.settings.geminiModel || 'gemini-flash-latest';
   const body = {
     contents:[{ role:'user', parts }],
     generationConfig:{ temperature:temp, ...(json?{response_mime_type:'application/json'}:{}) }
   };
-  const call = m => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`, {
-    method:'POST',
-    headers:{ 'Content-Type':'application/json', 'x-goog-api-key':key },
-    body: JSON.stringify(body)
-  });
+  let call;
+  if (key){
+    call = m => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'x-goog-api-key':key },
+      body: JSON.stringify(body)
+    });
+  } else if (AI_PROXY && window.FORMASYNC && FORMASYNC.idToken){
+    const tok = await FORMASYNC.idToken();
+    if (!tok){ switchTab('settings'); throw new Error('Prijavi se z Googlom (🔵 Google sinhronizacija v Nastavitvah) — AI je potem vključena, brez ključa.'); }
+    call = m => fetch(AI_PROXY.replace(/\/$/,'')+'/api/gemini', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+tok },
+      body: JSON.stringify({ model:m, body })
+    });
+  } else {
+    switchTab('settings'); throw new Error('Najprej vpiši Gemini API ključ v Nastavitvah.');
+  }
+  aiLogPush('gemini');
   const sleep = ms => new Promise(r=>setTimeout(r,ms));
   let res = await call(model);
   if (res.status===404 && model!=='gemini-flash-latest') res = await call('gemini-flash-latest');   // neznano ime modela → varni model
@@ -1344,8 +1367,11 @@ async function gemini(parts, {json=true, temp=0.4}={}){
     res = await call(i>=1 ? 'gemini-flash-latest' : model);   // ob vztrajni napaki še preklop na varni model
   }
   if (!res.ok){
+    aiLogPush('gemini', false);
     let msg = `Gemini napaka (${res.status})`;
-    try{ const e = await res.json(); msg += ': ' + (e.error?.message||'').slice(0,180); }catch(_){}
+    try{ const e = await res.json(); msg += ': ' + (e.error?.message||e.message||'').slice(0,180); }catch(_){}
+    if (res.status===402) msg = '⭐ Brezplačna dnevna AI kvota je porabljena — nadgradi na Pro za neomejeno.';
+    if (res.status===401) msg = 'Prijava je potekla — v Nastavitvah se znova prijavi z Googlom.';
     if (res.status===400 || res.status===403) msg += ' — preveri API ključ.';
     if (res.status===429) msg = 'Gemini: presežena kvota — počakaj minuto in poskusi znova.';
     if (res.status===503 || res.status===500) msg = 'Gemini je trenutno preobremenjen. Samodejno sem poskusil večkrat — počakaj minuto in klikni znova. 🔁';
@@ -2763,6 +2789,44 @@ window.addEventListener('focus', ()=>{ if(state.sync?.bin) syncPullF(); });
 setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) syncPullF(); }, 60000);   // samodejno vsakih 60 s
 </script>
 <script>
+/* ===== Beleženje napak + podpora (samostojen dodatek) ===== */
+(function(){
+  function logErr(msg){
+    try{
+      const L=JSON.parse(localStorage.getItem('forma_errlog')||'[]');
+      L.push({t:new Date().toISOString(), m:String(msg).slice(0,300)});
+      localStorage.setItem('forma_errlog', JSON.stringify(L.slice(-20)));
+    }catch(_){}
+  }
+  window.addEventListener('error', e=> logErr(e.message+' @'+(e.filename||'').split('/').pop()+':'+e.lineno));
+  window.addEventListener('unhandledrejection', e=> logErr('Promise: '+(e.reason&&e.reason.message||e.reason)));
+  function supportMail(){
+    let errs=[], ai=0;
+    try{ errs=JSON.parse(localStorage.getItem('forma_errlog')||'[]'); }catch(_){}
+    try{ ai=JSON.parse(localStorage.getItem('forma_ailog')||'[]').length; }catch(_){}
+    const body='Opiši težavo tukaj:\n\n\n--- diagnostika (pusti) ---\n'+navigator.userAgent+'\nAI klicev: '+ai+'\nZadnje napake:\n'+errs.map(e=>e.t+' '+e.m).join('\n');
+    location.href='mailto:blaz.gregorc05@gmail.com?subject='+encodeURIComponent('FORMA Trener — podpora')+'&body='+encodeURIComponent(body.slice(0,1800));
+  }
+  function render(){
+    const host=document.getElementById('tab-settings'); if(!host) return;
+    let c=document.getElementById('supportCard');
+    if(!c){ c=document.createElement('div'); c.id='supportCard'; c.className='card mt'; host.appendChild(c); }
+    let ai=[], errs=[];
+    try{ ai=JSON.parse(localStorage.getItem('forma_ailog')||'[]'); }catch(_){}
+    try{ errs=JSON.parse(localStorage.getItem('forma_errlog')||'[]'); }catch(_){}
+    const today=new Date().toISOString().slice(0,10);
+    const aiToday=ai.filter(x=>new Date(x.t).toISOString().slice(0,10)===today).length;
+    c.innerHTML='<h3>🛟 Podpora & diagnostika</h3>'+
+      '<p class="hint">AI odločitev danes: <b>'+aiToday+'</b> · skupaj: <b>'+ai.length+'</b> · zabeleženih napak: <b>'+errs.length+'</b></p>'+
+      '<div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px">'+
+      '<button class="btn btn-ghost btn-sm" onclick="FORMASUPPORT.mail()">📧 Prijavi težavo</button>'+
+      '<a class="btn btn-ghost btn-sm" href="zasebnost.html" target="_blank">🔒 Zasebnost & pogoji</a></div>'+
+      '<p class="hint" style="margin-top:8px">FORMA Trener daje trenerske in prehranske usmeritve — ni medicinski nasvet.</p>';
+  }
+  window.FORMASUPPORT={ mail:supportMail, render };
+  if(document.readyState!=='loading') render(); else document.addEventListener('DOMContentLoaded', render);
+})();
+
 /* ===== Google sinhronizacija (Firebase) — samostojen dodatek ===== */
 (function(){
   /* RAZVIJALEC: prilepi svoj firebaseConfig sem (enkrat), da imajo vse stranke isto sinhronizacijo.
@@ -2829,7 +2893,8 @@ setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) sy
     }
   }
   function saveCfg(){ const t=document.getElementById('gsyncCfg'); if(!t) return; try{ const c=JSON.parse(t.value.trim()); localStorage.setItem(LS_CFG, JSON.stringify(c)); render(); initFB(c).catch(()=>{}); }catch(e){ alert('Neveljaven JSON — prekopiraj cel firebaseConfig.'); } }
-  window.FORMASYNC={ signIn, signOut, push, saveCfg, render };
+  window.FORMASYNC={ signIn, signOut, push, saveCfg, render,
+    idToken: async ()=> { try{ return (fb.auth&&fb.auth.currentUser)? await fb.auth.currentUser.getIdToken() : null; }catch(_){ return null; } } };
   function boot(){ try{ render(); const c=getCfg(); if(c) initFB(c).catch(()=>{}); }catch(_){} }
   if(document.readyState!=='loading') boot(); else document.addEventListener('DOMContentLoaded', boot);
 })();
