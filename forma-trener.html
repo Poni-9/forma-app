@@ -383,10 +383,10 @@ h2#calLabel{letter-spacing:-.02em}
     </div>
     <nav class="nav">
       <div class="nav-item active" data-tab="dash"><span class="ic">📊</span> Nadzorna plošča</div>
-      <div class="nav-item" data-tab="rides"><span class="ic">🚴</span> Vožnje</div>
       <div class="nav-item" data-tab="plan"><span class="ic">📅</span> Tedenski plan</div>
       <div class="nav-item" data-tab="koledar"><span class="ic">🗓️</span> Koledar</div>
       <div class="nav-item" data-tab="forma"><span class="ic">💪</span> Moč — FORMA</div>
+      <div class="nav-item" data-tab="kalorije"><span class="ic">🍎</span> Kalorije</div>
       <div class="nav-item" data-tab="settings"><span class="ic">⚙️</span> Nastavitve</div>
     </nav>
     <div class="side-foot">
@@ -395,7 +395,7 @@ h2#calLabel{letter-spacing:-.02em}
         <div class="val" id="sbFormVal">–</div>
         <div class="desc" id="sbFormDesc">Dodaj vožnje za izračun</div>
       </div>
-      <div style="text-align:center;font-size:10.5px;color:var(--dim);margin-top:8px">Trener AI · v3.1</div>
+      <div style="text-align:center;font-size:10.5px;color:var(--dim);margin-top:8px">Trener AI · v2.9</div>
     </div>
   </aside>
 
@@ -565,6 +565,17 @@ h2#calLabel{letter-spacing:-.02em}
     </section>
 
     <!-- ===== NASTAVITVE ===== -->
+    <section class="tab" id="tab-kalorije">
+      <div class="row mb" style="justify-content:space-between;align-items:center">
+        <h2 style="margin:0">🍎 Kalorije <span class="sub">sinhronizirano s telefonom</span></h2>
+        <div class="row" style="gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="renderKalorije()">⟳ Osveži</button>
+          <button class="btn btn-primary btn-sm" onclick="kalManualAdd()">+ Ročni vnos</button>
+        </div>
+      </div>
+      <div id="kalBody"></div>
+      <p class="hint" style="margin-top:10px">📸 Fotografiranje hrane je v telefonski aplikaciji <b>KalorijeAI</b> — tukaj vidiš sinhroniziran pregled. Poveži prek 🔵 Google sinhronizacije v Nastavitvah.</p>
+    </section>
     <section class="tab" id="tab-settings">
       <div class="page-head">
         <h1>Nastavitve</h1>
@@ -909,6 +920,7 @@ function switchTab(name){
   document.querySelectorAll('.nav-item').forEach(e=>e.classList.toggle('active', e.dataset.tab===name));
   document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('active', e.id==='tab-'+name));
   if (name==='plan') renderWeather();   // osveži vremenski trak ob odprtju plana
+  if (name==='kalorije') renderKalorije();
 }
 
 /* ================================================================
@@ -2404,7 +2416,13 @@ function formaDotInfo(){ const s=formaScore(); return s<35?{c:'easy',t:'lažji d
 function formaExercises(){
   const f=state.forma, d=formaDotInfo(), L=f.level, m=d.m;
   if (f.custom && f.custom.date===todayIso() && f.custom.vaje?.length) return f.custom.vaje;
-  const R=x=>Math.max(1,Math.round(x*m));
+  if (sorenessNow()>=3) return [   // mišice preveč boli → regeneracija, ne potiskanje
+    {ime:'Lahka mobilnost ramen in rok', serije:2, pon:'10 krogov', op:'brez bolečine — samo prekrvavitev'},
+    {ime:'Plank (rahlo)', serije:2, pon:"20–30''", op:'trup napet, ne do odpovedi'},
+    {ime:'Raztezanje prsi in tricepsa', serije:1, pon:'2 min', op:'sprosti boleče mišice — jutri boš močnejši'}
+  ];
+  const rm=Math.max(.6,Math.min(1.6,f.repMult||1));   // trajna prilagoditev iz povratnih informacij
+  const R=x=>Math.max(1,Math.round(x*m*rm));
   const serije = d.c==='hard'?4:3;
   const ex = [];
   ex.push({ime: L>=3?'Eksplozivni zgibi (do prsi)':'Zgibi na drogu', serije, pon:R(L>=3?3+Math.floor(L/2):3+L)+' pon.', op:L>=3?'poteg čim višje — priprava na prehod čez drog':'cela amplituda, kontrolirano dol'});
@@ -2430,7 +2448,8 @@ function renderForma(){
     <div style="margin-bottom:10px"><div class="stat" style="padding:0;border:none;background:none"><div class="k">Ta teden</div><div class="v" style="color:${t7>=3?'var(--green)':'inherit'}">${t7} <small>/ 3 cilj</small></div></div></div>
     <div style="margin-bottom:10px"><div class="k" style="font-size:11px;color:var(--dim);font-weight:700;text-transform:uppercase">Skupaj treningov</div><div style="font-size:22px;font-weight:800">${f.history.length}</div></div>
     <div><div class="k" style="font-size:11px;color:var(--dim);font-weight:700;text-transform:uppercase">Nivo</div><div style="font-size:22px;font-weight:800">${f.level}<small style="font-size:12px;color:var(--dim)"> — vsakih 4 treningi +1</small></div></div>
-    <div class="hint" style="margin-top:12px">🎯 Pot do muscle-upa: ${f.level<4?'faza 1/3 — osnove (zgibi, sklece, dipsi, trup)':f.level<7?'faza 2/3 — eksplozivni zgibi + negativni muscle-upi':f.level<10?'faza 3/3 — poskusi muscle-upa!':'MUSCLE-UP osvojen 💪'}</div>`;
+    <div class="hint" style="margin-top:8px">🔧 Obremenitev: <b style="color:var(--acc2)">${Math.round((f.repMult||1)*100)}%</b> — dviga se ob "prelahko", pada ob "pretežko" ali bolečini.</div>
+    <div class="hint" style="margin-top:10px">🎯 Pot do muscle-upa: ${f.level<4?'faza 1/3 — osnove (zgibi, sklece, dipsi, trup)':f.level<7?'faza 2/3 — eksplozivni zgibi + negativni muscle-upi':f.level<10?'faza 3/3 — poskusi muscle-upa!':'MUSCLE-UP osvojen 💪'}</div>`;
 }
 function formaCheckin(){
   const v=+($('segSore').querySelector('.on')?.dataset.v||0);
@@ -2443,22 +2462,43 @@ function formaDone(){
   if (f.history.some(h=>h.date===todayIso())){ toast('Danes je trening moči že zabeležen.'); return; }
   const d=formaDotInfo();
   f.history.push({date:todayIso(), dot:d.c});
-  if (f.history.length % 4 === 0 && f.level<10){ f.level++; toast(`Nivo ${f.level}! Vaje postanejo težje. 📈`,'ok'); }
   const r={ id:uid(), source:'manual', sport:'moc', date:todayIso(), name:'Trening moči (FORMA)', dist:null,
     time:25, elev:null, avgHr:null, maxHr:null, avgPower:null, speed:null, notes:'zgibi/sklece/trup', tss: d.c==='hard'?45:d.c==='med'?35:25 };
   state.rides.push(r);
   save(); renderAll();
-  $('formaFb').innerHTML = `<div class="analysis-box"><b>Kakšen je bil trening?</b>
-    <div class="row" style="margin-top:8px">
-      <button class="btn btn-ghost btn-sm" onclick="formaFb('easy')">😎 Prelahek</button>
+  $('formaFb').innerHTML = `<div class="analysis-box"><b>Kako je bil trening? Iz tega prilagodim naslednjega.</b>
+    <div class="row" style="margin-top:8px;flex-wrap:wrap;gap:6px">
+      <button class="btn btn-ghost btn-sm" onclick="formaFb('easy')">😎 Prelahko</button>
       <button class="btn btn-ghost btn-sm" onclick="formaFb('ok')">🙂 Ravno prav</button>
-      <button class="btn btn-ghost btn-sm" onclick="formaFb('hard')">🥵 Pretežek</button>
+      <button class="btn btn-ghost btn-sm" onclick="formaFb('hard')">🥵 Pretežko</button>
+      <button class="btn btn-ghost btn-sm" onclick="formaFb('fail')">🛑 Nisem dokončal</button>
     </div></div>`;
 }
 function formaFb(v){
-  state.forma.lastFb=v; state.forma.lastFbIso=todayIso();
-  save(); $('formaFb').innerHTML=''; renderForma();
-  toast(v==='easy'?'Naslednjič dobiš več — pikica proti rdeči. 🔴':v==='hard'?'Naslednjič olajšam — pikica proti modri. 🔵':'Super, nadaljujemo. ✔','ok');
+  const f=state.forma;
+  f.lastFb=(v==='fail'?'hard':v); f.lastFbIso=todayIso();
+  const step={easy:0.10, ok:0.03, hard:-0.10, fail:-0.20}[v]||0;   // obremenitev se trajno prilagodi
+  f.repMult=Math.max(.6,Math.min(1.6,(f.repMult||1)+step));
+  const done=f.history.length;
+  if ((v==='easy'||v==='ok') && done%4===0 && f.level<10){ f.level++; toast(`Nivo ${f.level} — vaje se stopnjujejo. 📈`,'ok'); }
+  if (v==='fail' && f.level>1){ f.level--; }
+  save();
+  $('formaFb').innerHTML = `<div class="analysis-box"><b>Te kaj boli? Da prilagodim naslednji dan.</b>
+    <div class="row" style="margin-top:8px;flex-wrap:wrap;gap:6px">
+      <button class="btn btn-ghost btn-sm" onclick="formaSore(0)">👍 Nič</button>
+      <button class="btn btn-ghost btn-sm" onclick="formaSore(1)">🙂 Malo</button>
+      <button class="btn btn-ghost btn-sm" onclick="formaSore(2)">😖 Precej</button>
+      <button class="btn btn-ghost btn-sm" onclick="formaSore(3)">🥵 Zelo</button>
+    </div></div>`;
+  renderForma();
+}
+function formaSore(v){
+  const f=state.forma; f.soreness=v; f.sorenessIso=todayIso(); save();
+  $('formaFb').innerHTML = v>=3
+    ? `<div class="analysis-box" style="border-color:rgba(255,92,92,.4)">🥵 Zapomnil sem si. Naslednji trening bo <b>regeneracijski</b>, dokler bolečina ne upade — da ne izgubiš dneva kot zadnjič.</div>`
+    : `<div class="conn-status ok">✓ Zabeleženo — naslednji trening je prilagojen tebi.</div>`;
+  renderForma();
+  toast('Prilagojeno zate. ✔','ok');
 }
 async function formaAI(){
   const btn=$('btnFormaAI'); busy(btn,true,'Prilagajam vaje …');
@@ -2478,6 +2518,53 @@ Vrni SAMO JSON: {"vaje":[{"ime":"...","serije":number,"pon":"npr. 8 pon. ali 40'
     toast('Vaje prilagojene zate. ✨','ok');
   }catch(e){ toast(e.message,'err'); }
   busy(btn,false);
+}
+
+/* ================================================================
+   KALORIJE — sinhroniziran pregled (podatki iz telefonske KalorijeAI)
+================================================================ */
+function kalData(){ try{ return JSON.parse(localStorage.getItem('kalorije_v1')||'null'); }catch(_){ return null; } }
+function kalMacros(entries){
+  let p=0,c=0,f=0,has=false;
+  for(const e of entries){
+    const P=e.b??e.beljakovine??e.p??e.protein??0, C=e.oh??e.ogljikovi??e.c??e.carbs??0, Fa=e.m??e.mascobe??e.f??e.fat??0;
+    if(P||C||Fa) has=true; p+=+P||0; c+=+C||0; f+=+Fa||0;
+  }
+  return {p:Math.round(p),c:Math.round(c),f:Math.round(f),has};
+}
+function renderKalorije(){
+  const box=$('kalBody'); if(!box) return;
+  const kal=kalData();
+  if(!kal){ box.innerHTML=`<div class="analysis-box">Ni sinhroniziranih kalorij. Odpri <b>KalorijeAI</b> na telefonu in poveži 🔵 Google sinhronizacijo (Nastavitve) — podatki se pojavijo tukaj.</div>`; return; }
+  const entries=(kal.days?.[todayIso()]?.entries)||[];
+  const eaten=Math.round(entries.reduce((a,e)=>a+(+e.kcal||0),0));
+  let maint=null; try{ const t=tdee(); if(t) maint=Math.round(t); }catch(_){}
+  const net=maint!=null?eaten-maint:null, mac=kalMacros(entries);
+  box.innerHTML=`
+   <div class="card">
+     <div class="row" style="gap:22px;flex-wrap:wrap;align-items:center">
+       <div style="text-align:center;min-width:120px"><div style="font-size:34px;font-weight:800;color:var(--acc2)">${eaten.toLocaleString('sl')}</div><div style="font-size:11px;color:var(--dim);text-transform:uppercase;font-weight:700">Pojedeno danes</div></div>
+       ${maint!=null?`<div style="text-align:center;min-width:110px"><div style="font-size:24px;font-weight:800">${maint.toLocaleString('sl')}</div><div style="font-size:11px;color:var(--dim);text-transform:uppercase;font-weight:700">Vzdrževanje</div></div>`:''}
+       ${net!=null?`<div style="text-align:center;min-width:110px"><div style="font-size:24px;font-weight:800;color:${net>0?'var(--yellow)':'var(--green)'}">${net>0?'+':''}${net.toLocaleString('sl')}</div><div style="font-size:11px;color:var(--dim);text-transform:uppercase;font-weight:700">Bilanca</div></div>`:''}
+     </div>
+     ${mac.has?`<div class="row" style="gap:18px;margin-top:14px;flex-wrap:wrap;font-size:14px"><div><span style="color:var(--dim)">Beljakovine</span> <b>${mac.p} g</b></div><div><span style="color:var(--dim)">Ogljikovi h.</span> <b>${mac.c} g</b></div><div><span style="color:var(--dim)">Maščobe</span> <b>${mac.f} g</b></div></div>`:''}
+   </div>
+   <div class="card">
+     <h3>Današnji obroki <span class="sub">${entries.length}</span></h3>
+     ${entries.length? entries.map(e=>`<div class="ex-row"><div class="nm">${esc(e.jed||e.name||e.ime||'Obrok')}</div><div class="rp">${Math.round(+e.kcal||0)} kcal</div></div>`).join('') : `<div class="hint">Danes še ni vnosov. Slikaj hrano na telefonu ali dodaj ročno.</div>`}
+   </div>`;
+}
+function kalManualAdd(){
+  const jed=prompt('Kaj si pojedel?'); if(!jed) return;
+  const kcal=parseInt(prompt('Približno kalorij (kcal)?')||'',10); if(!kcal) return;
+  let kal=kalData()||{settings:{},days:{},deleted:{}};
+  if(!kal.days) kal.days={};
+  const t=todayIso(); if(!kal.days[t]) kal.days[t]={entries:[]}; if(!kal.days[t].entries) kal.days[t].entries=[];
+  kal.days[t].entries.unshift({jed:jed,kcal:kcal,ts:Date.now(),src:'forma-manual'});
+  kal._ts=Date.now();
+  try{ localStorage.setItem('kalorije_v1', JSON.stringify(kal)); }catch(_){}
+  if(typeof syncPush==='function'){ try{ syncPush('kalorije'); }catch(_){} }
+  renderKalorije(); toast('Dodano med kalorije. 🍽️','ok');
 }
 
 /* ================================================================
@@ -2597,15 +2684,86 @@ renderAll();
 getWeather().then(()=>{ renderWeather(); renderPlan(); });   // vreme ob zagonu → osveži trak in dnevne oznake
 window.addEventListener('focus', ()=>{ getWeather().then(()=>{ renderWeather(); renderPlan(); }); });
 setInterval(()=>{ if(document.visibilityState==='visible'){ getWeather(true).then(()=>{ renderWeather(); renderPlan(); }); } }, 2*3600e3);   // vreme vsaki 2 h
-// samodejni uvoz aktivnosti (ob zagonu, fokusu in vsakih 15 min → nova vožnja se takoj naloži)
-function autoImport(){ if (state.strava.accessToken) stravaImport(true); if (state.icu?.athleteId && state.icu?.apiKey) icuImport(true); }
-autoImport();
+// samodejna sinhronizacija ob odprtju
+if (state.strava.accessToken) stravaImport(true);
+if (state.icu?.athleteId && state.icu?.apiKey) icuImport(true);
 renderSyncF();
 syncPullF();
-document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ syncPullF(); autoImport(); } });
-window.addEventListener('focus', ()=>{ if(state.sync?.bin) syncPullF(); autoImport(); });
-setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) syncPullF(); }, 60000);   // sync vsakih 60 s
-setInterval(()=>{ if(document.visibilityState==='visible') autoImport(); }, 15*60000);   // uvoz aktivnosti vsakih 15 min
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) syncPullF(); });
+window.addEventListener('focus', ()=>{ if(state.sync?.bin) syncPullF(); });
+setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) syncPullF(); }, 60000);   // samodejno vsakih 60 s
+</script>
+<script>
+/* ===== Google sinhronizacija (Firebase) — samostojen dodatek ===== */
+(function(){
+  /* RAZVIJALEC: prilepi svoj firebaseConfig sem (enkrat), da imajo vse stranke isto sinhronizacijo.
+     Pusti null, da se config vnese v Nastavitvah. */
+  const FB_CONFIG = null;
+  const LS_CFG = 'forma_fb_config';
+  const getCfg = () => { try { return FB_CONFIG || JSON.parse(localStorage.getItem(LS_CFG)||'null'); } catch(_) { return FB_CONFIG; } };
+  const fb = { ready:false, auth:null, db:null, uid:null, timer:null, last:'' };
+  const loadS = src => new Promise((ok,no)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=no; document.head.appendChild(s); });
+  async function initFB(cfg){
+    if (fb.ready) return true;
+    const B='https://www.gstatic.com/firebasejs/10.12.0/';
+    await loadS(B+'firebase-app-compat.js'); await loadS(B+'firebase-auth-compat.js'); await loadS(B+'firebase-firestore-compat.js');
+    firebase.initializeApp(cfg); fb.auth=firebase.auth(); fb.db=firebase.firestore(); fb.ready=true;
+    fb.auth.onAuthStateChanged(u=>{ fb.uid = u?u.uid:null; render(); if(u) onIn(); else stop(); });
+    return true;
+  }
+  async function signIn(){ const c=getCfg(); if(!c){ alert('Najprej vnesi Firebase config.'); return; } try{ await initFB(c); await fb.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }catch(e){ alert('Prijava ni uspela: '+(e.message||e)); } }
+  async function signOut(){ try{ if(fb.auth) await fb.auth.signOut(); }catch(_){} }
+  const parseK = k => { try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(_){ return null; } };
+  const readLocal = () => ({ forma:parseK('forma_trener_v1'), kalorije:parseK('kalorije_v1') });
+  async function onIn(){
+    render(); st('Preverjam oblak…');
+    try{
+      const ref = fb.db.collection('formaSync').doc(fb.uid);
+      const snap = await ref.get(); const rem = snap.exists?snap.data():null; const loc = readLocal(); let changed=false;
+      [['forma','forma_trener_v1'],['kalorije','kalorije_v1']].forEach(([k,ls])=>{
+        const r=rem&&rem[k], l=loc[k]; const rt=(r&&r._ts)||0, lt=(l&&l._ts)||0;
+        if (r && rt>lt){ try{ localStorage.setItem(ls, JSON.stringify(r)); changed=true; }catch(_){} }
+      });
+      if (changed){ st('Prejel novejše podatke — osvežujem…'); setTimeout(()=>location.reload(), 800); return; }
+      await push();
+    }catch(e){ st('Napaka: '+(e.message||e)); }
+    start();
+  }
+  async function push(){
+    if(!fb.uid) return; const loc=readLocal(); const j=JSON.stringify(loc); if(j===fb.last) return; fb.last=j;
+    try{ await fb.db.collection('formaSync').doc(fb.uid).set({ forma:loc.forma||null, kalorije:loc.kalorije||null, _ts:Date.now() }, {merge:true}); st('Sinhronizirano ✓ '+new Date().toLocaleTimeString()); }catch(e){ st('Napaka pri pošiljanju: '+(e.message||e)); }
+  }
+  function start(){ stop(); fb.timer=setInterval(push, 15000); window.addEventListener('beforeunload', push); document.addEventListener('visibilitychange', ()=>{ if(document.hidden) push(); }); }
+  function stop(){ if(fb.timer) clearInterval(fb.timer); fb.timer=null; }
+  function st(t){ const e=document.getElementById('gsyncStatus'); if(e) e.textContent=t; }
+  function render(){
+    const host=document.getElementById('tab-settings'); if(!host) return;
+    let card=document.getElementById('gsyncCard');
+    if(!card){ card=document.createElement('div'); card.id='gsyncCard'; card.className='card mb'; host.insertBefore(card, host.firstChild); }
+    const signed=!!fb.uid, cfg=getCfg();
+    if(signed){
+      card.innerHTML='<h3>🔵 Google sinhronizacija <span class="sub">'+(fb.auth.currentUser&&fb.auth.currentUser.email||'prijavljen')+'</span></h3>'+
+        '<p class="hint">Vožnje, plan in kalorije se samodejno sinhronizirajo na vseh tvojih napravah prek Google računa.</p>'+
+        '<div id="gsyncStatus" class="hint" style="margin:6px 0"></div>'+
+        '<button class="btn btn-ghost btn-sm" onclick="FORMASYNC.push()">⟳ Sinhroniziraj zdaj</button> '+
+        '<button class="btn btn-ghost btn-sm" onclick="FORMASYNC.signOut()">Odjava</button>';
+    } else if(cfg){
+      card.innerHTML='<h3>🔵 Google sinhronizacija</h3>'+
+        '<p class="hint">Prijavi se z Google računom — plan, vožnje in kalorije se sinhronizirajo v obe smeri, brez ročnih ključev.</p>'+
+        '<div id="gsyncStatus" class="hint" style="margin:6px 0"></div>'+
+        '<button class="btn btn-primary btn-sm" onclick="FORMASYNC.signIn()">🔵 Prijava z Google</button>';
+    } else {
+      card.innerHTML='<h3>🔵 Google sinhronizacija <span class="sub">enkratna nastavitev</span></h3>'+
+        '<p class="hint">Ustvari brezplačen <b>Firebase</b> projekt → Project settings → prekopiraj <b>firebaseConfig</b> (JSON) sem. V Firebase omogoči <b>Authentication → Google</b> in <b>Firestore Database</b>.</p>'+
+        '<textarea id="gsyncCfg" placeholder=\'{"apiKey":"...","authDomain":"...","projectId":"...","appId":"..."}\' style="width:100%;min-height:82px"></textarea>'+
+        '<button class="btn btn-primary btn-sm mt" onclick="FORMASYNC.saveCfg()">Shrani config</button>';
+    }
+  }
+  function saveCfg(){ const t=document.getElementById('gsyncCfg'); if(!t) return; try{ const c=JSON.parse(t.value.trim()); localStorage.setItem(LS_CFG, JSON.stringify(c)); render(); initFB(c).catch(()=>{}); }catch(e){ alert('Neveljaven JSON — prekopiraj cel firebaseConfig.'); } }
+  window.FORMASYNC={ signIn, signOut, push, saveCfg, render };
+  function boot(){ try{ render(); const c=getCfg(); if(c) initFB(c).catch(()=>{}); }catch(_){} }
+  if(document.readyState!=='loading') boot(); else document.addEventListener('DOMContentLoaded', boot);
+})();
 </script>
 </body>
 </html>
