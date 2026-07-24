@@ -1,43 +1,209 @@
 <!DOCTYPE html>
 <html lang="sl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FORMA — moje aplikacije</title>
-<meta name="theme-color" content="#0a0e13">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>PEAKFORM — AI trener za kolo, moč in prehrano</title>
+<meta name="description" content="Izbereš nivo — od »postani fit« do »treniraj kot pro« — in PEAKFORM zgradi tvoj plan treningov, prehrane in moči. Potem ga vsak dan prilagaja tebi."/>
+<meta property="og:title" content="PEAKFORM — tvoja najboljša forma. Brez ugibanja."/>
+<meta property="og:description" content="AI trener za kolo, moč in prehrano. Plan, ki se uči od tebe."/>
+<meta name="theme-color" content="#111013"/>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23111013%22/><path d=%22M8 8h84L8 92z%22 fill=%22%23ff3d2e%22/></svg>"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
+  :root{--bg:#111013;--bg2:#0e0d10;--panel:#18161b;--border:#26232a;--border2:#38333e;--borderH:#5e5668;
+    --text:#f2efe9;--soft:#c9c3ce;--muted:#9a939f;--dim:#6f6876;--acc:#ff3d2e;--accH:#ff5546;--acc2:#ff6a5e;
+    --green:#5fd67a;--bc:'Barlow Condensed',sans-serif}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{
-    font-family:'Inter',system-ui,sans-serif;color:#e8eef4;min-height:100vh;
-    background:radial-gradient(1000px 500px at 85% -10%, rgba(63,206,107,.10), transparent 60%),
-      radial-gradient(800px 400px at -10% 110%, rgba(77,163,255,.06), transparent 60%), #0a0e13;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px;gap:16px
-  }
-  h1{font-size:22px;font-weight:900;margin-bottom:6px;text-align:center}
-  p{color:#8b9bab;font-size:13.5px;margin-bottom:18px;text-align:center;max-width:360px}
-  a.card{
-    display:flex;align-items:center;gap:16px;width:100%;max-width:360px;
-    background:linear-gradient(180deg,#141b24,rgba(20,27,36,.7));border:1px solid #22303f;
-    border-radius:16px;padding:20px;text-decoration:none;color:#e8eef4;transition:.15s
-  }
-  a.card:active{transform:scale(.98)}
-  a.card .ic{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
-  a.card .t{font-weight:800;font-size:16px}
-  a.card .s{font-size:12.5px;color:#8b9bab;margin-top:2px}
-  .forma .ic{background:linear-gradient(135deg,#fc4c02,#ff8a3d)}
-  .kcal .ic{background:linear-gradient(135deg,#3fce6b,#2aa855)}
+  body{margin:0;background:var(--bg);font-family:'Barlow',sans-serif;color:var(--text);line-height:1.55}
+  a{color:var(--acc2);text-decoration:none}
+  a:hover{color:var(--acc)}
+  ::selection{background:var(--acc);color:#fff}
+  .topnav{display:flex;justify-content:space-between;align-items:center;padding:16px 40px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(17,16,19,.92);backdrop-filter:blur(8px);z-index:10;gap:14px;flex-wrap:wrap}
+  .logo{display:flex;align-items:center;gap:10px}
+  .logo i{width:28px;height:28px;background:linear-gradient(135deg,var(--acc) 50%,var(--border) 50%);display:block}
+  .logo b{font-family:var(--bc);font-weight:900;font-size:21px;letter-spacing:.08em}
+  .navlinks{display:flex;gap:26px;align-items:center;font-family:var(--bc);font-weight:600;font-size:15px;letter-spacing:.08em;flex-wrap:wrap}
+  .navlinks a{color:var(--muted);text-transform:uppercase}
+  .navlinks a:hover{color:var(--text)}
+  .btn{display:inline-block;background:var(--acc);color:#fff;font-family:var(--bc);font-weight:800;font-size:15px;letter-spacing:.08em;padding:12px 26px;cursor:pointer;border:none;text-transform:uppercase}
+  .btn:hover{background:var(--accH);color:#fff}
+  .btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--soft)}
+  .btn.ghost:hover{border-color:var(--borderH);color:var(--text)}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 40px}
+  @media(max-width:700px){.wrap{padding:0 20px}.topnav{padding:12px 20px}}
+
+  .hero{display:grid;grid-template-columns:1.1fr 1fr;gap:50px;align-items:center;padding:80px 0 70px}
+  @media(max-width:900px){.hero{grid-template-columns:1fr;padding:50px 0}}
+  .eyebrow{font-size:12px;font-weight:800;letter-spacing:.16em;color:var(--acc2);text-transform:uppercase}
+  h1{font-family:var(--bc);font-size:64px;font-weight:900;line-height:.98;margin-top:14px;text-transform:uppercase}
+  @media(max-width:700px){h1{font-size:42px}}
+  h1 .d{color:var(--acc)}
+  .sub{font-size:16.5px;color:var(--muted);line-height:1.6;margin-top:18px;max-width:460px}
+  .cta-row{display:flex;gap:12px;margin-top:28px;align-items:center;flex-wrap:wrap}
+  .cta-note{font-size:12.5px;color:var(--dim)}
+
+  .mock{border:1px solid var(--border);background:var(--panel);padding:18px}
+  .mock-head{display:flex;justify-content:space-between;align-items:baseline}
+  .mock-head b{font-family:var(--bc);font-weight:800;font-size:17px;letter-spacing:.06em}
+  .mock-head b span{color:var(--acc)}
+  .mock-head small{font-size:10px;color:var(--dim);font-weight:700;letter-spacing:.08em}
+  .bars{display:flex;align-items:flex-end;gap:4px;height:110px;margin-top:14px}
+  .bars i{flex:1;display:block}
+  .mock-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);border:1px solid var(--border);margin-top:14px}
+  .ms{background:var(--bg);padding:10px 12px}
+  .ms .k{font-size:9px;font-weight:700;letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
+  .ms .v{font-family:var(--bc);font-size:22px;font-weight:800}
+  .mock-note{font-size:11.5px;color:var(--dim);margin-top:10px;text-align:center}
+
+  section{border-top:1px solid var(--border)}
+  section.alt{background:var(--bg2)}
+  .sec-in{padding:60px 0}
+  h2{font-family:var(--bc);font-size:36px;font-weight:900;text-transform:uppercase}
+  h2 .d{color:var(--acc)}
+  .lead{font-size:14px;color:var(--muted);margin-top:6px}
+  .cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:26px}
+  @media(max-width:800px){.cards3{grid-template-columns:1fr}}
+  .fcard{border:1px solid var(--border);background:var(--panel);padding:22px}
+  .fcard .n{font-family:var(--bc);font-size:15px;font-weight:800;color:var(--acc2);letter-spacing:.1em;text-transform:uppercase}
+  .fcard .t{font-weight:700;font-size:16px;margin-top:10px}
+  .fcard p{font-size:13.5px;color:var(--muted);line-height:1.6;margin-top:6px}
+
+  .prices{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:32px auto 0;max-width:780px}
+  @media(max-width:700px){.prices{grid-template-columns:1fr}}
+  .price{border:1px solid var(--border);background:var(--panel);padding:28px;display:flex;flex-direction:column;position:relative}
+  .price.pro{border-color:var(--acc);background:linear-gradient(180deg,rgba(255,61,46,.09),var(--panel))}
+  .price .badge{position:absolute;top:-11px;left:28px;background:var(--acc);color:#fff;font-size:10.5px;font-weight:800;letter-spacing:.1em;padding:4px 10px;text-transform:uppercase}
+  .price .nm{font-family:var(--bc);font-weight:800;font-size:20px;letter-spacing:.06em}
+  .price .amt{font-family:var(--bc);font-size:44px;font-weight:900;margin-top:8px}
+  .price .amt small{font-size:15px;color:var(--dim);font-weight:600;font-family:'Barlow',sans-serif}
+  .price ul{list-style:none;display:flex;flex-direction:column;gap:9px;font-size:13.5px;color:var(--soft);margin-top:18px;flex:1;padding:0}
+  .price li.off{color:var(--dim)}
+  .price .cta{margin-top:22px;text-align:center}
+  .pnote{text-align:center;font-size:12px;color:var(--dim);margin-top:18px}
+
+  footer{border-top:1px solid var(--border);background:var(--bg2)}
+  .foot-in{padding:28px 0;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--dim);gap:14px;flex-wrap:wrap}
+  .foot-in .logo i{width:18px;height:18px}
+  .foot-links{display:flex;gap:18px}
+  .foot-links a{color:var(--dim)}
+  .foot-links a:hover{color:var(--soft)}
 </style>
 </head>
 <body>
-  <h1>💪 FORMA</h1>
-  <p>Izberi aplikacijo. Vsako lahko dodaš na začetni zaslon telefona (⋮ ali Deli → "Dodaj na začetni zaslon").</p>
-  <a class="card forma" href="forma-trener.html">
-    <div class="ic">💪</div>
-    <div><div class="t">FORMA Trener</div><div class="s">Kolo, pohod, moč — plan in koledar</div></div>
-  </a>
-  <a class="card kcal" href="kalorije.html">
-    <div class="ic">🍽️</div>
-    <div><div class="t">KalorijeAI</div><div class="s">Slikaj hrano → AI prešteje kalorije</div></div>
-  </a>
+
+<nav class="topnav">
+  <div class="logo"><i></i><b>PEAKFORM</b></div>
+  <div class="navlinks">
+    <a href="#kako">Kako deluje</a>
+    <a href="#cenik">Cenik</a>
+    <a href="forma-trener.html" style="color:var(--soft)">Prijava</a>
+    <a class="btn" href="forma-trener.html" style="padding:9px 18px;font-size:14px">Začni brezplačno</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <header class="hero">
+    <div>
+      <div class="eyebrow">AI trener za kolo, moč in prehrano</div>
+      <h1>Tvoja najboljša<br>forma<span class="d">.</span><br>Brez ugibanja<span class="d">.</span></h1>
+      <p class="sub">Izbereš nivo — od »postani fit« do »treniraj kot pro« — in PEAKFORM zgradi tvoj plan treningov, prehrane in moči. Potem ga vsak dan prilagaja tebi: tvoji formi, počutju in vremenu.</p>
+      <div class="cta-row">
+        <a class="btn" href="forma-trener.html">Začni brezplačno →</a>
+        <span class="cta-note">Brez kartice · v aplikaciji si v minuti</span>
+      </div>
+    </div>
+    <div class="mock">
+      <div class="mock-head"><b>TEDEN 6 <span>/12</span></b><small>PRIPRAVLJENOST 82</small></div>
+      <div class="bars">
+        <i style="background:#38333e;height:40%"></i><i style="background:#38333e;height:52%"></i>
+        <i style="background:#4a4452;height:46%"></i><i style="background:#4a4452;height:60%"></i>
+        <i style="background:#5e5668;height:55%"></i><i style="background:#5e5668;height:70%"></i>
+        <i style="background:#a34038;height:64%"></i><i style="background:#cc3f31;height:76%"></i>
+        <i style="background:#ff3d2e;height:88%"></i>
+      </div>
+      <div class="mock-stats">
+        <div class="ms"><div class="k">FTP</div><div class="v">+6 W</div></div>
+        <div class="ms"><div class="k">Teža</div><div class="v">−1.8 kg</div></div>
+        <div class="ms"><div class="k">Muscle-up</div><div class="v">64 %</div></div>
+      </div>
+      <div class="mock-note">Primer napredka po 6 tednih plana</div>
+    </div>
+  </header>
+</div>
+
+<section class="alt" id="kako">
+  <div class="wrap sec-in">
+    <h2>Kako deluje<span class="d">.</span></h2>
+    <div class="cards3">
+      <div class="fcard">
+        <div class="n">01 · Izberi nivo</div>
+        <div class="t">Od »postani fit« do »treniraj kot pro«</div>
+        <p>Nivo določi vse: strukturo planov, globino analitike, ton razlag. Preklopiš kadar koli — podatki ostanejo.</p>
+      </div>
+      <div class="fcard">
+        <div class="n">02 · Živi normalno</div>
+        <div class="t">Slikaj obrok, vozi, telovadi</div>
+        <p>Vožnje pridejo iz Strave ali Intervals.icu same (ali s screenshotom). Obrok slikaš s telefonom — AI prešteje kalorije in makroje.</p>
+      </div>
+      <div class="fcard">
+        <div class="n">03 · AI prilagaja</div>
+        <div class="t">Plan, ki se uči od tebe</div>
+        <p>Slabo spal? Dež v soboto? Prelahke serije? Trener vsak dan prilagodi naslednji korak in ti pove, zakaj.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="cenik">
+  <div class="wrap sec-in">
+    <div style="text-align:center">
+      <h2>Preprost cenik<span class="d">.</span></h2>
+      <div class="lead">Začni zastonj. Nadgradi, ko vidiš rezultate.</div>
+    </div>
+    <div class="prices">
+      <div class="price">
+        <div class="nm">FREE</div>
+        <div class="amt">0 €<small> / za vedno</small></div>
+        <ul>
+          <li>✓ Dnevnik aktivnosti (Strava / Intervals.icu / screenshot)</li>
+          <li>✓ Pregled forme, teže in koledar</li>
+          <li>✓ Slikanje obrokov + tedenski plani — 10 AI dejanj/dan</li>
+          <li>✓ Program moči do muscle-upa</li>
+          <li>✓ Sinhronizacija med napravami (Google prijava)</li>
+          <li class="off">△ Z lastnim (brezplačnim) Gemini ključem: AI neomejeno</li>
+        </ul>
+        <a class="btn ghost cta" href="forma-trener.html">Ustvari račun</a>
+      </div>
+      <div class="price pro">
+        <div class="badge">Najbolj priljubljeno</div>
+        <div class="nm">PRO</div>
+        <div class="amt">9,99 €<small> / mesec</small></div>
+        <ul>
+          <li>✓ Vse iz Free</li>
+          <li>✓ <b>Neomejena AI</b> — brez ključa, brez omejitev</li>
+          <li>✓ AI trener: dnevna prilagajanja, razlage in klepet</li>
+          <li>✓ Neomejeno slikanje obrokov + makroji</li>
+          <li>✓ Mesečna poročila in deljenje napredka</li>
+          <li>✓ Prednostna podpora</li>
+        </ul>
+        <a class="btn cta" href="mailto:blaz.gregorc05@gmail.com?subject=PEAKFORM%20PRO">Nadgradi na PRO →</a>
+      </div>
+    </div>
+    <div class="pnote">Prekineš kadar koli · vprašanja: <a href="mailto:blaz.gregorc05@gmail.com">blaz.gregorc05@gmail.com</a></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-in">
+    <div class="logo"><i></i>© 2026 PEAKFORM</div>
+    <div class="foot-links">
+      <a href="zasebnost.html">Zasebnost & pogoji</a>
+      <a href="mailto:blaz.gregorc05@gmail.com">Kontakt</a>
+    </div>
+  </div>
+</footer>
+
 </body>
 </html>

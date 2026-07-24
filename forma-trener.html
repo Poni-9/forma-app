@@ -3,126 +3,139 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FORMA Trener — razkrij mišico pod maščobo</title>
-<meta name="theme-color" content="#0a0e13">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2224%22 fill=%22%23fc4c02%22/><text x=%2250%22 y=%2270%22 font-size=%2258%22 text-anchor=%22middle%22>🚴</text></svg>">
+<title>PEAKFORM — AI trener za kolo, moč in prehrano</title>
+<meta name="theme-color" content="#111013">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23111013%22/><path d=%22M8 8h84L8 92z%22 fill=%22%23ff3d2e%22/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 :root{
-  --bg:#0a0e13; --bg2:#0f141b; --panel:#141b24; --panel2:#1a2330;
-  --border:#22303f; --border2:#2d3d50;
-  --text:#e8eef4; --muted:#8b9bab; --dim:#5c6b7a;
-  --acc:#fc4c02; --acc2:#ff7a3d; --accSoft:rgba(252,76,2,.12);
-  --green:#3fce6b; --greenSoft:rgba(63,206,107,.12);
+  --bg:#111013; --bg2:#0c0b0e; --panel:#18161b; --panel2:#141317;
+  --border:#26232a; --border2:#38333e; --borderH:#5e5668;
+  --text:#f2efe9; --soft:#c9c3ce; --muted:#9a939f; --dim:#6f6876;
+  --acc:#ff3d2e; --accH:#ff5546; --acc2:#ff6a5e; --accSoft:rgba(255,61,46,.12);
+  --green:#5fd67a; --greenSoft:rgba(95,214,122,.12);
   --red:#ff5c5c; --redSoft:rgba(255,92,92,.12);
   --yellow:#ffc247; --yellowSoft:rgba(255,194,71,.12);
   --blue:#4da3ff; --blueSoft:rgba(77,163,255,.12);
   --purple:#b48cff; --purpleSoft:rgba(180,140,255,.12);
-  --radius:14px;
+  --radius:0px;
+  --bc:'Barlow Condensed',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
-  font-family:'Inter',system-ui,-apple-system,sans-serif;
-  background:
-    radial-gradient(1200px 600px at 80% -10%, rgba(252,76,2,.07), transparent 60%),
-    radial-gradient(900px 500px at -10% 110%, rgba(77,163,255,.05), transparent 60%),
-    var(--bg);
+  font-family:'Barlow',system-ui,-apple-system,sans-serif;
+  background:var(--bg);
   color:var(--text); font-size:15px; line-height:1.55;
 }
 ::selection{background:var(--acc);color:#fff}
 ::-webkit-scrollbar{width:10px;height:10px}
-::-webkit-scrollbar-thumb{background:#26364a;border-radius:8px}
+::-webkit-scrollbar-thumb{background:#2c2931;border-radius:0}
 ::-webkit-scrollbar-track{background:transparent}
 
-/* ---------- Postavitev ---------- */
-.app{display:flex;min-height:100vh}
-.sidebar{
-  width:242px;flex-shrink:0;position:sticky;top:0;height:100vh;
-  background:linear-gradient(180deg,#0e141c 0%,#0a0f15 100%);
-  border-right:1px solid var(--border);
-  display:flex;flex-direction:column;padding:22px 14px;
+/* ---------- Postavitev: zgornja vrstica ---------- */
+.app{display:flex;flex-direction:column;min-height:100vh}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;column-gap:16px;
+  padding:0 28px;border-bottom:2px solid var(--border);background:var(--panel2);
+  position:sticky;top:0;z-index:50;
 }
-.logo{display:flex;align-items:center;gap:11px;padding:4px 10px 22px}
+.topbar-left{display:flex;align-items:center;gap:24px;flex-wrap:wrap;min-width:0}
+.logo{display:flex;align-items:center;gap:10px;padding:14px 0;flex-shrink:0}
 .logo-mark{
-  width:40px;height:40px;border-radius:12px;flex-shrink:0;
-  background:linear-gradient(135deg,var(--acc) 0%,#ff8a2a 100%);
-  display:flex;align-items:center;justify-content:center;font-size:21px;
-  box-shadow:0 4px 18px rgba(252,76,2,.35);
+  width:30px;height:30px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--acc) 50%,var(--border) 50%);
 }
-.logo-name{font-weight:800;font-size:16.5px;letter-spacing:-.02em}
-.logo-name small{display:block;font-weight:500;font-size:11px;color:var(--muted);letter-spacing:.04em}
-.nav{display:flex;flex-direction:column;gap:3px;margin-top:4px}
+.logo-name{font-family:var(--bc);font-weight:900;font-size:22px;letter-spacing:.08em;line-height:1}
+.logo-name small{display:none}
+.nav{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--bc);font-weight:600;font-size:15px;letter-spacing:.06em}
 .nav-item{
-  display:flex;align-items:center;gap:11px;padding:10.5px 12px;border-radius:10px;
-  color:var(--muted);cursor:pointer;font-weight:600;font-size:14px;
-  border:1px solid transparent;transition:all .15s;user-select:none;
+  display:flex;align-items:center;gap:6px;padding:16px 1px 14px;
+  color:var(--muted);cursor:pointer;user-select:none;text-transform:uppercase;
+  border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s;
 }
-.nav-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
-.nav-item.active{
-  color:#fff;background:linear-gradient(90deg,rgba(252,76,2,.16),rgba(252,76,2,.05));
-  border-color:rgba(252,76,2,.3);
+.nav-item:hover{color:var(--text)}
+.nav-item.active{color:var(--acc);border-bottom-color:var(--acc)}
+.nav-item .ic{display:none}
+.topbar-right{display:flex;gap:10px;align-items:center;padding:10px 0}
+.cta-today{
+  background:var(--acc);color:#fff;font-family:var(--bc);font-weight:700;font-size:14.5px;
+  letter-spacing:.06em;padding:8px 15px;white-space:nowrap;cursor:pointer;border:none;text-transform:uppercase;
 }
-.nav-item .ic{width:20px;text-align:center;font-size:16px}
-.side-foot{margin-top:auto;padding:12px 10px 4px}
-.form-badge{
-  background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:13px 14px;
+.cta-today:hover{background:var(--accH)}
+.avatar{
+  width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#ff8a2a);
+  display:grid;place-items:center;font-family:var(--bc);font-weight:800;font-size:13px;color:#fff;flex-shrink:0;
 }
-.form-badge .lbl{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--dim);text-transform:uppercase}
-.form-badge .val{font-size:20px;font-weight:800;margin-top:2px}
-.form-badge .desc{font-size:12px;color:var(--muted);margin-top:1px}
+.tb-form{font-size:11px;font-weight:600;color:var(--muted);border:1px solid var(--border2);padding:4px 9px;border-radius:4px;white-space:nowrap}
+.tb-form b{font-weight:800}
 
-.main{flex:1;min-width:0;padding:34px 42px 70px;max-width:1240px;margin:0 auto}
+.main{flex:1;min-width:0;padding:24px 28px 60px;max-width:1200px;margin:0 auto;width:100%}
 .tab{display:none;animation:fadeIn .25s ease}
 .tab.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-.page-head{margin-bottom:26px}
-.page-head h1{font-size:26px;font-weight:800;letter-spacing:-.03em}
-.page-head p{color:var(--muted);margin-top:3px;font-size:14px}
+.page-head{margin-bottom:18px}
+.page-head h1{font-family:var(--bc);font-size:34px;font-weight:800;letter-spacing:.01em;line-height:1;text-transform:uppercase}
+.page-head h1 .hl{color:var(--acc)}
+.page-head p{color:var(--muted);margin-top:5px;font-size:13px}
 .head-row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.head-date{font-family:var(--bc);font-size:14px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
 
 /* ---------- Kartice / mreže ---------- */
 .card{
-  background:linear-gradient(180deg,var(--panel) 0%,rgba(20,27,36,.7) 100%);
-  border:1px solid var(--border);border-radius:var(--radius);padding:20px;
+  background:var(--panel);
+  border:1px solid var(--border);border-radius:0;padding:14px 16px;
 }
-.card h3{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.card h3 .sub{font-weight:500;color:var(--dim);font-size:12px;margin-left:auto}
-.grid-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:22px}
-.stat{padding:16px 18px}
-.stat .k{font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--dim)}
-.stat .v{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-top:4px}
-.stat .v small{font-size:13px;font-weight:600;color:var(--muted)}
-.stat .t{font-size:12px;margin-top:3px;color:var(--muted)}
-.grid-2{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
+.card h3{
+  font-family:var(--bc);font-size:14.5px;font-weight:700;letter-spacing:.08em;color:var(--muted);
+  text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;
+}
+.card h3 .sub{font-family:'Barlow',sans-serif;font-weight:600;color:var(--dim);font-size:11px;margin-left:auto;letter-spacing:.02em;text-transform:none}
+.grid-stats{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:2px;margin-bottom:14px;
+  background:var(--border);border:1px solid var(--border);
+}
+@media(max-width:1050px){.grid-stats{grid-template-columns:repeat(3,1fr)}}
+.stat{padding:13px 15px;background:var(--panel);border:none!important;border-radius:0}
+.stat .k{font-size:9.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--dim)}
+.stat .v{font-family:var(--bc);font-size:29px;font-weight:800;letter-spacing:0;margin-top:2px;line-height:1.15}
+.stat .v small{font-size:14px;font-weight:600;color:var(--dim);font-family:var(--bc)}
+.stat .t{font-size:11px;margin-top:3px;color:var(--muted)}
+.stat .bar{height:3px;background:var(--border);margin-top:7px}
+.stat .bar i{display:block;height:100%;background:var(--green)}
+.grid-2{display:grid;grid-template-columns:1.4fr 1fr;gap:12px}
+.grid-dash3{display:grid;grid-template-columns:1.7fr 1.1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:1120px){.grid-dash3{grid-template-columns:1fr 1fr}}
 @media(max-width:1050px){.grid-2{grid-template-columns:1fr}}
+@media(max-width:760px){.grid-dash3{grid-template-columns:1fr}}
 
 /* ---------- Gumbi / vnosi ---------- */
 .btn{
-  display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:10px;
-  font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;border:1px solid transparent;
-  transition:all .15s;user-select:none;white-space:nowrap;
+  display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:0;
+  font-family:var(--bc);font-size:14.5px;font-weight:700;letter-spacing:.06em;cursor:pointer;
+  border:1px solid transparent;transition:all .15s;user-select:none;white-space:nowrap;text-transform:uppercase;
 }
-.btn-primary{background:linear-gradient(135deg,var(--acc),#ff7222);color:#fff;box-shadow:0 3px 14px rgba(252,76,2,.3)}
-.btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
-.btn-ghost{background:var(--panel2);color:var(--text);border-color:var(--border2)}
-.btn-ghost:hover{border-color:#3d5065;background:#20293a}
-.btn-danger{background:var(--redSoft);color:var(--red);border-color:rgba(255,92,92,.3)}
-.btn-sm{padding:6px 12px;font-size:12.5px;border-radius:8px}
-.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
-.btn .spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite;display:inline-block}
+.btn-primary{background:var(--acc);color:#fff}
+.btn-primary:hover{background:var(--accH)}
+.btn-ghost{background:transparent;color:var(--soft);border-color:var(--border2)}
+.btn-ghost:hover{border-color:var(--borderH);color:var(--text)}
+.btn-danger{background:transparent;color:var(--red);border-color:rgba(255,92,92,.35)}
+.btn-danger:hover{border-color:rgba(255,92,92,.7)}
+.btn-sm{padding:6px 11px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn .spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite;display:inline-block}
 @keyframes rot{to{transform:rotate(360deg)}}
 
 label.fld{display:block;margin-bottom:13px}
-label.fld span{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px;letter-spacing:.02em}
+label.fld span{display:block;font-size:11px;font-weight:800;color:var(--dim);margin-bottom:6px;letter-spacing:.1em;text-transform:uppercase}
 input,select,textarea{
-  width:100%;background:#0e1520;border:1px solid var(--border2);border-radius:9px;
-  color:var(--text);padding:9.5px 12px;font-family:inherit;font-size:14px;outline:none;
+  width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:0;
+  color:var(--text);padding:9.5px 12px;font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;outline:none;
   transition:border-color .15s;
 }
 input:focus,select:focus,textarea:focus{border-color:var(--acc)}
@@ -131,348 +144,403 @@ textarea{resize:vertical;min-height:70px}
 .hint{font-size:12px;color:var(--dim);margin-top:-7px;margin-bottom:12px}
 
 /* ---------- Značke ---------- */
-.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:11.5px;font-weight:700;letter-spacing:.02em}
-.chip.intervali{background:var(--redSoft);color:var(--red)}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:0;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border:1px solid transparent}
+.chip.intervali{background:var(--accSoft);color:var(--acc2)}
 .chip.vzdržljivost,.chip.vzdrzljivost{background:var(--blueSoft);color:var(--blue)}
 .chip.tempo{background:var(--yellowSoft);color:var(--yellow)}
 .chip.regeneracija{background:var(--greenSoft);color:var(--green)}
-.chip.počitek,.chip.pocitek{background:rgba(139,155,171,.12);color:var(--muted)}
+.chip.počitek,.chip.pocitek{background:rgba(154,147,159,.12);color:var(--muted)}
 .chip.moč,.chip.moc{background:var(--purpleSoft);color:var(--purple)}
 .chip.pohod{background:rgba(92,214,214,.12);color:#5cd6d6}
 .dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:middle}
-.dot.easy{background:var(--blue);box-shadow:0 0 8px rgba(77,163,255,.6)}
-.dot.med{background:var(--yellow);box-shadow:0 0 8px rgba(255,194,71,.6)}
-.dot.hard{background:var(--red);box-shadow:0 0 8px rgba(255,92,92,.6)}
-.ex-row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border:1px solid var(--border2);border-radius:10px;margin-bottom:8px;background:#0e1520}
+.dot.easy{background:var(--blue)}
+.dot.med{background:var(--yellow)}
+.dot.hard{background:var(--acc)}
+.ex-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:11px 13px;border:1px solid var(--border);border-radius:0;margin-bottom:8px;background:var(--bg)}
 .ex-row .nm{font-weight:700;font-size:14px}
 .ex-row .nm small{display:block;font-weight:500;color:var(--dim);font-size:11.5px}
-.ex-row .rp{font-weight:800;font-size:15px;color:var(--acc2);white-space:nowrap}
-.chip.gray{background:rgba(139,155,171,.12);color:var(--muted)}
+.ex-row .rp{font-family:var(--bc);font-weight:800;font-size:19px;color:var(--acc2);white-space:nowrap}
+.chip.gray{background:rgba(154,147,159,.12);color:var(--muted)}
 .chip.orange{background:var(--accSoft);color:var(--acc2)}
 .chip.green{background:var(--greenSoft);color:var(--green)}
 
-/* ---------- Vožnje ---------- */
+/* ---------- Aktivnosti (tabela) ---------- */
 .ride-row{
   display:grid;grid-template-columns:52px 1.6fr repeat(4,minmax(70px,.7fr)) 90px auto;
-  gap:10px;align-items:center;padding:13px 16px;border-bottom:1px solid var(--border);
+  gap:10px;align-items:center;padding:13px 16px;border-bottom:1px solid #201d24;
 }
 .ride-row:last-child{border-bottom:none}
 .ride-row:hover{background:rgba(255,255,255,.02)}
-.ride-date{text-align:center;line-height:1.15}
-.ride-date .d{font-weight:800;font-size:17px}
-.ride-date .m{font-size:10.5px;color:var(--dim);text-transform:uppercase;font-weight:700;letter-spacing:.05em}
-.ride-name{font-weight:700;font-size:14px}
-.ride-name .src{font-size:11.5px;color:var(--dim);font-weight:500;margin-top:1px}
+.ride-date{text-align:center;line-height:1.1}
+.ride-date .d{font-family:var(--bc);font-weight:800;font-size:19px}
+.ride-date .m{font-size:9.5px;color:var(--dim);text-transform:uppercase;font-weight:700;letter-spacing:.06em}
+.ride-name{font-weight:700;font-size:13.5px}
+.ride-name .src{font-size:11px;color:var(--dim);font-weight:500;margin-top:1px}
 .ride-met{text-align:center}
-.ride-met .a{font-weight:700;font-size:14px}
-.ride-met .b{font-size:10.5px;color:var(--dim);text-transform:uppercase;font-weight:600;letter-spacing:.04em}
+.ride-met .a{font-weight:600;font-size:13px}
+.ride-met .b{font-size:9.5px;color:var(--dim);text-transform:uppercase;font-weight:700;letter-spacing:.06em}
+.ride-tss{font-family:var(--bc);font-weight:800;font-size:16px;color:var(--acc2);text-align:center}
 .ride-acts{display:flex;gap:6px;justify-content:flex-end}
 .icon-btn{
-  width:30px;height:30px;border-radius:8px;background:var(--panel2);border:1px solid var(--border2);
+  width:30px;height:30px;border-radius:0;background:transparent;border:1px solid var(--border2);
   color:var(--muted);cursor:pointer;font-size:13px;display:inline-flex;align-items:center;justify-content:center;
   transition:all .15s;
 }
-.icon-btn:hover{color:var(--text);border-color:#3d5065}
+.icon-btn:hover{color:var(--text);border-color:var(--borderH)}
 .icon-btn.del:hover{color:var(--red);border-color:rgba(255,92,92,.4)}
-.rides-head{display:grid;grid-template-columns:52px 1.6fr repeat(4,minmax(70px,.7fr)) 90px auto;gap:10px;padding:10px 16px;font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--border)}
+.rides-head{display:grid;grid-template-columns:52px 1.6fr repeat(4,minmax(70px,.7fr)) 90px auto;gap:10px;padding:10px 16px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--border)}
 @media(max-width:900px){.ride-row,.rides-head{grid-template-columns:52px 1.4fr repeat(2,.7fr) auto}.hide-sm{display:none}}
 
 .dropzone{
-  border:2px dashed var(--border2);border-radius:var(--radius);padding:30px 20px;text-align:center;
-  color:var(--muted);cursor:pointer;transition:all .2s;background:rgba(255,255,255,.015);
+  border:1px dashed var(--border2);border-radius:0;padding:26px 20px;text-align:center;
+  color:var(--dim);cursor:pointer;transition:all .2s;background:transparent;font-size:13px;
 }
-.dropzone:hover,.dropzone.over{border-color:var(--acc);background:var(--accSoft);color:var(--acc2)}
-.dropzone b{color:var(--text)}
-.dropzone .big{font-size:30px;display:block;margin-bottom:6px}
+.dropzone:hover,.dropzone.over{border-color:var(--acc);color:var(--muted)}
+.dropzone b{color:var(--soft)}
+.dropzone .big{font-size:24px;display:block;margin-bottom:6px}
 
 /* ---------- Plan ---------- */
-.week-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px}
+.week-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:9px}
 .day-card{
-  background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;
+  background:var(--panel);border:1px solid var(--border);border-radius:0;padding:14px;
   display:flex;flex-direction:column;gap:8px;min-height:170px;position:relative;transition:border-color .15s;
 }
 .day-card:hover{border-color:var(--border2)}
-.day-card.today{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc),0 4px 20px rgba(252,76,2,.15)}
+.day-card.today{border-color:var(--acc)}
 .day-card.done{opacity:.75}
 .day-card .dc-day{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;align-items:center}
 .day-card .dc-title{font-weight:700;font-size:13.5px;line-height:1.3}
 .day-card .dc-desc{font-size:12px;color:var(--muted);flex:1;line-height:1.45}
 .day-card .dc-meta{font-size:11.5px;color:var(--dim);font-weight:600}
 .day-card .done-mark{color:var(--green);font-size:13px}
-/* tedenski plan — pregleden seznam */
-.week-list{display:flex;flex-direction:column;gap:10px}
-.day-row{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px 18px;transition:border-color .15s}
+.week-list{display:flex;flex-direction:column;gap:9px}
+.day-row{background:var(--panel);border:1px solid var(--border);border-radius:0;padding:13px 17px;transition:border-color .15s}
 .day-row:hover{border-color:var(--border2)}
-.day-row.today{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
-.day-row.done{opacity:.75}
+.day-row.today{border-color:var(--acc);background:linear-gradient(90deg,rgba(255,61,46,.05),var(--panel))}
+.day-row.done{opacity:.72}
 .dr-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.dr-day{font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--dim);min-width:76px}
+.dr-day{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);min-width:76px}
 .day-row.today .dr-day{color:var(--acc2)}
-.dr-title{font-weight:800;font-size:15px;flex:1;min-width:180px}
-.dr-meta{font-size:12px;color:var(--dim);font-weight:700;white-space:nowrap}
-.dr-wx{font-size:11.5px;font-weight:800;background:rgba(255,255,255,.05);border:1px solid var(--border2);padding:3px 9px;border-radius:7px;white-space:nowrap}
+.dr-title{font-weight:700;font-size:14.5px;flex:1;min-width:180px}
+.day-row.today .dr-title{color:var(--acc2)}
+.dr-meta{font-size:11.5px;color:var(--dim);font-weight:700;white-space:nowrap}
+.dr-wx{font-size:11.5px;font-weight:800;background:rgba(255,255,255,.04);border:1px solid var(--border2);padding:3px 9px;border-radius:0;white-space:nowrap}
 .dr-wx.warn{color:var(--blue);border-color:rgba(77,163,255,.5);background:rgba(77,163,255,.1)}
-.dr-wxwarn{font-size:12px;font-weight:600;color:var(--blue);background:rgba(77,163,255,.08);border:1px solid rgba(77,163,255,.3);border-radius:8px;padding:7px 11px;margin-top:9px}
+.dr-wxwarn{font-size:12px;font-weight:600;color:var(--blue);background:rgba(77,163,255,.08);border:1px solid rgba(77,163,255,.3);border-radius:0;padding:7px 11px;margin-top:9px}
 .dr-meta .okk{color:var(--green);margin-left:6px}
-.dr-body{display:grid;gap:16px;margin-top:11px}
+.dr-body{display:grid;gap:10px;margin-top:11px}
 @media(max-width:950px){.dr-body{grid-template-columns:1fr!important}}
-.dr-col{font-size:13px;color:#cfd8e0;min-width:0;background:rgba(255,255,255,.018);border:1px solid rgba(45,61,80,.45);border-radius:10px;padding:10px 12px}
-.dr-lbl{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--acc2);margin-bottom:5px}
-.dr-kcal{margin-top:7px;font-size:12.5px;color:var(--yellow);font-weight:700}
-.dr-sport{font-size:11px;font-weight:900;letter-spacing:.05em;background:rgba(255,255,255,.05);border:1px solid var(--border2);padding:3px 10px;border-radius:7px;white-space:nowrap}
-.plan-summary{background:linear-gradient(135deg,rgba(252,76,2,.08),rgba(77,163,255,.05));border:1px solid rgba(252,76,2,.25);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px;font-size:13.5px;color:#d6dee6}
+.dr-col{font-size:12px;color:var(--soft);min-width:0;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:0;padding:9px 11px;line-height:1.5}
+.dr-lbl{font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--acc2);margin-bottom:4px}
+.dr-kcal{margin-top:7px;font-size:12px;color:var(--yellow);font-weight:700}
+.dr-sport{font-size:10.5px;font-weight:900;letter-spacing:.05em;background:rgba(255,255,255,.04);border:1px solid var(--border2);padding:2px 9px;border-radius:0;white-space:nowrap}
+.plan-summary{
+  background:linear-gradient(90deg,rgba(255,61,46,.1),transparent);
+  border:1px solid rgba(255,61,46,.3);border-radius:0;padding:13px 17px;margin-bottom:10px;
+  font-size:13px;color:var(--soft);line-height:1.5;
+}
 .plan-summary b{color:var(--acc2)}
 
 /* ---------- Današnji trening ---------- */
 .today-setup{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;align-items:end}
-.seg{display:flex;background:#0e1520;border:1px solid var(--border2);border-radius:9px;padding:3px;gap:3px}
-.seg button{flex:1;border:none;background:transparent;color:var(--muted);font-family:inherit;font-weight:700;font-size:13px;padding:7px 4px;border-radius:7px;cursor:pointer;transition:all .15s}
+.seg{display:flex;background:var(--bg);border:1px solid var(--border2);border-radius:0;padding:3px;gap:3px}
+.seg button{flex:1;border:none;background:transparent;color:var(--muted);font-family:'Barlow',sans-serif;font-weight:700;font-size:13px;padding:7px 4px;border-radius:0;cursor:pointer;transition:all .15s}
 .seg button.on{background:var(--acc);color:#fff}
 .workout-box{margin-top:20px}
 .wo-part{display:flex;gap:14px;padding:13px 0;border-bottom:1px solid var(--border)}
 .wo-part:last-child{border:none}
-.wo-part .tag{flex-shrink:0;width:96px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--acc2);padding-top:2px}
-.wo-part .txt{font-size:13.5px;color:#cfd8e0;white-space:pre-wrap}
+.wo-part .tag{flex-shrink:0;width:96px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--acc2);padding-top:2px}
+.wo-part .txt{font-size:13.5px;color:var(--soft);white-space:pre-wrap}
 
 /* ---------- Nastavitve ---------- */
-.set-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.set-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
 @media(max-width:1000px){.set-grid{grid-template-columns:1fr}}
 .steps{font-size:13px;color:var(--muted);line-height:1.7;margin:10px 0 14px;padding-left:18px}
 .steps li{margin-bottom:4px}
-.steps code{background:#0e1520;border:1px solid var(--border2);padding:1px 6px;border-radius:5px;font-size:12px;color:var(--acc2)}
-.conn-status{display:flex;align-items:center;gap:9px;padding:11px 14px;border-radius:10px;font-size:13.5px;font-weight:600;margin-bottom:14px}
-.conn-status.ok{background:var(--greenSoft);color:var(--green);border:1px solid rgba(63,206,107,.3)}
-.conn-status.no{background:rgba(139,155,171,.08);color:var(--muted);border:1px solid var(--border)}
+.steps code{background:var(--bg);border:1px solid var(--border2);padding:1px 6px;border-radius:0;font-size:12px;color:var(--acc2)}
+.conn-status{display:flex;align-items:center;gap:9px;padding:10px 13px;border-radius:0;font-size:13px;font-weight:600;margin-bottom:14px}
+.conn-status.ok{background:var(--greenSoft);color:var(--green);border:1px solid rgba(95,214,122,.3)}
+.conn-status.no{background:rgba(154,147,159,.07);color:var(--muted);border:1px solid var(--border)}
+.lvl-card{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--border);padding:11px 13px;cursor:pointer;transition:border-color .15s;margin-bottom:8px}
+.lvl-card:hover{border-color:var(--border2)}
+.lvl-card.on{border-color:var(--acc);background:rgba(255,61,46,.07)}
+.lvl-card .ln{font-weight:700;font-size:13.5px}
+.lvl-card .ld{font-size:11px;color:var(--dim)}
+.lvl-card.on .ld{color:var(--muted)}
+.lvl-card .lm{color:var(--acc);font-weight:800}
+.conn-row{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--border);padding:10px 13px;margin-bottom:8px;font-size:13px}
+.conn-row .cn{font-weight:600}
+.conn-row .cs{font-weight:700;font-size:12px;letter-spacing:.04em}
+.conn-row .cs.ok{color:var(--green)}
+.conn-row .cs.go{color:var(--acc2);cursor:pointer}
 
 /* ---------- Modal ---------- */
 .modal-back{
-  position:fixed;inset:0;background:rgba(4,8,12,.72);backdrop-filter:blur(4px);
+  position:fixed;inset:0;background:rgba(5,4,6,.78);backdrop-filter:blur(4px);
   display:none;align-items:flex-start;justify-content:center;z-index:100;padding:40px 16px;overflow-y:auto;
 }
 .modal-back.open{display:flex}
 .modal{
-  background:var(--panel);border:1px solid var(--border2);border-radius:16px;
+  background:var(--panel);border:1px solid var(--border2);border-radius:0;
   width:100%;max-width:560px;padding:24px;animation:pop .2s ease;
 }
 @keyframes pop{from{opacity:0;transform:scale(.97) translateY(8px)}to{opacity:1;transform:none}}
-.modal h2{font-size:18px;font-weight:800;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.modal h2{font-family:var(--bc);font-size:20px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
 .modal .x{cursor:pointer;color:var(--dim);font-size:20px;line-height:1}
 .modal .x:hover{color:var(--text)}
 .modal-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
-.shot-prev{max-width:100%;max-height:220px;border-radius:10px;border:1px solid var(--border2);display:block;margin:0 auto 14px}
+.shot-prev{max-width:100%;max-height:220px;border-radius:0;border:1px solid var(--border2);display:block;margin:0 auto 14px}
 
 /* ---------- Razno ---------- */
 .toasts{position:fixed;bottom:22px;right:22px;z-index:200;display:flex;flex-direction:column;gap:10px}
 .toast{
   background:var(--panel2);border:1px solid var(--border2);border-left:3px solid var(--acc);
-  border-radius:10px;padding:12px 16px;font-size:13.5px;font-weight:600;max-width:360px;
-  box-shadow:0 8px 30px rgba(0,0,0,.4);animation:pop .2s ease;
+  border-radius:0;padding:12px 16px;font-size:13.5px;font-weight:600;max-width:360px;
+  box-shadow:0 8px 30px rgba(0,0,0,.5);animation:pop .2s ease;
 }
 .toast.err{border-left-color:var(--red)}
 .toast.ok{border-left-color:var(--green)}
-.empty{
-  text-align:center;padding:44px 20px;color:var(--dim);font-size:14px;
-}
+.empty{text-align:center;padding:44px 20px;color:var(--dim);font-size:14px}
 .empty .big{font-size:34px;display:block;margin-bottom:8px}
 .ai-note{font-size:12px;color:var(--dim);display:flex;gap:6px;align-items:center;margin-top:10px}
-.weather-strip{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px}
-.wx{flex:1;min-width:58px;text-align:center;background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:11px;padding:9px 4px}
-.wx.bad{border-color:rgba(77,163,255,.45);background:rgba(77,163,255,.08)}
-.wx-d{font-size:10.5px;font-weight:800;text-transform:uppercase;color:var(--dim);letter-spacing:.04em}
-.wx-e{font-size:23px;line-height:1.2;margin:2px 0}
-.wx-t{font-size:14px;font-weight:800}
+.weather-strip{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.wx{flex:1;min-width:58px;text-align:center;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:0;padding:9px 4px}
+.wx.bad{border-color:rgba(77,163,255,.45);background:rgba(77,163,255,.07)}
+.wx-d{font-size:10px;font-weight:800;text-transform:uppercase;color:var(--dim);letter-spacing:.06em}
+.wx-e{font-size:22px;line-height:1.2;margin:2px 0}
+.wx-t{font-family:var(--bc);font-size:16px;font-weight:800}
 .wx-p{font-size:10px;color:var(--blue);font-weight:700}
-.mt{margin-top:16px}.mb{margin-bottom:16px}
+.mt{margin-top:14px}.mb{margin-bottom:14px}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .spread{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 canvas{max-width:100%}
-.analysis-box{background:#0e1520;border:1px solid var(--border2);border-radius:10px;padding:14px;font-size:13px;color:#cfd8e0;margin-top:10px}
+.analysis-box{background:var(--bg);border:1px solid var(--border2);border-radius:0;padding:13px 15px;font-size:13px;color:var(--soft);margin-top:10px;line-height:1.55}
 .analysis-box b{color:var(--acc2)}
-.score-ring{font-size:22px;font-weight:900;color:var(--acc2)}
+.score-ring{font-family:var(--bc);font-size:26px;font-weight:900;color:var(--acc2)}
 
 /* ---------- Koledar ---------- */
-.cal-head{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:8px}
-.cal-head div{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);text-align:center}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
-.cal-cell{background:var(--panel);border:1px solid var(--border);border-radius:10px;min-height:98px;padding:8px 9px 8px 12px;cursor:pointer;position:relative;overflow:hidden;transition:all .15s}
-.cal-cell:hover{border-color:var(--border2);transform:translateY(-1px)}
-.cal-cell.out{opacity:.35}
-.cal-cell.today{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
-.cal-cell .num{font-weight:800;font-size:12.5px;color:var(--muted)}
-.cal-item{font-size:11px;font-weight:600;line-height:1.35;margin-top:5px;padding:3px 6px;border-radius:6px;background:rgba(255,255,255,.045)}
-.cal-item.done{color:var(--green);background:var(--greenSoft)}
-.cal-stripe{position:absolute;left:0;top:0;bottom:0;width:3.5px}
+.cal-head{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px}
+.cal-head div{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);text-align:center}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal-cell{background:var(--panel);border:1px solid var(--border);border-radius:0;min-height:92px;padding:7px 9px;cursor:pointer;position:relative;overflow:hidden;transition:border-color .15s}
+.cal-cell:hover{border-color:var(--border2)}
+.cal-cell.out{opacity:.3}
+.cal-cell.today{border-color:var(--acc)}
+.cal-cell .num{font-family:var(--bc);font-weight:800;font-size:14px;color:var(--muted)}
+.cal-item{font-size:10.5px;font-weight:600;line-height:1.3;margin-top:5px;padding:3px 6px;border-radius:0;background:rgba(255,255,255,.04);border-left:2px solid var(--acc);color:var(--soft)}
+.cal-item.done{color:var(--green);background:rgba(95,214,122,.06);border-left-color:var(--green)}
+.cal-stripe{position:absolute;left:0;top:0;bottom:0;width:3px}
 .macro-bar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
-.macro-pill{font-size:11.5px;font-weight:700;padding:4px 11px;border-radius:99px;border:1px solid var(--border2);color:var(--muted);background:var(--panel)}
-.zones-box{font-size:12px;color:var(--muted);background:#0e1520;border:1px solid var(--border2);border-radius:9px;padding:10px 12px;margin-bottom:13px;line-height:1.7}
+.macro-pill{font-size:11px;font-weight:700;letter-spacing:.04em;padding:4px 11px;border-radius:0;border:1px solid var(--border2);color:var(--muted);background:var(--panel);text-transform:uppercase}
+.zones-box{font-size:12px;color:var(--muted);background:var(--bg);border:1px solid var(--border2);border-radius:0;padding:10px 12px;margin-bottom:13px;line-height:1.7}
 .zones-box b{color:var(--acc2)}
 
 /* ---------- Podrobnosti vožnje ---------- */
-.rd-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:8px;margin-bottom:14px}
-.rd-stat{background:#0e1520;border:1px solid var(--border2);border-radius:9px;padding:9px 6px;text-align:center}
-.rd-stat .a{font-weight:800;font-size:14.5px}
-.rd-stat .b{font-size:9.5px;color:var(--dim);text-transform:uppercase;font-weight:700;letter-spacing:.05em;margin-top:2px}
-#rdMap{height:265px;border-radius:12px;margin-bottom:12px;border:1px solid var(--border2);background:#0e1520}
+.rd-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:2px;margin-bottom:14px;background:var(--border);border:1px solid var(--border)}
+.rd-stat{background:var(--panel);border:none;border-radius:0;padding:9px 6px;text-align:center}
+.rd-stat .a{font-family:var(--bc);font-weight:800;font-size:17px}
+.rd-stat .b{font-size:9px;color:var(--dim);text-transform:uppercase;font-weight:700;letter-spacing:.08em;margin-top:2px}
+#rdMap{height:265px;border-radius:0;margin-bottom:12px;border:1px solid var(--border2);background:var(--bg)}
 .rd-chart{position:relative;height:150px;margin-bottom:10px}
-.leaflet-container{background:#0e1520}
+.leaflet-container{background:#111013}
 .opis-line{padding:3px 0 3px 9px;border-left:2px solid var(--border2);margin:4px 0;line-height:1.45}
 .opis-line:hover{border-left-color:var(--acc)}
 
-/* ---------- Onboarding ---------- */
-.onb{cursor:pointer;padding:7px 8px;font-size:13.5px;color:var(--muted);border-radius:8px;font-weight:600}
+/* ---------- Vodič ---------- */
+.onb{cursor:pointer;padding:7px 8px;font-size:13.5px;color:var(--muted);border-radius:0;font-weight:600}
 .onb:hover{background:rgba(255,255,255,.035);color:var(--text)}
-.onb.ok{color:var(--green);text-decoration:line-through;text-decoration-color:rgba(63,206,107,.5)}
+.onb.ok{color:var(--green);text-decoration:line-through;text-decoration-color:rgba(95,214,122,.5)}
 
-/* ---------- Lepotni popravki ---------- */
-.page-head h1{position:relative;display:inline-block}
-.page-head h1::after{content:'';position:absolute;left:1px;bottom:-7px;width:34px;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--acc),transparent)}
-.card{transition:border-color .2s}
-.card:hover{border-color:#2a3a4d}
-.stat{transition:transform .18s,border-color .2s}
-.stat:hover{transform:translateY(-2px);border-color:rgba(252,76,2,.35)}
-.modal{box-shadow:0 24px 70px rgba(0,0,0,.55)}
-input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px rgba(252,76,2,.15)}
-.btn:focus-visible,.icon-btn:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
-.nav-item{position:relative}
-.nav-item.active::before{content:'';position:absolute;left:-14px;top:50%;transform:translateY(-50%);width:3.5px;height:60%;border-radius:3px;background:var(--acc);box-shadow:0 0 10px rgba(252,76,2,.7)}
-.ride-row{transition:background .12s}
-details summary::-webkit-details-marker{color:var(--acc)}
-details[open] summary{margin-bottom:4px}
-.toast{backdrop-filter:blur(6px)}
-.day-card .dc-desc .opis-line{border-left-color:rgba(45,61,80,.6)}
-.chip{border:1px solid transparent}
-.plan-summary{box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}
-.cal-cell .num{display:flex;justify-content:space-between;align-items:center}
-.sidebar .nav{gap:4px}
-h2#calLabel{letter-spacing:-.02em}
+/* ---------- Moč ---------- */
+.feel-dots{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.feel-dots button{width:26px;height:26px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;flex:none}
+.feel-dots button.on{border-color:#fff}
+.path-card .pct{font-family:var(--bc);font-weight:800;font-size:19px;color:var(--acc2)}
+.path-bar{height:6px;background:var(--border);margin-top:9px}
+.path-bar i{display:block;height:100%;background:linear-gradient(90deg,#a34038,var(--acc))}
+.path-marks{display:flex;justify-content:space-between;font-size:10px;color:var(--dim);margin-top:6px;font-weight:700;letter-spacing:.02em}
 
-/* ---------- Odzivnost (telefon/ožji zasloni) ---------- */
+/* ---------- Poročila / klepet ---------- */
+.chat-box{display:flex;flex-direction:column;gap:9px;margin-top:12px;max-height:420px;overflow-y:auto}
+.chat-msg{max-width:85%;padding:9px 12px;font-size:12.5px;line-height:1.5;white-space:pre-wrap}
+.chat-msg.ai{align-self:flex-start;background:var(--border)}
+.chat-msg.me{align-self:flex-end;background:rgba(255,61,46,.15);border:1px solid rgba(255,61,46,.3)}
+.chat-msg .cm{display:block;font-size:9.5px;color:var(--dim);margin-top:3px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.chat-input{display:flex;gap:8px;margin-top:12px}
+.chat-input input{flex:1}
+.chat-input .btn{padding:9px 14px}
+
+/* ---------- Onboarding overlay ---------- */
+.onb-back{position:fixed;inset:0;background:var(--bg);z-index:300;display:none;overflow-y:auto;padding:40px 24px 70px}
+.onb-back.open{display:block}
+.onb-wrap{max-width:960px;margin:0 auto}
+.onb-head{display:flex;align-items:center;gap:10px}
+.onb-prog{display:flex;gap:6px;margin-top:18px}
+.onb-prog i{flex:1;height:4px;background:var(--border)}
+.onb-prog i.on{background:var(--acc)}
+.onb-title{font-family:var(--bc);font-size:44px;font-weight:900;line-height:1.05;text-align:center;margin-top:44px;text-transform:uppercase}
+.onb-title .hl{color:var(--acc)}
+.onb-sub{font-size:15px;color:var(--muted);margin-top:10px;text-align:center;line-height:1.6}
+.onb-levels{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:36px}
+@media(max-width:760px){.onb-levels{grid-template-columns:1fr}}
+.onb-lvl{border:1px solid var(--border);background:var(--panel);padding:24px 22px;cursor:pointer;display:flex;flex-direction:column;min-height:250px;transition:border-color .15s}
+.onb-lvl:hover{border-color:var(--acc)}
+.onb-lvl.on{border-color:var(--acc);background:rgba(255,61,46,.07)}
+.onb-lvl .oi{font-size:30px}
+.onb-lvl .on1{font-family:var(--bc);font-weight:800;font-size:24px;letter-spacing:.03em;margin-top:14px;text-transform:uppercase}
+.onb-lvl .od{font-size:13px;color:var(--muted);line-height:1.55;margin-top:8px;flex:1}
+.onb-lvl .ot{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--dim);margin-top:14px;text-transform:uppercase}
+.onb-lvl.on .ot{color:var(--acc2)}
+.onb-chip{border:1px solid var(--border2);padding:9px 15px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s}
+.onb-chip:hover{border-color:var(--borderH)}
+.onb-chip.on{border-color:var(--acc);background:rgba(255,61,46,.1);color:var(--text)}
+.onb-foot{display:flex;justify-content:space-between;margin-top:44px}
+
+/* ---------- Tisk (Poročila → PDF) ---------- */
+@media print{
+  body{background:#fff;color:#000}
+  .topbar,.toasts,.chat-input,.no-print{display:none!important}
+  .tab{display:none!important}
+  #tab-porocila{display:block!important}
+  .card,.stat{border-color:#ccc;background:#fff;color:#000}
+  .card h3,.stat .k{color:#666}
+}
+
+/* ---------- Odzivnost ---------- */
 @media(max-width:840px){
-  .app{flex-direction:column}
-  .sidebar{width:100%;height:auto;position:static;flex-direction:row;align-items:center;gap:6px;padding:10px 12px;border-right:none;border-bottom:1px solid var(--border);flex-wrap:wrap}
-  .logo{padding:0 6px 0 0}
-  .logo-name small{display:none}
-  .logo-mark{width:32px;height:32px;border-radius:9px;font-size:16px}
-  .logo-name{font-size:14px}
-  .nav{flex-direction:row;flex-wrap:wrap;margin:0 0 0 auto;gap:3px}
-  .nav-item{padding:7px 10px;font-size:12.5px;gap:6px}
-  .nav-item .ic{font-size:13px;width:auto}
-  .nav-item.active::before{display:none}
-  .side-foot{display:none}
+  .topbar{padding:0 14px}
+  .nav{gap:10px;font-size:13.5px;order:3;width:100%;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+  .nav::-webkit-scrollbar{display:none}
+  .nav-item{padding:10px 1px 9px;flex-shrink:0}
+  .logo{padding:10px 0}
+  .logo-name{font-size:18px}
+  .logo-mark{width:24px;height:24px}
+  .topbar-right{padding:8px 0}
+  .tb-form{display:none}
   .main{padding:18px 14px 60px}
-  .page-head h1{font-size:21px}
+  .page-head h1{font-size:26px}
   .week-grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
-  .cal-cell{min-height:74px;padding:5px 6px 5px 9px}
+  .cal-cell{min-height:74px;padding:5px 6px}
   .cal-item{font-size:9.5px;padding:2px 4px}
   .grid-stats{grid-template-columns:repeat(2,1fr)}
   .today-setup{grid-template-columns:1fr}
   .modal{padding:16px}
   .rd-stats{grid-template-columns:repeat(3,1fr)}
   #rdMap{height:200px}
+  .onb-title{font-size:32px}
 }
+
 </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- ======= STRANSKA VRSTICA ======= -->
-  <aside class="sidebar">
-    <div class="logo">
-      <div class="logo-mark">💪</div>
-      <div class="logo-name">FORMA Trener<small>razkrij mišico pod maščobo</small></div>
-    </div>
-    <nav class="nav">
-      <div class="nav-item active" data-tab="dash"><span class="ic">📊</span> Nadzorna plošča</div>
-      <div class="nav-item" data-tab="plan"><span class="ic">📅</span> Tedenski plan</div>
-      <div class="nav-item" data-tab="koledar"><span class="ic">🗓️</span> Koledar</div>
-      <div class="nav-item" data-tab="forma"><span class="ic">💪</span> Moč — FORMA</div>
-      <div class="nav-item" data-tab="kalorije"><span class="ic">🍎</span> Kalorije</div>
-      <div class="nav-item" data-tab="settings"><span class="ic">⚙️</span> Nastavitve</div>
-    </nav>
-    <div class="side-foot">
-      <div class="form-badge">
-        <div class="lbl">Trenutna forma</div>
-        <div class="val" id="sbFormVal">–</div>
-        <div class="desc" id="sbFormDesc">Dodaj vožnje za izračun</div>
+  <!-- ======= ZGORNJA VRSTICA ======= -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="logo">
+        <div class="logo-mark"></div>
+        <div class="logo-name">PEAKFORM</div>
       </div>
-      <div style="text-align:center;font-size:10.5px;color:var(--dim);margin-top:8px">Trener AI · v2.9</div>
+      <nav class="nav">
+        <div class="nav-item active" data-tab="dash">Pregled</div>
+        <div class="nav-item" data-tab="rides">Aktivnosti</div>
+        <div class="nav-item" data-tab="plan">Plan</div>
+        <div class="nav-item" data-tab="koledar">Koledar</div>
+        <div class="nav-item" data-tab="kalorije">Prehrana</div>
+        <div class="nav-item" data-tab="forma">Moč</div>
+        <div class="nav-item" data-tab="porocila">Poročila</div>
+        <div class="nav-item" data-tab="settings">Nastavitve</div>
+      </nav>
     </div>
-  </aside>
+    <div class="topbar-right">
+      <div class="tb-form" title="Svežina (TSB)">Forma <b id="sbFormVal">–</b><span id="sbFormDesc" style="display:none"></span></div>
+      <button class="cta-today" onclick="switchTab('plan')">Današnji trening →</button>
+      <div class="avatar" id="avatarInit" title="Profil" style="cursor:pointer" onclick="switchTab('settings')">?</div>
+    </div>
+  </header>
 
   <!-- ======= GLAVNI DEL ======= -->
   <main class="main">
 
-    <!-- ===== NADZORNA PLOŠČA ===== -->
+    <!-- ===== PREGLED ===== -->
     <section class="tab active" id="tab-dash">
       <div class="page-head head-row">
         <div>
-          <h1 id="dashHello">Zdravo! 👋</h1>
+          <h1 id="dashHello">Pregled</h1>
           <p id="dashSub">Pregled tvoje forme in treningov</p>
         </div>
         <div class="row">
-          <button class="btn btn-ghost" onclick="syncAll()" title="Sinhroniziraj s Stravo/Intervals">⟳</button>
-          <button class="btn btn-primary" onclick="openRideModal()">+ Dodaj vožnjo</button>
+          <span class="head-date" id="dashDate"></span>
+          <button class="btn btn-ghost btn-sm" onclick="syncAll()" title="Sinhroniziraj s Stravo/Intervals">⇅</button>
+          <button class="btn btn-primary btn-sm" onclick="openRideModal()">+ Aktivnost</button>
         </div>
       </div>
 
       <div id="onboardCard"></div>
-      <div id="coachReport"></div>
       <div class="grid-stats" id="dashStats"></div>
 
-      <div class="grid-2">
+      <div class="grid-dash3">
         <div class="card">
-          <h3>Forma (zadnjih 90 dni) <span class="sub">Kondicija · Utrujenost · Svežina</span></h3>
+          <h3>Forma · zadnjih 90 dni <span class="sub">kondicija · utrujenost · svežina</span></h3>
           <div style="position:relative;height:225px"><canvas id="chartForm"></canvas></div>
         </div>
         <div class="card">
-          <h3>Tedenski obseg <span class="sub">ure na teden</span></h3>
-          <div style="position:relative;height:225px"><canvas id="chartWeekly"></canvas></div>
+          <h3>Tedenski plan</h3>
+          <div id="dashWeekPlan"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <div id="coachReport"></div>
+          <div class="card" style="flex:1">
+            <h3>Zadnja aktivnost</h3>
+            <div id="lastAct"></div>
+          </div>
         </div>
       </div>
 
-      <div class="grid-2 mt">
-        <div class="card" style="padding:0">
-          <h3 style="padding:18px 20px 0">Zadnje vožnje</h3>
-          <div id="dashRides"></div>
-        </div>
+      <div class="grid-2">
         <div class="card">
-          <h3>Danes na planu</h3>
-          <div id="dashToday"></div>
+          <h3>Tedenski obseg <span class="sub">ure na teden</span></h3>
+          <div style="position:relative;height:205px"><canvas id="chartWeekly"></canvas></div>
+        </div>
+        <div class="card" style="padding:0">
+          <h3 style="padding:14px 16px 0">Zadnje aktivnosti</h3>
+          <div id="dashRides"></div>
         </div>
       </div>
 
       <div class="card mt" id="riderCard"></div>
     </section>
-    <!-- ===== VOŽNJE ===== -->
+    <!-- ===== AKTIVNOSTI ===== -->
     <section class="tab" id="tab-rides">
       <div class="page-head head-row">
         <div>
-          <h1>Vožnje</h1>
-          <p>Prilepi screenshot (Ctrl+V), povleci sliko sem ali vnesi ročno</p>
+          <h1>Aktivnosti</h1>
+          <p>Samodejno iz Strave/Intervals · prilepi screenshot ali vnesi ročno</p>
         </div>
         <div class="row">
-          <button class="btn btn-ghost" id="btnStravaImport" onclick="syncAll()">⟳ Sinhroniziraj</button>
-          <button class="btn btn-primary" onclick="openRideModal()">+ Dodaj vožnjo</button>
+          <button class="btn btn-ghost" id="btnStravaImport" onclick="syncAll()">⇅ Sinhroniziraj</button>
+          <button class="btn btn-primary" onclick="openRideModal()">+ Dodaj aktivnost</button>
         </div>
       </div>
 
-      <div class="dropzone mb" id="dropzone" onclick="document.getElementById('fileInput').click()">
-        <span class="big">📸</span>
-        <b>Prilepi screenshot ture</b> (Ctrl+V kjerkoli) ali <b>klikni / povleci sliko sem</b><br>
-        <span style="font-size:12.5px">Gemini bo sam prebral razdaljo, čas, višince, utrip …</span>
-        <input type="file" id="fileInput" accept="image/*" style="display:none" multiple>
-      </div>
-
-      <div class="card" style="padding:0">
+      <div class="card mb" style="padding:0">
         <div class="rides-head">
-          <div></div><div>Vožnja</div>
+          <div></div><div>Aktivnost</div>
           <div style="text-align:center">Razdalja</div>
           <div style="text-align:center">Čas</div>
           <div style="text-align:center" class="hide-sm">Višinci</div>
-          <div style="text-align:center" class="hide-sm">Utrip</div>
-          <div style="text-align:center">Obrem.</div><div></div>
+          <div style="text-align:center" class="hide-sm">Srčni utrip</div>
+          <div style="text-align:center">TSS</div><div></div>
         </div>
         <div id="ridesList"></div>
+      </div>
+
+      <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+        <span class="big">📸</span>
+        <b>Prilepi screenshot s kolesarskega računalnika</b> (Ctrl+V kjerkoli) ali <b>klikni / povleci sliko sem</b><br>
+        <span style="font-size:12px">AI sam prebere razdaljo, čas, višince, utrip …</span>
+        <input type="file" id="fileInput" accept="image/*" style="display:none" multiple>
       </div>
     </section>
 
@@ -488,7 +556,7 @@ h2#calLabel{letter-spacing:-.02em}
           <button class="btn btn-ghost btn-sm" onclick="shiftWeek(0)">Aktualni</button>
           <button class="btn btn-ghost btn-sm" onclick="shiftWeek(1)">Naslednji ›</button>
           <button class="btn btn-danger btn-sm" id="btnDelPlan" onclick="deleteViewedPlan()" style="display:none">🗑 Izbriši plan</button>
-          <button class="btn btn-primary" id="btnGenPlan" onclick="generatePlan()">✨ Generiraj plan</button>
+          <button class="btn btn-primary" id="btnGenPlan" onclick="generatePlan()">⟳ Generiraj nov teden</button>
           <button class="btn btn-ghost" id="btnMacro" onclick="generateMacro()">🎯 Plan do cilja</button>
         </div>
       </div>
@@ -514,8 +582,8 @@ h2#calLabel{letter-spacing:-.02em}
     <section class="tab" id="tab-koledar">
       <div class="page-head head-row">
         <div>
-          <h1>Koledar</h1>
-          <p>Samo za pregled — kaj si v preteklosti že naredil in kaj je plan ta teden. Klikni dan za podrobnosti.</p>
+          <h1 id="calLabel">Koledar</h1>
+          <p>Opravljeno in plan · klikni dan za podrobnosti</p>
         </div>
         <div class="row">
           <button class="btn btn-ghost btn-sm" onclick="shiftCal(-1)">‹</button>
@@ -523,18 +591,20 @@ h2#calLabel{letter-spacing:-.02em}
           <button class="btn btn-ghost btn-sm" onclick="shiftCal(1)">›</button>
         </div>
       </div>
-      <h2 id="calLabel" style="font-size:19px;font-weight:800;margin-bottom:10px"></h2>
       <div id="macroBar"></div>
       <div class="cal-head"><div>Pon</div><div>Tor</div><div>Sre</div><div>Čet</div><div>Pet</div><div>Sob</div><div>Ned</div></div>
       <div class="cal-grid" id="calGrid"></div>
     </section>
 
-    <!-- ===== FORMA: MOČ ===== -->
+    <!-- ===== MOČ ===== -->
     <section class="tab" id="tab-forma">
-      <div class="page-head">
-        <h1>FORMA — moč</h1>
-        <p>🎯 Progresija do <b>MUSCLE-UPA</b>: sklece, zgibi, dipsi, trebušnjaki — težavnost se prilagaja počutju (barvna pikica)</p>
+      <div class="page-head head-row">
+        <div>
+          <h1>Moč</h1>
+          <p>Progresija do muscle-upa · težavnost se prilagaja dnevnemu počutju</p>
+        </div>
       </div>
+      <div class="card mb path-card" id="mocPath"></div>
       <div class="grid-2">
         <div class="card">
           <h3>Današnji trening moči <span class="sub" id="formaDotLbl"></span></h3>
@@ -567,20 +637,78 @@ h2#calLabel{letter-spacing:-.02em}
 
     <!-- ===== NASTAVITVE ===== -->
     <section class="tab" id="tab-kalorije">
-      <div class="row mb" style="justify-content:space-between;align-items:center">
-        <h2 style="margin:0">🍎 Kalorije <span class="sub">sinhronizirano s telefonom</span></h2>
-        <div class="row" style="gap:8px">
+      <div class="page-head head-row">
+        <div>
+          <h1>Prehrana</h1>
+          <p id="kalSub">Današnji vnos, cilji in obroki — sinhronizirano s telefonom</p>
+        </div>
+        <div class="row">
+          <span style="font-size:12px;color:var(--muted);border:1px solid var(--border2);padding:8px 13px">📱 Obrok slikaš v telefonski aplikaciji — tu se pojavi samodejno</span>
           <button class="btn btn-ghost btn-sm" onclick="renderKalorije()">⟳ Osveži</button>
           <button class="btn btn-primary btn-sm" onclick="kalManualAdd()">+ Ročni vnos</button>
         </div>
       </div>
       <div id="kalBody"></div>
-      <p class="hint" style="margin-top:10px">📸 Fotografiranje hrane je v telefonski aplikaciji <b>KalorijeAI</b> — tukaj vidiš sinhroniziran pregled. Poveži prek 🔵 Google sinhronizacije v Nastavitvah.</p>
     </section>
+    <!-- ===== POROČILA ===== -->
+    <section class="tab" id="tab-porocila">
+      <div class="page-head head-row">
+        <div>
+          <h1>Poročila</h1>
+          <p>Mesečni napredek — deli s trenerjem, zdravnikom ali prijatelji</p>
+        </div>
+        <div class="row no-print">
+          <button class="btn btn-ghost" onclick="window.print()">↓ PDF</button>
+          <button class="btn btn-primary" onclick="porociloCopy()">⤴ Kopiraj povzetek</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:12px" id="porGrid">
+        <div>
+          <div class="card mb">
+            <h3 id="porTitle">Povzetek meseca</h3>
+            <div id="porBody"></div>
+            <div id="porAI"></div>
+            <div class="row mt no-print">
+              <button class="btn btn-ghost btn-sm" id="btnPorAI" onclick="porociloAI()">✨ AI ocena meseca</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Prejšnji meseci</h3>
+            <div id="porHist"></div>
+          </div>
+        </div>
+        <div class="card" style="display:flex;flex-direction:column">
+          <h3>AI trener — vprašaj karkoli</h3>
+          <div class="chat-box" id="chatBox" style="flex:1"></div>
+          <div class="chat-input no-print">
+            <input id="chatInput" placeholder="Napiši sporočilo …" onkeydown="if(event.key==='Enter')chatSend()">
+            <button class="btn btn-primary" id="btnChat" onclick="chatSend()">→</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="tab" id="tab-settings">
       <div class="page-head">
         <h1>Nastavitve</h1>
-        <p>Profil, Gemini API in povezava s Stravo</p>
+        <p>Profil, nivo, povezave in podatki</p>
+      </div>
+
+      <div class="set-grid mb">
+        <div class="card">
+          <h3>Profil in nivo</h3>
+          <div id="lvlCards"></div>
+        </div>
+        <div>
+          <div class="card mb">
+            <h3>Povezave</h3>
+            <div id="connRows"></div>
+          </div>
+          <div class="card">
+            <h3>Naročnina</h3>
+            <div id="subCard"></div>
+          </div>
+        </div>
       </div>
 
       <div class="set-grid">
@@ -604,10 +732,9 @@ h2#calLabel{letter-spacing:-.02em}
             <label class="fld"><span>FTP – moč (W, če imaš merilec)</span><input type="number" id="pFtp" placeholder="npr. 250"></label>
             <label class="fld"><span>Nivo</span>
               <select id="pNivo">
-                <option value="začetnik">Začetnik</option>
-                <option value="rekreativni" selected>Rekreativni</option>
-                <option value="resen rekreativec">Resen rekreativec</option>
-                <option value="tekmovalec">Tekmovalec</option>
+                <option value="postani fit">Postani fit</option>
+                <option value="rekreativec+" selected>Rekreativec+</option>
+                <option value="treniraj kot pro">Treniraj kot pro</option>
               </select>
             </label>
             <label class="fld"><span>Ur na teden (cilj)</span><input type="number" id="pUre" value="6"></label>
@@ -773,6 +900,23 @@ h2#calLabel{letter-spacing:-.02em}
   </div>
 </div>
 
+<!-- ======= ONBOARDING (prvi zagon) ======= -->
+<div class="onb-back" id="onbBack">
+  <div class="onb-wrap">
+    <div class="onb-head">
+      <div class="logo-mark" style="width:28px;height:28px"></div>
+      <div class="logo-name" style="font-size:20px">PEAKFORM</div>
+      <div style="margin-left:auto;font-size:12px;color:var(--dim)">Korak <span id="onbStep">1</span> od 3</div>
+    </div>
+    <div class="onb-prog"><i id="onbP1" class="on"></i><i id="onbP2"></i><i id="onbP3"></i></div>
+    <div id="onbBody"></div>
+    <div class="onb-foot">
+      <button class="btn btn-ghost" id="onbBackBtn" onclick="onbGo(-1)" style="visibility:hidden">← Nazaj</button>
+      <button class="btn btn-primary" id="onbNextBtn" onclick="onbGo(1)">Naprej →</button>
+    </div>
+  </div>
+</div>
+
 <div class="toasts" id="toasts"></div>
 
 <script>
@@ -783,7 +927,7 @@ const DB_KEY = 'forma_trener_v1';
 const defaultState = () => ({
   settings: {
     geminiKey:'', geminiModel:'gemini-flash-latest', proxy:'',
-    profile:{ ime:'', starost:null, spol:'moški', visina:null, teza:null, bf:null, maxHr:null, restHr:null, lthr:null, ftp:null, shema:5, nivo:'rekreativni', ure:6, cilj:'', ciljDatum:null, ciljTeza:null }
+    profile:{ ime:'', starost:null, spol:'moški', visina:null, teza:null, bf:null, maxHr:null, restHr:null, lthr:null, ftp:null, shema:5, nivo:'rekreativec+', ure:6, cilj:'', ciljDatum:null, ciljTeza:null }
   },
   strava:{ clientId:'', clientSecret:'', accessToken:'', refreshToken:'', expiresAt:0, athleteName:'' },
   icu:{ athleteId:'', apiKey:'', name:'' },
@@ -807,6 +951,9 @@ try{
   }
 }catch(_){}
 state.forma = Object.assign(defaultState().forma, state.forma||{});
+// migracija nivojev na PEAKFORM (3 nivoji)
+{ const _nm={ 'začetnik':'postani fit','zacetnik':'postani fit','rekreativni':'rekreativec+','resen rekreativec':'rekreativec+','tekmovalec':'treniraj kot pro' };
+  const _n=state.settings?.profile?.nivo; if(_n && _nm[_n]) state.settings.profile.nivo=_nm[_n]; }
 for (const p of state.plans||[]) if (p.weekStart && !p.start) p.start = p.weekStart;  // migracija starih planov
 const save = () => {
   state._ts = Date.now();
@@ -920,8 +1067,10 @@ document.querySelectorAll('.nav-item').forEach(el=>{
 function switchTab(name){
   document.querySelectorAll('.nav-item').forEach(e=>e.classList.toggle('active', e.dataset.tab===name));
   document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('active', e.id==='tab-'+name));
-  if (name==='plan'){ renderWeather(); setTimeout(()=>{ document.querySelector('.day-card.today')?.scrollIntoView({behavior:'smooth',block:'center'}); },200); }
+  if (name==='plan'){ renderWeather(); setTimeout(()=>{ document.querySelector('.day-row.today,.day-card.today')?.scrollIntoView({behavior:'smooth',block:'center'}); },200); }
   if (name==='kalorije') renderKalorije();
+  if (name==='porocila') renderPorocila();
+  if (name==='settings') renderSetExtras();
 }
 
 /* ================================================================
@@ -937,13 +1086,50 @@ function renderSidebar(){
   $('sbFormDesc').textContent = f.opis;
 }
 
+function pripravljenost(){
+  const f = currentForm();
+  let s = 65;
+  if (f){ s += Math.max(-30, Math.min(15, f.tsb)); if (f.ctl >= 50) s += 8; else if (f.ctl >= 30) s += 4; }
+  else s = 50;
+  s -= [0,8,18,30][sorenessNow()]||0;
+  const rp = planRealizacija();
+  if (rp){ if (rp.pct>=80) s += 6; else if (rp.pct<40) s -= 4; }
+  return Math.max(5, Math.min(100, Math.round(s)));
+}
+function tedenInfo(){
+  const wsIso = isoDate(weekStart(new Date()));
+  if (state.macro?.weeks?.length){
+    const i = state.macro.weeks.findIndex(w=>w.zacetek===wsIso);
+    if (i>-1) return { n:i+1, tot:state.macro.weeks.length };
+  }
+  const p = state.settings.profile;
+  if (p.ciljDatum){
+    const left = Math.max(0, Math.ceil((parseIso(p.ciljDatum)-new Date())/(7*864e5)));
+    return { left };
+  }
+  return null;
+}
 function renderDash(){
   const p = state.settings.profile;
-  $('dashHello').textContent = p.ime ? `Zdravo, ${p.ime}! 👋` : 'Zdravo! 👋';
+  const ti = tedenInfo();
+  const ph0 = macroPhaseFor(isoDate(weekStart(new Date())));
+  if (ti && ti.tot){
+    $('dashHello').innerHTML = `Teden ${ti.n} <span class="hl">/${ti.tot}</span>`;
+    $('dashSub').textContent = [ph0?ph0.faza:null, p.cilj?('cilj: '+p.cilj.slice(0,40)):null, 'nivo '+(p.nivo||'')].filter(Boolean).join(' · ');
+  } else if (ti && ti.left!=null){
+    $('dashHello').innerHTML = `Še ${ti.left} <span class="hl">tednov</span>`;
+    $('dashSub').textContent = [p.cilj?('cilj: '+p.cilj.slice(0,50)):('do '+p.ciljDatum), 'nivo '+(p.nivo||'')].filter(Boolean).join(' · ');
+  } else {
+    $('dashHello').textContent = p.ime ? `Zdravo, ${p.ime}` : 'Pregled';
+    $('dashSub').textContent = 'Pregled tvoje forme in treningov · nivo ' + (p.nivo||'rekreativec+');
+  }
+  const now = new Date();
+  $('dashDate').textContent = `${DNEVI[(now.getDay()+6)%7].slice(0,3)} ${now.getDate()} ${MESECI[now.getMonth()]} ${now.getFullYear()}`.toUpperCase();
+  const av = $('avatarInit'); if (av) av.textContent = (p.ime||'?').charAt(0).toUpperCase();
 
   // vodič za začetek
   const steps = [
-    { ok: !!state.settings.geminiKey, t:'Vpiši Gemini API ključ (brezplačen na aistudio.google.com)', tab:'settings' },
+    { ok: !!state.settings.geminiKey || !!(window.FORMASYNC && FORMASYNC.uid && FORMASYNC.uid()), t:'Vklopi AI: prijava z Googlom (10 dejanj/dan zastonj) ali lasten Gemini ključ', tab:'settings' },
     { ok: state.rides.length>0, t:'Dodaj vožnje — poveži Stravo/Intervals.icu ali prilepi screenshot', tab:'rides' },
     { ok: !!(p.maxHr || p.ftp), t:'Dopolni profil (max utrip ali FTP → cone za treninge)', tab:'settings' },
     { ok: !!state.riderProfile, t:'Zaženi AI analizo: kakšen kolesar si', tab:'dash' },
@@ -957,37 +1143,69 @@ function renderDash(){
   const thisWeek = state.rides.filter(r=> r.date>=wsIso && r.date<=weIso);
   const km   = thisWeek.reduce((a,r)=>a+(+r.dist||0),0);
   const min  = thisWeek.reduce((a,r)=>a+(+r.time||0),0);
-  const tssW = thisWeek.reduce((a,r)=>a+(r.tss||0),0);
   const f = currentForm();
+  const prip = pripravljenost();
+  let eaten=null, kcalCilj=null;
+  try{
+    const kal=kalData(); const entries=(kal?.days?.[todayIso()]?.entries)||[];
+    if (kal) eaten = Math.round(entries.reduce((a,e)=>a+(+e.kcal||0),0));
+    const day0=planDayFor(todayIso());
+    const t0=tdee();
+    kcalCilj = day0?.kcal_vnos || (t0? Math.round(t0 - (goalDeficit()?.deficit||290)) : null);
+  }catch(_){}
+  const hM = Math.floor(min/60), mM = Math.round(min%60);
+  const s7 = formSeries(); const prev7 = s7.length>8? s7[s7.length-8] : null;
+  const tsbD = (f&&prev7)? (f.tsb - prev7.tsb) : 0;
 
   $('dashStats').innerHTML = `
-    <div class="card stat"><div class="k">Ta teden</div><div class="v">${km.toFixed(0)} <small>km</small></div><div class="t">${thisWeek.length} voženj</div></div>
-    <div class="card stat"><div class="k">Čas ta teden</div><div class="v">${fmtDur(min)}</div><div class="t">cilj: ${p.ure||'?'} h</div></div>
-    <div class="card stat"><div class="k">Obremenitev tedna</div><div class="v">${tssW} <small>TSS</small></div><div class="t">skupna doza treninga</div></div>
-    <div class="card stat"><div class="k">Kondicija (CTL)</div><div class="v">${f?f.ctl:'–'}</div><div class="t">dolgoročna pripravljenost</div></div>
-    <div class="card stat"><div class="k">Svežina (TSB)</div><div class="v" style="color:${f?f.barva:'inherit'}">${f?(f.tsb>0?'+':'')+f.tsb:'–'}</div><div class="t">${f?f.opis:'—'}</div></div>` +
-    (p.ciljDatum ? `<div class="card stat" style="border-color:rgba(252,76,2,.4)"><div class="k">🎯 Do cilja</div><div class="v">${Math.max(0,Math.round((parseIso(p.ciljDatum)-new Date())/864e5))} <small>dni</small></div><div class="t">${(p.ciljTeza&&p.teza)?`še ${Math.max(0,p.teza-p.ciljTeza).toFixed(1)} kg`:esc((p.cilj||'cilj').slice(0,28))}</div></div>` : '');
+    <div class="stat"><div class="k">Pripravljenost</div><div class="v">${prip}<small>/100</small></div><div class="bar"><i style="width:${prip}%;background:${prip>=70?'var(--green)':prip>=45?'var(--yellow)':'var(--acc)'}"></i></div></div>
+    <div class="stat"><div class="k">Forma</div><div class="v" style="color:${f?f.barva:'inherit'}">${f?(f.tsb>0?'+':'')+f.tsb:'–'}</div><div class="t" style="color:${tsbD>=0?'var(--green)':'var(--muted)'}">${f? (tsbD>1?'naraščaš':tsbD<-1?'padaš':'stabilno') : 'dodaj aktivnosti'}</div></div>
+    ${p.ftp?`<div class="stat"><div class="k">FTP</div><div class="v">${p.ftp} <small>W</small></div><div class="t">${p.teza?(p.ftp/p.teza).toFixed(1)+' W/kg':''}</div></div>`
+      :`<div class="stat"><div class="k">Kondicija</div><div class="v">${f?Math.round(f.ctl):'–'}</div><div class="t">CTL — dolgoročno</div></div>`}
+    <div class="stat"><div class="k">Ta teden</div><div class="v">${hM}:${pad(mM)}</div><div class="t">od ${p.ure||'?'} h plana · ${km.toFixed(0)} km</div></div>
+    <div class="stat"><div class="k">Kalorije</div><div class="v">${eaten!=null?eaten.toLocaleString('sl'):'–'}</div>${(eaten!=null&&kcalCilj)?`<div class="bar"><i style="width:${Math.min(100,Math.round(eaten/kcalCilj*100))}%;background:var(--acc)"></i></div>`:`<div class="t">poveži telefon</div>`}</div>
+    <div class="stat"><div class="k">Teža</div><div class="v">${p.teza??'–'}</div><div class="t">${(p.ciljTeza&&p.teza)?('še '+Math.max(0,(p.teza-p.ciljTeza)).toFixed(1)+' kg do cilja'):'kg'}</div></div>`;
 
-  // zadnje vožnje
+  renderDashWeekPlan();
+
   const last5 = [...state.rides].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
   $('dashRides').innerHTML = last5.length ? last5.map(rideRowHtml).join('')
-    : `<div class="empty"><span class="big">🚴</span>Še ni voženj. Prilepi screenshot ali dodaj ročno.</div>`;
+    : `<div class="empty"><span class="big">🚴</span>Še ni aktivnosti. Prilepi screenshot ali dodaj ročno.</div>`;
 
-  // danes na planu
-  const day = planDayFor(todayIso());
-  $('dashToday').innerHTML = day ? `
-    <span class="chip ${chipClass(day.tip)}">${esc(day.tip)}</span>
-    <div style="font-weight:800;font-size:16px;margin:9px 0 5px">${esc(day.naslov)}</div>
-    <div style="color:var(--muted);font-size:13.5px">${opisHtml(day.opis||'')}</div>
-    ${day.vaje?`<div style="font-size:12.5px;color:var(--muted);margin-top:6px">🏋️ ${esc(day.vaje)}</div>`:''}
-    ${day.kcal_vnos?`<div style="font-size:12.5px;color:var(--yellow);margin-top:4px">🔥 vnos ~${day.kcal_vnos} · poraba ~${day.kcal_poraba||'?'} kcal</div>`:''}
-    <div style="margin-top:10px;font-size:12.5px;color:var(--dim);font-weight:600">${fmtDur(day.trajanje_min)} · ~${day.tss_ocena||'?'} TSS</div>
-    <button class="btn btn-ghost btn-sm mt" onclick="switchTab('plan')">📅 Odpri tedenski plan</button>`
-    : `<div class="empty" style="padding:24px"><span class="big">📅</span>Za danes ni plana.<br><button class="btn btn-primary btn-sm mt" onclick="switchTab('plan')">Generiraj tedenski plan</button></div>`;
+  const la = last5[0];
+  $('lastAct').innerHTML = la ? `
+    <div style="font-weight:700;font-size:14px">${sportEmoji(la.sport)}${esc(la.name||'Aktivnost')}</div>
+    <div style="font-size:11.5px;color:var(--muted);margin-top:2px">${fmtDate(la.date)} · ${rideMeta(la)}</div>
+    <div style="height:3px;background:var(--border);margin-top:10px"><i style="display:block;height:100%;width:${Math.min(100,Math.round((la.tss||0)/1.5))}%;background:var(--blue)"></i></div>
+    <button class="btn btn-ghost btn-sm mt no-print" onclick="openRideDetail('${la.id}')">Podrobnosti</button>`
+    : `<div class="hint" style="margin:0">Ko dodaš prvo aktivnost, se pojavi tukaj.</div>`;
 
   renderCharts();
   renderRiderCard();
   renderCoachReport();
+}
+function renderDashWeekPlan(){
+  const el=$('dashWeekPlan'); if(!el) return;
+  const ws=weekStart(new Date()); const today=todayIso();
+  const stripes={intervali:'var(--acc)',vzdrzljivost:'var(--blue)',tempo:'var(--yellow)',regeneracija:'var(--green)',moc:'var(--purple)',pohod:'#5cd6d6',pocitek:'var(--border2)',gray:'var(--border2)'};
+  const rows=[];
+  let any=false;
+  for(let i=0;i<7;i++){
+    const iso=isoDate(addDays(ws,i));
+    const d=planDayFor(iso);
+    if(d) any=true;
+    const done=(d&&d.done)||state.rides.some(r=>r.date===iso);
+    const isToday=iso===today;
+    const stripe = d? (stripes[chipClass(d.tip)]||'var(--border2)') : 'var(--border2)';
+    rows.push(`<div style="display:flex;gap:9px;align-items:center;font-size:12px;${isToday?'background:rgba(255,61,46,.08);margin:0 -8px;padding:4px 8px;border:1px solid rgba(255,61,46,.3)':'padding:4px 0'}">
+      <span style="width:3px;height:15px;background:${stripe};flex:none"></span>
+      <span style="color:var(--dim);width:30px;font-weight:700;flex:none">${DNEVI[i].slice(0,3).toUpperCase()}</span>
+      <span style="font-weight:${isToday?'700':'600'};color:${isToday?'var(--acc2)':'inherit'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">${d?esc(d.naslov||d.tip):'—'}</span>
+      <span style="margin-left:auto;color:var(--green);flex:none">${done?'✓':''}</span>
+    </div>`);
+  }
+  el.innerHTML = any? `<div style="display:flex;flex-direction:column;gap:7px">${rows.join('')}</div>`
+    : `<div class="hint" style="margin:6px 0 10px">Za ta teden še ni plana.</div><button class="btn btn-primary btn-sm no-print" onclick="switchTab('plan')">⟳ Generiraj plan</button>`;
 }
 
 /* ================================================================
@@ -1030,7 +1248,7 @@ function renderCoachReport(){
   box.innerHTML = `<div class="card mb" style="border-color:rgba(252,76,2,.35);background:linear-gradient(135deg,rgba(252,76,2,.07),transparent)">
     <div class="head-row" style="align-items:flex-start">
       <div style="flex:1">
-        <h3 style="margin-bottom:6px">${mood} Trenerjevo poročilo <span class="sub">${new Date().toLocaleDateString('sl-SI',{weekday:'long'})}</span></h3>
+        <h3 style="margin-bottom:6px">${mood} AI trener <span class="sub">${new Date().toLocaleDateString('sl-SI',{weekday:'long'})}</span></h3>
         <div style="font-size:14.5px;line-height:1.55">${esc(msg)}</div>
         <div style="font-size:12.5px;color:var(--muted);margin-top:8px">
           ${trendTxt}${f?` · svežina <b style="color:${f.barva}">${f.tsb>0?'+':''}${f.tsb}</b> (${esc(f.opis)})`:''}${rp?` · plan ${rp.pct}%`:''}
@@ -1059,9 +1277,9 @@ Vrni SAMO čisto besedilo, brez naslova.`}], {json:false, temp:.6});
 
 function renderCharts(){
   if (typeof Chart === 'undefined') return;
-  Chart.defaults.color = '#8b9bab';
-  Chart.defaults.borderColor = 'rgba(45,61,80,.5)';
-  Chart.defaults.font.family = 'Inter, sans-serif';
+  Chart.defaults.color = '#9a939f';
+  Chart.defaults.borderColor = 'rgba(56,51,62,.5)';
+  Chart.defaults.font.family = 'Barlow, sans-serif';
 
   const s = formSeries().slice(-90);
   if (chartFormObj) chartFormObj.destroy();
@@ -1071,11 +1289,11 @@ function renderCharts(){
       datasets:[
         {label:'Kondicija', data:s.map(x=>x.ctl), borderColor:'#4da3ff', backgroundColor:'rgba(77,163,255,.12)', fill:true, tension:.35, pointRadius:0, borderWidth:2},
         {label:'Utrujenost', data:s.map(x=>x.atl), borderColor:'#ffc247', tension:.35, pointRadius:0, borderWidth:2},
-        {label:'Svežina', data:s.map(x=>x.tsb), borderColor:'#3fce6b', tension:.35, pointRadius:0, borderWidth:2, borderDash:[5,4]}
+        {label:'Svežina', data:s.map(x=>x.tsb), borderColor:'#5fd67a', tension:.35, pointRadius:0, borderWidth:2, borderDash:[5,4]}
       ]},
     options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
       plugins:{legend:{labels:{boxWidth:10,boxHeight:10,usePointStyle:true}}},
-      scales:{x:{ticks:{maxTicksLimit:9},grid:{display:false}}, y:{grid:{color:'rgba(45,61,80,.35)'}}} }
+      scales:{x:{ticks:{maxTicksLimit:9},grid:{display:false}}, y:{grid:{color:'rgba(56,51,62,.35)'}}} }
   });
 
   // tedenski obseg — zadnjih 8 tednov
@@ -1090,9 +1308,9 @@ function renderCharts(){
   chartWeeklyObj = new Chart($('chartWeekly'), {
     type:'bar',
     data:{ labels:weeks.map(w=>w.lbl), datasets:[{label:'ur', data:weeks.map(w=>w.h),
-      backgroundColor:weeks.map((w,i)=> i===weeks.length-1 ? '#fc4c02' : 'rgba(252,76,2,.45)'), borderRadius:6, maxBarThickness:34}]},
+      backgroundColor:weeks.map((w,i)=> i===weeks.length-1 ? '#ff3d2e' : 'rgba(255,61,46,.4)'), borderRadius:0, maxBarThickness:34}]},
     options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
-      scales:{x:{grid:{display:false}}, y:{grid:{color:'rgba(45,61,80,.35)'}, title:{display:true,text:'ure'}}} }
+      scales:{x:{grid:{display:false}}, y:{grid:{color:'rgba(56,51,62,.35)'}, title:{display:true,text:'ure'}}} }
   });
 }
 
@@ -1124,7 +1342,7 @@ function rideRowHtml(r){
     <div class="ride-met"><div class="a">${fmtDur(r.time)}</div><div class="b">čas</div></div>
     <div class="ride-met hide-sm"><div class="a">${r.elev!=null?Math.round(r.elev):'–'}</div><div class="b">m</div></div>
     <div class="ride-met hide-sm"><div class="a">${r.avgHr||'–'}</div><div class="b">utrip</div></div>
-    <div style="text-align:center"><span class="chip orange">${r.tss||0} TSS</span></div>
+    <div class="ride-tss">${r.tss||0}</div>
     <div class="ride-acts">
       <button class="icon-btn" title="Oceni turo z AI" onclick="event.stopPropagation();evalRide('${r.id}')">✨</button>
       <button class="icon-btn" title="Uredi" onclick="event.stopPropagation();openRideModal('${r.id}')">✎</button>
@@ -1752,7 +1970,7 @@ Vrni SAMO JSON:
    KOLEDAR
 ================================================================ */
 let calOffset = 0;
-const FAZA_BARVE = ['#4da3ff','#b48cff','#ffc247','#fc4c02','#3fce6b','#ff5c5c','#5cd6d6'];
+const FAZA_BARVE = ['#4da3ff','#b48cff','#ffc247','#ff3d2e','#5fd67a','#ff5c5c','#5cd6d6'];
 function fazaColor(faza){
   if (!state.macro?.weeks) return null;
   const fs = [...new Set(state.macro.weeks.map(w=>w.faza))];
@@ -2068,7 +2286,7 @@ async function fetchStreams(r){
 const rdChOpt = (xl,yl) => ({ responsive:true, maintainAspectRatio:false, animation:false,
   plugins:{ legend:{display:false} }, interaction:{mode:'index',intersect:false},
   scales:{ x:{ title:{display:true,text:xl}, ticks:{maxTicksLimit:8}, grid:{display:false} },
-           y:{ title:{display:true,text:yl}, grid:{color:'rgba(45,61,80,.35)'} } } });
+           y:{ title:{display:true,text:yl}, grid:{color:'rgba(56,51,62,.35)'} } } });
 function cleanupRideDetail(){
   if (rdMap){ try{ rdMap.remove(); }catch(_){} rdMap=null; }
   rdCharts.forEach(c=>{ try{ c.destroy(); }catch(_){} }); rdCharts=[];
@@ -2108,8 +2326,8 @@ async function openRideDetail(id){
       const pts = decodePolyline(r.polyline);
       rdMap = L.map('rdMap', { attributionControl:false });
       L.tileLayer('https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', { maxZoom:19 }).addTo(rdMap);
-      const pl = L.polyline(pts, { color:'#fc4c02', weight:3.5 }).addTo(rdMap);
-      L.circleMarker(pts[0], {radius:5,color:'#3fce6b',fillColor:'#3fce6b',fillOpacity:1}).addTo(rdMap);
+      const pl = L.polyline(pts, { color:'#ff3d2e', weight:3.5 }).addTo(rdMap);
+      L.circleMarker(pts[0], {radius:5,color:'#5fd67a',fillColor:'#5fd67a',fillOpacity:1}).addTo(rdMap);
       L.circleMarker(pts[pts.length-1], {radius:5,color:'#ff5c5c',fillColor:'#ff5c5c',fillOpacity:1}).addTo(rdMap);
       rdMap.fitBounds(pl.getBounds(), { padding:[20,20] });
     }catch(e){ console.warn('Zemljevid:', e); }
@@ -2363,13 +2581,13 @@ function fillSettings(){
   $('pCiljDatum').value=p.ciljDatum||''; $('pCiljTeza').value=p.ciljTeza??'';
   $('pLthr').value=p.lthr??''; $('pFtp').value=p.ftp??''; $('pShema').value=String(p.shema||5);
   $('gKey').value=state.settings.geminiKey||''; $('gModel').value=state.settings.geminiModel||'gemini-flash-latest';
-  renderZones(); renderStrava(); renderIcu();
+  renderZones(); renderStrava(); renderIcu(); renderSetExtras();
 }
 function exportData(){
   const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `kolesarski-trener-kopija-${todayIso()}.json`;
+  a.download = `peakform-kopija-${todayIso()}.json`;
   a.click(); URL.revokeObjectURL(a.href);
 }
 $('importFile').addEventListener('change', e=>{
@@ -2531,6 +2749,13 @@ function formaExercises(){
 function renderForma(){
   const box=$('formaWorkout'); if(!box) return;
   const f=state.forma, d=formaDotInfo(), sor=sorenessNow();
+  const pathEl=$('mocPath');
+  if(pathEl){
+    const pct=Math.min(100,Math.round((f.level-1)/9*100));
+    pathEl.innerHTML=`<div class="spread"><h3 style="margin:0">Pot do muscle-upa</h3><span class="pct">${pct} %</span></div>
+      <div class="path-bar"><i style="width:${Math.max(3,pct)}%"></i></div>
+      <div class="path-marks"><span>OSNOVE</span><span>ZGIBI + DIPSI</span><span>EKSPLOZIVNI ZGIB</span><span>NEGATIVNI MU</span><span>MUSCLE-UP</span></div>`;
+  }
   $('formaDotLbl').innerHTML = `<span class="dot ${d.c}"></span>${d.t} · nivo ${f.level}`;
   const doneToday = f.history.some(h=>h.date===todayIso());
   box.innerHTML =
@@ -2627,27 +2852,53 @@ function kalMacros(entries){
   }
   return {p:Math.round(p),c:Math.round(c),f:Math.round(f),has};
 }
+function kalEmoji(e){
+  const n=(e.jed||e.name||e.ime||'').toLowerCase();
+  if(/zajtrk|jajc|ovsen|kosmi|jogurt|granola|kruh|maslo/.test(n)) return '🍳';
+  if(/solat|zelenjav|piščan|piscan|riž|riz|kosilo|meso|testenin|juha/.test(n)) return '🥗';
+  if(/banan|sadje|jabolk|prigrizek|malica|oreh|mandlj/.test(n)) return '🍌';
+  if(/napitek|shake|beljakovin|protein|mleko|skuta/.test(n)) return '🥤';
+  if(/večerj|vecerj|losos|krompir|pica|pizza/.test(n)) return '🍲';
+  const h=new Date(e.ts||Date.now()).getHours();
+  return h<10?'🍳':h<15?'🥗':h<18?'🍌':'🍲';
+}
 function renderKalorije(){
   const box=$('kalBody'); if(!box) return;
   const kal=kalData();
-  if(!kal){ box.innerHTML=`<div class="analysis-box">Ni sinhroniziranih kalorij. Odpri <b>KalorijeAI</b> na telefonu in poveži 🔵 Google sinhronizacijo (Nastavitve) — podatki se pojavijo tukaj.</div>`; return; }
-  const entries=(kal.days?.[todayIso()]?.entries)||[];
+  const p=state.settings.profile;
+  const entries=(kal?.days?.[todayIso()]?.entries)||[];
   const eaten=Math.round(entries.reduce((a,e)=>a+(+e.kcal||0),0));
-  let maint=null; try{ const t=tdee(); if(t) maint=Math.round(t); }catch(_){}
-  const net=maint!=null?eaten-maint:null, mac=kalMacros(entries);
-  box.innerHTML=`
-   <div class="card">
-     <div class="row" style="gap:22px;flex-wrap:wrap;align-items:center">
-       <div style="text-align:center;min-width:120px"><div style="font-size:34px;font-weight:800;color:var(--acc2)">${eaten.toLocaleString('sl')}</div><div style="font-size:11px;color:var(--dim);text-transform:uppercase;font-weight:700">Pojedeno danes</div></div>
-       ${maint!=null?`<div style="text-align:center;min-width:110px"><div style="font-size:24px;font-weight:800">${maint.toLocaleString('sl')}</div><div style="font-size:11px;color:var(--dim);text-transform:uppercase;font-weight:700">Vzdrževanje</div></div>`:''}
-       ${net!=null?`<div style="text-align:center;min-width:110px"><div style="font-size:24px;font-weight:800;color:${net>0?'var(--yellow)':'var(--green)'}">${net>0?'+':''}${net.toLocaleString('sl')}</div><div style="font-size:11px;color:var(--dim);text-transform:uppercase;font-weight:700">Bilanca</div></div>`:''}
-     </div>
-     ${mac.has?`<div class="row" style="gap:18px;margin-top:14px;flex-wrap:wrap;font-size:14px"><div><span style="color:var(--dim)">Beljakovine</span> <b>${mac.p} g</b></div><div><span style="color:var(--dim)">Ogljikovi h.</span> <b>${mac.c} g</b></div><div><span style="color:var(--dim)">Maščobe</span> <b>${mac.f} g</b></div></div>`:''}
-   </div>
-   <div class="card">
-     <h3>Današnji obroki <span class="sub">${entries.length}</span></h3>
-     ${entries.length? entries.map(e=>`<div class="ex-row"><div class="nm">${esc(e.jed||e.name||e.ime||'Obrok')}</div><div class="rp">${Math.round(+e.kcal||0)} kcal</div></div>`).join('') : `<div class="hint">Danes še ni vnosov. Slikaj hrano na telefonu ali dodaj ročno.</div>`}
-   </div>`;
+  const day=planDayFor(todayIso());
+  const t=tdee();
+  const cilj = day?.kcal_vnos || (t? Math.round(t-(goalDeficit()?.deficit||290)) : null);
+  const mac=kalMacros(entries);
+  const prot = proteinTarget();
+  const fatT = p.teza? Math.round(p.teza*0.9) : null;
+  const ohT = (cilj&&prot&&fatT)? Math.max(0,Math.round((cilj - prot*4 - fatT*9)/4)) : null;
+  const cell=(k,vNum,unit,tgt,color)=>{
+    const pct = tgt? Math.min(100,Math.round((vNum||0)/tgt*100)) : 0;
+    return `<div class="stat"><div class="k">${k}</div><div class="v">${(vNum??0).toLocaleString('sl')}${unit?' '+unit:''}${tgt?` <small>/ ${tgt.toLocaleString('sl')}</small>`:''}</div>${tgt?`<div class="bar"><i style="width:${pct}%;background:${color}"></i></div>`:''}</div>`;
+  };
+  const stats = `<div class="grid-stats" style="grid-template-columns:repeat(4,1fr)">${
+    cell('Kalorije', eaten, '', cilj, 'var(--acc)')}${
+    cell('Beljakovine', mac.p, 'g', prot, 'var(--green)')}${
+    cell('Ogljikovi h.', mac.c, 'g', ohT, 'var(--blue)')}${
+    cell('Maščobe', mac.f, 'g', fatT, 'var(--yellow)')}</div>`;
+  const meals = entries.length? entries.map(e=>`
+    <div style="border:1px solid var(--border);background:var(--panel);padding:12px 16px;display:flex;align-items:center;gap:16px;margin-bottom:9px">
+      <div style="width:52px;height:52px;background:var(--border);display:grid;place-items:center;font-size:20px;flex-shrink:0">${kalEmoji(e)}</div>
+      <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px">${esc(e.jed||e.name||e.ime||'Obrok')}</div><div style="font-size:11.5px;color:var(--muted);margin-top:1px">${e.src==='forma-manual'?'Ročni vnos':'Prepoznano iz fotografije'}</div></div>
+      <div style="text-align:right"><div style="font-family:var(--bc);font-weight:800;font-size:19px">${Math.round(+e.kcal||0)}</div><div style="font-size:10px;color:var(--dim);font-weight:700">KCAL${e.ts?' · '+new Date(e.ts).toLocaleTimeString('sl-SI',{hour:'2-digit',minute:'2-digit'}):''}</div></div>
+    </div>`).join('') : `<div class="hint" style="margin:8px 0 12px">Danes še ni vnosov. Slikaj hrano na telefonu ali dodaj ročno.</div>`;
+  let sugg='';
+  if (cilj && eaten<cilj){
+    const rem=cilj-eaten, remP=Math.max(0,(prot||0)-mac.p);
+    const ideje = remP>25? 'losos ali piščanec + krompir + solata' : rem>500? 'piščanec z rižem in zelenjavo' : rem>250? 'skuta z jagodičevjem' : 'grški jogurt ali sadje';
+    sugg=`<div class="dropzone" style="cursor:default;padding:16px">Do cilja še <b>${rem.toLocaleString('sl')} kcal</b>${remP?` · beljakovin še ~<b>${remP} g</b>`:''} — predlog: <b>${ideje}</b></div>`;
+  } else if (cilj && eaten>=cilj){
+    sugg=`<div class="dropzone" style="cursor:default;padding:16px;border-color:rgba(95,214,122,.4)">Dnevni cilj dosežen (${eaten.toLocaleString('sl')} / ${cilj.toLocaleString('sl')} kcal) ✓</div>`;
+  }
+  box.innerHTML = (kal? '' : `<div class="analysis-box mb" style="margin-top:0">Ni sinhroniziranih podatkov s telefona — poveži 🔵 Google sinhronizacijo v Nastavitvah. Vnose lahko dodajaš tudi ročno tukaj.</div>`) + stats + meals + sugg;
 }
 function kalManualAdd(){
   const jed=prompt('Kaj si pojedel?'); if(!jed) return;
@@ -2670,7 +2921,7 @@ function renderSyncF(){
   const el = $('syncStatus2'); if (!el) return;
   const c = state.sync;
   el.innerHTML = c?.bin
-    ? `✅ Aktivna. <b>Koda za telefon:</b> <code style="user-select:all;background:#0e1520;padding:2px 7px;border-radius:6px">${c.bin}|${c.key}</code>`
+    ? `✅ Aktivna. <b>Koda za telefon:</b> <code style="user-select:all;background:#111013;padding:2px 7px;border-radius:6px">${c.bin}|${c.key}</code>`
     : 'Ni nastavljena — plan živi samo na tem računalniku.';
   if (c?.bin && $('sSyncF') && !$('sSyncF').value) $('sSyncF').value = c.bin+'|'+c.key;
 }
@@ -2771,9 +3022,215 @@ function syncPush(){
 }
 
 /* ================================================================
+   POROČILA + AI TRENER KLEPET
+================================================================ */
+function monthAgg(y,m){
+  const a=`${y}-${pad(m+1)}-01`, b=`${y}-${pad(m+1)}-31`;
+  const rs=state.rides.filter(r=>r.date>=a&&r.date<=b);
+  return { n:rs.length, km:rs.reduce((x,r)=>x+(+r.dist||0),0), min:rs.reduce((x,r)=>x+(+r.time||0),0),
+    tss:rs.reduce((x,r)=>x+(r.tss||0),0), moc:rs.filter(r=>r.sport==='moc').length };
+}
+function renderPorocila(){
+  const el=$('porBody'); if(!el) return;
+  const now=new Date(); const y=now.getFullYear(), m=now.getMonth();
+  const t=monthAgg(y,m);
+  const pm = m===0? monthAgg(y-1,11) : monthAgg(y,m-1);
+  const mn = now.toLocaleDateString('sl-SI',{month:'long'});
+  const tEl=$('porTitle'); if(tEl) tEl.textContent = (mn+' '+y+' — povzetek');
+  const hT=Math.floor(t.min/60), mT=Math.round(t.min%60);
+  const durD = t.min-pm.min;
+  const p=state.settings.profile;
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+      <div><div style="font-size:9.5px;font-weight:700;letter-spacing:.13em;color:var(--dim)">TRENINGI</div><div style="font-family:var(--bc);font-size:27px;font-weight:800">${t.n}</div><div style="font-size:11px;color:var(--muted)">${t.moc? t.moc+'× moč · ':''}${t.km.toFixed(0)} km</div></div>
+      <div><div style="font-size:9.5px;font-weight:700;letter-spacing:.13em;color:var(--dim)">SKUPAJ UR</div><div style="font-family:var(--bc);font-size:27px;font-weight:800">${hT}:${pad(mT)}</div><div style="font-size:11px;color:${durD>=0?'var(--green)':'var(--muted)'}">${durD>=0?'+':'−'}${Math.floor(Math.abs(durD)/60)}:${pad(Math.round(Math.abs(durD)%60))} vs prejšnji mesec</div></div>
+      <div><div style="font-size:9.5px;font-weight:700;letter-spacing:.13em;color:var(--dim)">OBREMENITEV</div><div style="font-family:var(--bc);font-size:27px;font-weight:800">${t.tss}</div><div style="font-size:11px;color:var(--muted)">TSS${p.teza?` · teža ${p.teza} kg`:''}</div></div>
+    </div>`;
+  const hist=[];
+  for(let i=1;i<=6;i++){
+    const d=new Date(y,m-i,1);
+    const a=monthAgg(d.getFullYear(),d.getMonth());
+    if(!a.n) continue;
+    hist.push(`<div style="display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:7px 0;border-bottom:1px solid var(--border)"><span style="font-weight:700;text-transform:capitalize">${d.toLocaleDateString('sl-SI',{month:'long',year:'numeric'})}</span><span style="color:var(--muted)">${a.n} tr. · ${(a.min/60).toFixed(0)} h · ${a.km.toFixed(0)} km · ${a.tss} TSS</span></div>`);
+  }
+  const hEl=$('porHist'); if(hEl) hEl.innerHTML = hist.length? hist.join('') : '<div class="hint" style="margin:4px 0">Zgodovina se pojavi z beleženjem aktivnosti.</div>';
+  renderChat();
+}
+async function porociloAI(){
+  const btn=$('btnPorAI'); busy(btn,true,'Pišem …');
+  try{
+    const now=new Date(); const t=monthAgg(now.getFullYear(),now.getMonth());
+    const txt=await gemini([{text:`Si moj trener. Napiši kratko oceno mojega meseca (4-6 stavkov, slovensko, konkretno): kaj je šlo dobro, kaj naj popravim, kaj je fokus naslednji mesec.
+Ta mesec: ${t.n} treningov, ${t.km.toFixed(0)} km, ${(t.min/60).toFixed(1)} h, ${t.tss} TSS, od tega ${t.moc} treningov moči.
+${buildContext()}
+Vrni samo čisto besedilo.`}],{json:false,temp:.6});
+    $('porAI').innerHTML=`<div class="analysis-box"><b>Ocena meseca:</b> ${nl2br(String(txt).trim())}</div>`;
+  }catch(e){ toast(e.message,'err'); }
+  busy(btn,false);
+}
+function porociloText(){
+  const now=new Date(); const t=monthAgg(now.getFullYear(),now.getMonth());
+  const p=state.settings.profile; const f=currentForm();
+  return `PEAKFORM — ${now.toLocaleDateString('sl-SI',{month:'long',year:'numeric'})}\n`+
+    `Treningi: ${t.n} (${t.moc}× moč) · ${(t.min/60).toFixed(1)} h · ${t.km.toFixed(0)} km · ${t.tss} TSS`+
+    (f?`\nForma: kondicija ${Math.round(f.ctl)}, svežina ${f.tsb>0?'+':''}${f.tsb}`:'')+
+    (p.teza?`\nTeža: ${p.teza} kg${p.ciljTeza?` (cilj ${p.ciljTeza} kg)`:''}`:'');
+}
+async function porociloCopy(){
+  try{ await navigator.clipboard.writeText(porociloText()); toast('Povzetek kopiran — prilepi ga kamor koli. ⤴','ok'); }
+  catch(_){ prompt('Kopiraj povzetek:', porociloText()); }
+}
+/* --- klepet z AI trenerjem --- */
+const CHAT_KEY='forma_chat';
+function chatLoad(){ try{ return JSON.parse(localStorage.getItem(CHAT_KEY)||'[]'); }catch(_){ return []; } }
+function chatSave(a){ try{ localStorage.setItem(CHAT_KEY, JSON.stringify(a.slice(-50))); }catch(_){} }
+function renderChat(){
+  const box=$('chatBox'); if(!box) return;
+  const msgs=chatLoad();
+  box.innerHTML = msgs.length? msgs.map(m=>`<div class="chat-msg ${m.r==='me'?'me':'ai'}">${esc(m.t)}<span class="cm">${m.r==='me'?'TI':'AI TRENER'} · ${new Date(m.ts).toLocaleTimeString('sl-SI',{hour:'2-digit',minute:'2-digit'})}</span></div>`).join('')
+    : `<div class="chat-msg ai">Živjo! Vprašaj me karkoli o treningu, prehrani ali napredku — poznam vse tvoje podatke.<span class="cm">AI TRENER</span></div>`;
+  box.scrollTop=box.scrollHeight;
+}
+async function chatSend(){
+  const inp=$('chatInput'); const q=(inp.value||'').trim(); if(!q) return;
+  const msgs=chatLoad();
+  msgs.push({r:'me',t:q,ts:Date.now()}); chatSave(msgs); inp.value=''; renderChat();
+  const btn=$('btnChat'); busy(btn,true,'…');
+  try{
+    const histTxt=chatLoad().slice(-8).map(m=>(m.r==='me'?'KOLESAR: ':'TRENER: ')+m.t).join('\n');
+    const txt=await gemini([{text:`Si moj osebni trener (kolo, moč, prehrana). Odgovori kratko (2-6 stavkov), konkretno, slovensko, prijateljsko. Če vprašanje ni povezano s treningom, zdravjem ali prehrano, prijazno usmeri nazaj.
+
+${buildContext()}
+
+POGOVOR DOSLEJ:
+${histTxt}
+
+Odgovori na zadnje sporočilo kolesarja. Vrni samo čisto besedilo.`}],{json:false,temp:.6});
+    const m2=chatLoad(); m2.push({r:'ai',t:String(txt).trim(),ts:Date.now()}); chatSave(m2); renderChat();
+  }catch(e){ toast(e.message,'err'); }
+  busy(btn,false);
+}
+
+/* ================================================================
+   NASTAVITVE — nivo kartice, povezave, naročnina
+================================================================ */
+function renderSetExtras(){
+  const p=state.settings.profile;
+  const lc=$('lvlCards');
+  if(lc){
+    const L=[['postani fit','Postani fit','Splošna forma, hujšanje, moč za vsak dan'],
+             ['rekreativec+','Rekreativec+','Strukturirani plani, FTP, prehrana za performanco'],
+             ['treniraj kot pro','Treniraj kot pro','Polna periodizacija, dvojni treningi, napredna analitika']];
+    lc.innerHTML=L.map(([v,n,d])=>`<div class="lvl-card ${p.nivo===v?'on':''}" onclick="setNivo('${v}')">
+      <div><div class="ln">${n}</div><div class="ld">${d}</div></div>${p.nivo===v?'<div class="lm">●</div>':''}</div>`).join('')+
+      `<div class="hint" style="margin:4px 0 0">Nivo upošteva AI pri planih, razlagah in prehrani. Zamenjaš ga kadar koli.</div>`;
+  }
+  const cr=$('connRows');
+  if(cr){
+    const gOk=!!(document.getElementById('gsyncCard') && /Odjava/.test(document.getElementById('gsyncCard').innerHTML));
+    const rows=[
+      ['🔵 Google sinhronizacija', gOk],
+      ['📈 Intervals.icu', !!(state.icu?.athleteId&&state.icu?.apiKey&&state.icu?.name)],
+      ['🟠 Strava', !!state.strava.accessToken]
+    ];
+    cr.innerHTML=rows.map(([n,ok])=>`<div class="conn-row"><span class="cn">${n}</span><span class="cs ${ok?'ok':'go'}" ${ok?'':`onclick="document.getElementById('gsyncCard')?.scrollIntoView({behavior:'smooth',block:'center'})"`}>${ok?'POVEZANO ✓':'POVEŽI →'}</span></div>`).join('')+
+    `<div class="hint" style="margin:6px 0 0">Garmin / Apple Health: kmalu — do takrat aktivnosti pridejo prek Strave ali Intervals.icu.</div>`;
+  }
+  renderSubCard();
+}
+function setNivo(v){ state.settings.profile.nivo=v; save(); fillSettings(); toast('Nivo nastavljen: '+v+'. AI ga upošteva pri naslednjem planu.','ok'); }
+async function renderSubCard(){
+  const el=$('subCard'); if(!el) return;
+  let signed=false, pro=false;
+  try{ signed=!!(window.FORMASYNC && await FORMASYNC.idToken()); }catch(_){}
+  if(signed){ try{ pro=await FORMASYNC.isPro(); }catch(_){} }
+  if(pro){
+    el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-weight:700;font-size:14px">PEAKFORM PRO</div><div style="font-size:11.5px;color:var(--muted)">Neomejena AI brez ključa</div></div><span style="color:var(--green);font-weight:700;font-size:12px">AKTIVNO ✓</span></div>`;
+  } else if(signed){
+    el.innerHTML=`<div style="font-weight:700;font-size:14px">FREE</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">10 AI dejanj/dan brez ključa · z lastnim Gemini ključem neomejeno zastonj</div>
+    <div style="font-size:12px;color:var(--soft);margin-top:8px"><b style="color:var(--acc2)">PRO 9,99 €/mesec</b> — neomejena AI brez ključa. <a href="mailto:blaz.gregorc05@gmail.com?subject=PEAKFORM%20PRO" style="color:var(--acc2)">Piši za nadgradnjo →</a></div>`;
+  } else {
+    el.innerHTML=`<div style="font-size:12.5px;color:var(--muted)">Prijavi se z Googlom (🔵 zgoraj) — AI dela brez ključa: 10 dejanj/dan zastonj, PRO 9,99 €/mesec neomejeno.</div>`;
+  }
+}
+
+/* ================================================================
+   ONBOARDING (prvi zagon)
+================================================================ */
+const onb={ step:1, level:1, cilj:'Razkrij mišice pod maščobo', ure:7, starost:'', teza:'' };
+const ONB_LVLS=[
+ {icon:'🔥',name:'Postani fit',val:'postani fit',desc:'Za začetek poti: kolo + osnovna moč + prehrana brez štetja vsake kalorije. Enostavne razlage, brez žargona.',tag:'PLAN 3–5 H / TEDEN',ure:4},
+ {icon:'🚴',name:'Rekreativec+',val:'rekreativec+',desc:'Hočeš biti dober na kolesu: strukturirani intervali, FTP, prehrana za performanco, moč 1–2× tedensko.',tag:'PLAN 6–9 H / TEDEN',ure:7},
+ {icon:'🏆',name:'Treniraj kot pro',val:'treniraj kot pro',desc:'Polna periodizacija kot pri profesionalcih: bloki, dvojni treningi, napredna analitika, natančni makroji.',tag:'PLAN 10+ H / TEDEN',ure:10}
+];
+function onbShow(){ $('onbBack').classList.add('open'); onbRender(); }
+function onbRender(){
+  $('onbStep').textContent=onb.step;
+  for(let i=1;i<=3;i++) $('onbP'+i).classList.toggle('on', onb.step>=i);
+  $('onbBackBtn').style.visibility = onb.step===1?'hidden':'visible';
+  $('onbNextBtn').textContent = onb.step===3?'V aplikacijo →':'Naprej →';
+  const b=$('onbBody');
+  if(onb.step===1){
+    b.innerHTML=`<div class="onb-title">Kako globoko<br>gremo<span class="hl">?</span></div>
+    <div class="onb-sub">Nivo prilagodi celotno izkušnjo — plane, prehrano, razlage in analitiko.<br>Zamenjaš ga lahko kadar koli.</div>
+    <div class="onb-levels">${ONB_LVLS.map((l,i)=>`<div class="onb-lvl ${onb.level===i?'on':''}" onclick="onb.level=${i};onb.ure=${l.ure};onbRender()">
+      <div class="oi">${l.icon}</div><div class="on1">${l.name}</div><div class="od">${l.desc}</div><div class="ot">${l.tag}</div></div>`).join('')}</div>`;
+  } else if(onb.step===2){
+    b.innerHTML=`<div class="onb-title">Povej nekaj<br>o sebi<span class="hl">.</span></div>
+    <div class="onb-sub">Izbran nivo: <b style="color:var(--acc2)">${ONB_LVLS[onb.level].name}</b> · iz tega AI izračuna cone, kalorije in prvi plan.</div>
+    <div style="max-width:560px;margin:34px auto 0;display:flex;flex-direction:column;gap:16px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <label class="fld" style="margin:0"><span>Starost</span><input type="number" id="onbStarost" value="${onb.starost}"></label>
+        <label class="fld" style="margin:0"><span>Teža (kg)</span><input type="number" step="0.1" id="onbTeza" value="${onb.teza}"></label>
+      </div>
+      <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Glavni cilj</div>
+        <div class="row" style="gap:8px">${['Razkrij mišice pod maščobo','Prvi maraton Franja','Višji FTP','Muscle-up'].map(c=>`<div class="onb-chip ${onb.cilj===c?'on':''}" onclick="onb.cilj='${c}';onbCapture();onbRender()">${c}</div>`).join('')}</div></div>
+      <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Koliko časa imaš na teden?</div>
+        <div class="row" style="gap:8px">${[['3–5 h',4],['6–9 h',7],['10+ h',10]].map(([t,u])=>`<div class="onb-chip ${onb.ure===u?'on':''}" style="flex:1;text-align:center;font-weight:700" onclick="onb.ure=${u};onbCapture();onbRender()">${t}</div>`).join('')}</div></div>
+    </div>`;
+  } else {
+    b.innerHTML=`<div class="onb-title">Poveži svoje<br>naprave<span class="hl">.</span></div>
+    <div class="onb-sub">Aktivnosti in podatki se sinhronizirajo samodejno. Lahko tudi preskočiš — vse nastaviš kasneje.</div>
+    <div style="max-width:520px;margin:34px auto 0;display:flex;flex-direction:column;gap:10px">
+      <div class="conn-row"><span class="cn">🔵 Google prijava — sinhronizacija + AI brez ključa</span><span class="cs go" onclick="FORMASYNC.signIn()">POVEŽI →</span></div>
+      <div class="conn-row"><span class="cn">📈 Intervals.icu — samodejni uvoz aktivnosti (brezplačno)</span><span class="cs go" onclick="onbFinish('settings')">NASTAVI →</span></div>
+      <div class="conn-row"><span class="cn">🟠 Strava</span><span class="cs go" onclick="onbFinish('settings')">NASTAVI →</span></div>
+      <div class="plan-summary" style="margin-top:10px"><b>Tvoj prvi teden bo pripravljen v minuti:</b> na zavihku Plan klikni ⟳ Generiraj nov teden — AI ga sestavi iz tvojih podatkov in vremena ter ga nato vsak dan prilagaja.</div>
+    </div>`;
+  }
+}
+function onbCapture(){
+  const a=$('onbStarost'), t=$('onbTeza');
+  if(a) onb.starost=a.value||onb.starost;
+  if(t) onb.teza=t.value||onb.teza;
+}
+function onbGo(dir){
+  onbCapture();
+  if(dir>0 && onb.step===3){ onbFinish(); return; }
+  onb.step=Math.max(1,Math.min(3,onb.step+dir));
+  onbRender();
+}
+function onbFinish(tab){
+  onbCapture();
+  const p=state.settings.profile;
+  p.nivo=ONB_LVLS[onb.level].val;
+  if(onb.starost) p.starost=+onb.starost;
+  if(onb.teza) p.teza=+onb.teza;
+  p.ure=onb.ure; if(onb.cilj) p.cilj=onb.cilj;
+  localStorage.setItem('forma_onb_done','1');
+  save(); fillSettings(); renderAll();
+  $('onbBack').classList.remove('open');
+  if(tab) switchTab(tab);
+  toast('Dobrodošel v PEAKFORM! Generiraj svoj prvi plan. 🚀','ok');
+}
+if (!localStorage.getItem('forma_onb_done') && !state.settings.profile.ime && !state.settings.profile.teza && !state.rides.length){
+  setTimeout(onbShow, 400);
+} else { try{ localStorage.setItem('forma_onb_done','1'); }catch(_){} }
+
+/* ================================================================
    ZAGON
 ================================================================ */
-function renderAll(){ renderSidebar(); renderDash(); renderRides(); renderPlan(); renderCal(); renderTodayBox(); renderForma(); }
+function renderAll(){ renderSidebar(); renderDash(); renderRides(); renderPlan(); renderCal(); renderTodayBox(); renderForma(); renderPorocila(); }
 fillSettings();
 renderAll();
 getWeather().then(()=>{ renderWeather(); renderPlan(); });   // vreme ob zagonu → osveži trak in dnevne oznake
@@ -2805,7 +3262,7 @@ setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) sy
     try{ errs=JSON.parse(localStorage.getItem('forma_errlog')||'[]'); }catch(_){}
     try{ ai=JSON.parse(localStorage.getItem('forma_ailog')||'[]').length; }catch(_){}
     const body='Opiši težavo tukaj:\n\n\n--- diagnostika (pusti) ---\n'+navigator.userAgent+'\nAI klicev: '+ai+'\nZadnje napake:\n'+errs.map(e=>e.t+' '+e.m).join('\n');
-    location.href='mailto:blaz.gregorc05@gmail.com?subject='+encodeURIComponent('FORMA Trener — podpora')+'&body='+encodeURIComponent(body.slice(0,1800));
+    location.href='mailto:blaz.gregorc05@gmail.com?subject='+encodeURIComponent('PEAKFORM — podpora')+'&body='+encodeURIComponent(body.slice(0,1800));
   }
   function render(){
     const host=document.getElementById('tab-settings'); if(!host) return;
@@ -2821,7 +3278,7 @@ setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) sy
       '<div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px">'+
       '<button class="btn btn-ghost btn-sm" onclick="FORMASUPPORT.mail()">📧 Prijavi težavo</button>'+
       '<a class="btn btn-ghost btn-sm" href="zasebnost.html" target="_blank">🔒 Zasebnost & pogoji</a></div>'+
-      '<p class="hint" style="margin-top:8px">FORMA Trener daje trenerske in prehranske usmeritve — ni medicinski nasvet.</p>';
+      '<p class="hint" style="margin-top:8px">PEAKFORM daje trenerske in prehranske usmeritve — ni medicinski nasvet.</p>';
   }
   window.FORMASUPPORT={ mail:supportMail, render };
   if(document.readyState!=='loading') render(); else document.addEventListener('DOMContentLoaded', render);
@@ -2894,8 +3351,9 @@ setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) sy
     }
   }
   function saveCfg(){ const t=document.getElementById('gsyncCfg'); if(!t) return; try{ const c=JSON.parse(t.value.trim()); localStorage.setItem(LS_CFG, JSON.stringify(c)); render(); initFB(c).catch(()=>{}); }catch(e){ alert('Neveljaven JSON — prekopiraj cel firebaseConfig.'); } }
-  window.FORMASYNC={ signIn, signOut, push, saveCfg, render,
-    idToken: async ()=> { try{ return (fb.auth&&fb.auth.currentUser)? await fb.auth.currentUser.getIdToken() : null; }catch(_){ return null; } } };
+  window.FORMASYNC={ signIn, signOut, push, saveCfg, render, uid: ()=>fb.uid,
+    idToken: async ()=> { try{ return (fb.auth&&fb.auth.currentUser)? await fb.auth.currentUser.getIdToken() : null; }catch(_){ return null; } },
+    isPro: async ()=> { try{ if(!fb.uid||!fb.db) return false; const s=await fb.db.collection('formaSync').doc(fb.uid).get(); return !!(s.exists && s.data().pro===true); }catch(_){ return false; } } };
   function boot(){ try{ render(); const c=getCfg(); if(c) initFB(c).catch(()=>{}); }catch(_){} }
   if(document.readyState!=='loading') boot(); else document.addEventListener('DOMContentLoaded', boot);
 })();
