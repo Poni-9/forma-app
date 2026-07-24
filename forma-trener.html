@@ -1164,7 +1164,7 @@ function renderDash(){
       :`<div class="stat"><div class="k">Kondicija</div><div class="v">${f?Math.round(f.ctl):'–'}</div><div class="t">CTL — dolgoročno</div></div>`}
     <div class="stat"><div class="k">Ta teden</div><div class="v">${hM}:${pad(mM)}</div><div class="t">od ${p.ure||'?'} h plana · ${km.toFixed(0)} km</div></div>
     <div class="stat"><div class="k">Kalorije</div><div class="v">${eaten!=null?eaten.toLocaleString('sl'):'–'}</div>${(eaten!=null&&kcalCilj)?`<div class="bar"><i style="width:${Math.min(100,Math.round(eaten/kcalCilj*100))}%;background:var(--acc)"></i></div>`:`<div class="t">poveži telefon</div>`}</div>
-    <div class="stat"><div class="k">Teža</div><div class="v">${p.teza??'–'}</div><div class="t">${(p.ciljTeza&&p.teza)?('še '+Math.max(0,(p.teza-p.ciljTeza)).toFixed(1)+' kg do cilja'):'kg'}</div></div>`;
+    <div class="stat"><div class="k">Teža</div><div class="v">${p.teza??'–'}</div><div class="t">${(p.ciljTeza>0&&p.teza>p.ciljTeza)?('še '+(p.teza-p.ciljTeza).toFixed(1)+' kg do cilja'):'kg'}</div></div>`;
 
   renderDashWeekPlan();
 
@@ -1245,17 +1245,13 @@ function renderCoachReport(){
   else if (kmD!=null && kmD>=15) { mood='🔥'; msg=`Ta teden si na ${Math.round(t.km)} km — ${kmD}% več kot prejšnji. Lepa rast, samo pazi da dodaš tudi počitek.`; }
   else if (kmD!=null && kmD<=-30) { mood='🌱'; msg=`Ta teden je mirnejši (${Math.round(t.km)} km). Če je bil namen počitek — super. Če ne, te jutri čaka dober dan za vožnjo.`; }
   else { mood='👍'; msg=`Ta teden: ${Math.round(t.km)} km v ${fmtDur(t.min)}. ${trendTxt}`; }
-  box.innerHTML = `<div class="card mb" style="border-color:rgba(252,76,2,.35);background:linear-gradient(135deg,rgba(252,76,2,.07),transparent)">
-    <div class="head-row" style="align-items:flex-start">
-      <div style="flex:1">
-        <h3 style="margin-bottom:6px">${mood} AI trener <span class="sub">${new Date().toLocaleDateString('sl-SI',{weekday:'long'})}</span></h3>
-        <div style="font-size:14.5px;line-height:1.55">${esc(msg)}</div>
-        <div style="font-size:12.5px;color:var(--muted);margin-top:8px">
-          ${trendTxt}${f?` · svežina <b style="color:${f.barva}">${f.tsb>0?'+':''}${f.tsb}</b> (${esc(f.opis)})`:''}${rp?` · plan ${rp.pct}%`:''}
-        </div>
-      </div>
-      <button class="btn btn-ghost btn-sm" id="btnCoachAI" onclick="coachReportAI()">✨ AI poročilo</button>
+  box.innerHTML = `<div class="card" style="border-color:rgba(255,61,46,.35)">
+    <h3 style="margin-bottom:8px">${mood} AI trener <span class="sub">${new Date().toLocaleDateString('sl-SI',{weekday:'long'})}</span></h3>
+    <div style="font-size:12.5px;color:var(--soft);line-height:1.55">${esc(msg)}</div>
+    <div style="font-size:11px;color:var(--dim);margin-top:8px;font-weight:600">
+      ${trendTxt}${f?` · svežina <b style="color:${f.barva}">${f.tsb>0?'+':''}${f.tsb}</b>`:''}${rp?` · plan ${rp.pct}%`:''}
     </div>
+    <button class="btn btn-ghost btn-sm mt no-print" id="btnCoachAI" onclick="coachReportAI()">✨ AI poročilo</button>
     <div id="coachAIout"></div>
   </div>`;
 }
