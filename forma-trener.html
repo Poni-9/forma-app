@@ -784,7 +784,15 @@ canvas{max-width:100%}
 
       <div class="set-grid">
         <div class="card">
-          <h3>👤 Tvoj profil</h3>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+            <div class="avatar" style="width:52px;height:52px;font-size:20px" id="profAvatar">?</div>
+            <div style="min-width:0">
+              <div style="font-family:var(--bc);font-weight:800;font-size:20px;line-height:1.1" id="profName">Tvoj profil</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px" id="profSum">izpolni podatke spodaj</div>
+            </div>
+          </div>
+
+          <div style="font-size:9.5px;font-weight:800;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;margin-bottom:8px">Osnovno</div>
           <div class="frm-grid">
             <label class="fld"><span>Ime</span><input id="pIme" placeholder="Blaž"></label>
             <label class="fld"><span>Starost</span><input type="number" id="pStarost"></label>
@@ -793,14 +801,23 @@ canvas{max-width:100%}
             </label>
             <label class="fld"><span>Višina (cm)</span><input type="number" id="pVisina" placeholder="npr. 179"></label>
             <label class="fld"><span>Teža (kg)</span><input type="number" id="pTeza"></label>
-            <label class="fld"><span>Telesna maščoba % (neobvezno)</span><input type="number" id="pBf" placeholder="npr. 14"></label>
+            <label class="fld"><span>Maščoba % <i style="color:var(--dim)">(neobv.)</i></span><input type="number" id="pBf" placeholder="npr. 14"></label>
+          </div>
+
+          <div style="font-size:9.5px;font-weight:800;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;margin:6px 0 8px;padding-top:12px;border-top:1px solid var(--border)">Srce in moč <span style="font-weight:600;text-transform:none;letter-spacing:0">— osnova za cone treninga</span></div>
+          <div class="frm-grid">
             <label class="fld"><span>Max utrip</span><input type="number" id="pMaxHr" placeholder="npr. 190"></label>
             <label class="fld"><span>Utrip v mirovanju</span><input type="number" id="pRestHr" placeholder="npr. 55"></label>
-            <label class="fld"><span>Prag – LTHR (neobvezno)</span><input type="number" id="pLthr" placeholder="izračunam sam"></label>
+            <label class="fld"><span>Prag – LTHR <i style="color:var(--dim)">(neobv.)</i></span><input type="number" id="pLthr" placeholder="izračunam sam"></label>
+            <label class="fld"><span>FTP (W) <i style="color:var(--dim)">(če imaš merilec)</i></span><input type="number" id="pFtp" placeholder="iz Intervals.icu sam"></label>
             <label class="fld"><span>Šema con</span>
               <select id="pShema"><option value="5" selected>5 con (C1–C5)</option><option value="7">7 con (Z1–Z7)</option></select>
             </label>
-            <label class="fld"><span>FTP – moč (W, če imaš merilec)</span><input type="number" id="pFtp" placeholder="npr. 250"></label>
+          </div>
+          <div class="zones-box" id="zonesBox"></div>
+
+          <div style="font-size:9.5px;font-weight:800;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;margin:6px 0 8px;padding-top:12px;border-top:1px solid var(--border)">🎯 Cilji</div>
+          <div class="frm-grid">
             <label class="fld"><span>Nivo</span>
               <select id="pNivo">
                 <option value="postani fit">Postani fit</option>
@@ -808,18 +825,20 @@ canvas{max-width:100%}
                 <option value="treniraj kot pro">Treniraj kot pro</option>
               </select>
             </label>
-            <label class="fld"><span>Ur na teden (cilj)</span><input type="number" id="pUre" value="6"></label>
-            <label class="fld"><span>🎯 Ciljni datum</span><input type="date" id="pCiljDatum"></label>
-            <label class="fld"><span>🎯 Ciljna teža (kg)</span><input type="number" step="0.5" id="pCiljTeza"></label>
-            <label class="fld" style="grid-column:1/-1"><span>🩹 Omejitve / poškodbe (AI jih upošteva)</span><input id="pOmejitve" placeholder="npr. boleče koleno, spodnji hrbet, ne smem skakati…"></label>
+            <label class="fld"><span>Ur na teden</span><input type="number" id="pUre" value="6"></label>
+            <label class="fld"><span>Ciljni datum</span><input type="date" id="pCiljDatum"></label>
+            <label class="fld"><span>Ciljna teža (kg)</span><input type="number" step="0.5" min="30" id="pCiljTeza" placeholder="npr. 74"></label>
           </div>
-          <div class="zones-box" id="zonesBox"></div>
-          <label class="fld"><span>Cilji (za AI trenerja)</span>
+          <label class="fld"><span>Glavni cilj (za AI trenerja)</span>
             <textarea id="pCilj" placeholder="npr. jeseni maraton Franja, rad bi izboljšal vzpone …"></textarea>
           </label>
-          <div class="row">
+
+          <div style="font-size:9.5px;font-weight:800;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;margin:6px 0 8px;padding-top:12px;border-top:1px solid var(--border)">🩹 Omejitve</div>
+          <label class="fld"><span>Poškodbe / omejitve <i style="color:var(--dim)">(AI jih obvezno upošteva)</i></span><input id="pOmejitve" placeholder="npr. boleče koleno, spodnji hrbet, ne smem skakati…"></label>
+
+          <div class="row mt">
             <button class="btn btn-primary" onclick="saveProfile()">Shrani profil</button>
-            <button class="btn btn-ghost" id="btnFtp" onclick="estimateThresholds()">✨ Oceni FTP/prag iz voženj</button>
+            <button class="btn btn-ghost" id="btnFtp" onclick="estimateThresholds()">✨ Oceni cone iz voženj</button>
           </div>
         </div>
 
@@ -1027,6 +1046,8 @@ try{
   }
 }catch(_){}
 state.forma = Object.assign(defaultState().forma, state.forma||{});
+// sanacija pokvarjene ciljne teže (npr. -1)
+try{ const _p9=state.settings.profile; if(_p9.ciljTeza!=null && _p9.ciljTeza<30) _p9.ciljTeza=null; }catch(_){}
 // migracija: aktivnosti + priljubljenost (prefs)
 try{
   const _pp=state.settings.profile;
@@ -2941,7 +2962,9 @@ function saveProfile(){
   p.spol = $('pSpol').value || 'moški'; p.visina = num($('pVisina').value); p.bf = num($('pBf').value);
   p.maxHr = num($('pMaxHr').value); p.restHr = num($('pRestHr').value);
   p.nivo = $('pNivo').value; p.ure = num($('pUre').value)||6; p.cilj = $('pCilj').value.trim();
-  p.ciljDatum = $('pCiljDatum').value || null; p.ciljTeza = num($('pCiljTeza').value);
+  p.ciljDatum = $('pCiljDatum').value || null;
+  p.ciljTeza = num($('pCiljTeza').value);
+  if(p.ciljTeza!=null && p.ciljTeza<30) p.ciljTeza=null;   // -1 in podobne pomote
   p.omejitve = ($('pOmejitve')?.value||'').trim();
   p.lthr = num($('pLthr').value); p.ftp = num($('pFtp').value); p.shema = +$('pShema').value || 5;
   for (const r of state.rides) r.tss = estimateTss(r);   // TSS se z novim profilom spremeni
@@ -2963,6 +2986,13 @@ function fillSettings(){
   $('pNivo').value=p.nivo||'rekreativni'; $('pUre').value=p.ure??6; $('pCilj').value=p.cilj||'';
   $('pCiljDatum').value=p.ciljDatum||''; $('pCiljTeza').value=p.ciljTeza??'';
   if($('pOmejitve')) $('pOmejitve').value=p.omejitve||'';
+  const pa=$('profAvatar'), pn=$('profName'), ps=$('profSum');
+  if(pa) pa.textContent=(p.ime||'?').charAt(0).toUpperCase();
+  if(pn) pn.textContent=p.ime||'Tvoj profil';
+  if(ps){
+    const parts=[p.nivo? p.nivo.toUpperCase():null, p.teza? p.teza+' kg':null, p.ftp? 'FTP '+p.ftp+' W':null, (p.ciljTeza>0&&p.teza>p.ciljTeza)? '−'+(p.teza-p.ciljTeza).toFixed(1)+' kg do cilja':null].filter(Boolean);
+    ps.textContent = parts.length? parts.join(' · ') : 'izpolni podatke spodaj';
+  }
   $('pLthr').value=p.lthr??''; $('pFtp').value=p.ftp??''; $('pShema').value=String(p.shema||5);
   $('gKey').value=state.settings.geminiKey||''; $('gModel').value=state.settings.geminiModel||'gemini-flash-latest';
   renderZones(); renderStrava(); renderIcu(); renderSetExtras();
