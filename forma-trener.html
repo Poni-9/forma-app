@@ -969,7 +969,7 @@ canvas{max-width:100%}
 <!-- ======= MODAL: DAN V KOLEDARJU ======= -->
 <div class="modal-back" id="dayModalBack">
   <div class="modal">
-    <h2>Podrobnosti dneva<span class="x" onclick="closeModal('dayModalBack')">✕</span></h2>
+    <h2><span id="dayModalTitle">Podrobnosti dneva</span><span class="x" onclick="closeModal('dayModalBack')">✕</span></h2>
     <div id="dayBody"></div>
   </div>
 </div>
@@ -1316,6 +1316,7 @@ const STAT_INFO = {
 function statInfo(key){
   const it=STAT_INFO[key]; if(!it) return;
   const [ti, body]=it[LANG==='en'?1:0];
+  const mt=$('dayModalTitle'); if(mt) mt.textContent = LANG==='en'?'What does this mean?':'Kaj to pomeni?';
   $('dayBody').innerHTML=`<div style="font-family:var(--bc);font-weight:800;font-size:20px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px">${ti}</div>
     <div style="font-size:13.5px;color:var(--soft);line-height:1.65;white-space:pre-line">${body}</div>
     <div class="modal-foot"><button class="btn btn-primary btn-sm" onclick="closeModal('dayModalBack')">${LANG==='en'?'Got it':'Razumem'}</button></div>`;
@@ -2284,6 +2285,7 @@ function renderCal(){
   grid.innerHTML = html;
 }
 function showDay(iso){
+  const mt=$('dayModalTitle'); if(mt) mt.textContent = LANG==='en'?'Day details':'Podrobnosti dneva';
   const pd = planDayFor(iso);
   const rides = state.rides.filter(r=>r.date===iso);
   const ph = macroPhaseFor(isoDate(weekStart(parseIso(iso))));
