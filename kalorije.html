@@ -391,6 +391,10 @@ input:focus,select:focus{box-shadow:none!important}
     </div>
   </div>
 
+  <div class="tabpane" id="pane-vadba">
+    <div id="vadbaBody"></div>
+  </div>
+
   <div class="tabpane" id="pane-trener">
     <div class="card" style="display:flex;flex-direction:column;min-height:62vh">
       <h3>AI trener <span class="sub">pozna tvoj plan, formo in prehrano</span></h3>
@@ -412,8 +416,9 @@ input:focus,select:focus{box-shadow:none!important}
 <!-- ===== SPODNJI ZAVIHKI ===== -->
 <div class="tabbar">
   <button class="on" id="tabBtnDanes" onclick="showPane('danes')"><span class="ic">●</span>Danes</button>
+  <button id="tabBtnPlan" onclick="showPane('plan')"><span class="ic">📅</span>Plan</button>
   <button id="tabBtnKcal" onclick="showPane('kcal')"><span class="ic">📷</span>Obrok</button>
-  <button id="tabBtnPlan" onclick="showPane('plan')"><span class="ic">▶</span>Vadba</button>
+  <button id="tabBtnVadba" onclick="showPane('vadba')"><span class="ic">▶</span>Vadba</button>
   <button id="tabBtnTrener" onclick="showPane('trener')"><span class="ic">✉</span>Trener</button>
 </div>
 
@@ -458,6 +463,7 @@ input:focus,select:focus{box-shadow:none!important}
     <h2>Nastavitve<span class="x" onclick="closeModalS()">✕</span></h2>
     <div id="setLink" class="hint" style="margin-bottom:12px"></div>
     <div id="gsyncHostK"></div>
+    <div id="profilK" style="margin-bottom:12px"></div>
     <div class="hint" style="margin-bottom:10px;padding:9px 11px;border:1px solid var(--border);background:var(--panel)">✨ <b>AI dela brez ključa</b> — samo prijavi se z Googlom (🔵 zgoraj): 10 dejanj/dan zastonj. Ključ spodaj je neobvezen (napredno, neomejeno zastonj).</div>
     <label class="fld"><span>Gemini API ključ <span style="color:var(--dim)">(neobvezno)</span></span><input type="password" id="sKey" placeholder="ni potreben — Google prijava zadošča"></label>
     <label class="fld"><span>Model</span>
@@ -927,7 +933,52 @@ function renderLink(){
   }
 }
 
-function renderAll(){ renderLink(); renderHero(); renderLog(); renderHist(); renderPlanTab(); renderDanes(); }
+function renderAll(){ renderLink(); renderHero(); renderLog(); renderHist(); renderPlanTab(); renderDanes(); renderVadba(); }
+
+/* ================================================================
+   VADBA — vodena vadba moči (svoj zavihek)
+================================================================ */
+function renderVadba(){
+  const el=$('vadbaBody'); if(!el) return;
+  refreshF();
+  const today=todayIso();
+  const pd=planForK(today);
+  const tip=(pd?.tip||'').toLowerCase();
+  const isMoc=tip.includes('moč')||tip.includes('moc');
+  const sor=sorenessNowK();
+  // naslednji dan z močjo v tednu
+  let nextMoc=null, nextIso=null;
+  for(let i=0;i<=7;i++){
+    const iso=isoDate(addDays(new Date(),i));
+    const d=planForK(iso);
+    if(d && ((d.tip||'').toLowerCase().includes('moč')||(d.tip||'').toLowerCase().includes('moc')||(d.vaje&&String(d.vaje).trim()))){ nextMoc=d; nextIso=iso; break; }
+  }
+  const zadnje=(F?.rides||[]).filter(r=>r.sport==='moc').sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3);
+  const lvl=F?.forma?.level||1;
+  const pct=Math.min(100,Math.round((lvl-1)/9*100));
+  el.innerHTML=`
+    <div style="margin-top:2px"><div class="dn-kicker">VADBA MOČI</div>
+      <div class="dn-title">${isMoc?'Danes: <span class="hl">'+esc(pd.naslov||'Moč')+'</span>':(nextMoc? 'Naslednja: <span class="hl">'+esc(nextMoc.naslov||'Moč')+'</span>':'Vodena vadba')}</div>
+      ${nextMoc&&!isMoc?`<div style="font-size:11.5px;color:var(--muted);margin-top:3px">${nextIso===today?'danes':nextIso===isoDate(addDays(new Date(),1))?'jutri':parseIso(nextIso).getDate()+'. '+MESECI[parseIso(nextIso).getMonth()]}</div>`:''}
+    </div>
+    ${sor>=3?`<div class="dn-card" style="border-color:rgba(255,92,92,.4)"><div class="dn-txt">🥵 Zelo te boli — današnja vadba bo regeneracijska (mobilnost + raztezanje). Bolečina z dnevi upade.</div></div>`:''}
+    <button class="dn-cta" onclick="pwStartFor('${isMoc?today:(nextIso||today)}')">▶ Začni vodeno vadbo${(isMoc&&pd.trajanje_min)?' → '+pd.trajanje_min+' min':''}</button>
+    <div class="dn-card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><div class="dn-lbl">POT DO MUSCLE-UPA</div><div style="font-family:var(--bc);font-weight:800;font-size:17px;color:var(--acc2)">${pct} %</div></div>
+      <div style="height:5px;background:var(--border);margin-top:8px"><div style="width:${Math.max(3,pct)}%;height:100%;background:linear-gradient(90deg,#a34038,var(--acc))"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--dim);margin-top:5px;font-weight:700"><span>OSNOVE</span><span>EKSPL. ZGIB</span><span>NEG. MU</span><span>MUSCLE-UP</span></div>
+    </div>
+    <div class="dn-card">
+      <div class="dn-lbl" style="color:var(--dim)">BOLEČINA DANES?</div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        ${[[0,'💪 Nič'],[1,'🙂 Malo'],[2,'😖 Precej'],[3,'🥵 Zelo']].map(([v,n])=>`<div style="flex:1;border:1px solid ${sor===v?'var(--acc)':'var(--border)'};background:${sor===v?'rgba(255,61,46,.1)':'transparent'};text-align:center;padding:7px 2px;font-size:11px;font-weight:600;color:${sor===v?'var(--text)':'var(--muted)'};cursor:pointer" onclick="dnSore(${v})">${n}</div>`).join('')}
+      </div>
+    </div>
+    ${zadnje.length?`<div class="dn-card"><div class="dn-lbl" style="color:var(--dim)">ZADNJI TRENINGI</div>
+      ${zadnje.map(r=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid var(--border)"><span style="font-weight:600">💪 ${esc(r.name||'Moč')}</span><span style="color:var(--muted)">${parseIso(r.date).getDate()}. ${MESECI[parseIso(r.date).getMonth()]}${r.fb?' · '+({lahko:'prelahko',ok:'ravno prav',tezko:'težko'}[r.fb]||r.fb):''}</span></div>`).join('')}
+    </div>`:''}
+    <div class="hint" style="margin-top:10px;text-align:center">Med vadbo te vodi zaslon s serijami in odmori — težavnost se prilagaja tvojim povratnim informacijam.</div>`;
+}
 
 /* ================================================================
    DANES — hiter pregled (PEAKFORM)
@@ -964,51 +1015,102 @@ function tedenK(){
   const i=w.findIndex(x=>x.zacetek===wsIso);
   return i>-1? ` · TEDEN ${i+1}/${w.length}` : '';
 }
+function saveF(){
+  if(!F) return;
+  F._ts=Date.now();
+  try{ localStorage.setItem('forma_trener_v1', JSON.stringify(F)); }catch(_){}
+  try{ if(window.FORMASYNC&&FORMASYNC.push) setTimeout(()=>FORMASYNC.push(),500); }catch(_){}
+}
+function dnSore(v){
+  refreshF(); if(!F){ toast('Namizje še ni sinhronizirano.','err'); return; }
+  F.forma=F.forma||{}; F.forma.soreness=v; F.forma.sorenessIso=todayIso();
+  saveF(); renderDanes(); if(typeof renderVadba==='function') renderVadba();
+  toast(v===0?'Svež si — vadba po planu. 💪':'Zabeleženo — vadba se ustrezno olajša. ✓','');
+}
+function streakK(){
+  refreshF(); const days=new Set((F?.rides||[]).map(r=>r.date));
+  for(const p of (F?.plans||[])) for(const d of (p.days||[])) if(d.done) days.add(d.datum);
+  let n=0, d=new Date();
+  if(!days.has(isoDate(d))) d=addDays(d,-1);
+  while(days.has(isoDate(d)) && n<365){ n++; d=addDays(d,-1); }
+  return n;
+}
 function renderDanes(){
   const el=$('danesBody'); if(!el) return;
   refreshF();
   const now=new Date();
   const pd=planForK(todayIso());
   const jutri=planForK(isoDate(addDays(now,1)));
-  const eaten=Math.round(((db.days[todayIso()]||{}).entries||[]).reduce((a,e)=>a+(+e.kcal||0),0));
-  const tz=teza();
+  const entries=((db.days[todayIso()]||{}).entries||[]);
+  const eaten=Math.round(entries.reduce((a,e)=>a+(+e.kcal||0),0));
+  const prot=Math.round(entries.reduce((a,e)=>a+(+(e.b??e.beljakovine??0)||0),0));
+  const target=targetKcal();
+  const burn=burnKcal();
+  const protT=Math.round(teza()*2);
+  const rem=Math.max(0,(target||0)-eaten);
   const prip=pripK();
+  const mf=miniForm();
+  const stk=streakK();
   const tip=(pd?.tip||'').toLowerCase();
   const isMoc=tip.includes('moč')||tip.includes('moc');
   const isRest=tip.includes('poči')||tip.includes('poci')||tip.includes('prosto');
-  const naslov = pd? (isRest?'POČITEK':esc(pd.naslov||pd.tip)) : 'NI PLANA';
+  const sportIco=isMoc?'🤸':tip.includes('tek')?'🏃':tip.includes('pohod')?'🥾':'🚴';
+  const naslov = pd? (isRest?'Počitek':String(pd.naslov||pd.tip)) : 'Ni plana';
   const cta = pd
-    ? (isMoc? `<button class="dn-cta" onclick="pwStartFor('${todayIso()}')">Začni vadbo → ${pd.trajanje_min||30} min</button>`
-            : isRest? `<button class="dn-cta" style="background:var(--panel);border:1px solid var(--border2);color:var(--muted)" onclick="showPane('plan')">Danes počitek · poglej teden →</button>`
-                    : `<button class="dn-cta" onclick="showPane('plan')">Današnji trening → ${pd.trajanje_min||''} ${pd.trajanje_min?'min':''}</button>`)
-    : `<button class="dn-cta" onclick="showPane('plan')">Odpri plan →</button>`;
-  const mf=miniForm();
-  let tip1='';
-  if (sorenessNowK()>=3) tip1='Mišice te še bolijo — danes lahkotno, vadba se sama olajša.';
-  else if (mf && mf.tsb<-20) tip1='Kar precej si utrujen — danes raje lažje, jutri boš močnejši.';
-  else if (pd && eaten < 300 && now.getHours()>=11) tip1='Kalorij je še malo — pred treningom pojej malico (banana, jogurt).';
-  else if (mf && mf.tsb>5) tip1='Svež si — danes je pravi dan za dober trening. 🔥';
-  else tip1='Drži ritem: današnji trening + beleži obroke, ostalo uredim jaz.';
+    ? (isMoc? `<div style="flex:1.6"><button class="dn-cta" style="margin:0;padding:12px" onclick="pwStartFor('${todayIso()}')">Začni vadbo →</button></div>`
+            : isRest? `<div style="flex:1.6"><button class="dn-cta" style="margin:0;padding:12px;background:var(--panel);border:1px solid var(--border2);color:var(--muted)" onclick="showPane('plan')">Danes počitek · plan →</button></div>`
+                    : `<div style="flex:1.6"><button class="dn-cta" style="margin:0;padding:12px" onclick="showPane('plan')">Današnji trening →</button></div>`)
+    : `<div style="flex:1.6"><button class="dn-cta" style="margin:0;padding:12px" onclick="showPane('plan')">Odpri plan →</button></div>`;
+  const sor=sorenessNowK();
+  const ring = target? (()=>{ const p=Math.min(1,eaten/target); const C=2*Math.PI*52; return `
+    <svg viewBox="0 0 120 120" style="width:112px;height:112px;flex-shrink:0">
+      <circle cx="60" cy="60" r="52" fill="none" stroke="var(--border)" stroke-width="9"></circle>
+      <circle cx="60" cy="60" r="52" fill="none" stroke="${eaten>target?'#ffc247':'var(--acc)'}" stroke-width="9" stroke-dasharray="${(C*p).toFixed(0)} ${C.toFixed(0)}" transform="rotate(-90 60 60)"></circle>
+      <text x="60" y="55" fill="var(--text)" font-size="26" font-weight="800" text-anchor="middle" font-family="Barlow Condensed,sans-serif">${rem.toLocaleString('sl')}</text>
+      <text x="60" y="72" fill="var(--dim)" font-size="9.5" font-weight="700" text-anchor="middle" font-family="Barlow,sans-serif">${eaten>target?'ČEZ CILJ':'ŠE LAHKO POJEŠ'}</text>
+    </svg>`; })() : `<div style="width:112px;height:112px;display:grid;place-items:center;border:1px solid var(--border);color:var(--dim);font-size:11px;text-align:center">nastavi cilj<br>v ⚙️</div>`;
+  const bar=(k,v,tgt,c)=>`<div><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:var(--dim)"><span>${k}</span><span style="color:#c9c3ce">${v}</span></div><div style="height:4px;background:var(--border);margin-top:3px"><div style="width:${tgt?Math.min(100,Math.round((parseFloat(v)||0)/tgt*100)):0}%;height:100%;background:${c}"></div></div></div>`;
   el.innerHTML=`
-    <div style="margin-top:4px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px">
       <div class="dn-kicker">${DNEVI[(now.getDay()+6)%7].slice(0,3).toUpperCase()} ${now.getDate()} ${MESECI[now.getMonth()].toUpperCase()}${tedenK()}</div>
-      <div class="dn-title">Danes: <span class="hl">${naslov}</span></div>
+      ${stk>=2?`<span style="border:1px solid rgba(255,194,71,.4);color:var(--yellow,#ffc247);font-size:10px;font-weight:800;padding:2px 7px;white-space:nowrap">🔥 ${stk} DNI</span>`:''}
     </div>
-    <div class="dn-stats">
-      <div class="dn-stat"><div class="k">Pripravlj.</div><div class="v">${prip}</div></div>
-      <div class="dn-stat"><div class="k">Kcal</div><div class="v">${eaten.toLocaleString('sl')}</div></div>
-      <div class="dn-stat"><div class="k">Teža</div><div class="v">${tz||'–'}</div></div>
+    <div style="display:flex;align-items:center;gap:14px;margin-top:12px">
+      ${ring}
+      <div style="flex:1;display:flex;flex-direction:column;gap:7px;min-width:0">
+        ${bar('VNOS', eaten.toLocaleString('sl')+(target?' / '+target.toLocaleString('sl'):''), target, 'var(--acc)')}
+        ${bar('BELJAKOVINE', prot+' / '+protT+' g', protT, '#5fd67a')}
+        ${bar('PORABA', '~'+(burn&&burn.v?burn.v.toLocaleString('sl'):'–')+' kcal', null, '#4da3ff')}
+      </div>
     </div>
-    ${cta}
-    <div class="dn-card"><div class="dn-lbl">AI trener</div><div class="dn-txt">${esc(tip1)}</div>
-      <div style="font-size:10px;color:var(--dim);margin-top:8px;font-weight:700">VEČ V ZAVIHKU ✉ TRENER</div></div>
+    <div style="border:1px solid rgba(255,61,46,.35);background:linear-gradient(180deg,rgba(255,61,46,.08),var(--panel));padding:12px 14px;margin-top:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div style="font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--acc2)">DANES · ${esc((pd?.tip||'PROSTO').toUpperCase())}</div><div id="dnWx" style="font-size:10.5px;color:var(--muted);font-weight:700"></div></div>
+      <div style="font-family:var(--bc);font-weight:800;font-size:21px;margin-top:4px">${sportIco} ${esc(naslov)}</div>
+      ${pd?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${pd.trajanje_min?pd.trajanje_min+' min':''}${pd.kcal_poraba?' · ~'+pd.kcal_poraba+' kcal':''}</div>`:''}
+      <div style="display:flex;gap:8px;margin-top:10px">
+        ${cta}
+        <div style="flex:1"><button class="dn-cta" style="margin:0;padding:12px;background:transparent;border:1px solid var(--border2);color:#c9c3ce;font-size:13.5px" onclick="$('adaptBack').classList.add('open')">⏱ Nimam časa</button></div>
+      </div>
+    </div>
+    <div class="dn-card">
+      <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:9.5px;font-weight:800;letter-spacing:.08em;color:var(--dim)">BOLEČINA DANES? <span style="color:var(--dim);font-weight:600">— vadba se prilagodi</span></div></div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        ${[[0,'💪 Nič'],[1,'🙂 Malo'],[2,'😖 Precej'],[3,'🥵 Zelo']].map(([v,n])=>`<div style="flex:1;border:1px solid ${sor===v?'var(--acc)':'var(--border)'};background:${sor===v?'rgba(255,61,46,.1)':'transparent'};text-align:center;padding:7px 2px;font-size:11px;font-weight:${sor===v?'700':'600'};color:${sor===v?'var(--text)':'var(--muted)'};cursor:pointer" onclick="dnSore(${v})">${n}</div>`).join('')}
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <div style="flex:1;border:1px solid var(--border);background:var(--panel);padding:9px 11px"><div style="font-size:9px;font-weight:800;letter-spacing:.08em;color:var(--dim)">PRIPRAVLJENOST</div><div style="font-family:var(--bc);font-size:19px;font-weight:800;color:${prip>=70?'#5fd67a':prip>=45?'#ffc247':'var(--acc)'}">${prip}</div></div>
+      <div style="flex:1;border:1px solid var(--border);background:var(--panel);padding:9px 11px"><div style="font-size:9px;font-weight:800;letter-spacing:.08em;color:var(--dim)">FORMA</div><div style="font-family:var(--bc);font-size:19px;font-weight:800">${mf?(mf.tsb>0?'+':'')+Math.round(mf.tsb):'–'}</div></div>
+      <div style="flex:1;border:1px solid var(--border);background:var(--panel);padding:9px 11px;cursor:pointer" onclick="showPane('trener')"><div style="font-size:9px;font-weight:800;letter-spacing:.08em;color:var(--dim)">AI TRENER</div><div style="font-size:13px;margin-top:3px;font-weight:700;color:var(--acc2)">Vprašaj →</div></div>
+    </div>
     ${jutri?`<div class="dn-card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer" onclick="showPane('plan')">
       <div><div class="dn-lbl" style="color:var(--dim)">Jutri</div><div style="font-weight:700;font-size:13.5px;margin-top:2px">${esc(jutri.naslov||jutri.tip)}</div></div>
-      <div style="color:var(--dim)">›</div></div>`:''}
-    <div class="dn-card" style="cursor:pointer" onclick="showPane('kcal')">
-      <div class="dn-lbl" style="color:var(--dim)">Obroki danes</div>
-      <div class="dn-txt">${((db.days[todayIso()]||{}).entries||[]).length||'Še brez'} vnosov · slikaj obrok v zavihku 📷 Obrok</div>
-    </div>`;
+      <div style="color:var(--dim)">›</div></div>`:''}`;
+  getWeatherK().then(w=>{
+    const t0=(w?.days||[]).find(d=>d.date===todayIso());
+    const wEl=$('dnWx');
+    if(t0&&wEl){ const wi=weatherInfo(t0.code); wEl.textContent = wi.e+' '+t0.tmax+'°'+((wi.bad&&pd&&!isMoc&&!isRest)?' → RAJE NOTRI':''); }
+  }).catch(()=>{});
 }
 
 /* ================================================================
@@ -1030,7 +1132,7 @@ function chatCtxK(){
   const pd=planForK(todayIso());
   const eaten=Math.round(((db.days[todayIso()]||{}).entries||[]).reduce((a,e)=>a+(+e.kcal||0),0));
   const mf=miniForm();
-  return `DANES: ${todayIso()}\nPROFIL: ${p.ime||'?'}, ${p.starost||'?'} let, ${teza()} kg, nivo ${p.nivo||'?'}, cilj: ${p.cilj||'?'}\n`+
+  return `DANES: ${todayIso()}\nPROFIL: ${p.ime||'?'}, ${p.starost||'?'} let, ${teza()} kg, nivo ${p.nivo||'?'}, cilj: ${p.cilj||'?'}${p.omejitve?', OMEJITVE: '+p.omejitve:''}\n`+
     (mf?`FORMA: kondicija ${mf.ctl}, svežina ${mf.tsb}\n`:'')+
     `DANES NA PLANU: ${pd? pd.tip+' — '+pd.naslov+' ('+(pd.trajanje_min||'?')+' min)' : 'ni plana'}\n`+
     `DANES POJEDENO: ~${eaten} kcal`;
@@ -1057,8 +1159,10 @@ function showPane(name){
   $('tabBtnDanes').classList.toggle('on', name==='danes');
   $('tabBtnKcal').classList.toggle('on', name==='kcal');
   $('tabBtnPlan').classList.toggle('on', name==='plan');
+  $('tabBtnVadba').classList.toggle('on', name==='vadba');
   $('tabBtnTrener').classList.toggle('on', name==='trener');
   if (name==='danes') renderDanes();
+  if (name==='vadba') renderVadba();
   if (name==='trener') renderChatK();
   if (typeof syncPull==='function') syncPull(false);   // ob preklopu zavihka poberi najnovejše
 }
@@ -1697,7 +1801,27 @@ function delEntry(iso,id){
 /* ================================================================
    NASTAVITVE
 ================================================================ */
-function openSettings(){
+const AKT_INFO_K={kolo:'🚴 Kolo',tek:'🏃 Tek',pohod:'🥾 Pohodi',moc:'🤸 Moč'};
+function userAktK(){ refreshF(); const a=F?.settings?.profile?.aktivnosti; return (Array.isArray(a)&&a.length)?a:['kolo','pohod','moc']; }
+function toggleAktK(v){
+  refreshF(); if(!F){ toast('Namizje še ni sinhronizirano.','err'); return; }
+  const p=F.settings.profile; p.aktivnosti=userAktK().slice();
+  const i=p.aktivnosti.indexOf(v);
+  if(i>-1){ if(p.aktivnosti.length>1) p.aktivnosti.splice(i,1); else { toast('Vsaj ena mora ostati.','err'); return; } }
+  else p.aktivnosti.push(v);
+  saveF(); renderProfilK();
+  toast('Športi: '+p.aktivnosti.map(x=>AKT_INFO_K[x]||x).join(', ')+' ✓','');
+}
+function renderProfilK(){
+  const el=$('profilK'); if(!el) return;
+  refreshF();
+  const p=F?.settings?.profile||{};
+  el.innerHTML=`
+    <div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin-bottom:6px">Tvoji športi <span style="font-weight:600">(plan gradi samo iz teh)</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">${[['kolo','🚴 Kolo'],['tek','🏃 Tek'],['pohod','🥾 Pohodi'],['moc','🤸 Moč']].map(([v,n])=>`<div style="border:1px solid ${userAktK().includes(v)?'var(--acc)':'var(--border2)'};background:${userAktK().includes(v)?'rgba(255,61,46,.1)':'transparent'};padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer" onclick="toggleAktK('${v}')">${n}</div>`).join('')}</div>
+    <label class="fld" style="margin-top:12px"><span>🩹 Omejitve / poškodbe <span style="color:var(--dim)">(AI jih upošteva pri vajah)</span></span><input id="sOmejitve" placeholder="npr. boleče koleno, spodnji hrbet…" value="${esc(p.omejitve||'')}"></label>`;
+}
+function openSettings(){ renderProfilK();
   $('sKey').value=db.settings.key||''; $('sModel').value=db.settings.model||'';
   $('sKcal').value=db.settings.kcalManual??''; $('sTeza').value=db.settings.tezaManual??'';
   const sc=db.settings.sync;
@@ -1711,6 +1835,10 @@ function openSettings(){
   $('setBack').classList.add('open');
 }
 async function saveSettings(){
+  try{
+    const o=$('sOmejitve');
+    if(o){ refreshF(); if(F){ F.settings.profile.omejitve=o.value.trim(); saveF(); } }
+  }catch(_){}
   db.settings.key=$('sKey').value.trim(); db.settings.model=$('sModel').value;
   db.settings.kcalManual=+$('sKcal').value||null; db.settings.tezaManual=+$('sTeza').value||null;
   save();

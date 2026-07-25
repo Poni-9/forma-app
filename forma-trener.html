@@ -811,6 +811,7 @@ canvas{max-width:100%}
             <label class="fld"><span>Ur na teden (cilj)</span><input type="number" id="pUre" value="6"></label>
             <label class="fld"><span>🎯 Ciljni datum</span><input type="date" id="pCiljDatum"></label>
             <label class="fld"><span>🎯 Ciljna teža (kg)</span><input type="number" step="0.5" id="pCiljTeza"></label>
+            <label class="fld" style="grid-column:1/-1"><span>🩹 Omejitve / poškodbe (AI jih upošteva)</span><input id="pOmejitve" placeholder="npr. boleče koleno, spodnji hrbet, ne smem skakati…"></label>
           </div>
           <div class="zones-box" id="zonesBox"></div>
           <label class="fld"><span>Cilji (za AI trenerja)</span>
@@ -1950,6 +1951,7 @@ function buildContext(){
   L.push(`- max utrip: ${p.maxHr||'?'} | utrip v mirovanju: ${p.restHr||'?'} (trenira po srčnem utripu, NIMA merilca moči)`);
   L.push(`- ciljni obseg: ~${p.ure||6} ur/teden | cilji: ${p.cilj||'splošna forma'}`);
   L.push(`- IZBRANE AKTIVNOSTI (edine dovoljene v planih): ${userAkt().map(x=>AKT_INFO[x]||x).join(', ')}`);
+  if (p.omejitve) L.push(`- ⚠ ZDRAVSTVENE OMEJITVE (OBVEZNO upoštevaj — prilagodi/izpusti vaje, ki bi jih poslabšale): ${p.omejitve}`);
   if (_tdee){
     const gd0 = goalDeficit();
     const cilj = gd0 ? Math.max(_bmr+200, _tdee - gd0.deficit) : Math.round(_tdee - 290);
@@ -2872,6 +2874,7 @@ function saveProfile(){
   p.maxHr = num($('pMaxHr').value); p.restHr = num($('pRestHr').value);
   p.nivo = $('pNivo').value; p.ure = num($('pUre').value)||6; p.cilj = $('pCilj').value.trim();
   p.ciljDatum = $('pCiljDatum').value || null; p.ciljTeza = num($('pCiljTeza').value);
+  p.omejitve = ($('pOmejitve')?.value||'').trim();
   p.lthr = num($('pLthr').value); p.ftp = num($('pFtp').value); p.shema = +$('pShema').value || 5;
   for (const r of state.rides) r.tss = estimateTss(r);   // TSS se z novim profilom spremeni
   if(p.teza){
@@ -2891,6 +2894,7 @@ function fillSettings(){
   $('pMaxHr').value=p.maxHr??''; $('pRestHr').value=p.restHr??'';
   $('pNivo').value=p.nivo||'rekreativni'; $('pUre').value=p.ure??6; $('pCilj').value=p.cilj||'';
   $('pCiljDatum').value=p.ciljDatum||''; $('pCiljTeza').value=p.ciljTeza??'';
+  if($('pOmejitve')) $('pOmejitve').value=p.omejitve||'';
   $('pLthr').value=p.lthr??''; $('pFtp').value=p.ftp??''; $('pShema').value=String(p.shema||5);
   $('gKey').value=state.settings.geminiKey||''; $('gModel').value=state.settings.geminiModel||'gemini-flash-latest';
   renderZones(); renderStrava(); renderIcu(); renderSetExtras();
