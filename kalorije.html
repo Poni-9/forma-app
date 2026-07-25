@@ -464,16 +464,6 @@ input:focus,select:focus{box-shadow:none!important}
     <div id="setLink" class="hint" style="margin-bottom:12px"></div>
     <div id="gsyncHostK"></div>
     <div id="profilK" style="margin-bottom:12px"></div>
-    <div class="hint" style="margin-bottom:10px;padding:9px 11px;border:1px solid var(--border);background:var(--panel)">✨ <b>AI dela brez ključa</b> — samo prijavi se z Googlom (🔵 zgoraj): 10 dejanj/dan zastonj. Ključ spodaj je neobvezen (napredno, neomejeno zastonj).</div>
-    <label class="fld"><span>Gemini API ključ <span style="color:var(--dim)">(neobvezno)</span></span><input type="password" id="sKey" placeholder="ni potreben — Google prijava zadošča"></label>
-    <label class="fld"><span>Model</span>
-      <select id="sModel">
-        <option value="">samodejno (iz namizja / flash-latest)</option>
-        <option value="gemini-flash-latest">gemini-flash-latest</option>
-        <option value="gemini-3.5-flash">gemini-3.5-flash</option>
-        <option value="gemini-2.5-flash">gemini-2.5-flash</option>
-      </select>
-    </label>
     <div class="frm2">
       <label class="fld"><span>Ročni cilj kcal/dan <span style="color:var(--dim)">(prazno = iz plana)</span></span><input type="number" id="sKcal"></label>
       <label class="fld"><span>Teža (kg) <span style="color:var(--dim)">(prazno = iz namizja)</span></span><input type="number" id="sTeza"></label>
@@ -1878,7 +1868,7 @@ function renderProfilK(){
     <label class="fld" style="margin-top:12px"><span>🩹 Omejitve / poškodbe <span style="color:var(--dim)">(AI jih upošteva pri vajah)</span></span><input id="sOmejitve" placeholder="npr. boleče koleno, spodnji hrbet…" value="${esc(p.omejitve||'')}"></label>`;
 }
 function openSettings(){ renderProfilK();
-  $('sKey').value=db.settings.key||''; $('sModel').value=db.settings.model||'';
+  if($('sKey')) $('sKey').value=db.settings.key||''; if($('sModel')) $('sModel').value=db.settings.model||'';
   $('sKcal').value=db.settings.kcalManual??''; $('sTeza').value=db.settings.tezaManual??'';
   const sc=db.settings.sync;
   $('sSync').value = sc?.bin ? `${sc.bin}|${sc.key}` : '';
@@ -1895,7 +1885,7 @@ async function saveSettings(){
     const o=$('sOmejitve');
     if(o){ refreshF(); if(F){ F.settings.profile.omejitve=o.value.trim(); saveF(); } }
   }catch(_){}
-  db.settings.key=$('sKey').value.trim(); db.settings.model=$('sModel').value;
+  if($('sKey')) db.settings.key=$('sKey').value.trim(); if($('sModel')) db.settings.model=$('sModel').value;
   db.settings.kcalManual=+$('sKcal').value||null; db.settings.tezaManual=+$('sTeza').value||null;
   save();
   const code=$('sSync').value.trim();
