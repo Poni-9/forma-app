@@ -1070,6 +1070,34 @@ try{
   }
 }catch(_){}
 state.forma = Object.assign(defaultState().forma, state.forma||{});
+// deduplikacija aktivnosti (sinhronizacija dveh naprav je znala podvojiti isti uvoz)
+function rideKey(r){
+  if(r.icuId!=null) return 'i'+r.icuId;
+  if(r.stravaId!=null) return 's'+r.stravaId;
+  return 'm'+(r.date||'')+'|'+((r.name||'').toLowerCase())+'|'+(Math.round((+r.dist||0)*10))+'|'+(Math.round(+r.time||0));
+}
+function dedupeRides(arr){
+  const seen={}; const out=[];
+  for(const r of arr){
+    if(!r) continue;
+    // smeti: ≤3 min in ≤0,3 km (pomotoma zabeleženi koraki do avta ipd.)
+    if((+r.time||0)<=3 && (+r.dist||0)<=0.3 && r.sport!=='moc') continue;
+    const k=rideKey(r);
+    if(seen[k]){
+      // obdrži bogatejšega (analiza/polyline)
+      const prev=seen[k];
+      if((r.analysis&&!prev.analysis)||(r.polyline&&!prev.polyline)){ out[out.indexOf(prev)]=r; seen[k]=r; }
+      continue;
+    }
+    seen[k]=r; out.push(r);
+  }
+  return out;
+}
+try{
+  const pre=state.rides.length;
+  state.rides=dedupeRides(state.rides);
+  if(state.rides.length!==pre){ localStorage.setItem(DB_KEY, JSON.stringify(state)); console.info('Očiščenih aktivnosti:', pre-state.rides.length); }
+}catch(_){}
 // sanacija pokvarjene ciljne teže (npr. -1)
 try{ const _p9=state.settings.profile; if(_p9.ciljTeza!=null && _p9.ciljTeza<30) _p9.ciljTeza=null; }catch(_){}
 // migracija: aktivnosti + priljubljenost (prefs)
@@ -2939,6 +2967,9 @@ async function stravaImport(quiet){
     for (const a of acts){
       const typ = a.type||a.sport_type||'';
       if (!/Ride|Hike|Walk|Run/i.test(typ)) continue;
+      const _min=(a.moving_time||0)/60, _km=(a.distance||0)/1000;
+      if(/Hike|Walk/i.test(typ) && (_min<15 || _km<1)) continue;
+      if(!/Hike|Walk/i.test(typ) && _min<5) continue;
       const ex = state.rides.find(r=>r.stravaId===a.id);
       if (ex){ if (!ex.polyline && a.map?.summary_polyline) ex.polyline = a.map.summary_polyline; continue; }
       const r = {
@@ -3175,6 +3206,9 @@ async function icuImport(quiet){
     let n = 0;
     for (const a of (Array.isArray(acts)?acts:[])){
       if (!/Ride|Cycling|VirtualRide|Gravel|MountainBike|Hike|Walk|Run/i.test(a.type||'')) continue;
+      const _min=(a.moving_time||a.elapsed_time||0)/60, _km=(a.distance||0)/1000;
+      if(/Hike|Walk/i.test(a.type||'') && (_min<15 || _km<1)) continue;   // mini sprehodi = šum
+      if(!/Hike|Walk/i.test(a.type||'') && _min<5) continue;
       if (state.rides.some(r=>r.icuId===a.id)) continue;
       const date = (a.start_date_local||a.start_date||'').slice(0,10);
       const dist = a.distance!=null ? +(a.distance/1000).toFixed(1) : null;
@@ -3199,6 +3233,7 @@ async function icuImport(quiet){
       const withFtp=(Array.isArray(acts)?acts:[]).filter(a=>a.icu_ftp>0).sort((a,b)=>String(b.start_date_local||'').localeCompare(String(a.start_date_local||'')))[0];
       if(withFtp){ state.settings.profile.ftp=Math.round(withFtp.icu_ftp); for(const r of state.rides) r.tss=estimateTss(r); try{ localStorage.setItem('forma_zone_nudge','1'); }catch(_){} toast('FTP prevzet iz Intervals.icu: '+state.settings.profile.ftp+' W ✓','ok'); }
     }
+    state.rides=dedupeRides(state.rides);
     save(); renderAll();
     if (n) toast(`${quiet?'Samodejno u':'U'}voženih ${n} voženj iz Intervals.icu. 📈`,'ok');
     else if (!quiet) toast('Ni novih voženj (Intervals.icu).','ok');
@@ -3561,9 +3596,9 @@ function mergeForma(local, remote){
   if(!remote) return local; if(!local) return remote;
   const base = ((remote._ts||0) >= (local._ts||0)) ? JSON.parse(JSON.stringify(remote)) : JSON.parse(JSON.stringify(local));
   const map={};
-  for(const r of (local.rides||[]))  if(r&&r.id) map[r.id]=r;
-  for(const r of (remote.rides||[])) if(r&&r.id && !map[r.id]) map[r.id]=r;   // dodaj manjkajoče, ne povozi
-  base.rides = Object.values(map).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  for(const r of (local.rides||[]))  if(r) map[rideKey(r)]=r;
+  for(const r of (remote.rides||[])) if(r && !map[rideKey(r)]) map[rideKey(r)]=r;   // ista aktivnost z dveh naprav = ena
+  base.rides = dedupeRides(Object.values(map)).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   return base;
 }
 async function syncPullF(manual){
