@@ -1003,7 +1003,7 @@ const DB_KEY = 'forma_trener_v1';
 const defaultState = () => ({
   settings: {
     geminiKey:'', geminiModel:'gemini-flash-latest', proxy:'',
-    profile:{ ime:'', starost:null, spol:'moški', visina:null, teza:null, bf:null, maxHr:null, restHr:null, lthr:null, ftp:null, shema:5, nivo:'rekreativec+', ure:6, cilj:'', ciljDatum:null, ciljTeza:null, aktivnosti:['kolo','pohod','moc'] }
+    profile:{ ime:'', starost:null, spol:'moški', visina:null, teza:null, bf:null, maxHr:null, restHr:null, lthr:null, ftp:null, shema:5, nivo:'rekreativec+', ure:6, cilj:'', ciljDatum:null, ciljTeza:null, aktivnosti:['kolo','pohod','moc'], aktPrefs:null }
   },
   strava:{ clientId:'', clientSecret:'', accessToken:'', refreshToken:'', expiresAt:0, athleteName:'' },
   icu:{ athleteId:'', apiKey:'', name:'' },
@@ -1027,12 +1027,19 @@ try{
   }
 }catch(_){}
 state.forma = Object.assign(defaultState().forma, state.forma||{});
-// migracija: aktivnosti (če jih profil še nima, izpelji iz obstoječih voženj)
+// migracija: aktivnosti + priljubljenost (prefs)
 try{
   const _pp=state.settings.profile;
   if(!Array.isArray(_pp.aktivnosti) || !_pp.aktivnosti.length){
     const seen=[...new Set(state.rides.map(r=>r.sport||'kolo'))];
     _pp.aktivnosti = seen.length? [...new Set([...seen,'moc'])] : ['kolo','pohod','moc'];
+  }
+  if(!_pp.aktPrefs || typeof _pp.aktPrefs!=='object'){
+    _pp.aktPrefs={}; _pp.aktivnosti.forEach(a=>_pp.aktPrefs[a]=1);
+    // najpogostejši šport iz voženj = najljubši
+    const cnt={}; state.rides.forEach(r=>{ const s=r.sport||'kolo'; if(s!=='moc') cnt[s]=(cnt[s]||0)+1; });
+    const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0];
+    if(top && _pp.aktPrefs[top[0]] && top[1]>=5) _pp.aktPrefs[top[0]]=2;
   }
 }catch(_){}
 // migracija nivojev na PEAKFORM (3 nivoji)
@@ -1789,7 +1796,14 @@ function renderPlan(){
     const wi = wd ? weatherInfo(wd.code) : null;
     const outdoor = chipClass(d.tip)==='pohod' || (['vzdrzljivost','tempo','intervali','regeneracija'].includes(chipClass(d.tip)) || (sl.l==='KOLO'));
     const wxBadge = wi ? `<span class="dr-wx ${(wi.bad&&outdoor)?'warn':''}" title="${wi.t}, dež ${wd.pop}%">${wi.e} ${wd.tmax}°${wd.pop>=40?` · ${wd.pop}%💧`:''}</span>` : '';
-    const wxWarn = (wi && wi.bad && outdoor && !isRest && !done) ? `<div class="dr-wxwarn">${wi.e} Napoved: ${wi.t} (dež ${wd.pop}%) — ${chipClass(d.tip)==='pohod'?'razmisli o prestavitvi pohoda na lepši dan':'ob dežju raje trenažer ali trening moči'}.</div>` : '';
+    let wxWarn='';
+    if (wi && wi.bad && outdoor && !isRest && !done){
+      const win=dryWindow(d.datum, d.trajanje_min||60);
+      const rp=rainPeriodTxt(d.datum);
+      wxWarn = win
+        ? `<div class="dr-wxwarn" style="color:var(--green);border-color:rgba(95,214,122,.35);background:rgba(95,214,122,.07)">☔→☀️ Dež ${rp?('okoli '+rp):'del dneva'} — <b>pojdi med ${win.from}h in ${win.to}h</b> (${win.pop}% možnost dežja) in trening normalno opraviš zunaj.</div>`
+        : `<div class="dr-wxwarn">${wi.e} ${wi.t} ves dan (dež ${wd.pop}%) — ${chipClass(d.tip)==='pohod'?'prestavi pohod na lepši dan':'danes raje trenažer ali moč'}.</div>`;
+    }
     const cols = [];
     if (d.opis) cols.push(`<div class="dr-col"><div class="dr-lbl">${sl.i} ${sl.l}</div>${opisHtml(d.opis)}</div>`);
     if (d.vaje) cols.push(`<div class="dr-col"><div class="dr-lbl">🏋️ Vaje (muscle-up)</div>${d.vaje.includes('\n')?opisHtml(d.vaje):esc(d.vaje).split(/,\s(?=[A-ZČŠŽ])/).join('<br>')}</div>`);
@@ -1898,20 +1912,58 @@ function weatherInfo(c){
 const weatherByDate = iso => (state.weather?.days||[]).find(d=>d.date===iso) || null;
 async function getWeather(force){
   const w=state.weather;
-  if(!force && w && (Date.now()-(w.ts||0) < 3*3600e3) && (w.days||[]).some(d=>d.date>=todayIso())) return w;
+  const hasHours = w && (w.days||[]).some(d=>Array.isArray(d.hours)&&d.hours.length);
+  if(!force && hasHours && (Date.now()-(w.ts||0) < 3*3600e3) && (w.days||[]).some(d=>d.date>=todayIso())) return w;
   try{
-    const u=`https://api.open-meteo.com/v1/forecast?latitude=${VODICE.lat}&longitude=${VODICE.lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,windspeed_10m_max&timezone=Europe%2FLjubljana&forecast_days=7`;
-    const d=await (await fetch(u)).json(), dd=d.daily;
-    const days=(dd.time||[]).map((t,i)=>({date:t, code:dd.weathercode[i], tmax:Math.round(dd.temperature_2m_max[i]), tmin:Math.round(dd.temperature_2m_min[i]), pop:dd.precipitation_probability_max[i]??0, rain:dd.precipitation_sum[i]??0, wind:Math.round(dd.windspeed_10m_max[i]??0)}));
+    const u=`https://api.open-meteo.com/v1/forecast?latitude=${VODICE.lat}&longitude=${VODICE.lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,windspeed_10m_max&hourly=precipitation_probability,weathercode&timezone=Europe%2FLjubljana&forecast_days=7`;
+    const d=await (await fetch(u)).json(), dd=d.daily, hh=d.hourly||{};
+    const byDay={};
+    (hh.time||[]).forEach((t,i)=>{
+      const day=t.slice(0,10), h=+t.slice(11,13);
+      if(h<6||h>21) return;
+      (byDay[day]=byDay[day]||[]).push({h, pop:hh.precipitation_probability?.[i]??0, code:hh.weathercode?.[i]??0});
+    });
+    const days=(dd.time||[]).map((t,i)=>({date:t, code:dd.weathercode[i], tmax:Math.round(dd.temperature_2m_max[i]), tmin:Math.round(dd.temperature_2m_min[i]), pop:dd.precipitation_probability_max[i]??0, rain:dd.precipitation_sum[i]??0, wind:Math.round(dd.windspeed_10m_max[i]??0), hours:byDay[t]||[]}));
     state.weather={ts:Date.now(), days}; save();
     return state.weather;
   }catch(e){ console.warn('vreme:',e.message); return w||null; }
 }
+/* najboljše SUHO OKNO v dnevu za trening dane dolžine (ure 6–21) */
+function dryWindow(iso, durMin){
+  const wd=weatherByDate(iso);
+  if(!wd || !Array.isArray(wd.hours) || !wd.hours.length) return null;
+  const need=Math.max(1, Math.ceil((durMin||60)/60));
+  const hs=wd.hours;
+  let best=null;
+  for(let i=0;i+need<=hs.length;i++){
+    const seg=hs.slice(i,i+need);
+    if(seg.some((x,k)=>x.h!==seg[0].h+k)) continue;           // zvezno
+    const mx=Math.max(...seg.map(x=>x.pop));
+    const wet=seg.some(x=>weatherInfo(x.code).bad>=2);
+    if(wet) continue;
+    if(mx<=45 && (!best || mx<best.pop)) best={from:seg[0].h, to:seg[seg.length-1].h+1, pop:mx};
+  }
+  return best;
+}
+/* kdaj čez dan dežuje (za sporočilo) */
+function rainPeriodTxt(iso){
+  const wd=weatherByDate(iso);
+  if(!wd?.hours?.length) return '';
+  const wet=wd.hours.filter(x=>x.pop>=55);
+  if(!wet.length) return '';
+  return `${wet[0].h}h–${wet[wet.length-1].h+1}h`;
+}
 function weatherText(){
   const w=state.weather; if(!w?.days?.length) return '';
+  const seg=(hs,a,b)=>{ const s=hs.filter(x=>x.h>=a&&x.h<b); return s.length? Math.max(...s.map(x=>x.pop)) : null; };
   const rows=w.days.filter(d=>d.date>=todayIso()).map(d=>{ const wi=weatherInfo(d.code);
-    return `- ${d.date}: ${wi.t}, ${d.tmin}–${d.tmax}°C, verjetnost padavin ${d.pop}%${d.rain>=2?` (${d.rain} mm)`:''}${d.wind>=35?`, veter ${d.wind} km/h`:''}`; }).join('\n');
-  return `VREMENSKA NAPOVED (Vodice in okolica, naslednji dnevi):\n${rows}`;
+    let deli='';
+    if(Array.isArray(d.hours)&&d.hours.length){
+      const j=seg(d.hours,6,12), p=seg(d.hours,12,17), v=seg(d.hours,17,22);
+      deli=` | PO URAH: dopoldne ${j??'?'}%, popoldne ${p??'?'}%, zvečer ${v??'?'}% padavin`;
+    }
+    return `- ${d.date}: ${wi.t}, ${d.tmin}–${d.tmax}°C, max padavine ${d.pop}%${deli}${d.wind>=35?`, veter ${d.wind} km/h`:''}`; }).join('\n');
+  return `VREMENSKA NAPOVED (Vodice in okolica) — POZOR: dež je pogosto samo DEL dneva. Če je katerikoli del dneva suh, trening ostane ZUNAJ in v opisu navedi priporočeni čas (npr. "pojdi dopoldne — dež šele od 17h"). Trenažer/notranjo vadbo predpiši SAMO, če je mokro ves dan:\n${rows}`;
 }
 async function renderWeather(){
   const el=$('weatherStrip'); if(!el) return;
@@ -1950,7 +2002,7 @@ function buildContext(){
   if (_bmi) L.push(`- ITM: ${_bmi}${_bmr?` | bazalna poraba (BMR) ~${_bmr} kcal | vzdrževanje (TDEE) ~${_tdee} kcal/dan`:''}`);
   L.push(`- max utrip: ${p.maxHr||'?'} | utrip v mirovanju: ${p.restHr||'?'} (trenira po srčnem utripu, NIMA merilca moči)`);
   L.push(`- ciljni obseg: ~${p.ure||6} ur/teden | cilji: ${p.cilj||'splošna forma'}`);
-  L.push(`- IZBRANE AKTIVNOSTI (edine dovoljene v planih): ${userAkt().map(x=>AKT_INFO[x]||x).join(', ')}`);
+  L.push(`- IZBRANE AKTIVNOSTI (edine dovoljene; ❤️ = najljubše, naj prevladujejo): ${aktLabel()}`);
   if (p.omejitve) L.push(`- ⚠ ZDRAVSTVENE OMEJITVE (OBVEZNO upoštevaj — prilagodi/izpusti vaje, ki bi jih poslabšale): ${p.omejitve}`);
   if (_tdee){
     const gd0 = goalDeficit();
@@ -2091,7 +2143,18 @@ const STRATEGIJA = `POČITNIŠKA STRATEGIJA "LEAN" — razkrij mišico pod maš�
 
 /* ---------- dinamična strategija glede na aktivnosti uporabnika ---------- */
 const AKT_INFO = { kolo:'🚴 Kolo', tek:'🏃 Tek', pohod:'🥾 Pohodi/hribi', moc:'💪 Moč (doma/fitnes)' };
-function userAkt(){ const a=state.settings.profile.aktivnosti; return (Array.isArray(a)&&a.length)? a : ['kolo','pohod','moc']; }
+function aktPrefs(){
+  const p=state.settings.profile;
+  if(p.aktPrefs && Object.keys(p.aktPrefs).length) return p.aktPrefs;
+  const o={}; (Array.isArray(p.aktivnosti)&&p.aktivnosti.length?p.aktivnosti:['kolo','pohod','moc']).forEach(a=>o[a]=1);
+  return o;
+}
+function userAkt(){ return Object.keys(aktPrefs()); }
+function aktFavs(){ const pf=aktPrefs(); return Object.keys(pf).filter(k=>pf[k]===2); }
+function aktLabel(){
+  const pf=aktPrefs();
+  return Object.keys(pf).map(k=>(pf[k]===2?'❤️ ':'')+(AKT_INFO[k]||k)).join(', ');
+}
 function stil(){
   const a=userAkt();
   const tipi=[a.includes('kolo')?'KOLO':null, a.includes('tek')?'TEK':null, a.includes('moc')?'MOČ (zgibi, sklece, dipsi, trebušnjaki — serije × ponovitve)':null, a.includes('pohod')?'POHOD':null].filter(Boolean).join(', ');
@@ -2104,8 +2167,13 @@ function stil(){
 function strategija(){
   const a=userAkt();
   const vzdrz=[a.includes('kolo')?'kolo':null, a.includes('tek')?'tek':null, a.includes('pohod')?'pohod':null].filter(Boolean);
-  const jedro = vzdrz.length>1? `IZMENJAVA: ${vzdrz.join(' / ')} (nikoli dva enaka težka dneva zaporedoma)` : vzdrz.length===1? vzdrz[0].toUpperCase() : 'MOČ in hoja';
-  const L=[`STRATEGIJA (STRIKTNO — uporabnikove izbrane aktivnosti: ${userAkt().map(x=>AKT_INFO[x]||x).join(', ')}; drugih športov NE predpisuj!):`];
+  const favs=aktFavs().filter(x=>vzdrz.includes(x));
+  const obcasno=vzdrz.filter(x=>!favs.includes(x));
+  let jedro;
+  if(favs.length && obcasno.length) jedro = `GLAVNINA (≈70–80 % vzdržljivostnih dni): ${favs.join(' / ')} — to ima NAJRAJE; OBČASNO (1–2× tedensko, za popestritev): ${obcasno.join(' / ')}`;
+  else if(vzdrz.length>1) jedro = `IZMENJAVA: ${vzdrz.join(' / ')} (nikoli dva enaka težka dneva zaporedoma)`;
+  else jedro = vzdrz.length===1? vzdrz[0].toUpperCase() : 'MOČ in hoja';
+  const L=[`STRATEGIJA (STRIKTNO — uporabnikove aktivnosti s priljubljenostjo: ${aktLabel()}; drugih športov NE predpisuj! ❤️ = najljubše → uporabljaj največ):`];
   L.push(`1. KALORIČNI DEFICIT + PREHRANA: maščoba gre dol le ob deficitu, VISOK vnos beljakovin ščiti mišice. Obroke pripravlja družina — NIKOLI ne predpisuj jedilnikov! Svetuj le, kar lahko kolesar SAM kontrolira: velikost porcije, lasten beljakovinski dodatek (skuta, jajca, jogurt, tuna), brez sladkarij/sladkih pijač, 2,5 l vode.`);
   if(a.includes('moc')) L.push(`2. MOČ ima KONKRETEN CILJ: muscle-up progresija (sklece+zgibi+dipsi+trup → eksplozivni zgibi → negativni MU → poskusi). 2–3× tedensko po 20–40 min, kot dodatek h glavnemu dnevu ali kratek samostojen dan. Ko postane prelahko, dodaj obremenitev.`);
   else L.push(`2. MOČ: uporabnik je NE izvaja — ne predpisuj je; za trup dodaj le kratke vaje stabilizacije (plank), če sploh.`);
@@ -2393,7 +2461,7 @@ ${stil()}
 ${strategija()}
 
 NAVODILA:
-- UPOŠTEVAJ VREME (napoved zgoraj, Vodice in okolica): pohode in kolo načrtuj na SUHE/lepe dni. Ob dežju, plohah ali nevihti (padavine >60 % ali koda nevihte) NE načrtuj pohoda; kolo tak dan prestavi na trenažer (v "opis" napiši "ob dežju: trenažer") ali ga zamenjaj z dnevom moči/regeneracije. Najtežje/najdaljše dneve (dolg pohod, intervali) postavi na NAJLEPŠE dni v tednu. Ob vročini (>30 °C) svetuj zgodnji termin in več vode. Pri vsakem zunanjem dnevu na kratko omeni vreme (npr. "sončno ~25°, idealno za hribe").
+- UPOŠTEVAJ VREME PO URAH (napoved zgoraj): dež je pogosto samo DEL dneva! Če je vsaj del dneva suh, trening OSTANE ZUNAJ — v "opis" OBVEZNO napiši priporočeni termin (npr. "pojdi dopoldne, dež šele od 17h" ali "po 16h se zjasni"). Trenažer/moč namesto zunanjega treninga predpiši SAMO, ko je mokro ves dan (vsi deli dneva ≥60 %). Najtežje/najdaljše dneve postavi na najlepše dni. Ob vročini (>30 °C) svetuj zgodnji/večerni termin. Pri vsakem zunanjem dnevu na kratko omeni vreme in najboljši čas.
 - Plan gradi PO METODOLOGIJI TRENERJA (STIL zgoraj — enaki tipi treningov in struktura kot v profesionalnih planih), a ga PRILAGODI temu kolesarju: njegovemu AI profilu (krepi šibkosti, izkoristi moči), formi in ciljem.
 - Plan se začne DANES, ne v ponedeljek! Prvi dan določi po TRENUTNI svežini (TSB) in zadnjih vožnjah: če je svež in ni treniral, lahko takoj kakovosten trening; če je utrujen ali je danes že treniral, začni z regeneracijo/oddihom. NE začenjaj avtomatsko z oddihom.
 - Kolesar trenira po srčnem utripu — cone C1–C5 iz konteksta (ključnim intervalom pripiši tudi utrip, npr. "C4 = utrip 160–172").
@@ -3686,8 +3754,8 @@ function renderSetExtras(){
     lc.innerHTML=L.map(([v,n,d])=>`<div class="lvl-card ${p.nivo===v?'on':''}" onclick="setNivo('${v}')">
       <div><div class="ln">${n}</div><div class="ld">${d}</div></div>${p.nivo===v?'<div class="lm">●</div>':''}</div>`).join('')+
       `<div style="margin-top:14px;font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);text-transform:uppercase">Tvoje aktivnosti</div>
-       <div class="row" style="gap:8px;margin-top:8px">${[['kolo','🚴 Kolo'],['tek','🏃 Tek'],['pohod','🥾 Pohodi'],['moc','💪 Moč']].map(([v,n])=>`<div class="onb-chip ${userAkt().includes(v)?'on':''}" style="padding:7px 13px;font-size:12.5px" onclick="toggleAkt('${v}')">${n}</div>`).join('')}</div>
-       <div class="hint" style="margin:6px 0 0">AI gradi plane SAMO iz izbranih aktivnosti.</div>`+
+       <div class="row" style="gap:8px;margin-top:8px">${[['kolo','🚴 Kolo'],['tek','🏃 Tek'],['pohod','🥾 Pohodi'],['moc','💪 Moč']].map(([v,n])=>{const pf=aktPrefs()[v]||0;return `<div class="onb-chip ${pf?'on':''}" style="padding:7px 13px;font-size:12.5px;${pf===2?'border-color:var(--yellow);':''}" onclick="toggleAkt('${v}')">${pf===2?'❤️ ':''}${n}</div>`;}).join('')}</div>
+       <div class="hint" style="margin:6px 0 0">Klik: izbrano → <b>❤️ najljubše</b> → izklop. AI gradi plane samo iz izbranih; ❤️ prevladujejo.</div>`+
       `<div class="hint" style="margin:10px 0 0">Nivo upošteva AI pri planih, razlagah in prehrani. Zamenjaš ga kadar koli.</div>`+
       `<div style="margin-top:10px;font-size:12px;color:var(--dim)">${LANG==='en'?'Language':'Jezik'}: <b style="color:var(--soft)">${LANG==='en'?'English':'Slovenščina'}</b> · <span style="cursor:pointer;color:var(--acc2)" onclick="toggleLang()">${LANG==='en'?'Slovenščina':'English'}</span></div>`;
   }
@@ -3706,12 +3774,14 @@ function renderSetExtras(){
 }
 function toggleAkt(v){
   const p=state.settings.profile;
-  p.aktivnosti=userAkt().slice();
-  const i=p.aktivnosti.indexOf(v);
-  if(i>-1){ if(p.aktivnosti.length>1) p.aktivnosti.splice(i,1); else { toast('Vsaj ena aktivnost mora ostati.','err'); return; } }
-  else p.aktivnosti.push(v);
+  const pf=Object.assign({}, aktPrefs());
+  const cur=pf[v]||0;
+  if(cur===0) pf[v]=1;
+  else if(cur===1) pf[v]=2;
+  else { if(Object.keys(pf).length<=1){ toast('Vsaj ena aktivnost mora ostati.','err'); return; } delete pf[v]; }
+  p.aktPrefs=pf; p.aktivnosti=Object.keys(pf);
   save(); renderSetExtras();
-  toast('Aktivnosti: '+p.aktivnosti.map(x=>AKT_INFO[x]||x).join(', ')+' — plani bodo zgrajeni iz teh. ✓','ok');
+  toast('Aktivnosti: '+aktLabel()+' ✓','ok');
 }
 function setNivo(v){ state.settings.profile.nivo=v; save(); fillSettings(); toast('Nivo nastavljen: '+v+'. AI ga upošteva pri naslednjem planu.','ok'); }
 async function renderSubCard(){
@@ -3732,7 +3802,7 @@ async function renderSubCard(){
 /* ================================================================
    ONBOARDING (prvi zagon)
 ================================================================ */
-const onb={ step:1, level:1, cilj:'Razkrij mišice pod maščobo', ure:7, starost:'', teza:'', akt:['kolo','pohod','moc'] };
+const onb={ step:1, level:1, cilj:'Razkrij mišice pod maščobo', ure:7, starost:'', teza:'', prefs:{kolo:1,pohod:1,moc:1} };
 const ONB_LVLS=[
  {icon:'🔥',name:'Postani fit',val:'postani fit',desc:'Za začetek poti: kolo + osnovna moč + prehrana brez štetja vsake kalorije. Enostavne razlage, brez žargona.',tag:'PLAN 3–5 H / TEDEN',ure:4},
  {icon:'🚴',name:'Rekreativec+',val:'rekreativec+',desc:'Hočeš biti dober na kolesu: strukturirani intervali, FTP, prehrana za performanco, moč 1–2× tedensko.',tag:'PLAN 6–9 H / TEDEN',ure:7},
@@ -3758,9 +3828,9 @@ function onbRender(){
         <label class="fld" style="margin:0"><span>Starost</span><input type="number" id="onbStarost" value="${onb.starost}"></label>
         <label class="fld" style="margin:0"><span>Teža (kg)</span><input type="number" step="0.1" id="onbTeza" value="${onb.teza}"></label>
       </div>
-      <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Katere aktivnosti? <span style="color:var(--acc2)">(izberi vse, ki jih izvajaš ali želiš)</span></div>
-        <div class="row" style="gap:8px">${[['kolo','🚴 Kolo'],['tek','🏃 Tek'],['pohod','🥾 Pohodi'],['moc','💪 Moč']].map(([v,n])=>`<div class="onb-chip ${onb.akt.includes(v)?'on':''}" onclick="onbAkt('${v}')">${n}</div>`).join('')}</div>
-        <div class="hint" style="margin:6px 0 0">Nimaš kolesa? Nočeš teči? Ni problema — plan bo zgrajen samo iz izbranih. Kasneje spremeniš v Nastavitvah.</div></div>
+      <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Katere aktivnosti — in katere imaš najraje?</div>
+        <div class="row" style="gap:8px">${[['kolo','🚴 Kolo'],['tek','🏃 Tek'],['pohod','🥾 Pohodi'],['moc','💪 Moč']].map(([v,n])=>{const pf=onb.prefs[v]||0;return `<div class="onb-chip ${pf?'on':''}" style="${pf===2?'border-color:#ffc247;':''}" onclick="onbAkt('${v}')">${pf===2?'❤️ ':''}${n}</div>`;}).join('')}</div>
+        <div class="hint" style="margin:6px 0 0">Klik: izbrano → <b>❤️ najljubše</b> → izklop. Najljubši športi prevladujejo v planu (npr. ❤️ kolo + tek = večinoma kolo, tek 1–2× za popestritev). Nimaš kolesa? Ga pač ne izbereš.</div></div>
       <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Glavni cilj</div>
         <div class="row" style="gap:8px">${['Razkrij mišice pod maščobo','Splošna kondicija','Višji FTP','Muscle-up','10 km teka'].map(c=>`<div class="onb-chip ${onb.cilj===c?'on':''}" onclick="onb.cilj='${c}';onbCapture();onbRender()">${c}</div>`).join('')}</div></div>
       <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Koliko časa imaš na teden?</div>
@@ -3779,9 +3849,10 @@ function onbRender(){
 }
 function onbAkt(v){
   onbCapture();
-  const i=onb.akt.indexOf(v);
-  if(i>-1){ if(onb.akt.length>1) onb.akt.splice(i,1); }
-  else onb.akt.push(v);
+  const cur=onb.prefs[v]||0;
+  if(cur===0) onb.prefs[v]=1;
+  else if(cur===1) onb.prefs[v]=2;
+  else { if(Object.keys(onb.prefs).length>1) delete onb.prefs[v]; }
   onbRender();
 }
 function onbCapture(){
@@ -3802,7 +3873,8 @@ function onbFinish(tab){
   if(onb.starost) p.starost=+onb.starost;
   if(onb.teza) p.teza=+onb.teza;
   p.ure=onb.ure; if(onb.cilj) p.cilj=onb.cilj;
-  p.aktivnosti=[...onb.akt];
+  p.aktPrefs=Object.assign({},onb.prefs);
+  p.aktivnosti=Object.keys(onb.prefs);
   localStorage.setItem('forma_onb_done','1');
   save(); fillSettings(); renderAll();
   $('onbBack').classList.remove('open');

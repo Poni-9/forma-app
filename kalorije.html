@@ -1109,7 +1109,15 @@ function renderDanes(){
   getWeatherK().then(w=>{
     const t0=(w?.days||[]).find(d=>d.date===todayIso());
     const wEl=$('dnWx');
-    if(t0&&wEl){ const wi=weatherInfo(t0.code); wEl.textContent = wi.e+' '+t0.tmax+'°'+((wi.bad&&pd&&!isMoc&&!isRest)?' → RAJE NOTRI':''); }
+    if(t0&&wEl){
+      const wi=weatherInfo(t0.code);
+      let extra='';
+      if(wi.bad&&pd&&!isMoc&&!isRest){
+        const win=dryWindowK(todayIso(), pd.trajanje_min||60);
+        extra = win? ` → POJDI ${win.from}–${win.to}h` : ' → RAJE NOTRI';
+      }
+      wEl.textContent = wi.e+' '+t0.tmax+'°'+extra;
+    }
   }).catch(()=>{});
 }
 
@@ -1181,13 +1189,29 @@ function weatherInfo(c){
 }
 let wxCache=null;
 async function getWeatherK(){
-  if(wxCache && (Date.now()-wxCache.ts < 3*3600e3)) return wxCache;
+  if(wxCache && (Date.now()-wxCache.ts < 3*3600e3) && (wxCache.days||[]).some(d=>d.hours&&d.hours.length)) return wxCache;
   try{
-    const u='https://api.open-meteo.com/v1/forecast?latitude=46.19&longitude=14.49&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Europe%2FLjubljana&forecast_days=7';
-    const d=await (await fetch(u)).json(), dd=d.daily;
-    wxCache={ts:Date.now(), days:(dd.time||[]).map((t,i)=>({date:t,code:dd.weathercode[i],tmax:Math.round(dd.temperature_2m_max[i]),pop:dd.precipitation_probability_max[i]??0}))};
+    const u='https://api.open-meteo.com/v1/forecast?latitude=46.19&longitude=14.49&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&hourly=precipitation_probability,weathercode&timezone=Europe%2FLjubljana&forecast_days=7';
+    const d=await (await fetch(u)).json(), dd=d.daily, hh=d.hourly||{};
+    const byDay={};
+    (hh.time||[]).forEach((t,i)=>{ const day=t.slice(0,10), h=+t.slice(11,13); if(h<6||h>21) return; (byDay[day]=byDay[day]||[]).push({h,pop:hh.precipitation_probability?.[i]??0,code:hh.weathercode?.[i]??0}); });
+    wxCache={ts:Date.now(), days:(dd.time||[]).map((t,i)=>({date:t,code:dd.weathercode[i],tmax:Math.round(dd.temperature_2m_max[i]),pop:dd.precipitation_probability_max[i]??0,hours:byDay[t]||[]}))};
     return wxCache;
   }catch(e){ return F?.weather || null; }   // rezerva: iz sinhroniziranega plana
+}
+function dryWindowK(iso, durMin){
+  const wd=(wxCache?.days||[]).find(d=>d.date===iso);
+  if(!wd?.hours?.length) return null;
+  const need=Math.max(1, Math.ceil((durMin||60)/60));
+  const hs=wd.hours; let best=null;
+  for(let i=0;i+need<=hs.length;i++){
+    const seg=hs.slice(i,i+need);
+    if(seg.some((x,k)=>x.h!==seg[0].h+k)) continue;
+    if(seg.some(x=>weatherInfo(x.code).bad>=2)) continue;
+    const mx=Math.max(...seg.map(x=>x.pop));
+    if(mx<=45 && (!best||mx<best.pop)) best={from:seg[0].h,to:seg[seg.length-1].h+1,pop:mx};
+  }
+  return best;
 }
 async function renderWeatherK(auto){
   const el=$('weatherStripK');
@@ -1200,7 +1224,13 @@ async function renderWeatherK(auto){
   checkWeatherAdapt(auto);
 }
 /* zaznaj konflikte vreme↔plan (zunanji dan z dežjem) in po potrebi samodejno prilagodi */
-function weatherBadDay(d){ if(!d) return false; const wi=weatherInfo(d.code); return wi.bad>=2 || (wi.bad>=1 && d.pop>=60); }
+function weatherBadDay(d){
+  if(!d) return false;
+  const wi=weatherInfo(d.code);
+  const dayBad = wi.bad>=2 || (wi.bad>=1 && d.pop>=60);
+  if(!dayBad) return false;
+  return !dryWindowK(d.date, 90);   // če obstaja ≥90 min suho okno, dan NI izgubljen
+}
 function weatherConflicts(){
   if(!wxCache?.days?.length || !F?.plans) return [];
   const today=todayIso(), to=isoDate(addDays(new Date(),6)), out=[];
@@ -1216,9 +1246,24 @@ function weatherConflicts(){
 async function checkWeatherAdapt(auto){
   const el=$('rebalMsg'); const conf=weatherConflicts(); const sig=conf.join(',');
   if(el){
-    el.innerHTML = conf.length
-      ? `<div class="link-banner" style="background:rgba(77,163,255,.1);border-color:rgba(77,163,255,.4);color:#cfe3ff;margin-top:10px">🌦️ Vreme se je spremenilo — za ${conf.length} zunanji dan je napovedan dež. Priporočam <b>⚖️ Prilagodi teden</b> spodaj.</div>`
-      : '';
+    // dnevi z dežjem, a s suhim oknom → samo namig o terminu (brez prestavljanja)
+    let winTips='';
+    try{
+      const today=todayIso(), to=isoDate(addDays(new Date(),3));
+      for(const p of (F?.plans||[])) for(const dd of (p.days||[])){
+        if(dd.datum<today||dd.datum>to||dd.done) continue;
+        const wd=(wxCache?.days||[]).find(x=>x.date===dd.datum);
+        if(!wd) continue;
+        const wi=weatherInfo(wd.code);
+        if(wi.bad>=1 && wd.pop>=55){
+          const win=dryWindowK(dd.datum, dd.trajanje_min||60);
+          if(win){ const dn=dd.datum===today?'danes':DNEVI[(parseIso(dd.datum).getDay()+6)%7]; winTips+=`<div class="link-banner" style="background:rgba(95,214,122,.08);border-color:rgba(95,214,122,.35);margin-top:10px">☔→☀️ ${dn[0].toUpperCase()+dn.slice(1)} dež le del dneva — <b>pojdi med ${win.from}h in ${win.to}h</b> (${win.pop}% možnost) in trening opraviš zunaj.</div>`; }
+        }
+      }
+    }catch(_){}
+    el.innerHTML = winTips + (conf.length
+      ? `<div class="link-banner" style="background:rgba(77,163,255,.1);border-color:rgba(77,163,255,.4);color:#cfe3ff;margin-top:10px">🌧️ Za ${conf.length} zunanji dan je dež VES dan (brez suhega okna). Priporočam <b>⚖️ Prilagodi teden</b> spodaj.</div>`
+      : '');
   }
   if(auto && sig && sig!==db.settings.wxSig && (Date.now()-(db.settings.wxTs||0) > 2*3600e3) && geminiKey()){
     db.settings.wxSig=sig; db.settings.wxTs=Date.now(); save();
@@ -1327,7 +1372,8 @@ async function rebalanceWeek(){
   const btn=$('btnRebal'); const orig=btn.innerHTML; btn.disabled=true; btn.innerHTML='<span class="spin"></span> Prilagajam teden …';
   try{
     const wx = await getWeatherK();
-    const wxText = wx?.days?.length ? 'VREMENSKA NAPOVED (Vodice):\n'+wx.days.filter(d=>d.date>=today).map(d=>{const wi=weatherInfo(d.code);return `- ${d.datum||d.date}: ${wi.t}, ${d.tmax}°, dež ${d.pop}%`;}).join('\n') : '';
+    const segK=(hs,a,b)=>{ const s=(hs||[]).filter(x=>x.h>=a&&x.h<b); return s.length? Math.max(...s.map(x=>x.pop)) : null; };
+    const wxText = wx?.days?.length ? 'VREMENSKA NAPOVED PO URAH (Vodice) — dež je pogosto le DEL dneva: če je del dneva suh, trening OSTANE zunaj in v opis napiši priporočeni termin (npr. "pojdi do 17h"). Notri prestavi samo, ko je mokro ves dan:\n'+wx.days.filter(d=>d.date>=today).map(d=>{const wi=weatherInfo(d.code);const j=segK(d.hours,6,12),p=segK(d.hours,12,17),v=segK(d.hours,17,22);return `- ${d.date}: ${wi.t}, ${d.tmax}° | dopoldne ${j??'?'}%, popoldne ${p??'?'}%, zvečer ${v??'?'}% dežja`;}).join('\n') : '';
     const prof=F?.settings?.profile||{};
     const r=await gemini([{text:`Si kolesarski trener. Kolesar želi, da glede na to, KAKO je dejansko izvedel treninge ta teden (v primerjavi s predpisanim) IN glede na VREME, PAMETNO prilagodiš PREOSTANEK tedna, da tedenski cilj ostane smiseln.
 Profil: ${prof.teza||'?'} kg, višina ${prof.visina||'?'} cm, cilj "${prof.cilj||'lean-fit'}", tedenski obseg ~${prof.ure||6} h. Danes je ${today}.
@@ -1802,15 +1848,24 @@ function delEntry(iso,id){
    NASTAVITVE
 ================================================================ */
 const AKT_INFO_K={kolo:'🚴 Kolo',tek:'🏃 Tek',pohod:'🥾 Pohodi',moc:'🤸 Moč'};
-function userAktK(){ refreshF(); const a=F?.settings?.profile?.aktivnosti; return (Array.isArray(a)&&a.length)?a:['kolo','pohod','moc']; }
+function aktPrefsK(){
+  refreshF(); const p=F?.settings?.profile||{};
+  if(p.aktPrefs && Object.keys(p.aktPrefs).length) return p.aktPrefs;
+  const o={}; (Array.isArray(p.aktivnosti)&&p.aktivnosti.length?p.aktivnosti:['kolo','pohod','moc']).forEach(a=>o[a]=1);
+  return o;
+}
+function userAktK(){ return Object.keys(aktPrefsK()); }
 function toggleAktK(v){
   refreshF(); if(!F){ toast('Namizje še ni sinhronizirano.','err'); return; }
-  const p=F.settings.profile; p.aktivnosti=userAktK().slice();
-  const i=p.aktivnosti.indexOf(v);
-  if(i>-1){ if(p.aktivnosti.length>1) p.aktivnosti.splice(i,1); else { toast('Vsaj ena mora ostati.','err'); return; } }
-  else p.aktivnosti.push(v);
+  const p=F.settings.profile;
+  const pf=Object.assign({}, aktPrefsK());
+  const cur=pf[v]||0;
+  if(cur===0) pf[v]=1;
+  else if(cur===1) pf[v]=2;
+  else { if(Object.keys(pf).length<=1){ toast('Vsaj ena mora ostati.','err'); return; } delete pf[v]; }
+  p.aktPrefs=pf; p.aktivnosti=Object.keys(pf);
   saveF(); renderProfilK();
-  toast('Športi: '+p.aktivnosti.map(x=>AKT_INFO_K[x]||x).join(', ')+' ✓','');
+  toast('Športi: '+Object.keys(pf).map(x=>(pf[x]===2?'❤️ ':'')+(AKT_INFO_K[x]||x)).join(', ')+' ✓','');
 }
 function renderProfilK(){
   const el=$('profilK'); if(!el) return;
@@ -1818,7 +1873,8 @@ function renderProfilK(){
   const p=F?.settings?.profile||{};
   el.innerHTML=`
     <div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin-bottom:6px">Tvoji športi <span style="font-weight:600">(plan gradi samo iz teh)</span></div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap">${[['kolo','🚴 Kolo'],['tek','🏃 Tek'],['pohod','🥾 Pohodi'],['moc','🤸 Moč']].map(([v,n])=>`<div style="border:1px solid ${userAktK().includes(v)?'var(--acc)':'var(--border2)'};background:${userAktK().includes(v)?'rgba(255,61,46,.1)':'transparent'};padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer" onclick="toggleAktK('${v}')">${n}</div>`).join('')}</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">${[['kolo','🚴 Kolo'],['tek','🏃 Tek'],['pohod','🥾 Pohodi'],['moc','🤸 Moč']].map(([v,n])=>{const pf=aktPrefsK()[v]||0;return `<div style="border:1px solid ${pf===2?'#ffc247':pf?'var(--acc)':'var(--border2)'};background:${pf?'rgba(255,61,46,.1)':'transparent'};padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer" onclick="toggleAktK('${v}')">${pf===2?'❤️ ':''}${n}</div>`;}).join('')}</div>
+    <div class="hint" style="margin-top:5px">Klik: izbrano → ❤️ najljubše → izklop. ❤️ prevladujejo v planu.</div>
     <label class="fld" style="margin-top:12px"><span>🩹 Omejitve / poškodbe <span style="color:var(--dim)">(AI jih upošteva pri vajah)</span></span><input id="sOmejitve" placeholder="npr. boleče koleno, spodnji hrbet…" value="${esc(p.omejitve||'')}"></label>`;
 }
 function openSettings(){ renderProfilK();
