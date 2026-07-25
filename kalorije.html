@@ -1794,7 +1794,26 @@ renderWeatherK(true);   // preveri vreme ob zagonu
     if(!fb.uid) return; const loc=readLocal(); const j=JSON.stringify(loc); if(j===fb.last) return; fb.last=j;
     try{ await fb.db.collection('formaSync').doc(fb.uid).set({forma:loc.forma||null,kalorije:loc.kalorije||null,_ts:Date.now()},{merge:true}); st('Sinhronizirano ✓ '+new Date().toLocaleTimeString()); }catch(e){ st('Napaka pri pošiljanju: '+(e.message||e)); }
   }
-  function start(){ stop(); fb.timer=setInterval(push,15000); window.addEventListener('beforeunload',push); document.addEventListener('visibilitychange',()=>{ if(document.hidden) push(); }); }
+  let pulling=false;
+  async function pull(){
+    if(!fb.uid || pulling || document.hidden) return; pulling=true;
+    try{
+      const snap = await fb.db.collection('formaSync').doc(fb.uid).get();
+      const rem = snap.exists? snap.data() : null;
+      if(rem){
+        const loc = readLocal(); let changed=false;
+        [['forma','forma_trener_v1'],['kalorije','kalorije_v1']].forEach(([k,ls])=>{
+          const r=rem[k], l=loc[k]; if(r && (r._ts||0) > ((l&&l._ts)||0)){ try{ localStorage.setItem(ls, JSON.stringify(r)); changed=true; }catch(_){} }
+        });
+        if(changed){
+          const playerOpen = document.getElementById('playBack') && document.getElementById('playBack').classList.contains('open');
+          if(!playerOpen){ st('Novi podatki — osvežujem…'); setTimeout(()=>location.reload(), 500); }
+        }
+      }
+    }catch(_){}
+    pulling=false;
+  }
+  function start(){ stop(); fb.timer=setInterval(()=>{ push(); pull(); },12000); window.addEventListener('beforeunload',push); document.addEventListener('visibilitychange',()=>{ if(document.hidden) push(); else pull(); }); window.addEventListener('focus', pull); }
   function stop(){ if(fb.timer) clearInterval(fb.timer); fb.timer=null; }
   function st(t){ const e=document.getElementById('gsyncStatusK'); if(e) e.textContent=t; }
   function render(){

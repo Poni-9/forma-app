@@ -1033,6 +1033,7 @@ const save = () => {
   state._ts = Date.now();
   localStorage.setItem(DB_KEY, JSON.stringify(state));
   if (typeof syncPush==='function') syncPush();
+  try{ if (window.FORMASYNC && FORMASYNC.push) setTimeout(()=>FORMASYNC.push(), 900); }catch(_){}
 };
 
 /* ================================================================
@@ -3752,9 +3753,20 @@ renderAll();
 getWeather().then(()=>{ renderWeather(); renderPlan(); });   // vreme ob zagonu → osveži trak in dnevne oznake
 window.addEventListener('focus', ()=>{ getWeather().then(()=>{ renderWeather(); renderPlan(); }); });
 setInterval(()=>{ if(document.visibilityState==='visible'){ getWeather(true).then(()=>{ renderWeather(); renderPlan(); }); } }, 2*3600e3);   // vreme vsaki 2 h
-// samodejna sinhronizacija ob odprtju
+// samodejna sinhronizacija ob odprtju + periodično (sveže aktivnosti čim prej)
 if (state.strava.accessToken) stravaImport(true);
 if (state.icu?.athleteId && state.icu?.apiKey) icuImport(true);
+let _lastImp = Date.now();
+function autoImport(){
+  if (document.visibilityState!=='visible') return;
+  if (Date.now()-_lastImp < 45000) return;   // ne prepogosto
+  _lastImp = Date.now();
+  if (state.strava.accessToken) stravaImport(true);
+  if (state.icu?.athleteId && state.icu?.apiKey) icuImport(true);
+}
+setInterval(autoImport, 3*60e3);                      // vsake 3 min, ko je zavihek viden
+window.addEventListener('focus', autoImport);          // takoj ob vrnitvi v zavihek
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) autoImport(); });
 renderSyncF();
 syncPullF();
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) syncPullF(); });
@@ -3840,7 +3852,29 @@ setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) sy
     if(!fb.uid) return; const loc=readLocal(); const j=JSON.stringify(loc); if(j===fb.last) return; fb.last=j;
     try{ await fb.db.collection('formaSync').doc(fb.uid).set({ forma:loc.forma||null, kalorije:loc.kalorije||null, _ts:Date.now() }, {merge:true}); st('Sinhronizirano ✓ '+new Date().toLocaleTimeString()); }catch(e){ st('Napaka pri pošiljanju: '+(e.message||e)); }
   }
-  function start(){ stop(); fb.timer=setInterval(push, 15000); window.addEventListener('beforeunload', push); document.addEventListener('visibilitychange', ()=>{ if(document.hidden) push(); }); }
+  let pulling=false;
+  async function pull(){
+    if(!fb.uid || pulling || document.hidden) return; pulling=true;
+    try{
+      const snap = await fb.db.collection('formaSync').doc(fb.uid).get();
+      const rem = snap.exists? snap.data() : null;
+      if(rem){
+        const loc = readLocal(); let kalNew=false, formaNew=false;
+        if(rem.kalorije && (rem.kalorije._ts||0) > ((loc.kalorije&&loc.kalorije._ts)||0)){ try{ localStorage.setItem('kalorije_v1', JSON.stringify(rem.kalorije)); kalNew=true; }catch(_){} }
+        if(rem.forma && (rem.forma._ts||0) > ((loc.forma&&loc.forma._ts)||0)){ try{ localStorage.setItem('forma_trener_v1', JSON.stringify(rem.forma)); formaNew=true; }catch(_){} }
+        if(formaNew){ st('Novi podatki z druge naprave — osvežujem…'); setTimeout(()=>location.reload(), 500); }
+        else if(kalNew){ fb.last=JSON.stringify(readLocal()); try{ if(typeof renderKalorije==='function') renderKalorije(); if(typeof renderDash==='function') renderDash(); }catch(_){} st('Kalorije osvežene ✓ '+new Date().toLocaleTimeString()); }
+      }
+    }catch(_){}
+    pulling=false;
+  }
+  function start(){
+    stop();
+    fb.timer=setInterval(()=>{ push(); pull(); }, 12000);
+    window.addEventListener('beforeunload', push);
+    document.addEventListener('visibilitychange', ()=>{ if(document.hidden) push(); else pull(); });
+    window.addEventListener('focus', pull);
+  }
   function stop(){ if(fb.timer) clearInterval(fb.timer); fb.timer=null; }
   function st(t){ const e=document.getElementById('gsyncStatus'); if(e) e.textContent=t; }
   function render(){
