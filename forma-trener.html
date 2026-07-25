@@ -1252,10 +1252,11 @@ function alertsCalc(){
 function renderDashAlert(){
   const el=$('dashAlert'); if(!el) return;
   const p0=state.settings.profile;
-  if(state.rides.length>=5 && !p0.maxHr && !p0.ftp && !p0.lthr && !localStorage.getItem('forma_zone_nudge')){
+  const icuOn=!!(state.icu?.athleteId&&state.icu?.apiKey);
+  if(state.rides.length>=5 && !p0.maxHr && !p0.ftp && !p0.lthr && !icuOn && !localStorage.getItem('forma_zone_nudge')){
     el.innerHTML=`<div style="margin-bottom:12px;border:1px solid rgba(95,214,122,.35);background:linear-gradient(90deg,rgba(95,214,122,.08),transparent);padding:11px 15px;font-size:12.5px;color:var(--soft);display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <span style="color:var(--green);font-weight:800;letter-spacing:.08em;font-size:10.5px;border:1px solid rgba(95,214,122,.4);padding:2px 7px">PREDLOG</span>
-      <span style="flex:1;min-width:200px">${LANG==='en'?'I can estimate your training zones (FTP / threshold HR) from your rides — plans get precise targets.':'Iz tvojih voženj lahko ocenim cone treninga (FTP / prag utripa) — plani dobijo natančne številke.'}</span>
+      <span style="flex:1;min-width:200px">${LANG==='en'?'No zones set. I can estimate FTP / threshold HR from your rides — or connect Intervals.icu and I take the exact values from there.':'Nimaš nastavljenih con. Ocenim FTP / prag utripa iz voženj — ali pa poveži Intervals.icu in prevzamem točne vrednosti od tam.'}</span>
       <button class="btn btn-primary btn-sm" id="btnZoneNudge" onclick="zoneNudge()">✨ ${LANG==='en'?'Estimate now':'Oceni zdaj'}</button>
       <span style="cursor:pointer;color:var(--dim)" onclick="localStorage.setItem('forma_zone_nudge','1');renderDashAlert()" title="Skrij">✕</span>
     </div>`;
@@ -1414,9 +1415,9 @@ function renderDash(){
     S('svez',`<div class="k">${sl?'Svežina':'Freshness'} ⓘ</div><div class="v" style="color:${f?f.barva:'inherit'}">${f?(f.tsb>0?'+':'')+Math.round(f.tsb):'–'}</div><div class="t">${svezTxt}</div>`)+
     (p.ftp? S('ftp',`<div class="k">FTP ⓘ</div><div class="v">${p.ftp} <small>W</small></div><div class="t">${p.teza?(p.ftp/p.teza).toFixed(1)+' W/kg':''}</div>`)
           : S('ctl',`<div class="k">${t('kondicija')} ⓘ</div><div class="v">${f?Math.round(f.ctl):'–'}</div><div class="t">${ctlTxt}</div>`))+
-    S('teden',`<div class="k">${t('thisWeek')} ⓘ</div><div class="v">${hM}:${pad(mM)}</div>${wkPct!=null?`<div class="bar"><i style="width:${wkPct}%;background:${wkPct>=80?'var(--green)':'var(--blue)'}"></i></div><div class="t">${wkPct}% ${sl?'tedenskega cilja':'of weekly goal'} · ${km.toFixed(0)} km</div>`:`<div class="t">${km.toFixed(0)} km</div>`}`)+
-    S('kcal',`<div class="k">${t('calories')} ⓘ</div><div class="v">${eaten!=null?eaten.toLocaleString('sl'):'–'}</div>${kcalPct!=null?`<div class="bar"><i style="width:${kcalPct}%;background:var(--acc)"></i></div><div class="t">${kcalPct}% ${sl?'dnevnega cilja':'of daily goal'}</div>`:`<div class="t">${eaten===0? (sl?'danes še brez vnosov':'no entries yet today') : (sl?'poveži telefon':'connect your phone')}</div>`}`)+
-    S('teza',`<div class="k">${t('weight')} ⓘ</div><div class="v">${p.teza??'–'}</div><div class="t">${(p.ciljTeza>0&&p.teza>p.ciljTeza)?((sl?'še ':'')+(p.teza-p.ciljTeza).toFixed(1)+' kg '+(sl?'do cilja':'to goal')):(p.teza?(sl?'vpiši cilj v Nastavitvah':'set a goal in Settings'):'kg')}</div>`);
+    S('teden',`<div class="k">${t('thisWeek')} ⓘ</div><div class="v">${hM}:${pad(mM)} <small>h</small></div>${wkPct!=null?`<div class="bar"><i style="width:${wkPct}%;background:${wkPct>=80?'var(--green)':'var(--blue)'}"></i></div><div class="t">${wkPct}% ${sl?'od':'of'} ${p.ure} h ${sl?'cilja · prevoženih':'goal ·'} ${km.toFixed(0)} km</div>`:`<div class="t">${sl?'prevoženih':'ridden'} ${km.toFixed(0)} km</div>`}`)+
+    S('kcal',`<div class="k">${t('calories')} ⓘ</div><div class="v">${eaten!=null?eaten.toLocaleString('sl'):'–'} <small>kcal</small></div>${kcalPct!=null?`<div class="bar"><i style="width:${kcalPct}%;background:var(--acc)"></i></div><div class="t">${kcalPct}% ${sl?'od':'of'} ${kcalCilj.toLocaleString('sl')} kcal ${sl?'cilja':'goal'}</div>`:`<div class="t">${eaten===0? (sl?'danes še brez vnosov':'no entries yet today') : (sl?'poveži telefon':'connect your phone')}</div>`}`)+
+    S('teza',`<div class="k">${t('weight')} ⓘ</div><div class="v">${p.teza??'–'} <small>kg</small></div><div class="t">${(p.ciljTeza>0&&p.teza>p.ciljTeza)?((sl?'še ':'')+(p.teza-p.ciljTeza).toFixed(1)+' kg '+(sl?'do cilja':'to goal')):(p.teza?(sl?'vpiši cilj v Nastavitvah':'set a goal in Settings'):'kg')}</div>`);
 
   renderDashWeekPlan();
 
@@ -2918,8 +2919,18 @@ async function icuConnect(){
     state.icu.name = d.name || [d.firstname,d.lastname].filter(Boolean).join(' ') || 'povezan';
     const p = state.settings.profile;
     if (!p.restHr && d.icu_resting_hr) p.restHr = d.icu_resting_hr;
-    save(); renderIcu(); renderZones();
-    toast(`Povezano z Intervals.icu (${state.icu.name}). 📈`,'ok');
+    // prevzemi TOČNE vrednosti iz Intervals.icu (tam so izračunane iz voženj)
+    const adopted=[];
+    const ss=(d.sportSettings||[]).find(s=>/ride|bike|cycl/i.test(JSON.stringify(s.types||s.type||''))) || (d.sportSettings||[])[0];
+    if(ss){
+      const ftpI=Math.round(ss.ftp||ss.indoor_ftp||0);
+      if(ftpI && Math.abs((p.ftp||0)-ftpI)>=3){ p.ftp=ftpI; adopted.push('FTP '+ftpI+' W'); }
+      if(ss.lthr && !p.lthr){ p.lthr=Math.round(ss.lthr); adopted.push('prag '+p.lthr); }
+      if(ss.max_hr && !p.maxHr){ p.maxHr=Math.round(ss.max_hr); adopted.push('max utrip '+p.maxHr); }
+    }
+    if(adopted.length){ for(const r of state.rides) r.tss=estimateTss(r); try{ localStorage.setItem('forma_zone_nudge','1'); }catch(_){} }
+    save(); renderIcu(); renderZones(); fillSettings(); renderAll();
+    toast(`Povezano z Intervals.icu (${state.icu.name}). 📈${adopted.length?' Prevzeto: '+adopted.join(', ')+' ✓':''}`,'ok');
   }catch(e){ toast(e.message,'err'); }
   busy(btn, false);
 }
@@ -2954,6 +2965,10 @@ async function icuImport(quiet){
       };
       r.tss = (a.icu_training_load && a.icu_training_load>0) ? Math.round(a.icu_training_load) : estimateTss(r);
       state.rides.push(r); n++;
+    }
+    if(!state.settings.profile.ftp){
+      const withFtp=(Array.isArray(acts)?acts:[]).filter(a=>a.icu_ftp>0).sort((a,b)=>String(b.start_date_local||'').localeCompare(String(a.start_date_local||'')))[0];
+      if(withFtp){ state.settings.profile.ftp=Math.round(withFtp.icu_ftp); for(const r of state.rides) r.tss=estimateTss(r); try{ localStorage.setItem('forma_zone_nudge','1'); }catch(_){} toast('FTP prevzet iz Intervals.icu: '+state.settings.profile.ftp+' W ✓','ok'); }
     }
     save(); renderAll();
     if (n) toast(`${quiet?'Samodejno u':'U'}voženih ${n} voženj iz Intervals.icu. 📈`,'ok');
