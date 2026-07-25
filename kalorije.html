@@ -292,6 +292,7 @@ input:focus,select:focus{box-shadow:none!important}
     <div class="logo"></div>
     <div><h1>PEAKFORM</h1><small>obroki · vadba · AI trener</small></div>
     <div class="right">
+      <button class="btn btn-ghost btn-sm" id="btnInstallK" style="display:none" onclick="doInstallK()">📲 Namesti</button>
       <button class="btn btn-ghost btn-sm" id="btnSyncTop" onclick="forceSync()" title="Sinhroniziraj zdaj (pošlji + prejmi)">⟳</button>
       <button class="btn btn-ghost btn-sm" onclick="openSettings()">⚙️ Nastavitve</button>
     </div>
@@ -672,6 +673,9 @@ function addSug(i){
   const p=lastSug?.predlogi[i]; if(!p) return;
   dayData(todayIso()).entries.push({ id:uid(), ts:Date.now(), time:new Date().toTimeString().slice(0,5), meal:lastSug.obrok, jed:p.jed, grami:null, kcal:Math.round(p.kcal||0), b:Math.round(p.beljakovine_g||0), zan:'', op:'predlog', thumb:null });
   save(); renderAll();
+let deferredPromptK=null;
+window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPromptK=e; const b=$('btnInstallK'); if(b) b.style.display='inline-flex'; });
+async function doInstallK(){ if(!deferredPromptK){ toast('V meniju brskalnika izberi »Dodaj na začetni zaslon«.'); return; } deferredPromptK.prompt(); await deferredPromptK.userChoice; deferredPromptK=null; const b=$('btnInstallK'); if(b) b.style.display='none'; }
 if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js'); }catch(_){} } toast('Dodano med vnose. 🍽️','');
 }
 

@@ -461,6 +461,7 @@ canvas{max-width:100%}
     <div class="topbar-right">
       <div class="tb-form" style="cursor:pointer;user-select:none" id="langBtn" onclick="toggleLang()">SL → EN</div>
       <div class="tb-form" title="Svežina (TSB)"><span data-i18n="forma">Forma</span> <b id="sbFormVal">–</b><span id="sbFormDesc" style="display:none"></span></div>
+      <button class="btn btn-ghost btn-sm" id="btnInstall" style="display:none" onclick="doInstall()">📲 <span data-i18n="install">Namesti</span></button>
       <button class="cta-today" onclick="switchTab('plan')"><span data-i18n="todayBtn">Današnji trening</span> →</button>
       <div class="avatar" id="avatarInit" title="Profil" style="cursor:pointer" onclick="switchTab('settings')">?</div>
     </div>
@@ -556,9 +557,9 @@ canvas{max-width:100%}
 
       <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
         <span class="big">📸</span>
-        <b>Prilepi screenshot s kolesarskega računalnika</b> (Ctrl+V kjerkoli) ali <b>klikni / povleci sliko sem</b><br>
+        <b>Prilepi screenshot</b> (Ctrl+V), <b>povleci sliko ali .GPX datoteko sem</b> ali klikni<br>
         <span style="font-size:12px">AI sam prebere razdaljo, čas, višince, utrip …</span>
-        <input type="file" id="fileInput" accept="image/*" style="display:none" multiple>
+        <input type="file" id="fileInput" accept="image/*,.gpx,.fit" style="display:none" multiple>
       </div>
     </section>
 
@@ -894,6 +895,22 @@ canvas{max-width:100%}
   </div>
 </div>
 
+<!-- ======= MODAL: OBROK ======= -->
+<div class="modal-back" id="mealModalBack">
+  <div class="modal" style="max-width:420px">
+    <h2>Ročni vnos obroka<span class="x" onclick="closeModal('mealModalBack')">✕</span></h2>
+    <label class="fld"><span>Kaj si pojedel?</span><input id="mJed" placeholder="npr. piščanec z rižem"></label>
+    <div class="frm-grid">
+      <label class="fld"><span>Kalorije (kcal)</span><input type="number" id="mKcal" placeholder="npr. 650"></label>
+      <label class="fld"><span>Beljakovine (g, neobv.)</span><input type="number" id="mB" placeholder="npr. 40"></label>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('mealModalBack')">Prekliči</button>
+      <button class="btn btn-primary" onclick="mealSave()">Shrani</button>
+    </div>
+  </div>
+</div>
+
 <!-- ======= MODAL: OCENA ======= -->
 <div class="modal-back" id="evalModalBack">
   <div class="modal">
@@ -1122,7 +1139,7 @@ const TR = {
   fueling:['Fueling — naslednji ključni trening','Fueling — next key workout'],
   bodyComp:['Telesna sestava','Body composition'], aiMeals:['AI predloga za danes','AI suggestions for today'],
   opozorilo:['OPOZORILO','WARNING'], vConi:['V CONI','IN ZONE'],
-  kopiraj:['Kopiraj povzetek','Copy summary'], zakaj:['Zakaj ta trening','Why this workout']
+  kopiraj:['Kopiraj povzetek','Copy summary'], zakaj:['Zakaj ta trening','Why this workout'], install:['Namesti','Install']
 };
 const t = k => (TR[k]||[k])[LANG==='en'?1:0] ?? (TR[k]||[k])[0];
 function applyLang(){
@@ -3015,6 +3032,56 @@ $('importFile').addEventListener('change', e=>{
 });
 
 /* ================================================================
+   GPX UVOZ (izvoz zna vsaka naprava/aplikacija)
+================================================================ */
+async function importGpx(file){
+  try{
+    const txt=await file.text();
+    const doc=new DOMParser().parseFromString(txt,'application/xml');
+    if(doc.querySelector('parsererror')) throw new Error('Neveljavna GPX datoteka.');
+    const tp=[...doc.getElementsByTagName('trkpt')];
+    if(tp.length<2) throw new Error('GPX ne vsebuje sledi (trkpt).');
+    const rad=x=>x*Math.PI/180; const R=6371;
+    let dist=0, elev=0, lastEle=null; const hrs=[]; let t0=null,t1=null;
+    let prev=null;
+    for(const p of tp){
+      const lat=+p.getAttribute('lat'), lon=+p.getAttribute('lon');
+      if(prev){
+        const dLat=rad(lat-prev.lat), dLon=rad(lon-prev.lon);
+        const a=Math.sin(dLat/2)**2+Math.cos(rad(prev.lat))*Math.cos(rad(lat))*Math.sin(dLon/2)**2;
+        dist+=2*R*Math.asin(Math.sqrt(a));
+      }
+      prev={lat,lon};
+      const eleEl=p.getElementsByTagName('ele')[0];
+      if(eleEl){ const e=+eleEl.textContent; if(!isNaN(e)){ if(lastEle!=null&&e>lastEle) elev+=e-lastEle; lastEle=e; } }
+      const tEl=p.getElementsByTagName('time')[0];
+      if(tEl){ if(!t0) t0=tEl.textContent; t1=tEl.textContent; }
+      for(const el of p.getElementsByTagName('*')) if(el.localName==='hr'){ const v=+el.textContent; if(v>40&&v<230) hrs.push(v); }
+    }
+    const timeMin=(t0&&t1)? Math.max(1,Math.round((new Date(t1)-new Date(t0))/60000)) : null;
+    const date=t0? String(t0).slice(0,10) : todayIso();
+    let name='GPX aktivnost';
+    const nEl=doc.getElementsByTagName('name')[0]; if(nEl&&nEl.textContent.trim()) name=nEl.textContent.trim().slice(0,60);
+    const avgHr=hrs.length? Math.round(hrs.reduce((a,b)=>a+b,0)/hrs.length) : null;
+    const spd=(timeMin&&dist)? dist/(timeMin/60) : null;
+    const sport = (spd!=null&&spd<7)? 'pohod' : 'kolo';
+    const r={ id:uid(), source:'manual', sport, date, name, dist:+dist.toFixed(1), time:timeMin,
+      elev:Math.round(elev), avgHr, speed:spd?+spd.toFixed(1):null, notes:'GPX uvoz' };
+    r.tss=estimateTss(r);
+    if(state.rides.some(x=>x.date===r.date && x.dist!=null && Math.abs(x.dist-r.dist)<0.3)){ toast('Ta aktivnost je najbrž že uvožena (isti dan in razdalja).','err'); return; }
+    state.rides.push(r); save(); renderAll();
+    toast(`GPX uvožen: ${r.name} — ${r.dist} km${timeMin?', '+fmtDur(timeMin):''}. ✓`,'ok');
+  }catch(e){ toast(e.message||'GPX uvoz ni uspel.','err'); }
+}
+function handleFile(f){
+  if(!f) return;
+  const n=(f.name||'').toLowerCase();
+  if(n.endsWith('.gpx')) return importGpx(f);
+  if(n.endsWith('.fit')) return toast('FIT format prihaja kmalu — v napravi/aplikaciji izvozi GPX in povleci njega.','err');
+  if(f.type.startsWith('image/')) return loadShot(f);
+}
+
+/* ================================================================
    DOGODKI: prilepi / povleci / izberi sliko
 ================================================================ */
 document.addEventListener('paste', e=>{
@@ -3024,8 +3091,8 @@ document.addEventListener('paste', e=>{
 const dz = $('dropzone');
 ['dragover','dragenter'].forEach(ev=>dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.add('over'); }));
 ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.remove('over'); }));
-dz.addEventListener('drop', e=>{ const f = e.dataTransfer.files[0]; if (f) loadShot(f); });
-$('fileInput').addEventListener('change', e=>{ if (e.target.files[0]) loadShot(e.target.files[0]); e.target.value=''; });
+dz.addEventListener('drop', e=>{ [...e.dataTransfer.files].forEach(handleFile); });
+$('fileInput').addEventListener('change', e=>{ [...e.target.files].forEach(handleFile); e.target.value=''; });
 
 document.querySelectorAll('.seg').forEach(seg=>{
   seg.addEventListener('click', e=>{
@@ -3391,16 +3458,25 @@ Vrni SAMO JSON: {"r1":{"ime":"...","info":"kcal · B g · min priprave"},"r2":{"
   busy(btn,false);
 }
 function kalManualAdd(){
-  const jed=prompt('Kaj si pojedel?'); if(!jed) return;
-  const kcal=parseInt(prompt('Približno kalorij (kcal)?')||'',10); if(!kcal) return;
+  $('mJed').value=''; $('mKcal').value=''; $('mB').value='';
+  $('mealModalBack').classList.add('open');
+  setTimeout(()=>$('mJed').focus(),50);
+}
+function mealSave(){
+  const jed=$('mJed').value.trim();
+  const kcal=parseInt($('mKcal').value,10);
+  const b=parseInt($('mB').value,10)||null;
+  if(!jed||!kcal){ toast('Vpiši jed in kalorije.','err'); return; }
   let kal=kalData()||{settings:{},days:{},deleted:{}};
   if(!kal.days) kal.days={};
   const t=todayIso(); if(!kal.days[t]) kal.days[t]={entries:[]}; if(!kal.days[t].entries) kal.days[t].entries=[];
-  kal.days[t].entries.unshift({jed:jed,kcal:kcal,ts:Date.now(),src:'forma-manual'});
+  kal.days[t].entries.unshift({jed:jed,kcal:kcal,b:b,ts:Date.now(),src:'forma-manual'});
   kal._ts=Date.now();
   try{ localStorage.setItem('kalorije_v1', JSON.stringify(kal)); }catch(_){}
   if(typeof syncPush==='function'){ try{ syncPush('kalorije'); }catch(_){} }
-  renderKalorije(); toast('Dodano med kalorije. 🍽️','ok');
+  try{ if(window.FORMASYNC&&FORMASYNC.push) setTimeout(()=>FORMASYNC.push(),400); }catch(_){}
+  closeModal('mealModalBack');
+  renderKalorije(); renderDash(); toast('Dodano med obroke. 🍽️','ok');
 }
 
 /* ================================================================
@@ -3966,7 +4042,21 @@ window.addEventListener('focus', autoImport);          // takoj ob vrnitvi v zav
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) autoImport(); });
 renderSyncF();
 syncPullF();
-if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js'); }catch(_){} }
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt=e; const b=$('btnInstall'); if(b) b.style.display='inline-flex'; });
+async function doInstall(){ if(!deferredPrompt){ toast('V meniju brskalnika izberi »Namesti aplikacijo« / »Dodaj na začetni zaslon«.'); return; } deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; const b=$('btnInstall'); if(b) b.style.display='none'; }
+if('serviceWorker' in navigator){
+  try{
+    navigator.serviceWorker.register('sw.js').then(reg=>{
+      reg.addEventListener('updatefound', ()=>{
+        const nw=reg.installing;
+        nw && nw.addEventListener('statechange', ()=>{
+          if(nw.state==='activated' && navigator.serviceWorker.controller) toast('Nova različica aplikacije je nameščena. ↻','ok');
+        });
+      });
+    });
+  }catch(_){}
+}
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) syncPullF(); });
 window.addEventListener('focus', ()=>{ if(state.sync?.bin) syncPullF(); });
 setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) syncPullF(); }, 60000);   // samodejno vsakih 60 s
