@@ -152,6 +152,7 @@ textarea{resize:vertical;min-height:70px}
 .chip.počitek,.chip.pocitek{background:rgba(154,147,159,.12);color:var(--muted)}
 .chip.moč,.chip.moc{background:var(--purpleSoft);color:var(--purple)}
 .chip.pohod{background:rgba(92,214,214,.12);color:#5cd6d6}
+.chip.tek{background:rgba(255,138,42,.12);color:#ff8a2a}
 .dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:middle}
 .dot.easy{background:var(--blue)}
 .dot.med{background:var(--yellow)}
@@ -929,7 +930,7 @@ canvas{max-width:100%}
     <div class="frm-grid">
       <label class="fld"><span>Datum</span><input type="date" id="rDate"></label>
       <label class="fld"><span>Šport</span>
-        <select id="rSport"><option value="kolo" selected>🚴 Kolo</option><option value="pohod">🥾 Pohod/hribi</option><option value="moc">💪 Moč</option></select>
+        <select id="rSport"><option value="kolo" selected>🚴 Kolo</option><option value="tek">🏃 Tek</option><option value="pohod">🥾 Pohod/hribi</option><option value="moc">💪 Moč</option></select>
       </label>
       <label class="fld"><span>Ime aktivnosti</span><input id="rName" placeholder="npr. Sv. Jakob"></label>
     </div>
@@ -1001,7 +1002,7 @@ const DB_KEY = 'forma_trener_v1';
 const defaultState = () => ({
   settings: {
     geminiKey:'', geminiModel:'gemini-flash-latest', proxy:'',
-    profile:{ ime:'', starost:null, spol:'moški', visina:null, teza:null, bf:null, maxHr:null, restHr:null, lthr:null, ftp:null, shema:5, nivo:'rekreativec+', ure:6, cilj:'', ciljDatum:null, ciljTeza:null }
+    profile:{ ime:'', starost:null, spol:'moški', visina:null, teza:null, bf:null, maxHr:null, restHr:null, lthr:null, ftp:null, shema:5, nivo:'rekreativec+', ure:6, cilj:'', ciljDatum:null, ciljTeza:null, aktivnosti:['kolo','pohod','moc'] }
   },
   strava:{ clientId:'', clientSecret:'', accessToken:'', refreshToken:'', expiresAt:0, athleteName:'' },
   icu:{ athleteId:'', apiKey:'', name:'' },
@@ -1025,6 +1026,14 @@ try{
   }
 }catch(_){}
 state.forma = Object.assign(defaultState().forma, state.forma||{});
+// migracija: aktivnosti (če jih profil še nima, izpelji iz obstoječih voženj)
+try{
+  const _pp=state.settings.profile;
+  if(!Array.isArray(_pp.aktivnosti) || !_pp.aktivnosti.length){
+    const seen=[...new Set(state.rides.map(r=>r.sport||'kolo'))];
+    _pp.aktivnosti = seen.length? [...new Set([...seen,'moc'])] : ['kolo','pohod','moc'];
+  }
+}catch(_){}
 // migracija nivojev na PEAKFORM (3 nivoji)
 { const _nm={ 'začetnik':'postani fit','zacetnik':'postani fit','rekreativni':'rekreativec+','resen rekreativec':'rekreativec+','tekmovalec':'treniraj kot pro' };
   const _n=state.settings?.profile?.nivo; if(_n && _nm[_n]) state.settings.profile.nivo=_nm[_n]; }
@@ -1137,6 +1146,11 @@ function estimateTss(r){
   }
   // brez utripa: ocena iz športa, hitrosti in višincev
   if (r.sport==='moc') return Math.round(hours*70) || 35;
+  if (r.sport==='tek'){
+    let ph = 78;                                          // tek je na uro napornejši
+    if (r.speed){ if(r.speed>12) ph=95; else if(r.speed<8) ph=62; }
+    return Math.round(hours*ph);
+  }
   if (r.sport==='pohod'){
     let ph = 55;
     if (r.dist && r.elev && (r.elev/r.dist) > 60) ph += 15;   // strm pohod
@@ -1446,7 +1460,7 @@ function renderDash(){
 function renderDashWeekPlan(){
   const el=$('dashWeekPlan'); if(!el) return;
   const ws=weekStart(new Date()); const today=todayIso();
-  const stripes={intervali:'var(--acc)',vzdrzljivost:'var(--blue)',tempo:'var(--yellow)',regeneracija:'var(--green)',moc:'var(--purple)',pohod:'#5cd6d6',pocitek:'var(--border2)',gray:'var(--border2)'};
+  const stripes={intervali:'var(--acc)',vzdrzljivost:'var(--blue)',tempo:'var(--yellow)',regeneracija:'var(--green)',moc:'var(--purple)',pohod:'#5cd6d6',tek:'#ff8a2a',pocitek:'var(--border2)',gray:'var(--border2)'};
   const rows=[];
   let any=false;
   for(let i=0;i<7;i++){
@@ -1729,12 +1743,13 @@ function chipClass(tip){
   if (t.includes('poči')||t.includes('poci')||t.includes('prosto')) return 'pocitek';
   if (t.includes('moč')||t.includes('moc')) return 'moc';
   if (t.includes('pohod')||t.includes('hrib')) return 'pohod';
+  if (t.includes('tek')||t.includes('run')) return 'tek';
   return 'gray';
 }
-const sportEmoji = s => s==='pohod' ? '🥾 ' : s==='moc' ? '💪 ' : '';
+const sportEmoji = s => s==='pohod' ? '🥾 ' : s==='moc' ? '💪 ' : s==='tek' ? '🏃 ' : '';
 function sportLabel(tip){
   const c = chipClass(tip);
-  return c==='pohod' ? {i:'🥾', l:'POHOD'} : c==='moc' ? {i:'💪', l:'TRENING MOČI'} : c==='pocitek' ? {i:'🛌', l:'POČITEK'} : {i:'🚴', l:'KOLO'};
+  return c==='pohod' ? {i:'🥾', l:'POHOD'} : c==='moc' ? {i:'💪', l:'TRENING MOČI'} : c==='tek' ? {i:'🏃', l:'TEK'} : c==='pocitek' ? {i:'🛌', l:'POČITEK'} : {i:'🚴', l:'KOLO'};
 }
 
 function renderPlan(){
@@ -1934,6 +1949,7 @@ function buildContext(){
   if (_bmi) L.push(`- ITM: ${_bmi}${_bmr?` | bazalna poraba (BMR) ~${_bmr} kcal | vzdrževanje (TDEE) ~${_tdee} kcal/dan`:''}`);
   L.push(`- max utrip: ${p.maxHr||'?'} | utrip v mirovanju: ${p.restHr||'?'} (trenira po srčnem utripu, NIMA merilca moči)`);
   L.push(`- ciljni obseg: ~${p.ure||6} ur/teden | cilji: ${p.cilj||'splošna forma'}`);
+  L.push(`- IZBRANE AKTIVNOSTI (edine dovoljene v planih): ${userAkt().map(x=>AKT_INFO[x]||x).join(', ')}`);
   if (_tdee){
     const gd0 = goalDeficit();
     const cilj = gd0 ? Math.max(_bmr+200, _tdee - gd0.deficit) : Math.round(_tdee - 290);
@@ -2071,6 +2087,32 @@ const STRATEGIJA = `POČITNIŠKA STRATEGIJA "LEAN" — razkrij mišico pod maš�
    - PRAVILO RAZPOREDA: dva težka dneva NE zaporedoma; po napornem pohodu ali intenzivnem kolesu lažji dan, samo moč ali regeneracija. 1 dan v tednu prosto/lahka regeneracija.
 4. POHODI — VEDNO predlagaj KONKRETEN bližnji hrib blizu VODIC (Slovenija). Primerni hribi: Šmarna gora (~1 h vzpona), Rašica, Sv. Jakob, Sv. Miklavž nad Vodicami, Gobavica (Mengeš), Šenturška gora / Sv. Ambrož, Sv. Ana. V naslovu in opisu navedi IME hriba, približen čas vzpona v eno smer in skupno trajanje pohoda (gor + dol), ki naj se UJEMA s trajanjem, predvidenim v planu (trajanje_min). Bolj kot je dan zahteven, višji/daljši hrib; za lažji dan bližji/nižji (npr. Šmarna gora).`;
 
+/* ---------- dinamična strategija glede na aktivnosti uporabnika ---------- */
+const AKT_INFO = { kolo:'🚴 Kolo', tek:'🏃 Tek', pohod:'🥾 Pohodi/hribi', moc:'💪 Moč (doma/fitnes)' };
+function userAkt(){ const a=state.settings.profile.aktivnosti; return (Array.isArray(a)&&a.length)? a : ['kolo','pohod','moc']; }
+function stil(){
+  const a=userAkt();
+  const tipi=[a.includes('kolo')?'KOLO':null, a.includes('tek')?'TEK':null, a.includes('moc')?'MOČ (zgibi, sklece, dipsi, trebušnjaki — serije × ponovitve)':null, a.includes('pohod')?'POHOD':null].filter(Boolean).join(', ');
+  return STIL
+    .replace('- Dnevi so treh vrst: KOLO, MOČ (zgibi, sklece, dipsi, trebušnjaki — serije × ponovitve, muscle-up progresija) in POHOD. Brez teka. Ob slabem vremenu kolo → trenažer.',
+      `- DOVOLJENI tipi dni (uporabnik izvaja SAMO te — drugih športov NIKOLI ne predpisuj): ${tipi}, POČITEK.`+
+      (a.includes('tek')?' Tek stopnjuj zelo postopno (~10 % km na teden), večina tekov lahkotnih (pogovorni tempo), 1× tedensko hitrejši del.':' Brez teka.')+
+      (a.includes('kolo')?' Ob slabem vremenu kolo → trenažer.':''));
+}
+function strategija(){
+  const a=userAkt();
+  const vzdrz=[a.includes('kolo')?'kolo':null, a.includes('tek')?'tek':null, a.includes('pohod')?'pohod':null].filter(Boolean);
+  const jedro = vzdrz.length>1? `IZMENJAVA: ${vzdrz.join(' / ')} (nikoli dva enaka težka dneva zaporedoma)` : vzdrz.length===1? vzdrz[0].toUpperCase() : 'MOČ in hoja';
+  const L=[`STRATEGIJA (STRIKTNO — uporabnikove izbrane aktivnosti: ${userAkt().map(x=>AKT_INFO[x]||x).join(', ')}; drugih športov NE predpisuj!):`];
+  L.push(`1. KALORIČNI DEFICIT + PREHRANA: maščoba gre dol le ob deficitu, VISOK vnos beljakovin ščiti mišice. Obroke pripravlja družina — NIKOLI ne predpisuj jedilnikov! Svetuj le, kar lahko kolesar SAM kontrolira: velikost porcije, lasten beljakovinski dodatek (skuta, jajca, jogurt, tuna), brez sladkarij/sladkih pijač, 2,5 l vode.`);
+  if(a.includes('moc')) L.push(`2. MOČ ima KONKRETEN CILJ: muscle-up progresija (sklece+zgibi+dipsi+trup → eksplozivni zgibi → negativni MU → poskusi). 2–3× tedensko po 20–40 min, kot dodatek h glavnemu dnevu ali kratek samostojen dan. Ko postane prelahko, dodaj obremenitev.`);
+  else L.push(`2. MOČ: uporabnik je NE izvaja — ne predpisuj je; za trup dodaj le kratke vaje stabilizacije (plank), če sploh.`);
+  L.push(`3. STRUKTURA TEDNA: JEDRO = ${jedro}, skupaj 4–5 aktivnih dni; 1 dan prosto/regeneracija; dva težka dneva NIKOLI zaporedoma; postopnost ~+10 %/teden.`);
+  if(a.includes('tek')) L.push(`4. TEK: večina tekov LAHKOTNIH (pogovorni tempo, utrip cona 2), dolg tek 1× tedensko (+10 % max), hitrejši deli šele ko baza stoji. Pazi na sklepe: raje pogosteje in krajše.`);
+  if(a.includes('pohod')) L.push(`${a.includes('tek')?5:4}. POHODI: predlagaj KONKRETEN bližnji hrib (okolica Vodic: Šmarna gora, Rašica, Sv. Jakob, Sv. Miklavž, Gobavica, Šenturška gora, Sv. Ana) z realnim časom vzpona, usklajenim s trajanje_min.`);
+  return L.join('\n');
+}
+
 /* ---------- cone utripa in moči iz profila ---------- */
 function hrZones(){
   const p = state.settings.profile;
@@ -2203,9 +2245,9 @@ NAVODILA:
   · "kcal_vnos" in "kcal_poraba" = številki za ta dan (poraba = bazalna + trening), ki skupaj dasta potreben deficit.
 - Deficit dosleden, a NE večji od ~1000 kcal/dan. Če cilj v roku ni realen, to ISKRENO napiši v "povzetek" in naredi najboljši realno možni plan.
 
-${STIL}
+${stil()}
 
-${STRATEGIJA}
+${strategija()}
 
 Vrni SAMO JSON:
 {"povzetek":"strategija + ali je cilj realen","tedni":[{"zacetek":"YYYY-MM-DD","faza":"...","fokus":"zelo kratko","ure":number}],"dnevi":[{"datum":"YYYY-MM-DD","tip":"...","naslov":"...","trajanje_min":number,"opis":"vrstice loči z \\n","tss_ocena":number,"vaje":"...","prehrana":"Z: … | K: … | M: … | V: …","kcal_vnos":number,"kcal_poraba":number}]}
@@ -2344,9 +2386,9 @@ ${weatherText()}
 ŽELJE ZA TA TEDEN: ${$('planWishes').value.trim() || 'ni posebnih želja'}
 ${phase ? `FAZA MAKRO PLANA ZA TA TEDEN: ${phase.faza} — ${phase.fokus} (~${phase.ure} h skupaj)` : ''}
 
-${STIL}
+${stil()}
 
-${STRATEGIJA}
+${strategija()}
 
 NAVODILA:
 - UPOŠTEVAJ VREME (napoved zgoraj, Vodice in okolica): pohode in kolo načrtuj na SUHE/lepe dni. Ob dežju, plohah ali nevihti (padavine >60 % ali koda nevihte) NE načrtuj pohoda; kolo tak dan prestavi na trenažer (v "opis" napiši "ob dežju: trenažer") ali ga zamenjaj z dnevom moči/regeneracije. Najtežje/najdaljše dneve (dolg pohod, intervali) postavi na NAJLEPŠE dni v tednu. Ob vročini (>30 °C) svetuj zgodnji termin in več vode. Pri vsakem zunanjem dnevu na kratko omeni vreme (npr. "sončno ~25°, idealno za hribe").
@@ -2407,9 +2449,9 @@ DANAŠNJA SITUACIJA:
 - V KOLEDARJU je za danes: ${day ? `${day.tip} — ${day.naslov} (${day.trajanje_min} min): ${day.opis}${day.vaje?` | dodatne vaje: ${day.vaje}`:''}${day.kcal_vnos?` | prehrana: ${day.prehrana} (vnos ~${day.kcal_vnos} kcal, poraba ~${day.kcal_poraba||'?'})`:''}` : 'ni plana'}
 - POMEMBNO: če v koledarju obstaja plan za danes (še posebej pri cilju z rokom), ga vzemi kot IZHODIŠČE in ga le prilagodi času in počutju — dnevni cilj (obremenitev, kalorije) mora ostati dosežen.
 
-${STIL}
+${stil()}
 
-${STRATEGIJA}
+${strategija()}
 
 NAVODILA: Prilagodi planirani trening razpoložljivemu času in počutju (skrajšaj/olajšaj/zamenjaj, če je treba). Cone C1–C5 po utripu iz konteksta, vedno z obrati (o/min.). Polja "ogrevanje", "glavni_del" in "zakljucek" napiši v slogu trenerja, vsaka postavka v svoji vrstici (loči z \\n). Skupni čas NE sme preseči razpoložljivega. SAMO kolo.
 
@@ -2771,11 +2813,11 @@ async function stravaImport(quiet){
     let n = 0;
     for (const a of acts){
       const typ = a.type||a.sport_type||'';
-      if (!/Ride|Hike|Walk/i.test(typ)) continue;
+      if (!/Ride|Hike|Walk|Run/i.test(typ)) continue;
       const ex = state.rides.find(r=>r.stravaId===a.id);
       if (ex){ if (!ex.polyline && a.map?.summary_polyline) ex.polyline = a.map.summary_polyline; continue; }
       const r = {
-        id:uid(), stravaId:a.id, source:'strava', sport:/Hike|Walk/i.test(typ)?'pohod':'kolo',
+        id:uid(), stravaId:a.id, source:'strava', sport:/Run/i.test(typ)?'tek':/Hike|Walk/i.test(typ)?'pohod':'kolo',
         date:(a.start_date_local||a.start_date||'').slice(0,10),
         name:a.name||'Vožnja',
         dist:+(a.distance/1000).toFixed(1),
@@ -2946,14 +2988,14 @@ async function icuImport(quiet){
     const acts = await res.json();
     let n = 0;
     for (const a of (Array.isArray(acts)?acts:[])){
-      if (!/Ride|Cycling|VirtualRide|Gravel|MountainBike|Hike|Walk/i.test(a.type||'')) continue;
+      if (!/Ride|Cycling|VirtualRide|Gravel|MountainBike|Hike|Walk|Run/i.test(a.type||'')) continue;
       if (state.rides.some(r=>r.icuId===a.id)) continue;
       const date = (a.start_date_local||a.start_date||'').slice(0,10);
       const dist = a.distance!=null ? +(a.distance/1000).toFixed(1) : null;
       if (state.rides.some(r=>r.date===date && r.dist!=null && dist!=null && Math.abs(r.dist-dist)<0.3)) continue;
       const timeMin = Math.round((a.moving_time||a.elapsed_time||0)/60);
       const r = {
-        id:uid(), icuId:a.id, source:'intervals', sport:/Hike|Walk/i.test(a.type||'')?'pohod':'kolo',
+        id:uid(), icuId:a.id, source:'intervals', sport:/Run/i.test(a.type||'')?'tek':/Hike|Walk/i.test(a.type||'')?'pohod':'kolo',
         date, name:a.name||'Vožnja', dist, time:timeMin||null,
         elev: a.total_elevation_gain!=null ? Math.round(a.total_elevation_gain) : (a.icu_climb!=null?Math.round(a.icu_climb):null),
         avgHr: a.average_heartrate?Math.round(a.average_heartrate):null,
@@ -3113,7 +3155,7 @@ async function formaAI(){
 
 ${buildContext()}
 
-${STRATEGIJA}
+${strategija()}
 
 GLAVNI CILJ: naučiti se MUSCLE-UP (+ razkrita mišica pod maščobo). Trening sestavi kot korak muscle-up progresije za ta nivo: sklece, zgibi (eksplozivni pri višjem nivoju), dipsi, trebušnjaki/dvigi nog, od nivoja 4 negativni muscle-upi, od 7 poskusi. Konkretne serije in ponovitve. Brez teka.
 Vrni SAMO JSON: {"vaje":[{"ime":"...","serije":number,"pon":"npr. 8 pon. ali 40''","op":"kratek nasvet"}],"nasvet":"1-2 stavka"}` }],{temp:.5});
@@ -3639,7 +3681,10 @@ function renderSetExtras(){
              ['treniraj kot pro','Treniraj kot pro','Polna periodizacija, dvojni treningi, napredna analitika']];
     lc.innerHTML=L.map(([v,n,d])=>`<div class="lvl-card ${p.nivo===v?'on':''}" onclick="setNivo('${v}')">
       <div><div class="ln">${n}</div><div class="ld">${d}</div></div>${p.nivo===v?'<div class="lm">●</div>':''}</div>`).join('')+
-      `<div class="hint" style="margin:4px 0 0">Nivo upošteva AI pri planih, razlagah in prehrani. Zamenjaš ga kadar koli.</div>`+
+      `<div style="margin-top:14px;font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);text-transform:uppercase">Tvoje aktivnosti</div>
+       <div class="row" style="gap:8px;margin-top:8px">${[['kolo','🚴 Kolo'],['tek','🏃 Tek'],['pohod','🥾 Pohodi'],['moc','💪 Moč']].map(([v,n])=>`<div class="onb-chip ${userAkt().includes(v)?'on':''}" style="padding:7px 13px;font-size:12.5px" onclick="toggleAkt('${v}')">${n}</div>`).join('')}</div>
+       <div class="hint" style="margin:6px 0 0">AI gradi plane SAMO iz izbranih aktivnosti.</div>`+
+      `<div class="hint" style="margin:10px 0 0">Nivo upošteva AI pri planih, razlagah in prehrani. Zamenjaš ga kadar koli.</div>`+
       `<div style="margin-top:10px;font-size:12px;color:var(--dim)">${LANG==='en'?'Language':'Jezik'}: <b style="color:var(--soft)">${LANG==='en'?'English':'Slovenščina'}</b> · <span style="cursor:pointer;color:var(--acc2)" onclick="toggleLang()">${LANG==='en'?'Slovenščina':'English'}</span></div>`;
   }
   const cr=$('connRows');
@@ -3654,6 +3699,15 @@ function renderSetExtras(){
     `<div class="hint" style="margin:6px 0 0">Garmin / Apple Health: kmalu — do takrat aktivnosti pridejo prek Strave ali Intervals.icu.</div>`;
   }
   renderSubCard();
+}
+function toggleAkt(v){
+  const p=state.settings.profile;
+  p.aktivnosti=userAkt().slice();
+  const i=p.aktivnosti.indexOf(v);
+  if(i>-1){ if(p.aktivnosti.length>1) p.aktivnosti.splice(i,1); else { toast('Vsaj ena aktivnost mora ostati.','err'); return; } }
+  else p.aktivnosti.push(v);
+  save(); renderSetExtras();
+  toast('Aktivnosti: '+p.aktivnosti.map(x=>AKT_INFO[x]||x).join(', ')+' — plani bodo zgrajeni iz teh. ✓','ok');
 }
 function setNivo(v){ state.settings.profile.nivo=v; save(); fillSettings(); toast('Nivo nastavljen: '+v+'. AI ga upošteva pri naslednjem planu.','ok'); }
 async function renderSubCard(){
@@ -3674,7 +3728,7 @@ async function renderSubCard(){
 /* ================================================================
    ONBOARDING (prvi zagon)
 ================================================================ */
-const onb={ step:1, level:1, cilj:'Razkrij mišice pod maščobo', ure:7, starost:'', teza:'' };
+const onb={ step:1, level:1, cilj:'Razkrij mišice pod maščobo', ure:7, starost:'', teza:'', akt:['kolo','pohod','moc'] };
 const ONB_LVLS=[
  {icon:'🔥',name:'Postani fit',val:'postani fit',desc:'Za začetek poti: kolo + osnovna moč + prehrana brez štetja vsake kalorije. Enostavne razlage, brez žargona.',tag:'PLAN 3–5 H / TEDEN',ure:4},
  {icon:'🚴',name:'Rekreativec+',val:'rekreativec+',desc:'Hočeš biti dober na kolesu: strukturirani intervali, FTP, prehrana za performanco, moč 1–2× tedensko.',tag:'PLAN 6–9 H / TEDEN',ure:7},
@@ -3700,8 +3754,11 @@ function onbRender(){
         <label class="fld" style="margin:0"><span>Starost</span><input type="number" id="onbStarost" value="${onb.starost}"></label>
         <label class="fld" style="margin:0"><span>Teža (kg)</span><input type="number" step="0.1" id="onbTeza" value="${onb.teza}"></label>
       </div>
+      <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Katere aktivnosti? <span style="color:var(--acc2)">(izberi vse, ki jih izvajaš ali želiš)</span></div>
+        <div class="row" style="gap:8px">${[['kolo','🚴 Kolo'],['tek','🏃 Tek'],['pohod','🥾 Pohodi'],['moc','💪 Moč']].map(([v,n])=>`<div class="onb-chip ${onb.akt.includes(v)?'on':''}" onclick="onbAkt('${v}')">${n}</div>`).join('')}</div>
+        <div class="hint" style="margin:6px 0 0">Nimaš kolesa? Nočeš teči? Ni problema — plan bo zgrajen samo iz izbranih. Kasneje spremeniš v Nastavitvah.</div></div>
       <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Glavni cilj</div>
-        <div class="row" style="gap:8px">${['Razkrij mišice pod maščobo','Prvi maraton Franja','Višji FTP','Muscle-up'].map(c=>`<div class="onb-chip ${onb.cilj===c?'on':''}" onclick="onb.cilj='${c}';onbCapture();onbRender()">${c}</div>`).join('')}</div></div>
+        <div class="row" style="gap:8px">${['Razkrij mišice pod maščobo','Splošna kondicija','Višji FTP','Muscle-up','10 km teka'].map(c=>`<div class="onb-chip ${onb.cilj===c?'on':''}" onclick="onb.cilj='${c}';onbCapture();onbRender()">${c}</div>`).join('')}</div></div>
       <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Koliko časa imaš na teden?</div>
         <div class="row" style="gap:8px">${[['3–5 h',4],['6–9 h',7],['10+ h',10]].map(([t,u])=>`<div class="onb-chip ${onb.ure===u?'on':''}" style="flex:1;text-align:center;font-weight:700" onclick="onb.ure=${u};onbCapture();onbRender()">${t}</div>`).join('')}</div></div>
     </div>`;
@@ -3715,6 +3772,13 @@ function onbRender(){
       <div class="plan-summary" style="margin-top:10px"><b>Tvoj prvi teden bo pripravljen v minuti:</b> na zavihku Plan klikni ⟳ Generiraj nov teden — AI ga sestavi iz tvojih podatkov in vremena ter ga nato vsak dan prilagaja.</div>
     </div>`;
   }
+}
+function onbAkt(v){
+  onbCapture();
+  const i=onb.akt.indexOf(v);
+  if(i>-1){ if(onb.akt.length>1) onb.akt.splice(i,1); }
+  else onb.akt.push(v);
+  onbRender();
 }
 function onbCapture(){
   const a=$('onbStarost'), t=$('onbTeza');
@@ -3734,6 +3798,7 @@ function onbFinish(tab){
   if(onb.starost) p.starost=+onb.starost;
   if(onb.teza) p.teza=+onb.teza;
   p.ure=onb.ure; if(onb.cilj) p.cilj=onb.cilj;
+  p.aktivnosti=[...onb.akt];
   localStorage.setItem('forma_onb_done','1');
   save(); fillSettings(); renderAll();
   $('onbBack').classList.remove('open');
