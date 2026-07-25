@@ -6,6 +6,8 @@
 <title>PEAKFORM — mobilna (obroki, vadba, AI trener)</title>
 <meta name="theme-color" content="#111013">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23111013%22/><path d=%22M8 8h84L8 92z%22 fill=%22%23ff3d2e%22/></svg>">
+<link rel="manifest" href="manifest-mobile.json">
+<meta property="og:image" content="https://poni-9.github.io/forma-app/og.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -669,7 +671,8 @@ function renderMealSug(){
 function addSug(i){
   const p=lastSug?.predlogi[i]; if(!p) return;
   dayData(todayIso()).entries.push({ id:uid(), ts:Date.now(), time:new Date().toTimeString().slice(0,5), meal:lastSug.obrok, jed:p.jed, grami:null, kcal:Math.round(p.kcal||0), b:Math.round(p.beljakovine_g||0), zan:'', op:'predlog', thumb:null });
-  save(); renderAll(); toast('Dodano med vnose. 🍽️','');
+  save(); renderAll();
+if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js'); }catch(_){} } toast('Dodano med vnose. 🍽️','');
 }
 
 /* prebere uro fotografiranja iz EXIF (za pravilno razvrstitev v obrok pri večernem nalaganju) */

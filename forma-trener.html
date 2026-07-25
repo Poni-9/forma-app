@@ -6,6 +6,9 @@
 <title>PEAKFORM — AI trener za kolo, moč in prehrano</title>
 <meta name="theme-color" content="#111013">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23111013%22/><path d=%22M8 8h84L8 92z%22 fill=%22%23ff3d2e%22/></svg>">
+<link rel="manifest" href="manifest-app.json">
+<meta property="og:title" content="PEAKFORM — AI trener za kolo, tek, moč in prehrano"/>
+<meta property="og:image" content="https://poni-9.github.io/forma-app/og.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -1411,9 +1414,10 @@ function renderDash(){
     { ok: !!state.riderProfile, t:'Zaženi AI analizo: kakšen kolesar si', tab:'dash' },
     { ok: state.plans.length>0, t:'Generiraj prvi plan (ali Plan do cilja v Koledarju)', tab:'plan' }
   ];
-  $('onboardCard').innerHTML = steps.every(s=>s.ok) ? '' :
+  const demoBtn = (!state.rides.length && !state.demo) ? `<div class="onb" style="color:var(--acc2)" onclick="demoLoad()">🎬 Ali pa najprej naloži DEMO podatke in razišči aplikacijo</div>` : (state.demo? `<div class="onb" onclick="demoClear()">🧹 Odstrani demo podatke</div>`:'');
+  $('onboardCard').innerHTML = (steps.every(s=>s.ok) ? '' :
     `<div class="card mb" style="border-color:rgba(252,76,2,.35)"><h3>🚀 Začni tukaj <span class="sub">${steps.filter(s=>s.ok).length}/${steps.length}</span></h3>` +
-    steps.map(s=>`<div class="onb ${s.ok?'ok':''}" onclick="switchTab('${s.tab}')">${s.ok?'✅':'⬜'} ${s.t}</div>`).join('') + `</div>`;
+    steps.map(s=>`<div class="onb ${s.ok?'ok':''}" onclick="switchTab('${s.tab}')">${s.ok?'✅':'⬜'} ${s.t}</div>`).join('') + demoBtn + `</div>`) || (state.demo? `<div class="card mb">${demoBtn}</div>`:'');
 
   const ws = weekStart(new Date()), weIso = isoDate(addDays(ws,6)), wsIso = isoDate(ws);
   const thisWeek = state.rides.filter(r=> r.date>=wsIso && r.date<=weIso);
@@ -3867,6 +3871,7 @@ function onbRender(){
       <div class="conn-row"><span class="cn">🔵 Google prijava — sinhronizacija + AI brez ključa</span><span class="cs go" onclick="FORMASYNC.signIn()">POVEŽI →</span></div>
       <div class="conn-row"><span class="cn">📈 Intervals.icu — samodejni uvoz aktivnosti (brezplačno)</span><span class="cs go" onclick="onbFinish('settings')">NASTAVI →</span></div>
       <div class="conn-row"><span class="cn">🟠 Strava</span><span class="cs go" onclick="onbFinish('settings')">NASTAVI →</span></div>
+      <div class="conn-row" style="cursor:pointer" onclick="onbFinish();demoLoad()"><span class="cn">🎬 Samo raziskujem — naloži demo podatke</span><span class="cs go">NALOŽI →</span></div>
       <div class="plan-summary" style="margin-top:10px"><b>Tvoj prvi teden bo pripravljen v minuti:</b> na zavihku Plan klikni ⟳ Generiraj nov teden — AI ga sestavi iz tvojih podatkov in vremena ter ga nato vsak dan prilagaja.</div>
     </div>`;
   }
@@ -3910,6 +3915,33 @@ if (!localStorage.getItem('forma_onb_done') && !state.settings.profile.ime && !s
 } else { try{ localStorage.setItem('forma_onb_done','1'); }catch(_){} }
 
 /* ================================================================
+   DEMO PODATKI — da nova stran ni prazna (odstranljivo)
+================================================================ */
+function demoLoad(){
+  if(state.rides.some(r=>r.demo)){ toast('Demo podatki so že naloženi.','err'); return; }
+  const names=[['Jutranji krog',28,55,180],['Z2 vzdržljivost',42,95,320],['Intervali 4×6',31,70,410],['Popoldanska tura',55,125,520],['Regeneracija',18,42,90]];
+  const today=new Date();
+  for(let i=34;i>=1;i--){
+    if(i%7===0||i%7===3) continue;                       // dnevi počitka
+    const d=isoDate(addDays(today,-i));
+    if(i%9===5){ state.rides.push({id:uid(),demo:true,source:'manual',sport:'moc',date:d,name:'Trening moči (demo)',time:30,tss:35,notes:'demo'}); continue; }
+    if(i%11===7){ const r={id:uid(),demo:true,source:'manual',sport:'pohod',date:d,name:'Šmarna gora (demo)',dist:9,time:130,elev:730,avgHr:132,notes:'demo'}; r.tss=estimateTss(r); state.rides.push(r); continue; }
+    const n=names[i%names.length];
+    const r={id:uid(),demo:true,source:'manual',sport:'kolo',date:d,name:n[0]+' (demo)',dist:n[1],time:n[2],elev:n[3],avgHr:118+((i*7)%42),speed:+(n[1]/(n[2]/60)).toFixed(1),notes:'demo'};
+    r.tss=estimateTss(r); state.rides.push(r);
+  }
+  const p=state.settings.profile;
+  if(!p.teza){ p.teza=78; p.visina=p.visina||179; p.starost=p.starost||30; p.maxHr=p.maxHr||190; }
+  state.demo=true; save(); fillSettings(); renderAll();
+  toast('Demo podatki naloženi — razišči aplikacijo! Odstraniš jih v Nastavitvah.','ok');
+}
+function demoClear(){
+  state.rides=state.rides.filter(r=>!r.demo);
+  state.demo=false; save(); renderAll();
+  toast('Demo podatki odstranjeni.','ok');
+}
+
+/* ================================================================
    ZAGON
 ================================================================ */
 function renderAll(){ renderSidebar(); renderDash(); renderRides(); renderPlan(); renderCal(); renderTodayBox(); renderForma(); renderPorocila(); renderAnalitika(); renderTrener(); applyLang(); }
@@ -3934,6 +3966,7 @@ window.addEventListener('focus', autoImport);          // takoj ob vrnitvi v zav
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) autoImport(); });
 renderSyncF();
 syncPullF();
+if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js'); }catch(_){} }
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) syncPullF(); });
 window.addEventListener('focus', ()=>{ if(state.sync?.bin) syncPullF(); });
 setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) syncPullF(); }, 60000);   // samodejno vsakih 60 s
