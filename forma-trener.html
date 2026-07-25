@@ -532,6 +532,12 @@ canvas{max-width:100%}
         </div>
       </div>
 
+      <div class="plan-summary" style="border-color:rgba(77,163,255,.3);background:linear-gradient(90deg,rgba(77,163,255,.08),transparent)">
+        <b style="color:var(--blue)">🔓 Nimaš Strava naročnine?</b> Nič hudega — podatki pridejo po treh poteh:
+        <b>1) Intervals.icu</b> (brezplačno, samodejno — poveže se z Garminom/Wahoo/Stravo in uvozi razdaljo, čas, višince, utrip, moč in TSS),
+        <b>2) screenshot</b> s kolesarskega računalnika ali telefona (Ctrl+V — AI prebere vse s slike),
+        <b>3) ročni vnos</b>. Nastavi v <a style="color:var(--acc2);cursor:pointer" onclick="switchTab('settings')">Nastavitvah</a>.
+      </div>
       <div class="card mb" style="padding:0">
         <div class="rides-head">
           <div></div><div>Aktivnost</div>
@@ -817,21 +823,25 @@ canvas{max-width:100%}
 
         <div>
           <div class="card mb">
-            <h3>✨ Gemini API</h3>
-            <label class="fld"><span>API ključ</span><input type="password" id="gKey" placeholder="AIza…"></label>
-            <p class="hint">Brezplačen ključ dobiš na <b>aistudio.google.com</b> → Get API key. Ključ ostane samo v tvojem brskalniku.</p>
-            <label class="fld"><span>Model</span>
-              <select id="gModel">
-                <option value="gemini-flash-latest" selected>gemini-flash-latest (priporočeno)</option>
-                <option value="gemini-3.5-flash">gemini-3.5-flash</option>
-                <option value="gemini-2.5-flash">gemini-2.5-flash</option>
-                <option value="gemini-2.5-pro">gemini-2.5-pro</option>
-              </select>
-            </label>
-            <div class="row">
-              <button class="btn btn-primary" onclick="saveGemini()">Shrani</button>
-              <button class="btn btn-ghost" id="btnTestG" onclick="testGemini()">Preizkusi povezavo</button>
-            </div>
+            <h3>✨ AI — kako jo vklopiš</h3>
+            <div id="aiStatusBox"></div>
+            <details class="mt">
+              <summary style="cursor:pointer;font-weight:700;font-size:13px;color:var(--dim)">Napredno: lasten Gemini ključ (neobvezno)</summary>
+              <p class="hint" style="margin-top:8px">Če želiš neomejeno AI zastonj, si na <b>aistudio.google.com</b> ustvari brezplačen ključ. Ostane samo v tvojem brskalniku. Za običajno uporabo ga NE potrebuješ.</p>
+              <label class="fld"><span>API ključ</span><input type="password" id="gKey" placeholder="ni potreben — prijava z Googlom zadošča"></label>
+              <label class="fld"><span>Model</span>
+                <select id="gModel">
+                  <option value="gemini-flash-latest" selected>gemini-flash-latest (priporočeno)</option>
+                  <option value="gemini-3.5-flash">gemini-3.5-flash</option>
+                  <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+                  <option value="gemini-2.5-pro">gemini-2.5-pro</option>
+                </select>
+              </label>
+              <div class="row">
+                <button class="btn btn-primary btn-sm" onclick="saveGemini()">Shrani</button>
+                <button class="btn btn-ghost btn-sm" id="btnTestG" onclick="testGemini()">Preizkusi</button>
+              </div>
+            </details>
           </div>
 
           <div class="card">
@@ -1241,6 +1251,16 @@ function alertsCalc(){
 }
 function renderDashAlert(){
   const el=$('dashAlert'); if(!el) return;
+  const p0=state.settings.profile;
+  if(state.rides.length>=5 && !p0.maxHr && !p0.ftp && !p0.lthr && !localStorage.getItem('forma_zone_nudge')){
+    el.innerHTML=`<div style="margin-bottom:12px;border:1px solid rgba(95,214,122,.35);background:linear-gradient(90deg,rgba(95,214,122,.08),transparent);padding:11px 15px;font-size:12.5px;color:var(--soft);display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <span style="color:var(--green);font-weight:800;letter-spacing:.08em;font-size:10.5px;border:1px solid rgba(95,214,122,.4);padding:2px 7px">PREDLOG</span>
+      <span style="flex:1;min-width:200px">${LANG==='en'?'I can estimate your training zones (FTP / threshold HR) from your rides — plans get precise targets.':'Iz tvojih voženj lahko ocenim cone treninga (FTP / prag utripa) — plani dobijo natančne številke.'}</span>
+      <button class="btn btn-primary btn-sm" id="btnZoneNudge" onclick="zoneNudge()">✨ ${LANG==='en'?'Estimate now':'Oceni zdaj'}</button>
+      <span style="cursor:pointer;color:var(--dim)" onclick="localStorage.setItem('forma_zone_nudge','1');renderDashAlert()" title="Skrij">✕</span>
+    </div>`;
+    return;
+  }
   const a=alertsCalc();
   el.innerHTML = a.length? `<div style="margin-bottom:12px;border:1px solid rgba(255,194,71,.35);background:linear-gradient(90deg,rgba(255,194,71,.09),transparent);padding:11px 15px;font-size:12.5px;color:var(--soft);display:flex;gap:10px;align-items:center"><span style="color:var(--yellow);font-weight:800;letter-spacing:.08em;font-size:10.5px;border:1px solid rgba(255,194,71,.4);padding:2px 7px;white-space:nowrap">${t('opozorilo')}</span><span>${esc(a[0])}</span></div>` : '';
 }
@@ -1276,6 +1296,30 @@ function renderDashBadges(){
       <div style="height:3px;background:var(--border);margin-top:8px"><i style="display:block;height:100%;width:${pct}%;background:var(--acc)"></i></div>
       <div style="font-size:10.5px;color:var(--muted);margin-top:4px;font-weight:600">${Math.round(mAgg.km).toLocaleString('sl')} / ${target.toLocaleString('sl')} km · ${pct}%</div>
     </div></div>`;
+}
+const STAT_INFO = {
+  prip:[['Pripravljenost (0–100)','Koliko "goriva" imaš danes. Izračunam jo iz svežine (razmerje med treningom in počitkom), bolečin v mišicah in tega, kako redno slediš planu.\n\n70+ → odličen dan za težak trening.\n45–69 → normalen trening po planu.\npod 45 → telo rabi počitek; lahek dan ali prosto.\n\nDvigneš jo s spanjem, počitkom po težkih dneh in rednim ritmom.'],
+       ['Readiness (0–100)','How much fuel you have today, computed from freshness (training vs recovery balance), muscle soreness and plan consistency.\n\n70+ → great day to go hard.\n45–69 → train as planned.\nbelow 45 → your body needs rest.']],
+  svez:[['Svežina (TSB)','Razlika med tvojo dolgoročno kondicijo in kratkoročno utrujenostjo.\n\nPozitivna (+) → spočit si; idealno pred dirko ali težkim vikendom (+10 do +25 je tekmovalno okno).\nRahlo negativna (−5 do −20) → normalno stanje, ko treniraš in gradiš formo.\nPod −25 → preveč zaporedne obremenitve; vzemi lažji dan, sicer tvegaš pretreniranost.\n\nNe skrbi, če je med tednom v minusu — ravno to gradi kondicijo. Pred pomembnim dnem pa naj zraste v plus.'],
+       ['Freshness (TSB)','Long-term fitness minus short-term fatigue.\n\nPositive → rested; ideal before a race (+10 to +25).\nSlightly negative (−5 to −20) → normal while building.\nBelow −25 → too much load; take an easy day.']],
+  ctl:[['Kondicija (CTL)','Tvoja dolgoročna baza — povprečna dnevna obremenitev zadnjih 6 tednov.\n\nVišja številka = daljše in težje treninge preneseš brez težav. Rekreativci so tipično med 30 in 60, resni kolesarji 60–90.\n\nRaste počasi (nekaj točk na mesec) z rednim treningom; s prehitrim dvigom tvegaš pregorevanje — zato plan dviguje obseg postopno (~10 % na teden).'],
+      ['Fitness (CTL)','Your long-term base — average daily load over ~6 weeks.\n\nHigher = you can handle longer, harder rides. Recreational riders sit around 30–60.\n\nIt rises slowly with consistent training; the plan adds ~10 % per week to keep it safe.']],
+  ftp:[['FTP','Moč (v wattih), ki jo teoretično zdržiš eno uro. Glavno merilo kolesarske forme in osnova za cone treninga.\n\nW/kg (moč na kilogram) je še pomembnejši za klance: 2,5–3,5 rekreativec, 3,5–4,5 močan amater.\n\nČe nimaš merilca moči, ni panike — vse deluje tudi po srčnem utripu. FTP lahko ocenim iz tvojih voženj: Nastavitve → ✨ Oceni FTP/prag iz voženj.'],
+      ['FTP','The power you could hold for one hour — the key cycling fitness metric and the basis for zones.\n\nNo power meter? Everything works via heart rate too, and I can estimate FTP from your rides: Settings → ✨ Estimate.']],
+  teden:[['Ta teden','Ure treninga v tekočem tednu proti tvojemu tedenskemu cilju (nastavljen v Nastavitvah).\n\nPomembnejša od skupnih ur je doslednost: raje 4 krajši treningi vsak teden kot en herojski vikend. Zeleno = na dobri poti.'],
+        ['This week','Training hours this week vs your weekly goal (set in Settings). Consistency beats heroics — four short rides beat one epic.']],
+  kcal:[['Kalorije','Danes pojedene kalorije (s telefona ali ročnega vnosa) proti dnevnemu cilju.\n\nCilj izračunam iz tvoje porabe in cilja teže: v deficitu hujšaš, na cilju vzdržuješ. Na dan težkih treningov je cilj višji — gorivo za trening je pomembnejše od deficita.\n\nObrok najlažje dodaš s fotografijo v telefonski aplikaciji.'],
+       ['Calories','Eaten today vs your daily target, computed from your burn and weight goal. On hard days the target rises — fueling beats deficit.']],
+  teza:[['Teža','Tvoja trenutna teža iz profila. Če imaš nastavljeno ciljno težo, kažem, koliko še manjka.\n\nZdrav tempo je 0,3–0,5 kg na teden — hitreje pomeni izgubo mišic. Tehtaj se zjutraj, večkrat na teden, in glej trend, ne posameznega dneva. Graf trenda raste v Prehrani.'],
+       ['Weight','Current weight from your profile; with a goal set, I show what is left. Healthy pace: 0.3–0.5 kg/week. Watch the trend, not single days.']]
+};
+function statInfo(key){
+  const it=STAT_INFO[key]; if(!it) return;
+  const [ti, body]=it[LANG==='en'?1:0];
+  $('dayBody').innerHTML=`<div style="font-family:var(--bc);font-weight:800;font-size:20px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px">${ti}</div>
+    <div style="font-size:13.5px;color:var(--soft);line-height:1.65;white-space:pre-line">${body}</div>
+    <div class="modal-foot"><button class="btn btn-primary btn-sm" onclick="closeModal('dayModalBack')">${LANG==='en'?'Got it':'Razumem'}</button></div>`;
+  $('dayModalBack').classList.add('open');
 }
 function pripravljenost(){
   const f = currentForm();
@@ -1320,7 +1364,7 @@ function renderDash(){
 
   // vodič za začetek
   const steps = [
-    { ok: !!state.settings.geminiKey || !!(window.FORMASYNC && FORMASYNC.uid && FORMASYNC.uid()), t:'Vklopi AI: prijava z Googlom (10 dejanj/dan zastonj) ali lasten Gemini ključ', tab:'settings' },
+    { ok: !!state.settings.geminiKey || !!(window.FORMASYNC && FORMASYNC.uid && FORMASYNC.uid()), t:'Vklopi AI: klik na 🔵 Prijava z Google v Nastavitvah — brez ključa', tab:'settings' },
     { ok: state.rides.length>0, t:'Dodaj vožnje — poveži Stravo/Intervals.icu ali prilepi screenshot', tab:'rides' },
     { ok: !!(p.maxHr || p.ftp), t:'Dopolni profil (max utrip ali FTP → cone za treninge)', tab:'settings' },
     { ok: !!state.riderProfile, t:'Zaženi AI analizo: kakšen kolesar si', tab:'dash' },
@@ -1348,14 +1392,30 @@ function renderDash(){
   const s7 = formSeries(); const prev7 = s7.length>8? s7[s7.length-8] : null;
   const tsbD = (f&&prev7)? (f.tsb - prev7.tsb) : 0;
 
-  $('dashStats').innerHTML = `
-    <div class="stat"><div class="k">${t('readiness')}</div><div class="v">${prip}<small>/100</small></div><div class="bar"><i style="width:${prip}%;background:${prip>=70?'var(--green)':prip>=45?'var(--yellow)':'var(--acc)'}"></i></div></div>
-    <div class="stat"><div class="k">${t('forma')}</div><div class="v" style="color:${f?f.barva:'inherit'}">${f?(f.tsb>0?'+':'')+f.tsb:'–'}</div><div class="t" style="color:${tsbD>=0?'var(--green)':'var(--muted)'}">${f? (tsbD>1?'naraščaš':tsbD<-1?'padaš':'stabilno') : 'dodaj aktivnosti'}</div></div>
-    ${p.ftp?`<div class="stat"><div class="k">FTP</div><div class="v">${p.ftp} <small>W</small></div><div class="t">${p.teza?(p.ftp/p.teza).toFixed(1)+' W/kg':''}</div></div>`
-      :`<div class="stat"><div class="k">${t('kondicija')}</div><div class="v">${f?Math.round(f.ctl):'–'}</div><div class="t">CTL — dolgoročno</div></div>`}
-    <div class="stat"><div class="k">${t('thisWeek')}</div><div class="v">${hM}:${pad(mM)}</div><div class="t">od ${p.ure||'?'} h plana · ${km.toFixed(0)} km</div></div>
-    <div class="stat"><div class="k">${t('calories')}</div><div class="v">${eaten!=null?eaten.toLocaleString('sl'):'–'}</div>${(eaten!=null&&kcalCilj)?`<div class="bar"><i style="width:${Math.min(100,Math.round(eaten/kcalCilj*100))}%;background:var(--acc)"></i></div>`:`<div class="t">poveži telefon</div>`}</div>
-    <div class="stat"><div class="k">${t('weight')}</div><div class="v">${p.teza??'–'}</div><div class="t">${(p.ciljTeza>0&&p.teza>p.ciljTeza)?('še '+(p.teza-p.ciljTeza).toFixed(1)+' kg do cilja'):'kg'}</div></div>`;
+  const sl=LANG!=='en';
+  const pripTxt = prip>=70? (sl?'odlična — dan za močan trening':'great — go hard today')
+                : prip>=45? (sl?'v redu — normalen trening':'okay — train as planned')
+                : (sl?'nizka — raje lahek dan':'low — take it easy');
+  const svezTxt = !f? (sl?'dodaj aktivnosti':'add activities')
+                : f.tsb>=10? (sl?'spočit — pravi čas za napad':'fresh — time to attack')
+                : f.tsb>=-5? (sl?'v ravnovesju':'balanced')
+                : f.tsb>=-20? (sl?'treniraš trdo — zdrava utrujenost':'training hard — healthy fatigue')
+                : (sl?'zelo utrujen — vzemi lažji dan':'very tired — ease off');
+  const s28i = s7.length>28? s7[s7.length-29] : null;
+  const ctlD28 = (f&&s28i)? Math.round(f.ctl-s28i.ctl) : null;
+  const ctlTxt = ctlD28==null? (sl?'višja = zmoreš več':'higher = you can handle more')
+               : (ctlD28>=0?'+':'')+ctlD28+(sl?' v zadnjem mesecu':' this month');
+  const wkPct = p.ure? Math.min(100,Math.round(min/(p.ure*60)*100)) : null;
+  const kcalPct = (eaten!=null&&kcalCilj)? Math.min(100,Math.round(eaten/kcalCilj*100)) : null;
+  const S=(key,inner)=>`<div class="stat" style="cursor:pointer" onclick="statInfo('${key}')" title="${sl?'Klikni za razlago':'Click to learn more'}">${inner}</div>`;
+  $('dashStats').innerHTML =
+    S('prip',`<div class="k">${t('readiness')} ⓘ</div><div class="v">${prip}<small>/100</small></div><div class="bar"><i style="width:${prip}%;background:${prip>=70?'var(--green)':prip>=45?'var(--yellow)':'var(--acc)'}"></i></div><div class="t">${pripTxt}</div>`)+
+    S('svez',`<div class="k">${sl?'Svežina':'Freshness'} ⓘ</div><div class="v" style="color:${f?f.barva:'inherit'}">${f?(f.tsb>0?'+':'')+Math.round(f.tsb):'–'}</div><div class="t">${svezTxt}</div>`)+
+    (p.ftp? S('ftp',`<div class="k">FTP ⓘ</div><div class="v">${p.ftp} <small>W</small></div><div class="t">${p.teza?(p.ftp/p.teza).toFixed(1)+' W/kg':''}</div>`)
+          : S('ctl',`<div class="k">${t('kondicija')} ⓘ</div><div class="v">${f?Math.round(f.ctl):'–'}</div><div class="t">${ctlTxt}</div>`))+
+    S('teden',`<div class="k">${t('thisWeek')} ⓘ</div><div class="v">${hM}:${pad(mM)}</div>${wkPct!=null?`<div class="bar"><i style="width:${wkPct}%;background:${wkPct>=80?'var(--green)':'var(--blue)'}"></i></div><div class="t">${wkPct}% ${sl?'tedenskega cilja':'of weekly goal'} · ${km.toFixed(0)} km</div>`:`<div class="t">${km.toFixed(0)} km</div>`}`)+
+    S('kcal',`<div class="k">${t('calories')} ⓘ</div><div class="v">${eaten!=null?eaten.toLocaleString('sl'):'–'}</div>${kcalPct!=null?`<div class="bar"><i style="width:${kcalPct}%;background:var(--acc)"></i></div><div class="t">${kcalPct}% ${sl?'dnevnega cilja':'of daily goal'}</div>`:`<div class="t">${eaten===0? (sl?'danes še brez vnosov':'no entries yet today') : (sl?'poveži telefon':'connect your phone')}</div>`}`)+
+    S('teza',`<div class="k">${t('weight')} ⓘ</div><div class="v">${p.teza??'–'}</div><div class="t">${(p.ciljTeza>0&&p.teza>p.ciljTeza)?((sl?'še ':'')+(p.teza-p.ciljTeza).toFixed(1)+' kg '+(sl?'do cilja':'to goal')):(p.teza?(sl?'vpiši cilj v Nastavitvah':'set a goal in Settings'):'kg')}</div>`);
 
   renderDashWeekPlan();
 
@@ -1545,7 +1605,7 @@ function rideRowHtml(r){
 function renderRides(){
   const sorted = [...state.rides].sort((a,b)=>b.date.localeCompare(a.date));
   $('ridesList').innerHTML = sorted.length ? sorted.map(rideRowHtml).join('')
-    : `<div class="empty"><span class="big">📸</span>Ni še nobene vožnje.<br>Prilepi screenshot s Strave/Garmina (Ctrl+V) in Gemini prebere podatke.</div>`;
+    : `<div class="empty"><span class="big">📸</span>Še ni aktivnosti. Tri poti do podatkov:<br><b>Intervals.icu</b> (zastonj, samodejno) · <b>screenshot</b> (Ctrl+V) · <b>ročni vnos</b>.<br><button class="btn btn-primary btn-sm mt" onclick="switchTab('settings')">Poveži vir podatkov</button></div>`;
 }
 
 /* ---------- modal za vožnjo ---------- */
@@ -1766,7 +1826,9 @@ async function gemini(parts, {json=true, temp=0.4}={}){
       body: JSON.stringify({ model:m, body })
     });
   } else {
-    switchTab('settings'); throw new Error('Najprej vpiši Gemini API ključ v Nastavitvah.');
+    switchTab('settings'); throw new Error(LANG==='en'
+      ? 'Sign in with Google in Settings — AI works without any key. (Advanced: you can also use your own Gemini key.)'
+      : 'Prijavi se z Googlom v Nastavitvah — AI dela brez ključa. (Napredno: lahko vpišeš tudi svoj Gemini ključ.)');
   }
   aiLogPush('gemini');
   const sleep = ms => new Promise(r=>setTimeout(r,ms));
@@ -2609,9 +2671,14 @@ Vrni SAMO JSON:
     toast('Profil kolesarja izdelan. 🔍 Vsi plani ga bodo zdaj upoštevali.','ok');
   }catch(e){ toast(e.message,'err'); busy($('btnRider'), false); }
 }
+async function zoneNudge(){
+  const b=$('btnZoneNudge'); busy(b,true,'…');
+  try{ await estimateThresholds(); localStorage.setItem('forma_zone_nudge','1'); }catch(_){}
+  busy(b,false); renderDashAlert();
+}
 async function estimateThresholds(){
   if (state.rides.length < 3){ toast('Za oceno dodaj vsaj 3 vožnje.','err'); return; }
-  const btn = $('btnFtp'); busy(btn, true, 'Ocenjujem prag …');
+  const btn = $('btnFtp')||$('btnFtp2'); busy(btn, true, 'Ocenjujem prag …');
   try{
     const withPow = state.rides.filter(r=>r.avgPower).slice(-15)
       .map(r=>`- ${r.date}: ${r.dist} km, ${fmtDur(r.time)}, povp. moč ${r.avgPower} W, utrip ${r.avgHr||'?'}`).join('\n');
@@ -3305,7 +3372,8 @@ function renderAnalitika(){
       </div>`;
     }).join('') + `<div class="hint" style="margin:6px 0 0">${LANG==='en'?'Watts from FTP, heart rate from your profile.':'Wati iz FTP, utrip iz tvojega profila.'}</div>`;
   } else {
-    zEl.innerHTML = `<div class="hint" style="margin:4px 0">${LANG==='en'?'Set max HR or FTP in Settings to see zones.':'V Nastavitvah vpiši max utrip ali FTP — prikažem cone.'}</div>`;
+    zEl.innerHTML = `<div class="hint" style="margin:4px 0">${LANG==='en'?'Set max HR or FTP in Settings — or let me estimate them from your rides.':'V Nastavitvah vpiši max utrip ali FTP — ali pa ju ocenim kar iz tvojih voženj.'}</div>
+      <button class="btn btn-primary btn-sm no-print" id="btnFtp2" onclick="estimateThresholds().then(()=>renderAnalitika())">✨ ${LANG==='en'?'Estimate from rides':'Oceni iz voženj'}</button>`;
   }
   // napoved forme
   const fEl=$('anaForecast');
@@ -3532,6 +3600,20 @@ Odgovori na zadnje sporočilo kolesarja. Vrni samo čisto besedilo.${aiLangNote(
 ================================================================ */
 function renderSetExtras(){
   const p=state.settings.profile;
+  const ab=$('aiStatusBox');
+  if(ab){
+    const hasKey=!!state.settings.geminiKey;
+    const gOk0=!!(document.getElementById('gsyncCard') && /Odjava/.test(document.getElementById('gsyncCard').innerHTML));
+    if(hasKey){
+      ab.innerHTML=`<div class="conn-status ok">✓ AI deluje — uporabljaš lasten ključ (neomejeno).</div>`;
+    } else if(gOk0){
+      ab.innerHTML=`<div class="conn-status ok">✓ AI deluje prek Google prijave — 10 dejanj/dan zastonj, PRO neomejeno.</div>`;
+    } else {
+      ab.innerHTML=`<div class="conn-status no">○ AI še ni vklopljena.</div>
+        <p class="hint" style="margin:0 0 10px">Najlažje: prijavi se z Googlom (kartica 🔵 zgoraj) — AI takoj dela, brez ključa. 10 dejanj/dan zastonj.</p>
+        <button class="btn btn-primary btn-sm" onclick="FORMASYNC && FORMASYNC.signIn()">🔵 Prijava z Google</button>`;
+    }
+  }
   const lc=$('lvlCards');
   if(lc){
     const L=[['postani fit','Postani fit','Splošna forma, hujšanje, moč za vsak dan'],

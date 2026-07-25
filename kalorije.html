@@ -458,7 +458,8 @@ input:focus,select:focus{box-shadow:none!important}
     <h2>Nastavitve<span class="x" onclick="closeModalS()">✕</span></h2>
     <div id="setLink" class="hint" style="margin-bottom:12px"></div>
     <div id="gsyncHostK"></div>
-    <label class="fld"><span>Gemini API ključ <span style="color:var(--dim)">(pusti prazno = vzame iz namizja)</span></span><input type="password" id="sKey" placeholder="samodejno iz namizja"></label>
+    <div class="hint" style="margin-bottom:10px;padding:9px 11px;border:1px solid var(--border);background:var(--panel)">✨ <b>AI dela brez ključa</b> — samo prijavi se z Googlom (🔵 zgoraj): 10 dejanj/dan zastonj. Ključ spodaj je neobvezen (napredno, neomejeno zastonj).</div>
+    <label class="fld"><span>Gemini API ključ <span style="color:var(--dim)">(neobvezno)</span></span><input type="password" id="sKey" placeholder="ni potreben — Google prijava zadošča"></label>
     <label class="fld"><span>Model</span>
       <select id="sModel">
         <option value="">samodejno (iz namizja / flash-latest)</option>
@@ -731,7 +732,7 @@ async function gemini(parts){
     call = m => fetch(AI_PROXY.replace(/\/$/,'')+'/api/gemini',{
       method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok}, body:JSON.stringify({model:m, body}) });
   } else {
-    openSettings(); throw new Error('Vpiši Gemini API ključ (ali odpri namizje PEAKFORM, da ga prevzamem).');
+    openSettings(); throw new Error('Prijavi se z Googlom (🔵 v Nastavitvah) — AI dela brez ključa.');
   }
   aiLogPush();
   const sleep = ms => new Promise(r=>setTimeout(r,ms));
