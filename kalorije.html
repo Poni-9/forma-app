@@ -1200,15 +1200,18 @@ function dryWindowK(iso, durMin){
   const wd=(wxCache?.days||[]).find(d=>d.date===iso);
   if(!wd?.hours?.length) return null;
   const need=Math.max(1, Math.ceil((durMin||60)/60));
-  const hs=wd.hours; let best=null;
+  let hs=wd.hours;
+  if(iso===todayIso()){ const nowH=new Date().getHours(); hs=hs.filter(x=>x.h>=nowH); }
+  const wins=[];
   for(let i=0;i+need<=hs.length;i++){
     const seg=hs.slice(i,i+need);
     if(seg.some((x,k)=>x.h!==seg[0].h+k)) continue;
     if(seg.some(x=>weatherInfo(x.code).bad>=2)) continue;
     const mx=Math.max(...seg.map(x=>x.pop));
-    if(mx<=45 && (!best||mx<best.pop)) best={from:seg[0].h,to:seg[seg.length-1].h+1,pop:mx};
+    if(mx<=45) wins.push({from:seg[0].h,to:seg[seg.length-1].h+1,pop:mx});
   }
-  return best;
+  if(!wins.length) return null;
+  return wins.find(w=>w.pop<=35) || wins[0];
 }
 async function renderWeatherK(auto){
   const el=$('weatherStripK');
