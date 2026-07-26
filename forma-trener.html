@@ -3847,7 +3847,7 @@ function renderWizard(){
   const el=$('wizBody'); if(!el) return;
   const signed=!!(window.FORMASYNC&&FORMASYNC.uid&&FORMASYNC.uid());
   const stOk=!!state.stravaEasy?.connected;
-  const stSrv=_srvHealth? _srvHealth.strava!==false : true;
+  const stSrv=!!(_srvHealth && _srvHealth.strava===true);
   const nAuto=state.rides.filter(r=>r.stravaId!=null||r.icuId!=null).length;
   const chk=(ok,txt,btn)=>`<div style="display:flex;align-items:center;gap:10px;padding:11px 13px;border:1px solid ${ok?'rgba(95,214,122,.35)':'var(--border2)'};background:${ok?'rgba(95,214,122,.06)':'var(--bg)'};margin-top:8px">
     <span style="font-size:16px;flex:none">${ok?'✅':'⬜'}</span><span style="flex:1;font-size:12.5px;line-height:1.5">${txt}</span>${(!ok&&btn)?btn:''}</div>`;
@@ -3904,7 +3904,7 @@ async function stravaEasyConnect(){
     }
     if(!t){ toast('Najprej se prijavi z Google (🔵 kartica zgoraj) — Strava se shrani na tvoj račun.','err'); return; }
     const h = await serverHealth();
-    if(h && h.strava===false){ toast('Povezava na en klik še ni aktivirana — do takrat uporabi 📈 Intervals.icu ali FIT/screenshot.','err'); return; }
+    if(!h || h.strava!==true){ toast('Povezava na en klik še ni aktivirana — do takrat uporabi 📈 Intervals.icu ali povleci FIT/screenshot. (Aktivacija je v teku.)','err'); return; }
     location.href = AI_PROXY + '/strava/auth?t=' + encodeURIComponent(t);
   }catch(e){ toast(e.message,'err'); }
 }
