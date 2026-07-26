@@ -246,6 +246,9 @@ textarea{resize:vertical;min-height:70px}
 .plan-summary b{color:var(--acc2)}
 .dr-edit{background:none;border:1px solid var(--border2);color:var(--muted);font-family:'Barlow',sans-serif;font-size:10.5px;font-weight:700;padding:3px 9px;cursor:pointer;margin-left:8px;letter-spacing:.04em}
 .dr-edit:hover{border-color:var(--acc);color:var(--acc2)}
+.dash-cols{display:grid;grid-template-columns:250px minmax(0,1fr);gap:14px;align-items:start}
+#weeklySideCard{position:sticky;top:64px;max-height:calc(100vh - 80px);overflow-y:auto}
+@media(max-width:1150px){.dash-cols{grid-template-columns:1fr}#weeklySideCard{position:static;max-height:none}}
 
 /* ---------- Današnji trening ---------- */
 .today-setup{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;align-items:end}
@@ -490,11 +493,18 @@ canvas{max-width:100%}
       </div>
 
       <div id="onboardCard"></div>
-      <div id="phoneCard"></div>
       <div id="dashAlert"></div>
       <div class="grid-stats" id="dashStats"></div>
 
-      <div class="grid-dash3">
+      <div class="dash-cols">
+      <div class="card" id="weeklySideCard">
+        <h3 data-i18n="weeklyVol">Tedenski obseg</h3>
+        <div class="hint" style="margin:0 0 12px">zadnjih 12 tednov · najnovejši zgoraj</div>
+        <div id="weeklySide"></div>
+      </div>
+      <div style="min-width:0;display:flex;flex-direction:column;gap:14px">
+
+      <div class="grid-dash3" style="margin:0">
         <div class="card">
           <h3><span data-i18n="chartForma">Forma · zadnjih 90 dni</span> <span class="sub" data-i18n="chartFormaSub">kondicija · utrujenost · svežina</span></h3>
           <div style="position:relative;height:225px"><canvas id="chartForm"></canvas></div>
@@ -512,20 +522,12 @@ canvas{max-width:100%}
         </div>
       </div>
 
-      <div class="grid-2">
-        <div class="card">
-          <h3 data-i18n="weeklyVol">Tedenski obseg</h3>
-          <div style="position:relative;height:205px"><canvas id="chartWeekly"></canvas></div>
-        </div>
-        <div class="card" style="padding:0">
-          <h3 style="padding:14px 16px 0" data-i18n="lastActs">Zadnje aktivnosti</h3>
-          <div id="dashRides"></div>
-        </div>
+      <div id="dashBadges"></div>
+
+      <div class="card" id="riderCard"></div>
+
       </div>
-
-      <div id="dashBadges" class="mt"></div>
-
-      <div class="card mt" id="riderCard"></div>
+      </div>
     </section>
     <!-- ===== AKTIVNOSTI ===== -->
     <section class="tab" id="tab-rides">
@@ -540,12 +542,6 @@ canvas{max-width:100%}
         </div>
       </div>
 
-      <div class="plan-summary" style="border-color:rgba(77,163,255,.3);background:linear-gradient(90deg,rgba(77,163,255,.08),transparent)">
-        <b style="color:var(--blue)">🔓 Nimaš Strava naročnine?</b> Nič hudega — podatki pridejo po treh poteh:
-        <b>1) Intervals.icu</b> (brezplačno, samodejno — poveže se z Garminom/Wahoo/Stravo in uvozi razdaljo, čas, višince, utrip, moč in TSS),
-        <b>2) screenshot</b> s kolesarskega računalnika ali telefona (Ctrl+V — AI prebere vse s slike),
-        <b>3) ročni vnos</b>. Nastavi v <a style="color:var(--acc2);cursor:pointer" onclick="switchTab('settings')">Nastavitvah</a>.
-      </div>
       <div class="card mb" style="padding:0">
         <div class="rides-head">
           <div></div><div>Aktivnost</div>
@@ -630,6 +626,7 @@ canvas{max-width:100%}
       </div>
 
       <div id="planWeekView">
+        <div id="planStrip" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:12px"></div>
         <div id="planSummary"></div>
         <div class="week-grid" id="weekGrid"></div>
       </div>
@@ -852,6 +849,7 @@ canvas{max-width:100%}
         </div>
 
         <div>
+          <div id="phoneCardSet"></div>
           <div class="card mt">
             <h3>💾 Podatki</h3>
             <div class="row">
@@ -1029,7 +1027,10 @@ canvas{max-width:100%}
   <div class="modal" style="max-width:640px">
     <h2>📥 Uvozi svoj plan<span class="x" onclick="closeModal('impPlanBack')">✕</span></h2>
     <div class="ai-note" style="margin-bottom:10px">Že imaš plan — od trenerja, iz e-pošte, Excela, drugega orodja? Prilepi ga spodaj. AI ga prebere, vpiše v koledar in doda kratko trenersko oceno. Vsebine treningov ne spreminja.</div>
-    <label class="fld"><span>Prilepi plan (besedilo)</span><textarea id="impPlanTxt" style="min-height:180px" placeholder="npr.&#10;PON: 1 h mirno kolo&#10;TOR: 4×5 min intervali v klanec&#10;SRE: počitek …"></textarea></label>
+    <div class="dropzone" style="padding:12px 14px;font-size:12.5px;margin-bottom:10px" onclick="document.getElementById('impPlanFile').click()">📸 Dodaj sliko/screenshot plana (klik ali prilepi Ctrl+V) — AI prebere vse s slike</div>
+    <input type="file" id="impPlanFile" accept="image/*" style="display:none">
+    <img id="impPlanPrev" class="shot-prev" style="display:none;max-height:130px;margin-bottom:10px">
+    <label class="fld"><span>… ali prilepi plan kot besedilo</span><textarea id="impPlanTxt" style="min-height:180px" placeholder="npr.&#10;PON: 1 h mirno kolo&#10;TOR: 4×5 min intervali v klanec&#10;SRE: počitek …"></textarea></label>
     <div class="row mt"><button class="btn btn-primary" id="btnImpPlan" onclick="importPlanRun()">✨ Preberi in vpiši v koledar</button></div>
   </div>
 </div>
@@ -1050,9 +1051,9 @@ canvas{max-width:100%}
     <div class="onb-head">
       <div class="logo-mark" style="width:28px;height:28px"></div>
       <div class="logo-name" style="font-size:20px">PEAKFORM</div>
-      <div style="margin-left:auto;font-size:12px;color:var(--dim)">Korak <span id="onbStep">1</span> od 4</div>
+      <div style="margin-left:auto;font-size:12px;color:var(--dim)">Korak <span id="onbStep">1</span> od 5</div>
     </div>
-    <div class="onb-prog"><i id="onbP1" class="on"></i><i id="onbP2"></i><i id="onbP3"></i><i id="onbP4"></i></div>
+    <div class="onb-prog"><i id="onbP1" class="on"></i><i id="onbP2"></i><i id="onbP3"></i><i id="onbP4"></i><i id="onbP5"></i></div>
     <div id="onbBody"></div>
     <div class="onb-foot">
       <button class="btn btn-ghost" id="onbBackBtn" onclick="onbGo(-1)" style="visibility:hidden">← Nazaj</button>
@@ -1102,11 +1103,13 @@ function rideKey(r){
   return 'm'+(r.date||'')+'|'+((r.name||'').toLowerCase())+'|'+(Math.round((+r.dist||0)*10))+'|'+(Math.round(+r.time||0));
 }
 function dedupeRides(arr){
-  const seen={}; const out=[];
+  const seen={}; const seen2={}; const out=[];
   for(const r of arr){
     if(!r) continue;
     // smeti: ≤3 min in ≤0,3 km (pomotoma zabeleženi koraki do avta ipd.)
     if((+r.time||0)<=3 && (+r.dist||0)<=0.3 && r.sport!=='moc') continue;
+    // mini sprehodi iz samodejnega uvoza (<15 min ali <1 km) = šum
+    if(r.sport==='pohod' && r.source && r.source!=='manual' && ((+r.time||0)<15 || (r.dist!=null && +r.dist<1))) continue;
     const k=rideKey(r);
     if(seen[k]){
       // obdrži bogatejšega (analiza/polyline)
@@ -1114,7 +1117,20 @@ function dedupeRides(arr){
       if((r.analysis&&!prev.analysis)||(r.polyline&&!prev.polyline)){ out[out.indexOf(prev)]=r; seen[k]=r; }
       continue;
     }
-    seen[k]=r; out.push(r);
+    // ista aktivnost iz DVEH virov (Strava + Intervals): isti dan, ~ista razdalja in čas
+    const k2=(r.date||'')+'|'+(r.sport||'kolo')+'|'+Math.round((+r.dist||0)*2)+'|'+Math.round((+r.time||0)/6);
+    if(r.sport!=='moc' && seen2[k2]){
+      const prev=seen2[k2];
+      if(prev.icuId==null && r.icuId!=null) prev.icuId=r.icuId;
+      if(prev.stravaId==null && r.stravaId!=null) prev.stravaId=r.stravaId;
+      if(!prev.polyline && r.polyline) prev.polyline=r.polyline;
+      if(!prev.analysis && r.analysis) prev.analysis=r.analysis;
+      if(!prev.places && r.places) prev.places=r.places;
+      if(isGenericName(prev.name) && r.name && !isGenericName(r.name)) prev.name=r.name;
+      continue;
+    }
+    seen[k]=r; if(r.sport!=='moc') seen2[k2]=r;
+    out.push(r);
   }
   return out;
 }
@@ -1347,6 +1363,11 @@ function streakDays(){
   while(days.has(isoDate(d)) && n<365){ n++; d=addDays(d,-1); }
   return n;
 }
+function ftpStaleDays(){
+  const p=state.settings.profile;
+  if(!p.ftp || !p.ftpDatum) return null;
+  return Math.round((new Date()-parseIso(p.ftpDatum))/864e5);
+}
 function alertsCalc(){
   const out=[];
   const s=formSeries();
@@ -1368,18 +1389,23 @@ function alertsCalc(){
   if(prip<45 && !out.length) out.push(LANG==='en'
     ? 'Readiness '+prip+'/100 — a lighter day will pay off tomorrow.'
     : 'Pripravljenost '+prip+'/100 — lažji dan se ti bo jutri obrestoval.');
+  const fd=ftpStaleDays();
+  if(fd!=null && fd>60 && !out.length){
+    const nR=state.rides.filter(r=>r.date>=(state.settings.profile.ftpDatum||'')).length;
+    out.push(LANG==='en'
+      ? 'Your FTP ('+state.settings.profile.ftp+' W) was last confirmed '+Math.round(fd/30)+' months ago — '+nR+' activities since. It has likely changed: run “Estimate zones from rides” in Settings, then confirm with a 20-min FTP test.'
+      : 'FTP ('+state.settings.profile.ftp+' W) je bil nazadnje potrjen pred '+Math.round(fd/30)+' meseci — od takrat že '+nR+' aktivnosti. Verjetno se je spremenil: v Nastavitvah klikni ✨ Oceni cone iz voženj, za potrditev pa naredi 20-minutni FTP test.');
+  }
   return out;
 }
 function renderPhoneCard(){
-  const el=$('phoneCard'); if(!el) return;
-  if(localStorage.getItem('forma_phone_done')){ el.innerHTML=''; return; }
-  el.innerHTML=`<div class="card mb" style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
-    <div style="background:#fff;padding:7px;flex-shrink:0"><img src="https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=https%3A%2F%2Fponi-9.github.io%2Fforma-app%2Fkalorije.html" width="110" height="110" alt="QR"></div>
-    <div style="flex:1;min-width:240px">
-      <div style="font-family:var(--bc);font-weight:700;font-size:14.5px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase">📲 Namesti še na telefon</div>
-      <div style="font-size:12.5px;color:var(--soft);margin-top:6px;line-height:1.6">Poskeniraj QR → prijavi se z istim Googlom → <b>Android:</b> Chrome ⋮ → Dodaj na začetni zaslon · <b>iPhone:</b> Safari ↑ Deli → Na začetni zaslon.<br>Tam slikaš obroke in te vodi skozi vadbo — vse sinhronizirano.</div>
+  const el=$('phoneCardSet'); if(!el) return;
+  el.innerHTML=`<div class="card mt" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+    <div style="background:#fff;padding:6px;flex-shrink:0"><img src="https://api.qrserver.com/v1/create-qr-code/?size=96x96&data=https%3A%2F%2Fponi-9.github.io%2Fforma-app%2Fkalorije.html" width="96" height="96" alt="QR"></div>
+    <div style="flex:1;min-width:200px">
+      <h3 style="margin:0 0 6px">📲 Na telefon</h3>
+      <div style="font-size:12px;color:var(--soft);line-height:1.6">Poskeniraj QR → prijava z istim Googlom → <b>Android:</b> Chrome ⋮ → Dodaj na začetni zaslon · <b>iPhone:</b> Safari ↑ Deli → Na začetni zaslon. Na telefonu slikaš obroke in te vodi skozi vadbo.</div>
     </div>
-    <span style="cursor:pointer;color:var(--dim);align-self:flex-start" title="Skrij" onclick="localStorage.setItem('forma_phone_done','1');renderPhoneCard()">✕</span>
   </div>`;
 }
 function renderDashAlert(){
@@ -1442,11 +1468,11 @@ const STAT_INFO = {
        ['Freshness (TSB)','Long-term fitness minus short-term fatigue.\n\nPositive → rested; ideal before a race (+10 to +25).\nSlightly negative (−5 to −20) → normal while building.\nBelow −25 → too much load; take an easy day.']],
   ctl:[['Kondicija (CTL)','Tvoja dolgoročna baza — povprečna dnevna obremenitev zadnjih 6 tednov.\n\nVišja številka = daljše in težje treninge preneseš brez težav. Rekreativci so tipično med 30 in 60, resni kolesarji 60–90.\n\nRaste počasi (nekaj točk na mesec) z rednim treningom; s prehitrim dvigom tvegaš pregorevanje — zato plan dviguje obseg postopno (~10 % na teden).'],
       ['Fitness (CTL)','Your long-term base — average daily load over ~6 weeks.\n\nHigher = you can handle longer, harder rides. Recreational riders sit around 30–60.\n\nIt rises slowly with consistent training; the plan adds ~10 % per week to keep it safe.']],
-  ftp:[['FTP','Moč (v wattih), ki jo teoretično zdržiš eno uro. Glavno merilo kolesarske forme in osnova za cone treninga.\n\nW/kg (moč na kilogram) je še pomembnejši za klance: 2,5–3,5 rekreativec, 3,5–4,5 močan amater.\n\nČe nimaš merilca moči, ni panike — vse deluje tudi po srčnem utripu. FTP lahko ocenim iz tvojih voženj: Nastavitve → ✨ Oceni FTP/prag iz voženj.'],
+  ftp:[['FTP','Moč (v wattih), ki jo teoretično zdržiš eno uro. Glavno merilo kolesarske forme in osnova za cone treninga.\n\nW/kg (moč na kilogram) je še pomembnejši za klance: 2,5–3,5 rekreativec, 3,5–4,5 močan amater.\n\nČe nimaš merilca moči, ni panike — vse deluje tudi po srčnem utripu. FTP lahko ocenim iz tvojih voženj: Nastavitve → ✨ Oceni FTP/prag iz voženj.\n\nSpremljam tudi, KDAJ je bil FTP nazadnje potrjen (ocena iz Intervals.icu ali tvoj vnos). Če je starejši od ~2 mesecev, te opozorim, ga na novo ocenim iz voženj in predlagam 20-min test za potrditev.'],
       ['FTP','The power you could hold for one hour — the key cycling fitness metric and the basis for zones.\n\nNo power meter? Everything works via heart rate too, and I can estimate FTP from your rides: Settings → ✨ Estimate.']],
   teden:[['Ta teden','Ure treninga v tekočem tednu proti tvojemu tedenskemu cilju (nastavljen v Nastavitvah).\n\nPomembnejša od skupnih ur je doslednost: raje 4 krajši treningi vsak teden kot en herojski vikend. Zeleno = na dobri poti.'],
         ['This week','Training hours this week vs your weekly goal (set in Settings). Consistency beats heroics — four short rides beat one epic.']],
-  kcal:[['Kalorije','Danes pojedene kalorije (s telefona ali ročnega vnosa) proti dnevnemu cilju.\n\nCilj izračunam iz tvoje porabe in cilja teže: v deficitu hujšaš, na cilju vzdržuješ. Na dan težkih treningov je cilj višji — gorivo za trening je pomembnejše od deficita.\n\nObrok najlažje dodaš s fotografijo v telefonski aplikaciji.'],
+  kcal:[['Kalorije','POJEDENE / PORABLJENE danes. Poraba = tvoja osnovna poraba + današnji trening; pojedeno prišteje vsak obrok, ki ga slikaš ali vpišeš na telefonu.\n\nDeficit pomeni, da si pojedel manj, kot si porabil (hujšanje); presežek obratno. Ob cilju hujšanja je zmeren deficit zaželen, na dan težkih treningov pa je gorivo pomembnejše od deficita.\n\nČe obrokov nekaj dni ne beležiš, kartica počiva in te ne opozarja — beleženje je vedno tvoja izbira.'],
        ['Calories','Eaten today vs your daily target, computed from your burn and weight goal. On hard days the target rises — fueling beats deficit.']],
   teza:[['Teža','Tvoja trenutna teža iz profila. Če imaš nastavljeno ciljno težo, kažem, koliko še manjka.\n\nZdrav tempo je 0,3–0,5 kg na teden — hitreje pomeni izgubo mišic. Tehtaj se zjutraj, večkrat na teden, in glej trend, ne posameznega dneva. Graf trenda raste v Prehrani.'],
        ['Weight','Current weight from your profile; with a goal set, I show what is left. Healthy pace: 0.3–0.5 kg/week. Watch the trend, not single days.']]
@@ -1520,14 +1546,21 @@ function renderDash(){
   const min  = thisWeek.reduce((a,r)=>a+(+r.time||0),0);
   const f = currentForm();
   const prip = pripravljenost();
-  let eaten=null, kcalCilj=null;
+  let eaten=null, kcalCilj=null, poraba=null, lastLogIso=null;
   try{
     const kal=kalData(); const entries=(kal?.days?.[todayIso()]?.entries)||[];
     if (kal) eaten = Math.round(entries.reduce((a,e)=>a+(+e.kcal||0),0));
+    const ds=kal?.days||{};
+    lastLogIso = Object.keys(ds).filter(d=>(ds[d]?.entries||[]).length).sort().pop()||null;
     const day0=planDayFor(todayIso());
     const t0=tdee();
-    kcalCilj = day0?.kcal_vnos || (t0? Math.round(t0 - (goalDeficit()?.deficit||290)) : null);
+    kcalCilj = day0?.kcal_vnos || (t0? Math.round(t0 - (wantsLean()?(goalDeficit()?.deficit||290):0)) : null);
+    const b0=bmr();
+    const trainK = state.rides.filter(r=>r.date===todayIso() && chipClass(r.sport||'kolo')!=='pocitek')
+      .reduce((a,r)=>a+(r.tss? Math.round(r.tss*10) : Math.round((+r.time||0)*7)),0);
+    poraba = b0 ? b0+(trainK || (day0?.kcal_poraba? Math.max(0,day0.kcal_poraba-b0):0)) : (day0?.kcal_poraba||t0||null);
   }catch(_){}
+  const kcalTracking = lastLogIso && lastLogIso >= isoDate(addDays(new Date(),-3));
   const hM = Math.floor(min/60), mM = Math.round(min%60);
   const s7 = formSeries(); const prev7 = s7.length>8? s7[s7.length-8] : null;
   const tsbD = (f&&prev7)? (f.tsb - prev7.tsb) : 0;
@@ -1546,22 +1579,22 @@ function renderDash(){
   const ctlTxt = ctlD28==null? (sl?'višja = zmoreš več':'higher = you can handle more')
                : (ctlD28>=0?'+':'')+ctlD28+(sl?' v zadnjem mesecu':' this month');
   const wkPct = p.ure? Math.min(100,Math.round(min/(p.ure*60)*100)) : null;
-  const kcalPct = (eaten!=null&&kcalCilj)? Math.min(100,Math.round(eaten/kcalCilj*100)) : null;
   const S=(key,inner)=>`<div class="stat" style="cursor:pointer" onclick="statInfo('${key}')" title="${sl?'Klikni za razlago':'Click to learn more'}">${inner}</div>`;
   $('dashStats').innerHTML =
     S('prip',`<div class="k">${t('readiness')} ⓘ</div><div class="v">${prip}<small>/100</small></div><div class="bar"><i style="width:${prip}%;background:${prip>=70?'var(--green)':prip>=45?'var(--yellow)':'var(--acc)'}"></i></div><div class="t">${pripTxt}</div>`)+
     S('svez',`<div class="k">${sl?'Svežina':'Freshness'} ⓘ</div><div class="v" style="color:${f?f.barva:'inherit'}">${f?(f.tsb>0?'+':'')+Math.round(f.tsb):'–'}</div><div class="t">${svezTxt}</div>`)+
-    (p.ftp? S('ftp',`<div class="k">FTP ⓘ</div><div class="v">${p.ftp} <small>W</small></div><div class="t">${p.teza?(p.ftp/p.teza).toFixed(1)+' W/kg':''}</div>`)
+    (p.ftp? S('ftp',`<div class="k">FTP ⓘ</div><div class="v">${p.ftp} <small>W</small></div><div class="t">${p.teza?(p.ftp/p.teza).toFixed(1)+' W/kg':''}${(ftpStaleDays()||0)>60?` · ⚠ ${sl?'potrjen pred':'confirmed'} ${Math.round(ftpStaleDays()/30)} ${sl?'mes.':'mo ago'}`:''}</div>`)
           : S('ctl',`<div class="k">${t('kondicija')} ⓘ</div><div class="v">${f?Math.round(f.ctl):'–'}</div><div class="t">${ctlTxt}</div>`))+
     S('teden',`<div class="k">${t('thisWeek')} ⓘ</div><div class="v">${hM}:${pad(mM)} <small>h</small></div>${wkPct!=null?`<div class="bar"><i style="width:${wkPct}%;background:${wkPct>=80?'var(--green)':'var(--blue)'}"></i></div><div class="t">${wkPct}% ${sl?'od':'of'} ${p.ure} h ${sl?'cilja · prevoženih':'goal ·'} ${km.toFixed(0)} km</div>`:`<div class="t">${sl?'prevoženih':'ridden'} ${km.toFixed(0)} km</div>`}`)+
-    S('kcal',`<div class="k">${t('calories')} ⓘ</div><div class="v">${eaten!=null?eaten.toLocaleString('sl'):'–'} <small>kcal</small></div>${kcalPct!=null?`<div class="bar"><i style="width:${kcalPct}%;background:var(--acc)"></i></div><div class="t">${kcalPct}% ${sl?'od':'of'} ${kcalCilj.toLocaleString('sl')} kcal ${sl?'cilja':'goal'}</div>`:`<div class="t">${eaten===0? (sl?'danes še brez vnosov':'no entries yet today') : (sl?'poveži telefon':'connect your phone')}</div>`}`)+
+    (!kcalTracking
+      ? S('kcal',`<div class="k">${t('calories')} ⓘ</div><div class="v" style="color:var(--dim)">–</div><div class="t">${sl?'Ne beležiš obrokov — kartica počiva. Slikaj obrok na telefonu, ko želiš.':'Not logging meals — card is idle. Snap a meal on your phone anytime.'}</div>`)
+      : S('kcal',`<div class="k">${t('calories')} ⓘ</div><div class="v">${eaten!=null?eaten.toLocaleString('sl'):'–'}${poraba?` <small>/ ${poraba.toLocaleString('sl')} kcal</small>`:' <small>kcal</small>'}</div>${(eaten!=null&&poraba)?`<div class="bar"><i style="width:${Math.min(100,Math.round(eaten/poraba*100))}%;background:${eaten<=poraba?'var(--green)':'var(--yellow)'}"></i></div><div class="t">${(()=>{const bal=eaten-poraba;if(eaten===0)return sl?'danes še brez vnosov':'no entries yet today';return bal<=0?(sl?`deficit ${(-bal).toLocaleString('sl')} kcal danes`:`${(-bal).toLocaleString('sl')} kcal deficit today`):(sl?`presežek +${bal.toLocaleString('sl')} kcal danes`:`+${bal.toLocaleString('sl')} kcal surplus today`);})()}${kcalCilj?` · ${sl?'cilj vnosa':'intake goal'} ~${kcalCilj.toLocaleString('sl')}`:''}</div>`:`<div class="t">${sl?'pojedene / porabljene':'eaten / burned'}</div>`}`))+
     S('teza',`<div class="k">${t('weight')} ⓘ</div><div class="v">${p.teza??'–'} <small>kg</small></div><div class="t">${(p.ciljTeza>0&&p.teza>p.ciljTeza)?((sl?'še ':'')+(p.teza-p.ciljTeza).toFixed(1)+' kg '+(sl?'do cilja':'to goal')):(p.teza?(sl?'vpiši cilj v Nastavitvah':'set a goal in Settings'):'kg')}</div>`);
 
   renderDashWeekPlan();
+  renderWeeklySide();
 
   const last5 = [...state.rides].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
-  $('dashRides').innerHTML = last5.length ? last5.map(rideRowHtml).join('')
-    : `<div class="empty"><span class="big">🚴</span>Še ni aktivnosti. Prilepi screenshot ali dodaj ročno.</div>`;
 
   const la = last5[0];
   $('lastAct').innerHTML = la ? `
@@ -1574,7 +1607,6 @@ function renderDash(){
   const stk=streakDays();
   const stEl=$('dashStreak');
   if(stEl) stEl.innerHTML = stk>=2? `<span style="border:1px solid rgba(255,194,71,.4);background:rgba(255,194,71,.08);color:var(--yellow);font-size:11.5px;font-weight:800;letter-spacing:.06em;padding:4px 10px;white-space:nowrap">🔥 ${stk} ${LANG==='en'? '-DAY STREAK':'DNI ZAPORED'}</span>` : '';
-  renderPhoneCard();
   renderDashAlert();
   renderDashBadges();
   renderCharts();
@@ -1591,18 +1623,38 @@ function renderDashWeekPlan(){
     const iso=isoDate(addDays(ws,i));
     const d=planDayFor(iso);
     if(d) any=true;
-    const done=(d&&d.done)||state.rides.some(r=>r.date===iso);
+    const dayActs=state.rides.filter(r=>r.date===iso);
+    const mainAct=dayActs.filter(r=>r.sport!=='moc').sort((a,b)=>(b.time||0)-(a.time||0))[0]||dayActs[0]||null;
+    const done=(d&&d.done)||dayActs.length>0;
     const isToday=iso===today;
-    const stripe = d? (stripes[chipClass(d.tip)]||'var(--border2)') : 'var(--border2)';
-    rows.push(`<div style="display:flex;gap:9px;align-items:center;font-size:12px;${isToday?'background:rgba(255,61,46,.08);margin:0 -8px;padding:4px 8px;border:1px solid rgba(255,61,46,.3)':'padding:4px 0'}">
+    const stripe = mainAct? (stripes[chipClass(mainAct.sport||'kolo')]||'var(--acc)') : d? (stripes[chipClass(d.tip)]||'var(--border2)') : 'var(--border2)';
+    const lbl = (iso<=today && mainAct)
+      ? `${sportEmoji(mainAct.sport)||'🚴 '}${mainAct.name}${dayActs.some(r=>r.sport==='moc'&&r!==mainAct)?' + moč':''}`
+      : d? (d.naslov||d.tip) : '—';
+    rows.push(`<div title="${d?esc('Plan: '+(d.naslov||d.tip)):''}" style="display:flex;gap:9px;align-items:center;font-size:12px;${isToday?'background:rgba(255,61,46,.08);margin:0 -8px;padding:4px 8px;border:1px solid rgba(255,61,46,.3)':'padding:4px 0'}">
       <span style="width:3px;height:15px;background:${stripe};flex:none"></span>
       <span style="color:var(--dim);width:30px;font-weight:700;flex:none">${DNEVI[i].slice(0,3).toUpperCase()}</span>
-      <span style="font-weight:${isToday?'700':'600'};color:${isToday?'var(--acc2)':'inherit'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">${d?esc(d.naslov||d.tip):'—'}</span>
+      <span style="font-weight:${isToday?'700':'600'};color:${isToday?'var(--acc2)':'inherit'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">${esc(lbl)}</span>
       <span style="margin-left:auto;color:var(--green);flex:none">${done?'✓':''}</span>
     </div>`);
   }
   el.innerHTML = any? `<div style="display:flex;flex-direction:column;gap:7px">${rows.join('')}</div>`
     : `<div class="hint" style="margin:6px 0 10px">Za ta teden še ni plana.</div><button class="btn btn-primary btn-sm no-print" onclick="switchTab('plan')">⟳ Generiraj plan</button>`;
+}
+function renderWeeklySide(){
+  const el=$('weeklySide'); if(!el) return;
+  const weeks=[];
+  for(let o=0;o<12;o++){
+    const ws=weekStart(addDays(new Date(),-7*o));
+    const a=weekAgg(o);
+    weeks.push({lbl:`${ws.getDate()}.${ws.getMonth()+1}.`, h:+(a.min/60).toFixed(1), km:Math.round(a.km), cur:o===0});
+  }
+  const mx=Math.max(1,...weeks.map(w=>w.h));
+  el.innerHTML = weeks.map(w=>`
+    <div style="margin-bottom:11px">
+      <div style="display:flex;justify-content:space-between;font-size:10.5px;font-weight:700;color:${w.cur?'var(--acc2)':'var(--dim)'}"><span>${w.lbl}${w.cur?(LANG==='en'?' · this week':' · ta teden'):''}</span><span>${w.h} h${w.km?` · ${w.km} km`:''}</span></div>
+      <div style="height:7px;background:var(--border);margin-top:4px"><i style="display:block;height:100%;width:${Math.max(2,Math.round(w.h/mx*100))}%;background:${w.cur?'var(--acc)':'rgba(255,61,46,.4)'}"></i></div>
+    </div>`).join('');
 }
 
 /* ================================================================
@@ -1649,7 +1701,6 @@ function renderCoachReport(){
       ${trendTxt}${f?` · svežina <b style="color:${f.barva}">${f.tsb>0?'+':''}${f.tsb}</b>`:''}${rp?` · plan ${rp.pct}%`:''}
     </div>
     <button class="btn btn-ghost btn-sm mt no-print" id="btnCoachAI" onclick="coachReportAI()">✨ AI poročilo</button>
-    <div id="coachAIout"></div>
   </div>`;
 }
 async function coachReportAI(){
@@ -1663,7 +1714,10 @@ Ta teden: ${t.n} voženj, ${Math.round(t.km)} km, ${t.min} min, ${t.tss} TSS. Pr
 ${rp?`Realizacija plana (14 dni): ${rp.done}/${rp.planned}.`:''} ${f?`Forma: CTL ${f.ctl}, TSB ${f.tsb} (${f.opis}).`:''}
 ${buildContext()}
 Vrni SAMO čisto besedilo, brez naslova.${aiLangNote()}`}], {json:false, temp:.6});
-    $('coachAIout').innerHTML = `<div class="analysis-box" style="margin-top:12px">${nl2br(String(txt).trim())}</div>`;
+    const mt=$('dayModalTitle'); if(mt) mt.textContent = LANG==='en'?'AI coach report':'AI poročilo trenerja';
+    $('dayBody').innerHTML=`<div style="font-size:13.5px;color:var(--soft);line-height:1.7">${nl2br(String(txt).trim())}</div>
+      <div class="modal-foot"><button class="btn btn-primary btn-sm" onclick="closeModal('dayModalBack')">${LANG==='en'?'Got it':'Razumem'}</button></div>`;
+    $('dayModalBack').classList.add('open');
   }catch(e){ toast(e.message,'err'); }
   busy(btn,false);
 }
@@ -1689,22 +1743,6 @@ function renderCharts(){
       scales:{x:{ticks:{maxTicksLimit:9},grid:{display:false}}, y:{grid:{color:'rgba(56,51,62,.35)'}}} }
   });
 
-  // tedenski obseg — zadnjih 8 tednov
-  const weeks = [];
-  for (let i=7;i>=0;i--){
-    const ws = weekStart(addDays(new Date(), -7*i));
-    const we = addDays(ws,6);
-    const rid = state.rides.filter(r=> r.date>=isoDate(ws) && r.date<=isoDate(we));
-    weeks.push({ lbl:`${ws.getDate()}.${ws.getMonth()+1}.`, h:+(rid.reduce((a,r)=>a+(+r.time||0),0)/60).toFixed(1) });
-  }
-  if (chartWeeklyObj) chartWeeklyObj.destroy();
-  chartWeeklyObj = new Chart($('chartWeekly'), {
-    type:'bar',
-    data:{ labels:weeks.map(w=>w.lbl), datasets:[{label:'ur', data:weeks.map(w=>w.h),
-      backgroundColor:weeks.map((w,i)=> i===weeks.length-1 ? '#ff3d2e' : 'rgba(255,61,46,.4)'), borderRadius:0, maxBarThickness:34}]},
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
-      scales:{x:{grid:{display:false}}, y:{grid:{color:'rgba(56,51,62,.35)'}, title:{display:true,text:'ure'}}} }
-  });
 }
 
 /* ================================================================
@@ -1889,6 +1927,7 @@ function renderPlan(){
   const delBtn = $('btnDelPlan'); if (delBtn) delBtn.style.display = plan ? 'inline-flex' : 'none';
 
   if (!plan){
+    const st0=$('planStrip'); if(st0) st0.innerHTML='';
     $('planWeekLabel').textContent = 'Še ni plana';
     $('planSummary').innerHTML = '';
     $('weekGrid').innerHTML = `<div class="empty" style="grid-column:1/-1"><span class="big">📅</span>Še ni plana.<br>Klikni <b>✨ Generiraj plan</b> — AI naredi plan za <b>naslednjih 7 dni od danes</b> iz tvoje forme, profila in metodologije trenerja.<br>Že imaš plan od trenerja ali od drugod? Klikni <b>📥 Uvozi svoj plan</b>.</div>`;
@@ -1909,6 +1948,20 @@ function renderPlan(){
     (ph ? `<div class="plan-summary" style="margin-bottom:10px;border-color:${fazaColor(ph.faza)||'var(--border2)'}">🎯 <b>Faza priprave:</b> ${esc(ph.faza)} — ${esc(ph.fokus)} (~${ph.ure} h ta teden)</div>` : '') +
     (plan?.summary ? `<div class="plan-summary" style="margin-bottom:10px"><b>Fokus:</b> ${esc(plan.focus||'')}<br>${esc(plan.summary)}</div>` : '') +
     `<div class="plan-summary" style="margin-bottom:14px">Σ <b>${fmtDur(totMin)}</b> na kolesu · ~<b>${totTss} TSS</b>${past.length?` · realizacija <b>${doneN}/${past.length}</b>`:''}${kcalDays.length?` · 🍽 povpr. vnos ~<b>${Math.round(kcalDays.reduce((a,d)=>a+d.kcal_vnos,0)/kcalDays.length)} kcal/dan</b>`:''}</div>`;
+  const strip=$('planStrip');
+  if(strip){
+    strip.innerHTML = plan.days.map(d=>{
+      const dd=parseIso(d.datum), isT=d.datum===today;
+      const dn=d.done || state.rides.some(r=>r.date===d.datum);
+      const sl2=sportLabel(d.tip);
+      const wd=weatherByDate(d.datum); const wi=wd?weatherInfo(wd.code):null;
+      return `<div onclick="document.getElementById('day-${d.datum}')?.scrollIntoView({behavior:'smooth',block:'start'})" style="cursor:pointer;border:1px solid ${isT?'var(--acc)':'var(--border)'};background:${isT?'rgba(255,61,46,.07)':'var(--panel)'};padding:9px 10px;min-width:0">
+        <div style="display:flex;justify-content:space-between;font-size:9.5px;font-weight:800;letter-spacing:.06em;color:${isT?'var(--acc2)':'var(--dim)'}"><span>${DNEVI[(dd.getDay()+6)%7].slice(0,3).toUpperCase()} ${dd.getDate()}.</span><span>${dn?'<span style="color:var(--green)">✓</span>':(wi?wi.e:'')}</span></div>
+        <div style="font-size:11.5px;font-weight:700;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${sl2.i} ${esc(d.naslov||d.tip)}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">${chipClass(d.tip)==='pocitek'?'počitek':fmtDur(d.trajanje_min)+(d.tss_ocena?' · ~'+d.tss_ocena+' TSS':'')}</div>
+      </div>`;
+    }).join('');
+  }
   const grid = $('weekGrid');
   grid.className = 'week-list';
   grid.innerHTML = plan.days.map(d=>{
@@ -1932,7 +1985,7 @@ function renderPlan(){
     if (d.opis) cols.push(`<div class="dr-col"><div class="dr-lbl">${sl.i} ${sl.l}</div>${opisHtml(d.opis)}</div>`);
     if (d.vaje) cols.push(`<div class="dr-col"><div class="dr-lbl">🏋️ ${wantsMU()?'Vaje (muscle-up)':'Vaje (moč)'}</div>${d.vaje.includes('\n')?opisHtml(d.vaje):esc(d.vaje).split(/,\s(?=[A-ZČŠŽ])/).join('<br>')}</div>`);
     if (d.prehrana || d.kcal_vnos) cols.push(`<div class="dr-col"><div class="dr-lbl">🍽 Prehrana</div>${esc(d.prehrana||'').split(/\s*\|\s*/).filter(x=>x).map(x=>`<div class="opis-line">${x}</div>`).join('')}${d.kcal_vnos?`<div class="dr-kcal">🔥 vnos ~${d.kcal_vnos} · poraba ~${d.kcal_poraba||'?'} kcal</div>`:''}</div>`);
-    return `<div class="day-row ${d.datum===today?'today':''} ${done?'done':''}">
+    return `<div class="day-row ${d.datum===today?'today':''} ${done?'done':''}" id="day-${d.datum}">
       <div class="dr-head">
         <span class="dr-day">${DNEVI[(dd.getDay()+6)%7].slice(0,3)} ${dd.getDate()}.${dd.getMonth()+1}.</span>
         <span class="dr-sport">${sl.i} ${sl.l}</span>
@@ -1943,6 +1996,7 @@ function renderPlan(){
         ${(!done && d.datum>=today)?`<button class="dr-edit" onclick="openAdjustDay('${d.datum}')">✎ Prilagodi</button>`:''}
       </div>
       ${wxWarn}
+      ${(()=>{const acts=state.rides.filter(r=>r.date===d.datum); if(!done||!acts.length) return ''; return `<div style="margin-top:8px;border:1px solid rgba(95,214,122,.3);background:rgba(95,214,122,.06);padding:8px 12px;font-size:12px;color:var(--soft)"><b style="color:var(--green)">✓ ${LANG==='en'?'Actually done':'Dejansko opravljeno'}:</b> ${acts.map(a=>`${sportEmoji(a.sport)||'🚴 '}${esc(a.name)}${a.dist?` — ${a.dist} km`:''}${a.time?` · ${fmtDur(a.time)}`:''}${a.elev?` · ${a.elev} m`:''}`).join(' &nbsp;·&nbsp; ')}</div>`;})()}
       ${cols.length?`<div class="dr-body" style="grid-template-columns:${cols.length===3?'1.25fr 1fr 1fr':'repeat('+cols.length+',1fr)'}">${cols.join('')}</div>`:''}
       ${d.zakaj?`<div style="margin-top:10px;background:rgba(77,163,255,.06);border:1px solid rgba(77,163,255,.25);padding:9px 12px;font-size:12px;color:var(--soft);line-height:1.5"><b style="color:var(--blue)">${t('zakaj')}:</b> ${esc(d.zakaj)}</div>`:''}
     </div>`;
@@ -2147,6 +2201,9 @@ function buildContext(){
   L.push(`- IZBRANE AKTIVNOSTI (edine dovoljene; ❤️ = najljubše, naj prevladujejo): ${aktLabel()}`);
   if (p.kraj) L.push(`- KRAJ BIVANJA: ${p.kraj} (vreme, ture in hribi veljajo za to okolico)`);
   if (goalKeys().length) L.push(`- CILJI UPORABNIKA (izbrani ob začetku — VSE prilagodi tem ciljem): ${ciljeText()}`);
+  if (p.mocAmbicija) L.push(`- ZGORNJI DEL TELESA: želi ga ojačati ${p.mocAmbicija===2?'MOČNO (visoka prioriteta — moč redno v planu)':'zmerno (moč kot dodatek)'}`);
+  if (Array.isArray(p.skills)&&p.skills.length) L.push(`- CILJNE VEŠČINE MOČI: ${p.skills.map(k=>SKILL_INFO[k]||k).join(', ')} — treningi moči so progresija do teh veščin`);
+  if (p.postava) L.push(`- ŽELENA POSTAVA: ${POSTAVA_INFO[p.postava]||p.postava} — moč in prehrano prilagodi tej smeri`);
   if (p.omejitve) L.push(`- ⚠ ZDRAVSTVENE OMEJITVE (OBVEZNO upoštevaj — prilagodi/izpusti vaje, ki bi jih poslabšale): ${p.omejitve}`);
   if (_tdee){
     if (wantsLean()){
@@ -2157,6 +2214,12 @@ function buildContext(){
       L.push(`- PREHRANSKI CILJ (podpora treningom — cilj NI hujšanje, zato NE svetuj kaloričnega deficita): ~${_tdee} kcal/dan (vzdrževanje), beljakovine ~${_prot?Math.round(_prot*0.8):'?'} g/dan za regeneracijo, ogljikovi hidrati okoli treningov.`);
     }
   }
+  try{
+    const kal=kalData(); const ds=kal?.days||{};
+    const lastLog=Object.keys(ds).filter(d=>(ds[d]?.entries||[]).length).sort().pop()||null;
+    if(!lastLog || lastLog < isoDate(addDays(new Date(),-3)))
+      L.push(`- OPOMBA: uporabnik trenutno NE beleži obrokov v aplikaciji — številk vnosa kalorij NE komentiraj in ne predpostavljaj; prehranske nasvete daj kvalitativno (porcije, beljakovine, sladkarije), brez očitkov glede beleženja.`);
+  }catch(_){}
   const z = hrZones();
   if (z) L.push(`- CONE UTRIPA (šema ${+p.shema===7?'7 con, Z1–Z7':'5 con, C1–C5'}): ${zonesText()}${lthrVal()?` | prag (LTHR) ~${lthrVal()}`:''}`);
   if (powerZones()) L.push(`- MOČNOSTNE CONE (FTP ${p.ftp} W): ${powerZonesText()}`);
@@ -2182,7 +2245,7 @@ function buildContext(){
   if (recent.length){
     L.push(`ZADNJE VOŽNJE (najnovejše zadnje):`);
     for (const r of recent.slice(-12))
-      L.push(`- ${r.date}: "${r.name}" ${r.dist??'?'} km, ${fmtDur(r.time)}, ${r.elev??'?'} m višincev, povp. utrip ${r.avgHr??'?'}, TSS ${r.tss}${r.notes?` | občutek: ${r.notes}`:''}${r.analysis?` | AI ocena: ${r.analysis.ocena}/10, ${r.analysis.skladnost}`:''}`);
+      L.push(`- ${r.date}: "${r.name}" ${r.dist??'?'} km, ${fmtDur(r.time)}, ${r.elev??'?'} m višincev, povp. utrip ${r.avgHr??'?'}, TSS ${r.tss}${r.places?` | pot: ${r.places}`:''}${r.notes?` | občutek: ${r.notes}`:''}${r.analysis?` | AI ocena: ${r.analysis.ocena}/10, ${r.analysis.skladnost}`:''}`);
   } else L.push(`(še ni zabeleženih voženj)`);
 
   if (state.riderProfile){
@@ -2296,16 +2359,22 @@ function aktLabel(){
 }
 /* ---------- cilji uporabnika (anketa ob začetku / nastavitve) ---------- */
 const GOAL_INFO={ fit:'🔥 Shujšam / postanem fit', kondicija:'🫀 Splošna kondicija', ftp:'⚡ Hitrejši na kolesu', muscleup:'🧗 Naučim se muscle-up', moc:'💪 Močnejši in bolj izklesan', tek10:'🏃 Pretečem 10 km', dogodek:'🏁 Priprava na dogodek' };
+const SKILL_INFO={ pullup:'prvi strict zgib', muscleup:'muscle-up', dip:'prvi dip na bradlji', handstand:'stoja na rokah', pistol:'pistol počep' };
+const POSTAVA_INFO={ vitek:'vitek in definiran', atletski:'atletski (V-linija, širša ramena)', misicast:'mišičast (več mase)' };
 function goalKeys(){
   const p=state.settings.profile;
-  if(Array.isArray(p.cilji)&&p.cilji.length) return p.cilji;
-  const c=(p.cilj||'').toLowerCase(), g=[];
-  if(c.includes('muscle')) g.push('muscleup');
-  if(/maščob|hujša|shujš|fit/.test(c)) g.push('fit');
-  if(/ftp|hitrejši/.test(c)) g.push('ftp');
-  if(/10 ?km/.test(c)) g.push('tek10');
-  if(/maraton|dogodek|tekm/.test(c)) g.push('dogodek');
-  if(/kondicij/.test(c)) g.push('kondicija');
+  let g;
+  if(Array.isArray(p.cilji)&&p.cilji.length) g=p.cilji.slice();
+  else{
+    const c=(p.cilj||'').toLowerCase(); g=[];
+    if(c.includes('muscle')) g.push('muscleup');
+    if(/maščob|hujša|shujš|fit/.test(c)) g.push('fit');
+    if(/ftp|hitrejši/.test(c)) g.push('ftp');
+    if(/10 ?km/.test(c)) g.push('tek10');
+    if(/maraton|dogodek|tekm/.test(c)) g.push('dogodek');
+    if(/kondicij/.test(c)) g.push('kondicija');
+  }
+  if(Array.isArray(p.skills)&&p.skills.includes('muscleup')&&!g.includes('muscleup')) g.push('muscleup');
   return g;
 }
 const hasGoal=k=>goalKeys().includes(k);
@@ -2320,6 +2389,20 @@ function goalOptions(akt){
   return o;
 }
 function ciljeText(){ return goalKeys().map(k=>GOAL_INFO[k]||k).join(', '); }
+function toggleSkill(k){
+  const p=state.settings.profile;
+  p.skills=Array.isArray(p.skills)?p.skills.slice():[];
+  const i=p.skills.indexOf(k);
+  if(i>=0) p.skills.splice(i,1); else p.skills.push(k);
+  if(k==='muscleup'){
+    const g=goalKeys().filter(x=>x!=='muscleup');
+    if(i<0) g.push('muscleup');
+    p.cilji=g;
+  }
+  save(); renderSetExtras(); renderAll();
+  toast('Veščine posodobljene ✓','ok');
+}
+function setPostava(k){ const p=state.settings.profile; p.postava = p.postava===k? null : k; save(); renderSetExtras(); toast('Postava: '+(p.postava?POSTAVA_INFO[p.postava]:'ni izbrana')+' ✓','ok'); }
 function toggleCilj(k){
   const p=state.settings.profile;
   const g=goalKeys().slice();
@@ -2351,9 +2434,13 @@ function strategija(){
   L.push(wantsLean()
     ? `1. KALORIČNI DEFICIT + PREHRANA: maščoba gre dol le ob deficitu, VISOK vnos beljakovin ščiti mišice. NIKOLI ne predpisuj celih jedilnikov! Svetuj le, kar lahko uporabnik SAM kontrolira ob svojih obrokih: velikost porcije, lasten beljakovinski dodatek (skuta, jajca, jogurt, tuna), brez sladkarij/sladkih pijač, 2,5 l vode.`
     : `1. PREHRANA: cilj NI hujšanje — NE svetuj kaloričnega deficita. Svetuj gorivo za treninge: ogljikovi hidrati okoli treningov, beljakovine za regeneracijo, 2,5 l vode. Jedilnikov ne predpisuj.`);
-  if(a.includes('moc')) L.push(wantsMU()
-    ? `2. MOČ ima KONKRETEN CILJ: muscle-up progresija (sklece+zgibi+dipsi+trup → eksplozivni zgibi → negativni MU → poskusi). 2–3× tedensko po 20–40 min, kot dodatek h glavnemu dnevu ali kratek samostojen dan. Ko postane prelahko, dodaj obremenitev.`
-    : `2. MOČ: cilj je splošna moč, stabilnost in postava (sklece, zgibi, dipsi, trup — serije × ponovitve, progresivno obremenjevanje). 2–3× tedensko po 20–40 min kot dodatek h glavnemu dnevu ali kratek samostojen dan. BREZ muscle-up progresije.`);
+  if(a.includes('moc')){
+    const sk=state.settings.profile.skills||[];
+    if(sk.length) L.push(`2. MOČ — CILJNE VEŠČINE: ${sk.map(k=>SKILL_INFO[k]||k).join(', ')}. Vsak trening moči je korak progresije do teh veščin (prvi zgib: avstralski zgibi → negativni → elastika → strict · muscle-up: zgibi+dipsi → eksplozivni zgibi → negativni MU → poskusi · dip: negativni → delni → polni · stoja: ob steni → odmiki od stene · pistol: na klop → asistiran → polni). 2–3× tedensko po 20–40 min kot dodatek h glavnemu dnevu ali kratek samostojen dan. Ko postane prelahko, otežij (obtežitev ali težja varianta).`);
+    else L.push(wantsMU()
+      ? `2. MOČ ima KONKRETEN CILJ: muscle-up progresija (sklece+zgibi+dipsi+trup → eksplozivni zgibi → negativni MU → poskusi). 2–3× tedensko po 20–40 min, kot dodatek h glavnemu dnevu ali kratek samostojen dan. Ko postane prelahko, dodaj obremenitev.`
+      : `2. MOČ: cilj je splošna moč, stabilnost in postava (sklece, zgibi, dipsi, trup — serije × ponovitve, progresivno obremenjevanje). 2–3× tedensko po 20–40 min kot dodatek h glavnemu dnevu ali kratek samostojen dan. BREZ muscle-up progresije.`);
+  }
   else L.push(`2. MOČ: uporabnik je NE izvaja — ne predpisuj je; za trup dodaj le kratke vaje stabilizacije (plank), če sploh.`);
   L.push(`3. STRUKTURA TEDNA: JEDRO = ${jedro}, skupaj 4–5 aktivnih dni; 1 dan prosto/regeneracija; dva težka dneva NIKOLI zaporedoma; postopnost ~+10 %/teden.`);
   if(a.includes('tek')) L.push(`4. TEK: večina tekov LAHKOTNIH (pogovorni tempo, utrip cona 2), dolg tek 1× tedensko (+10 % max), hitrejši deli šele ko baza stoji. Pazi na sklepe: raje pogosteje in krajše.`);
@@ -2664,13 +2751,22 @@ Točno 7 dni s temi datumi po vrsti: ${days.map(dayLbl).join(', ')}.` }], {temp:
 /* ================================================================
    UVOZ OBSTOJEČEGA PLANA + PRILAGODITEV DNEVA
 ================================================================ */
-function openImportPlan(){ const t=$('impPlanTxt'); if(t) t.value=''; $('impPlanBack').classList.add('open'); }
+let impPlanShot=null;
+function impPlanSetShot(f){
+  if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{ impPlanShot={mime:f.type||'image/png', data:String(rd.result).split(',')[1]}; const pv=$('impPlanPrev'); if(pv){ pv.src=rd.result; pv.style.display='block'; } };
+  rd.readAsDataURL(f);
+}
+function openImportPlan(){ const t=$('impPlanTxt'); if(t) t.value=''; impPlanShot=null; const pv=$('impPlanPrev'); if(pv){ pv.style.display='none'; pv.removeAttribute('src'); } $('impPlanBack').classList.add('open'); }
 async function importPlanRun(){
   const txt=($('impPlanTxt')?.value||'').trim();
-  if(txt.length<20){ toast('Prilepi svoj plan (vsaj nekaj vrstic).','err'); return; }
+  if(txt.length<20 && !impPlanShot){ toast('Prilepi besedilo plana ali dodaj sliko.','err'); return; }
   const btn=$('btnImpPlan'); busy(btn,true,'Berem tvoj plan …');
   try{
-    const r=await gemini([{ text:
+    const parts=[];
+    if(impPlanShot) parts.push({ inline_data:{ mime_type:impPlanShot.mime, data:impPlanShot.data } });
+    parts.push({ text:
 `Si profesionalni trener. Uporabnik že ima SVOJ trening plan (od trenerja, iz drugega orodja, e-pošte, Excela …) in ga je prilepil spodaj. Tvoja naloga:
 1) Plan PRETVORI v strukturirane dneve — vsebine treningov NE spreminjaj in NE izmišljuj novih; samo uredi (in po potrebi prevedi v slovenščino).
 2) Na kratko ga TRENERSKO OCENI glede na uporabnikov profil in formo (ali mu ustreza, na kaj naj pazi).
@@ -2682,16 +2778,27 @@ DANES JE: ${todayIso()} (${DNEVI[(new Date().getDay()+6)%7]})
 
 ${buildContext()}
 
-PRILEPLJEN PLAN UPORABNIKA:
+${txt? `PRILEPLJEN PLAN UPORABNIKA (besedilo):
 <<<
 ${txt.slice(0,6000)}
->>>
+>>>` : 'PLAN JE NA PRILOŽENI SLIKI — natančno preberi VSE dneve, treninge, intervale in trajanja s slike. Ničesar ne izpusti.'}
 
 Vrni SAMO JSON:
-{"ocena":"2-4 stavki trenerske ocene tega plana (+ morebitna opozorila)","fokus":"kratek fokus plana","dnevi":[{"datum":"YYYY-MM-DD","tip":"...","naslov":"...","trajanje_min":number,"opis":"vrstice loči z \\n","tss_ocena":number,"vaje":"","prehrana":"","zakaj":""}]}` }], {temp:.3});
+{"ocena":"2-4 stavki trenerske ocene tega plana (+ morebitna opozorila)","fokus":"kratek fokus plana","dnevi":[{"datum":"YYYY-MM-DD","tip":"...","naslov":"...","trajanje_min":number,"opis":"vrstice loči z \\n","tss_ocena":number,"vaje":"","prehrana":"","zakaj":""}]}` });
+    const r=await gemini(parts, {temp:.3});
     const dnevi=(r.dnevi||[]).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d.datum||'')).sort((a,b)=>a.datum.localeCompare(b.datum));
     if(!dnevi.length) throw new Error('V besedilu nisem prepoznal dni plana — poskusi z bolj razčlenjenim zapisom.');
     upsertPlanDays(dnevi.map(d=>normDay(d,d.datum)), { summary:'📥 Uvožen plan. '+(r.ocena||''), focus:r.fokus||'Uvožen plan' });
+    // resni plani (npr. 20 h/teden) — obseg profila prilagodimo planu, da ga AI povsod upošteva
+    try{
+      const byWeek={};
+      dnevi.forEach(d=>{ const wk=isoDate(weekStart(parseIso(d.datum))); byWeek[wk]=(byWeek[wk]||0)+(+d.trajanje_min||0); });
+      const hrs=Object.values(byWeek).map(m=>m/60);
+      const maxH=Math.round(Math.max(...hrs));
+      const p=state.settings.profile;
+      if(hrs.length && maxH > (p.ure||6)){ p.ure=maxH; toast('Tedenski obseg prilagojen tvojemu planu: ~'+maxH+' h/teden ✓','ok'); }
+    }catch(_){}
+    impPlanShot=null;
     save(); renderAll(); closeModal('impPlanBack'); switchTab('plan');
     toast('Uvoženih '+dnevi.length+' dni — plan je v koledarju. 📥','ok');
     if(r.ocena) toast(r.ocena.slice(0,200));
@@ -3077,13 +3184,90 @@ Vrni SAMO JSON:
     const p = state.settings.profile;
     if (r.lthr_utrip) p.lthr = Math.round(r.lthr_utrip);
     if (r.max_utrip_ocena && !p.maxHr) p.maxHr = Math.round(r.max_utrip_ocena);
-    if (r.ftp_w) p.ftp = Math.round(r.ftp_w);
+    if (r.ftp_w){ p.ftp = Math.round(r.ftp_w); p.ftpDatum = todayIso(); }
     for (const x of state.rides) x.tss = estimateTss(x);
     save(); fillSettings(); renderAll();
     toast(`Ocenjeno: prag ~${p.lthr||'?'}${p.ftp?`, FTP ~${p.ftp} W`:''}. ${r.komentar||''}`.slice(0,200),'ok');
   }catch(e){ toast(e.message,'err'); }
   busy(btn, false);
 }
+/* ================================================================
+   KRAJI Z ZEMLJEVIDA — kam je res šel (reverse geocoding, brez ključa)
+================================================================ */
+function isGenericName(n){
+  if(!n) return true;
+  const t=n.trim();
+  return /^(morning|lunch|afternoon|evening|night|weekend)?\s*(ride|run|hike|walk|swim|workout|weight training|activity|virtual ride)\s*$/i.test(t)
+      || /^(vožnja|kolesarjenje|kolo|tek|pohod|pohodništvo|hoja|sprehod|aktivnost|trening)$/i.test(t);
+}
+async function reverseGeo(lat,lon){
+  try{
+    const r=await (await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=14&accept-language=sl`)).json();
+    const a=r.address||{};
+    if((r.category==='natural'||r.type==='peak') && r.name) return r.name;
+    return a.peak || a.village || a.hamlet || a.town || a.suburb || a.city || a.municipality || r.name || null;
+  }catch(_){
+    try{
+      const r=await (await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=sl`)).json();
+      return r.locality || r.city || null;
+    }catch(__){ return null; }
+  }
+}
+async function icuLatlngPts(id){
+  try{
+    const res=await stravaFetch(`https://intervals.icu/api/v1/activity/${id}/streams?types=latlng`,{headers:{Authorization: icuAuth()}});
+    if(!res.ok) return null;
+    const js=await res.json();
+    const st=(Array.isArray(js)?js:[]).find(x=>x.type==='latlng');
+    const d=st?.data||[];
+    if(d.length<2) return null;
+    const step=Math.max(1,Math.floor(d.length/60));
+    return d.filter((_,i)=>i%step===0).filter(p=>Array.isArray(p)&&p.length>=2);
+  }catch(_){ return null; }
+}
+function farthestPt(pts){
+  const la0=pts[0][0], lo0=pts[0][1]; let best=pts[0], bd=0;
+  for(const p of pts){ const dx=p[0]-la0, dy=(p[1]-lo0)*Math.cos(la0*Math.PI/180); const dd=dx*dx+dy*dy; if(dd>bd){bd=dd;best=p;} }
+  return best;
+}
+async function enrichRidePlaces(r){
+  if(r.places!=null || r.geoTried) return false;
+  let pts=null;
+  if(r.polyline){ try{ pts=decodePolyline(r.polyline); }catch(_){ } }
+  if((!pts||pts.length<2) && r.icuId!=null && state.icu?.apiKey) pts=await icuLatlngPts(r.icuId);
+  r.geoTried=1;
+  if(!pts||pts.length<2) return false;
+  const sel=[pts[0], farthestPt(pts), pts[pts.length-1]];
+  const names=[];
+  for(const p of sel){
+    const n=await reverseGeo(p[0],p[1]);
+    if(n && !names.includes(n)) names.push(n);
+    await new Promise(res=>setTimeout(res,400));
+  }
+  if(!names.length) return false;
+  r.places=names.join(' → ');
+  if(isGenericName(r.name)){
+    const w=r.sport==='pohod'?'Pohod':r.sport==='tek'?'Tek':'Kolo';
+    const start=names[0], turn=names.length>1?names[1]:null;
+    r.origName=r.name;
+    r.name = (turn&&turn!==start)? `${w}: ${start} → ${turn}` : `${w}: ${start}`;
+  }
+  return true;
+}
+let geoBusy=false;
+async function enrichPlacesQueue(){
+  if(geoBusy) return; geoBusy=true;
+  try{
+    const cand=[...state.rides]
+      .filter(r=>!r.geoTried && r.places==null && r.sport!=='moc' && (r.polyline || (r.icuId!=null && state.icu?.apiKey)))
+      .sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
+    let changed=false;
+    for(const r of cand){ if(await enrichRidePlaces(r)) changed=true; }
+    if(cand.length){ save(); if(changed) renderAll(); }
+  }catch(_){}
+  geoBusy=false;
+}
+
 /* ================================================================
    STRAVA
 ================================================================ */
@@ -3223,7 +3407,9 @@ function saveProfile(){
     });
     else getWeather(true).then(()=>renderAll());
   }
-  p.lthr = num($('pLthr').value); p.ftp = num($('pFtp').value); p.shema = +$('pShema').value || 5;
+  p.lthr = num($('pLthr').value);
+  const _oldFtp=p.ftp; p.ftp = num($('pFtp').value); if(p.ftp && p.ftp!==_oldFtp) p.ftpDatum=todayIso();
+  p.shema = +$('pShema').value || 5;
   for (const r of state.rides) r.tss = estimateTss(r);   // TSS se z novim profilom spremeni
   if(p.teza){
     state.metrics=state.metrics||[];
@@ -3253,7 +3439,7 @@ function fillSettings(){
   }
   $('pLthr').value=p.lthr??''; $('pFtp').value=p.ftp??''; $('pShema').value=String(p.shema||5);
   if($('gKey')) $('gKey').value=state.settings.geminiKey||''; if($('gModel')) $('gModel').value=state.settings.geminiModel||'gemini-flash-latest';
-  renderZones(); renderStrava(); renderIcu(); renderSetExtras();
+  renderZones(); renderStrava(); renderIcu(); renderSetExtras(); renderPhoneCard();
 }
 function exportData(){
   const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
@@ -3334,6 +3520,13 @@ const dz = $('dropzone');
 ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.remove('over'); }));
 dz.addEventListener('drop', e=>{ [...e.dataTransfer.files].forEach(handleFile); });
 $('fileInput').addEventListener('change', e=>{ [...e.target.files].forEach(handleFile); e.target.value=''; });
+$('impPlanFile')?.addEventListener('change', e=>{ impPlanSetShot(e.target.files[0]); e.target.value=''; });
+document.addEventListener('paste', e=>{
+  if(!document.getElementById('impPlanBack')?.classList.contains('open')) return;
+  const it=[...(e.clipboardData?.items||[])].find(i=>i.type&&i.type.startsWith('image/'));
+  if(!it) return;
+  impPlanSetShot(it.getAsFile()); e.preventDefault();
+});
 
 document.querySelectorAll('.seg').forEach(seg=>{
   seg.addEventListener('click', e=>{
@@ -3422,9 +3615,14 @@ async function icuImport(quiet){
       r.tss = (a.icu_training_load && a.icu_training_load>0) ? Math.round(a.icu_training_load) : estimateTss(r);
       state.rides.push(r); n++;
     }
-    if(!state.settings.profile.ftp){
+    {
       const withFtp=(Array.isArray(acts)?acts:[]).filter(a=>a.icu_ftp>0).sort((a,b)=>String(b.start_date_local||'').localeCompare(String(a.start_date_local||'')))[0];
-      if(withFtp){ state.settings.profile.ftp=Math.round(withFtp.icu_ftp); for(const r of state.rides) r.tss=estimateTss(r); try{ localStorage.setItem('forma_zone_nudge','1'); }catch(_){} toast('FTP prevzet iz Intervals.icu: '+state.settings.profile.ftp+' W ✓','ok'); }
+      if(withFtp){
+        const p=state.settings.profile, nf=Math.round(withFtp.icu_ftp), nd=String(withFtp.start_date_local||'').slice(0,10)||todayIso();
+        if(!p.ftp){ p.ftp=nf; p.ftpDatum=nd; for(const r of state.rides) r.tss=estimateTss(r); try{ localStorage.setItem('forma_zone_nudge','1'); }catch(_){} toast('FTP prevzet iz Intervals.icu: '+nf+' W ✓','ok'); }
+        else if(Math.abs(nf-p.ftp)>=3 && (!p.ftpDatum || nd>p.ftpDatum)){ const old=p.ftp; p.ftp=nf; p.ftpDatum=nd; for(const r of state.rides) r.tss=estimateTss(r); toast('Intervals.icu ima novejšo oceno FTP: '+old+' → '+nf+' W ('+nd+') ✓','ok'); }
+        else if(!p.ftpDatum || nd>p.ftpDatum) p.ftpDatum=nd;
+      }
     }
     state.rides=dedupeRides(state.rides);
     save(); renderAll();
@@ -3511,12 +3709,29 @@ function renderForma(){
     ((f.custom&&f.custom.date===todayIso()&&f.custom.nasvet)?`<div class="hint" style="margin-top:8px">✨ ${esc(f.custom.nasvet)}</div>`:'') +
     (doneToday?`<div class="conn-status ok mt">✓ Danes že opravljeno — bravo!</div>`:'');
   const t7=f.history.filter(h=>h.date>=isoDate(addDays(new Date(),-7))).length;
+  const ws7=weekStart(new Date());
+  const dots=Array.from({length:7},(_,i)=>{const iso=isoDate(addDays(ws7,i));const dn=state.rides.some(r=>r.date===iso&&r.sport==='moc');const fut=iso>todayIso();return `<div style="text-align:center;flex:1"><div style="width:11px;height:11px;margin:0 auto;background:${dn?'var(--green)':fut?'var(--border)':'var(--border2)'}"></div><div style="font-size:8.5px;color:var(--dim);margin-top:3px;font-weight:700">${DNEVI[i].slice(0,1)}</div></div>`;}).join('');
+  const mocs=[...state.rides].filter(r=>r.sport==='moc').sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
+  const histH = mocs.length? mocs.map(r=>{
+    const h=(f.history||[]).find(x=>x.date===r.date);
+    const dd=parseIso(r.date);
+    const fb=r.fb?({lahko:'😎',ok:'🙂',tezko:'🥵',delno:'🛑'}[r.fb]||''):'';
+    return `<div style="display:flex;gap:8px;align-items:center;font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--border)">
+      <span style="color:var(--dim);font-weight:700;width:56px;flex:none">${DNEVI[(dd.getDay()+6)%7].slice(0,3)} ${dd.getDate()}.${dd.getMonth()+1}.</span>
+      <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.name||'Trening moči')}</span>
+      <span style="flex:none">${h?`<span class="dot ${h.dot}" style="margin-right:4px"></span>`:''}${fb} <span style="color:var(--green)">✓</span></span>
+    </div>`;
+  }).join('') : `<div class="hint" style="margin:4px 0">Ko opraviš in potrdiš prvi trening moči, se tukaj gradi zgodovina — kot v pravih fitnes aplikacijah.</div>`;
+  const histBlock = `<div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+    <div class="k" style="font-size:11px;color:var(--dim);font-weight:700;text-transform:uppercase;margin-bottom:6px">Ta teden</div>
+    <div style="display:flex;gap:4px;margin-bottom:12px">${dots}</div>
+    <div class="k" style="font-size:11px;color:var(--dim);font-weight:700;text-transform:uppercase;margin-bottom:4px">📜 Zadnji treningi</div>${histH}</div>`;
   $('formaStats').innerHTML = `
     <div style="margin-bottom:10px"><div class="stat" style="padding:0;border:none;background:none"><div class="k">Ta teden</div><div class="v" style="color:${t7>=3?'var(--green)':'inherit'}">${t7} <small>/ 3 cilj</small></div></div></div>
     <div style="margin-bottom:10px"><div class="k" style="font-size:11px;color:var(--dim);font-weight:700;text-transform:uppercase">Skupaj treningov</div><div style="font-size:22px;font-weight:800">${f.history.length}</div></div>
     <div><div class="k" style="font-size:11px;color:var(--dim);font-weight:700;text-transform:uppercase">Nivo</div><div style="font-size:22px;font-weight:800">${f.level}<small style="font-size:12px;color:var(--dim)"> — vsakih 4 treningi +1</small></div></div>
     <div class="hint" style="margin-top:8px">🔧 Obremenitev: <b style="color:var(--acc2)">${Math.round((f.repMult||1)*100)}%</b> — dviga se ob "prelahko", pada ob "pretežko" ali bolečini.</div>
-    <div class="hint" style="margin-top:10px">🎯 ${wantsMU()? 'Pot do muscle-upa: '+(f.level<4?'faza 1/3 — osnove (zgibi, sklece, dipsi, trup)':f.level<7?'faza 2/3 — eksplozivni zgibi + negativni muscle-upi':f.level<10?'faza 3/3 — poskusi muscle-upa!':'MUSCLE-UP osvojen 💪') : 'Cilj: splošna moč in stabilnost — nivo raste z opravljenimi treningi, vaje se stopnjujejo.'}</div>`;
+    <div class="hint" style="margin-top:10px">🎯 ${wantsMU()? 'Pot do muscle-upa: '+(f.level<4?'faza 1/3 — osnove (zgibi, sklece, dipsi, trup)':f.level<7?'faza 2/3 — eksplozivni zgibi + negativni muscle-upi':f.level<10?'faza 3/3 — poskusi muscle-upa!':'MUSCLE-UP osvojen 💪') : 'Cilj: splošna moč in stabilnost — nivo raste z opravljenimi treningi, vaje se stopnjujejo.'}</div>` + histBlock;
 }
 function formaCheckin(){
   const v=+($('segSore').querySelector('.on')?.dataset.v||0);
@@ -3578,7 +3793,7 @@ ${buildContext()}
 
 ${strategija()}
 
-GLAVNI CILJ MOČI: ${wantsMU()?'naučiti se MUSCLE-UP — trening sestavi kot korak muscle-up progresije za ta nivo: sklece, zgibi (eksplozivni pri višjem nivoju), dipsi, trebušnjaki/dvigi nog, od nivoja 4 negativni muscle-upi, od 7 poskusi.':'splošna moč, stabilnost in postava — sklece, zgibi, dipsi, trup; variante prilagodi nivoju. BREZ muscle-up progresije.'} Konkretne serije in ponovitve. Brez teka.
+GLAVNI CILJ MOČI: ${(state.settings.profile.skills||[]).length?`ciljne veščine — ${(state.settings.profile.skills||[]).map(k=>SKILL_INFO[k]||k).join(', ')}; trening je korak progresije do njih. `:''}${wantsMU()?'naučiti se MUSCLE-UP — trening sestavi kot korak muscle-up progresije za ta nivo: sklece, zgibi (eksplozivni pri višjem nivoju), dipsi, trebušnjaki/dvigi nog, od nivoja 4 negativni muscle-upi, od 7 poskusi.':'splošna moč, stabilnost in postava — sklece, zgibi, dipsi, trup; variante prilagodi nivoju. BREZ muscle-up progresije.'} Konkretne serije in ponovitve. Brez teka.
 Vrni SAMO JSON: {"vaje":[{"ime":"...","serije":number,"pon":"npr. 8 pon. ali 40''","op":"kratek nasvet"}],"nasvet":"1-2 stavka"}` }],{temp:.5});
     state.forma.custom={ date:todayIso(), vaje:(r.vaje||[]).map(v=>({ime:v.ime||'Vaja',serije:+v.serije||3,pon:v.pon||'',op:v.op||''})), nasvet:r.nasvet||'' };
     save(); renderForma();
@@ -3616,8 +3831,8 @@ function renderKalorije(){
   const entries=(kal?.days?.[todayIso()]?.entries)||[];
   const eaten=Math.round(entries.reduce((a,e)=>a+(+e.kcal||0),0));
   const day=planDayFor(todayIso());
-  const t=tdee();
-  const cilj = day?.kcal_vnos || (t? Math.round(t-(goalDeficit()?.deficit||290)) : null);
+  const t0=tdee();
+  const cilj = day?.kcal_vnos || (t0? Math.round(t0-(wantsLean()?(goalDeficit()?.deficit||290):0)) : null);
   const mac=kalMacros(entries);
   const prot = proteinTarget();
   const fatT = p.teza? Math.round(p.teza*0.9) : null;
@@ -3876,11 +4091,13 @@ function renderAnalitika(){
     const goal=p.ciljDatum? parseIso(p.ciljDatum) : addDays(new Date(),42);
     const nF=Math.max(7,Math.min(84,Math.round((goal-new Date())/864e5)));
     const avg=s.slice(-28).reduce((a,x)=>a+x.tss,0)/Math.min(28,s.length);
+    const rpF=planRealizacija();
+    const adher=(rpF&&rpF.planned>=3)? Math.max(.4,Math.min(1,rpF.pct/100)) : 1;
     const fut=[];
     for(let i=1;i<=nF;i++){
       const iso=isoDate(addDays(new Date(),i));
       const d=planDayFor(iso);
-      const tss=d? (+d.tss_ocena||0) : avg;
+      const tss=d? (+d.tss_ocena||0)*adher : avg;
       ctl+=(tss-ctl)/42; atl+=(tss-atl)/7;
       fut.push({ctl:+ctl.toFixed(1), tsb:+(ctl-atl).toFixed(1)});
     }
@@ -3903,8 +4120,8 @@ function renderAnalitika(){
     </svg>
     <div style="font-size:11.5px;color:var(--muted);margin-top:6px">${
       LANG==='en'
-      ? `If you follow the plan: fitness <b style="color:#4da3ff">${endCtl}</b>, freshness <b style="color:#5fd67a">${endTsb>0?'+':''}${endTsb}</b> ${p.ciljDatum? 'on '+p.ciljDatum : 'in '+nF+' days'}. Ideal race window: +10 to +25.`
-      : `Če slediš planu: kondicija <b style="color:#4da3ff">${endCtl}</b>, svežina <b style="color:#5fd67a">${endTsb>0?'+':''}${endTsb}</b> ${p.ciljDatum? 'na '+p.ciljDatum : 'čez '+nF+' dni'}. Idealno okno za cilj: +10 do +25.`}</div>
+      ? `${adher<1?`At your current plan adherence (~${rpF.pct} %): fitness`:`If you follow the plan: fitness`} <b style="color:#4da3ff">${endCtl}</b>, freshness <b style="color:#5fd67a">${endTsb>0?'+':''}${endTsb}</b> ${p.ciljDatum? 'on '+p.ciljDatum : 'in '+nF+' days'}. Ideal race window: +10 to +25.`
+      : `${adher<1?`Ob tvoji trenutni realizaciji plana (~${rpF.pct} %): kondicija`:`Če slediš planu: kondicija`} <b style="color:#4da3ff">${endCtl}</b>, svežina <b style="color:#5fd67a">${endTsb>0?'+':''}${endTsb}</b> ${p.ciljDatum? 'na '+p.ciljDatum : 'čez '+nF+' dni'}. Idealno okno za cilj: +10 do +25.`}</div>
     <div style="display:flex;gap:14px;font-size:10.5px;font-weight:700;color:var(--muted);margin-top:6px">
       <span><span style="display:inline-block;width:14px;height:3px;background:#4da3ff"></span> ${LANG==='en'?'FITNESS':'KONDICIJA'}</span>
       <span><span style="display:inline-block;width:14px;height:3px;background:#5fd67a"></span> ${LANG==='en'?'FRESHNESS':'SVEŽINA'}</span>
@@ -4102,7 +4319,10 @@ function renderSetExtras(){
        <div class="hint" style="margin:6px 0 0">Klik: izbrano → <b>❤️ najljubše</b> → izklop. AI gradi plane samo iz izbranih; ❤️ prevladujejo.</div>
        <div style="margin-top:14px;font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);text-transform:uppercase">Tvoji cilji</div>
        <div class="row" style="gap:8px;margin-top:8px;flex-wrap:wrap">${goalOptions().map(k=>`<div class="onb-chip ${goalKeys().includes(k)?'on':''}" style="padding:7px 13px;font-size:12.5px" onclick="toggleCilj('${k}')">${GOAL_INFO[k]}</div>`).join('')}</div>
-       <div class="hint" style="margin:6px 0 0">Cilji krojijo aplikacijo: trening moči, prehrano, kartice in AI plane.</div>`+
+       <div class="hint" style="margin:6px 0 0">Cilji krojijo aplikacijo: trening moči, prehrano, kartice in AI plane.</div>
+       <div style="margin-top:14px;font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);text-transform:uppercase">Veščine moči in postava</div>
+       <div class="row" style="gap:8px;margin-top:8px;flex-wrap:wrap">${[['pullup','💪 Prvi zgib'],['muscleup','🧗 Muscle-up'],['dip','🤸 Prvi dip'],['handstand','🙃 Stoja'],['pistol','🦵 Pistol počep']].map(([v,n])=>`<div class="onb-chip ${(p.skills||[]).includes(v)?'on':''}" style="padding:7px 13px;font-size:12.5px" onclick="toggleSkill('${v}')">${n}</div>`).join('')}</div>
+       <div class="row" style="gap:8px;margin-top:8px;flex-wrap:wrap">${[['vitek','Postava: vitek'],['atletski','Postava: atletski'],['misicast','Postava: mišičast']].map(([v,n])=>`<div class="onb-chip ${p.postava===v?'on':''}" style="padding:7px 13px;font-size:12.5px" onclick="setPostava('${v}')">${n}</div>`).join('')}</div>`+
       `<div class="hint" style="margin:10px 0 0">Nivo upošteva AI pri planih, razlagah in prehrani. Zamenjaš ga kadar koli.</div>`+
       `<div style="margin-top:10px;font-size:12px;color:var(--dim)">${LANG==='en'?'Language':'Jezik'}: <b style="color:var(--soft)">${LANG==='en'?'English':'Slovenščina'}</b> · <span style="cursor:pointer;color:var(--acc2)" onclick="toggleLang()">${LANG==='en'?'Slovenščina':'English'}</span></div>`;
   }
@@ -4112,8 +4332,7 @@ function renderSetExtras(){
     const rows=[
       ['🔵 Google sinhronizacija — račun, sinhronizacija in AI', gOk, `document.getElementById('gsyncCard')?.scrollIntoView({behavior:'smooth',block:'center'})`],
       ['📈 Intervals.icu — samodejni uvoz aktivnosti (zastonj)', !!(state.icu?.athleteId&&state.icu?.apiKey&&state.icu?.name), `openConn('icu')`],
-      ['🟠 Strava — neposredno (zahteva Strava naročnino)', !!state.strava.accessToken, `openConn('strava')`],
-      ['🔄 Ročna koda za telefon (star način)', !!(state.sync&&state.sync.bin), `openConn('jsonbin')`]
+      ['🟠 Strava — neposredno (zahteva Strava naročnino)', !!state.strava.accessToken, `openConn('strava')`]
     ];
     cr.innerHTML=rows.map(([n,ok,act])=>`<div class="conn-row" style="cursor:pointer" onclick="${act}"><span class="cn">${n}</span><span class="cs ${ok?'ok':'go'}">${ok?'POVEZANO ✓':'POVEŽI →'}</span></div>`).join('')+
     `<div class="hint" style="margin:6px 0 0">Klik na vrstico odpre navodila in nastavitev. Garmin/Wahoo: poveži jih z Intervals.icu — naprej gre samodejno.</div>`;
@@ -4132,7 +4351,7 @@ function toggleAkt(v){
   toast('Aktivnosti: '+aktLabel()+' ✓','ok');
 }
 function openConn(kind){
-  const map={ strava:['🟠 Strava','connStrava'], icu:['📈 Intervals.icu — brezplačno, samodejno','connIcu'], jsonbin:['🔄 Ročna koda za telefon (star način)','connJsonbin'] };
+  const map={ strava:['🟠 Strava','connStrava'], icu:['📈 Intervals.icu — brezplačno, samodejno','connIcu'] };
   const it=map[kind]; if(!it) return;
   const body=$('connBody');
   // vrni prejšnjega v skriti host
@@ -4170,9 +4389,9 @@ const ONB_LVLS=[
 function onbShow(){ $('onbBack').classList.add('open'); onbRender(); }
 function onbRender(){
   $('onbStep').textContent=onb.step;
-  for(let i=1;i<=4;i++) $('onbP'+i).classList.toggle('on', onb.step>=i);
+  for(let i=1;i<=5;i++){ const el=$('onbP'+i); if(el) el.classList.toggle('on', onb.step>=i); }
   $('onbBackBtn').style.visibility = onb.step===1?'hidden':'visible';
-  $('onbNextBtn').textContent = onb.step===4?'V aplikacijo →':'Naprej →';
+  $('onbNextBtn').textContent = onb.step===5?'V aplikacijo →':'Naprej →';
   const b=$('onbBody');
   if(onb.step===2){
     b.innerHTML=`<div class="onb-title">Kako globoko<br>gremo<span class="hl">?</span></div>
@@ -4181,23 +4400,42 @@ function onbRender(){
       <div class="oi">${l.icon}</div><div class="on1">${l.name}</div><div class="od">${l.desc}</div><div class="ot">${l.tag}</div></div>`).join('')}</div>`;
   } else if(onb.step===3){
     b.innerHTML=`<div class="onb-title">Povej nekaj<br>o sebi<span class="hl">.</span></div>
-    <div class="onb-sub">Izbran nivo: <b style="color:var(--acc2)">${ONB_LVLS[onb.level].name}</b> · iz tega AI izračuna cone, kalorije in prvi plan.</div>
-    <div style="max-width:560px;margin:34px auto 0;display:flex;flex-direction:column;gap:16px">
+    <div class="onb-sub">Izbran nivo: <b style="color:var(--acc2)">${ONB_LVLS[onb.level].name}</b> · iz teh podatkov izračunam cone, kalorije in prvi plan.</div>
+    <div style="max-width:560px;margin:30px auto 0;display:flex;flex-direction:column;gap:14px">
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
         <label class="fld" style="margin:0"><span>Starost</span><input type="number" id="onbStarost" value="${onb.starost}"></label>
         <label class="fld" style="margin:0"><span>Teža (kg)</span><input type="number" step="0.1" id="onbTeza" value="${onb.teza}"></label>
-        <label class="fld" style="margin:0"><span>Kraj <i style="color:var(--dim)">(vreme)</i></span><input id="onbKraj" value="${onb.kraj||''}" placeholder="npr. Kranj"></label>
+        <label class="fld" style="margin:0"><span>Višina (cm)</span><input type="number" id="onbVisina" value="${onb.visina||''}" placeholder="npr. 179"></label>
       </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        <label class="fld" style="margin:0"><span>Kraj <i style="color:var(--dim)">(vreme)</i></span><input id="onbKraj" value="${onb.kraj||''}" placeholder="npr. Kranj"></label>
+        <label class="fld" style="margin:0"><span>Max utrip <i style="color:var(--dim)">(če veš)</i></span><input type="number" id="onbMaxHr" value="${onb.maxHr||''}" placeholder="npr. 190"></label>
+        <label class="fld" style="margin:0"><span>FTP (W) <i style="color:var(--dim)">(če ga imaš)</i></span><input type="number" id="onbFtp" value="${onb.ftp||''}" placeholder="npr. 220"></label>
+      </div>
+      <div class="hint" style="margin:0">Max utrip in FTP vpiši, če ju poznaš (Garmin, Intervals.icu, test) — nanju se umerijo cone in treningi. Če ju ne poznaš, ju kasneje ocenim iz tvojih voženj.</div>
+    </div>`;
+  } else if(onb.step===4){
+    b.innerHTML=`<div class="onb-title">Šport in<br>tvoji cilji<span class="hl">.</span></div>
+    <div class="onb-sub">Izberi vse, kar velja — celoten sistem (plani, moč, prehrana, kartice) se prilagodi tem odgovorom.</div>
+    <div style="max-width:620px;margin:26px auto 0;display:flex;flex-direction:column;gap:16px">
       <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Katere aktivnosti — in katere imaš najraje?</div>
         <div class="row" style="gap:8px">${[['kolo','🚴 Kolo'],['tek','🏃 Tek'],['pohod','🥾 Pohodi'],['moc','💪 Moč']].map(([v,n])=>{const pf=onb.prefs[v]||0;return `<div class="onb-chip ${pf?'on':''}" style="${pf===2?'border-color:#ffc247;':''}" onclick="onbAkt('${v}')">${pf===2?'❤️ ':''}${n}</div>`;}).join('')}</div>
-        <div class="hint" style="margin:6px 0 0">Klik: izbrano → <b>❤️ najljubše</b> → izklop. Najljubši športi prevladujejo v planu (npr. ❤️ kolo + tek = večinoma kolo, tek 1–2× za popestritev). Nimaš kolesa? Ga pač ne izbereš.</div></div>
+        <div class="hint" style="margin:6px 0 0">Klik: izbrano → <b>❤️ najljubše</b> → izklop. Najljubši športi prevladujejo v planu. Nimaš kolesa? Ga pač ne izbereš.</div></div>
       <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Kaj želiš doseči? <span style="text-transform:none;letter-spacing:0;font-weight:600;color:var(--muted)">(izberi vse, kar velja)</span></div>
-        <div class="row" style="gap:8px;flex-wrap:wrap">${goalOptions(Object.keys(onb.prefs)).map(k=>`<div class="onb-chip ${(onb.cilji||[]).includes(k)?'on':''}" onclick="onbCilj('${k}')">${GOAL_INFO[k]}</div>`).join('')}</div>
-        <div class="hint" style="margin:6px 0 0">Aplikacija se prilagodi ciljem: trening moči, prehranski nasveti, kartice in AI plani.</div></div>
+        <div class="row" style="gap:8px;flex-wrap:wrap">${goalOptions(Object.keys(onb.prefs)).map(k=>`<div class="onb-chip ${(onb.cilji||[]).includes(k)?'on':''}" onclick="onbCilj('${k}')">${GOAL_INFO[k]}</div>`).join('')}</div></div>
+      <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Kako močno bi ojačal zgornji del telesa?</div>
+        <div class="row" style="gap:8px">${[[0,'Ni prioriteta'],[1,'Zmerno'],[2,'Zelo — pomembno mi je']].map(([v,n])=>`<div class="onb-chip ${(onb.mocAmb||0)===v?'on':''}" style="flex:1;text-align:center" onclick="onbMocAmb(${v})">${n}</div>`).join('')}</div></div>
+      ${((onb.mocAmb||0)>0 || onb.prefs.moc)?`<div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Katere veščine bi rad osvojil? <span style="text-transform:none;letter-spacing:0;font-weight:600;color:var(--muted)">(neobvezno)</span></div>
+        <div class="row" style="gap:8px;flex-wrap:wrap">${[['pullup','💪 Prvi zgib'],['muscleup','🧗 Muscle-up'],['dip','🤸 Prvi dip'],['handstand','🙃 Stoja na rokah'],['pistol','🦵 Pistol počep']].map(([v,n])=>`<div class="onb-chip ${(onb.skills||[]).includes(v)?'on':''}" onclick="onbSkill('${v}')">${n}</div>`).join('')}</div></div>`:''}
+      <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Kakšno postavo ciljaš? <span style="text-transform:none;letter-spacing:0;font-weight:600;color:var(--muted)">(neobvezno)</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">${[['vitek','Vitek in definiran','M24 21 h12 l2 24 -4 31 h-8 l-4 -31 z','M24 21 l-5 3 -2 20 3 1 4 -17 z','M36 21 l5 3 2 20 -3 1 -4 -17 z'],['atletski','Atletski · V-linija','M19 21 h22 l1 25 -7 30 h-10 l-7 -30 z','M19 21 l-6 4 -2 19 4 1 4 -17 z','M41 21 l6 4 2 19 -4 1 -4 -17 z'],['misicast','Mišičast · masa','M15 21 h30 l0 26 -7 29 h-16 l-7 -29 z','M15 21 l-7 5 -1 18 5 2 3 -17 z','M45 21 l7 5 1 18 -5 2 -3 -17 z']].map(([v,n,p1,p2,p3])=>`<div class="onb-chip ${onb.postava===v?'on':''}" style="text-align:center;padding:12px 8px" onclick="onbPostava('${v}')">
+          <svg viewBox="0 0 60 80" width="50" height="66" style="display:block;margin:0 auto 6px"><g fill="${onb.postava===v?'var(--acc)':'var(--border2)'}"><circle cx="30" cy="10" r="7"/><path d="${p1}"/><path d="${p2}"/><path d="${p3}"/></g></svg>
+          <div style="font-size:11.5px;font-weight:700">${n}</div></div>`).join('')}</div></div>
+      <label class="fld" style="margin:0"><span>Tvoj cilj s svojimi besedami (neobvezno)</span><textarea id="onbCiljTxt" style="min-height:54px" placeholder="npr. Do poletja 75 kg in prevozit Vršič brez postanka">${onb.ciljTxt||''}</textarea></label>
       <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Koliko časa imaš na teden?</div>
         <div class="row" style="gap:8px">${[['3–5 h',4],['6–9 h',7],['10+ h',10]].map(([t,u])=>`<div class="onb-chip ${onb.ure===u?'on':''}" style="flex:1;text-align:center;font-weight:700" onclick="onb.ure=${u};onbCapture();onbRender()">${t}</div>`).join('')}</div></div>
     </div>`;
-  } else if(onb.step===1){
+    } else if(onb.step===1){
     const g = !!(window.FORMASYNC && FORMASYNC.uid && FORMASYNC.uid());
     b.innerHTML=`<div class="onb-title">Najprej<br>tvoj račun<span class="hl">.</span></div>
     <div class="onb-sub">Prijavi se z Googlom — <b>vsi tvoji podatki se trajno shranijo na tvoj račun</b> in te čakajo na vsaki napravi.<br>Vsak uporabnik ima svoj račun — podatki se nikoli ne mešajo.</div>
@@ -4219,7 +4457,7 @@ function onbRender(){
           <b style="color:var(--soft)">Android:</b> Chrome → meni ⋮ → <b>Dodaj na začetni zaslon</b><br>
           <b style="color:var(--soft)">iPhone:</b> Safari → gumb Deli <span style="border:1px solid var(--border2);padding:0 5px">↑</span> → <b>Na začetni zaslon</b>
         </div>
-        <div class="hint" style="margin-top:10px">Lahko preskočiš — navodila najdeš kadar koli na Pregledu.</div>
+        <div class="hint" style="margin-top:10px">Lahko preskočiš — QR in navodila najdeš kadar koli v Nastavitvah.</div>
         <div class="hint" style="margin-top:6px">📈 Za samodejni uvoz aktivnosti poveži <b>Intervals.icu</b> v Nastavitvah · 🎬 <span style="color:var(--acc2);cursor:pointer" onclick="onbFinish();demoLoad()">ali naloži demo podatke</span></div>
       </div>
     </div>`;
@@ -4241,16 +4479,23 @@ function onbAkt(v){
   onbRender();
 }
 function onbCapture(){
-  const a=$('onbStarost'), t=$('onbTeza'), k=$('onbKraj');
+  const a=$('onbStarost'), t=$('onbTeza'), k=$('onbKraj'), v=$('onbVisina'), mh=$('onbMaxHr'), fp=$('onbFtp'), ct=$('onbCiljTxt');
   if(a) onb.starost=a.value||onb.starost;
   if(t) onb.teza=t.value||onb.teza;
   if(k) onb.kraj=k.value||onb.kraj;
+  if(v) onb.visina=v.value||onb.visina;
+  if(mh) onb.maxHr=mh.value||onb.maxHr;
+  if(fp) onb.ftp=fp.value||onb.ftp;
+  if(ct) onb.ciljTxt=ct.value||onb.ciljTxt;
 }
+function onbSkill(k){ onbCapture(); onb.skills=onb.skills||[]; const i=onb.skills.indexOf(k); if(i>=0) onb.skills.splice(i,1); else onb.skills.push(k); if(k==='muscleup'){ onb.cilji=onb.cilji||[]; const gi=onb.cilji.indexOf('muscleup'); if(i<0&&gi<0) onb.cilji.push('muscleup'); if(i>=0&&gi>=0) onb.cilji.splice(gi,1); } onbRender(); }
+function onbMocAmb(v){ onbCapture(); onb.mocAmb=v; if(v>0 && !onb.prefs.moc) onb.prefs.moc=1; onbRender(); }
+function onbPostava(v){ onbCapture(); onb.postava = onb.postava===v? null : v; onbRender(); }
 function onbGo(dir){
   onbCapture();
-  if(dir>0 && onb.step===4){ onbFinish(); return; }
-  if(dir>0 && onb.step===3){ onbSaveProfile(); }   // profil shranjen po koraku 'o sebi'
-  onb.step=Math.max(1,Math.min(4,onb.step+dir));
+  if(dir>0 && onb.step===5){ onbFinish(); return; }
+  if(dir>0 && (onb.step===3 || onb.step===4)){ onbSaveProfile(); }   // profil sproti shranjen
+  onb.step=Math.max(1,Math.min(5,onb.step+dir));
   onbRender();
 }
 function onbSaveProfile(){
@@ -4259,6 +4504,13 @@ function onbSaveProfile(){
   if(onb.starost) p.starost=+onb.starost;
   if(onb.teza) p.teza=+onb.teza;
   p.ure=onb.ure;
+  if(onb.visina) p.visina=+onb.visina;
+  if(onb.maxHr) p.maxHr=+onb.maxHr;
+  if(onb.ftp){ p.ftp=+onb.ftp; p.ftpDatum=todayIso(); }
+  p.mocAmbicija=onb.mocAmb||0;
+  if(onb.skills&&onb.skills.length) p.skills=onb.skills.slice();
+  if(onb.postava) p.postava=onb.postava;
+  if(onb.ciljTxt&&onb.ciljTxt.trim()) p.cilj=onb.ciljTxt.trim();
   if(onb.cilji&&onb.cilji.length) p.cilji=onb.cilji.slice();
   else if(onb.cilj) p.cilj=onb.cilj;
   p.aktPrefs=Object.assign({},onb.prefs);
@@ -4330,6 +4582,8 @@ function autoImport(){
   if (state.icu?.athleteId && state.icu?.apiKey) icuImport(true);
 }
 setInterval(autoImport, 3*60e3);                      // vsake 3 min, ko je zavihek viden
+setTimeout(enrichPlacesQueue, 4000);                  // kraji z zemljevida za nove aktivnosti
+setInterval(enrichPlacesQueue, 5*60e3);
 window.addEventListener('focus', autoImport);          // takoj ob vrnitvi v zavihek
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) autoImport(); });
 renderSyncF();
