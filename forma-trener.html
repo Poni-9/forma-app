@@ -244,6 +244,8 @@ textarea{resize:vertical;min-height:70px}
   font-size:13px;color:var(--soft);line-height:1.5;
 }
 .plan-summary b{color:var(--acc2)}
+.dr-edit{background:none;border:1px solid var(--border2);color:var(--muted);font-family:'Barlow',sans-serif;font-size:10.5px;font-weight:700;padding:3px 9px;cursor:pointer;margin-left:8px;letter-spacing:.04em}
+.dr-edit:hover{border-color:var(--acc);color:var(--acc2)}
 
 /* ---------- Današnji trening ---------- */
 .today-setup{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;align-items:end}
@@ -610,11 +612,12 @@ canvas{max-width:100%}
           <button class="btn btn-danger btn-sm" id="btnDelPlan" onclick="deleteViewedPlan()" style="display:none">🗑 Izbriši plan</button>
           <button class="btn btn-primary" id="btnGenPlan" onclick="generatePlan()">⟳ Generiraj nov teden</button>
           <button class="btn btn-ghost" id="btnMacro" onclick="generateMacro()">🎯 Plan do cilja</button>
+          <button class="btn btn-ghost" onclick="openImportPlan()">📥 Uvozi svoj plan</button>
         </div>
       </div>
 
       <div class="card mb">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><b style="font-size:13.5px">🌦️ Napoved — Vodice in okolica</b><span class="chip" style="font-size:10.5px">7 dni</span></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><b style="font-size:13.5px" id="wxTitle">🌦️ Vremenska napoved</b><span class="chip" style="font-size:10.5px">7 dni</span><a href="#" id="wxSetLoc" onclick="switchTab('settings');return false" style="display:none;font-size:11px;color:var(--acc2);margin-left:auto">📍 Nastavi svoj kraj</a></div>
         <div class="weather-strip" id="weatherStrip"></div>
         <div class="ai-note" style="margin-top:8px">Plan se prilagaja vremenu: pohodi in kolo na suhe dni, ob dežju trenažer ali moč.</div>
       </div>
@@ -799,7 +802,7 @@ canvas{max-width:100%}
 
           <div style="font-size:9.5px;font-weight:800;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;margin-bottom:8px">Osnovno</div>
           <div class="frm-grid">
-            <label class="fld"><span>Ime</span><input id="pIme" placeholder="Blaž"></label>
+            <label class="fld"><span>Ime</span><input id="pIme" placeholder="Tvoje ime"></label>
             <label class="fld"><span>Starost</span><input type="number" id="pStarost"></label>
             <label class="fld"><span>Spol</span>
               <select id="pSpol"><option value="moški" selected>Moški</option><option value="ženska">Ženska</option></select>
@@ -807,6 +810,7 @@ canvas{max-width:100%}
             <label class="fld"><span>Višina (cm)</span><input type="number" id="pVisina" placeholder="npr. 179"></label>
             <label class="fld"><span>Teža (kg)</span><input type="number" id="pTeza"></label>
             <label class="fld"><span>Maščoba % <i style="color:var(--dim)">(neobv.)</i></span><input type="number" id="pBf" placeholder="npr. 14"></label>
+            <label class="fld"><span>Kraj <i style="color:var(--dim)">(vreme + ture)</i></span><input id="pKraj" placeholder="npr. Kranj"></label>
           </div>
 
           <div style="font-size:9.5px;font-weight:800;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;margin:6px 0 8px;padding-top:12px;border-top:1px solid var(--border)">Srce in moč <span style="font-weight:600;text-transform:none;letter-spacing:0">— osnova za cone treninga</span></div>
@@ -1017,6 +1021,26 @@ canvas{max-width:100%}
   <div class="modal" style="max-width:620px">
     <h2><span id="connTitle">Povezava</span><span class="x" onclick="closeModal('connModalBack')">✕</span></h2>
     <div id="connBody"></div>
+  </div>
+</div>
+
+<!-- ======= MODAL: UVOZI SVOJ PLAN ======= -->
+<div class="modal-back" id="impPlanBack">
+  <div class="modal" style="max-width:640px">
+    <h2>📥 Uvozi svoj plan<span class="x" onclick="closeModal('impPlanBack')">✕</span></h2>
+    <div class="ai-note" style="margin-bottom:10px">Že imaš plan — od trenerja, iz e-pošte, Excela, drugega orodja? Prilepi ga spodaj. AI ga prebere, vpiše v koledar in doda kratko trenersko oceno. Vsebine treningov ne spreminja.</div>
+    <label class="fld"><span>Prilepi plan (besedilo)</span><textarea id="impPlanTxt" style="min-height:180px" placeholder="npr.&#10;PON: 1 h mirno kolo&#10;TOR: 4×5 min intervali v klanec&#10;SRE: počitek …"></textarea></label>
+    <div class="row mt"><button class="btn btn-primary" id="btnImpPlan" onclick="importPlanRun()">✨ Preberi in vpiši v koledar</button></div>
+  </div>
+</div>
+
+<!-- ======= MODAL: PRILAGODI DAN ======= -->
+<div class="modal-back" id="adjDayBack">
+  <div class="modal" style="max-width:560px">
+    <h2>✎ Prilagodi dan<span class="x" onclick="closeModal('adjDayBack')">✕</span></h2>
+    <div id="adjDayInfo" class="ai-note" style="margin-bottom:10px"></div>
+    <label class="fld"><span>Kaj se je spremenilo / kaj imaš v mislih?</span><textarea id="adjDayTxt" style="min-height:90px" placeholder="npr. Ta dan grem s prijatelji na 3-urno turo · Imam samo 30 min · Boli me koleno …"></textarea></label>
+    <div class="row mt"><button class="btn btn-primary" id="btnAdjDay" onclick="adjustDayRun()">✨ Prilagodi ta dan in ostanek tedna</button></div>
   </div>
 </div>
 
@@ -1863,7 +1887,7 @@ function renderPlan(){
   if (!plan){
     $('planWeekLabel').textContent = 'Še ni plana';
     $('planSummary').innerHTML = '';
-    $('weekGrid').innerHTML = `<div class="empty" style="grid-column:1/-1"><span class="big">📅</span>Še ni plana.<br>Klikni <b>✨ Generiraj plan</b> — AI naredi plan za <b>naslednjih 7 dni od danes</b> iz tvoje forme, profila in metodologije trenerja.</div>`;
+    $('weekGrid').innerHTML = `<div class="empty" style="grid-column:1/-1"><span class="big">📅</span>Še ni plana.<br>Klikni <b>✨ Generiraj plan</b> — AI naredi plan za <b>naslednjih 7 dni od danes</b> iz tvoje forme, profila in metodologije trenerja.<br>Že imaš plan od trenerja ali od drugod? Klikni <b>📥 Uvozi svoj plan</b>.</div>`;
     return;
   }
   const s = parseIso(plan.start), e = parseIso(planEnd(plan));
@@ -1912,6 +1936,7 @@ function renderPlan(){
         <span class="dr-title">${esc(d.naslov)}</span>
         ${wxBadge}
         <span class="dr-meta">${isRest?'—':fmtDur(d.trajanje_min)+' · ~'+(d.tss_ocena||'?')+' TSS'}${done?'<span class="okk">✓ opravljeno</span>':''}</span>
+        ${(!done && d.datum>=today)?`<button class="dr-edit" onclick="openAdjustDay('${d.datum}')">✎ Prilagodi</button>`:''}
       </div>
       ${wxWarn}
       ${cols.length?`<div class="dr-body" style="grid-template-columns:${cols.length===3?'1.25fr 1fr 1fr':'repeat('+cols.length+',1fr)'}">${cols.join('')}</div>`:''}
@@ -1990,9 +2015,17 @@ async function gemini(parts, {json=true, temp=0.4}={}){
 }
 
 /* ================================================================
-   VREME (Open-Meteo, brezplačno, brez ključa) — Vodice in okolica
+   VREME (Open-Meteo, brezplačno, brez ključa) — lokacija uporabnika
 ================================================================ */
-const VODICE = { lat:46.19, lon:14.49 };
+const DEFAULT_LOC = { lat:46.05, lon:14.51 };   // privzeto osrednja Slovenija — dokler si uporabnik ne nastavi svojega kraja
+function userLoc(){ const p=state.settings.profile||{}; return (+p.krajLat && +p.krajLon) ? {lat:+p.krajLat, lon:+p.krajLon} : DEFAULT_LOC; }
+async function geocodeKraj(name){
+  try{
+    const r=await (await fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&language=sl&name='+encodeURIComponent(name))).json();
+    const g=r?.results?.[0];
+    return g ? {lat:+(+g.latitude).toFixed(3), lon:+(+g.longitude).toFixed(3), label:g.name} : null;
+  }catch(_){ return null; }
+}
 function weatherInfo(c){
   if(c===0) return {e:'☀️',t:'jasno',bad:0};
   if(c<=2)  return {e:'🌤️',t:'pretežno jasno',bad:0};
@@ -2008,10 +2041,11 @@ function weatherInfo(c){
 const weatherByDate = iso => (state.weather?.days||[]).find(d=>d.date===iso) || null;
 async function getWeather(force){
   const w=state.weather;
+  const loc=userLoc(), locKey=loc.lat+','+loc.lon;
   const hasHours = w && (w.days||[]).some(d=>Array.isArray(d.hours)&&d.hours.length);
-  if(!force && hasHours && (Date.now()-(w.ts||0) < 3*3600e3) && (w.days||[]).some(d=>d.date>=todayIso())) return w;
+  if(!force && hasHours && w.loc===locKey && (Date.now()-(w.ts||0) < 3*3600e3) && (w.days||[]).some(d=>d.date>=todayIso())) return w;
   try{
-    const u=`https://api.open-meteo.com/v1/forecast?latitude=${VODICE.lat}&longitude=${VODICE.lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,windspeed_10m_max&hourly=precipitation_probability,weathercode&timezone=Europe%2FLjubljana&forecast_days=7`;
+    const u=`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,windspeed_10m_max&hourly=precipitation_probability,weathercode&timezone=Europe%2FLjubljana&forecast_days=7`;
     const d=await (await fetch(u)).json(), dd=d.daily, hh=d.hourly||{};
     const byDay={};
     (hh.time||[]).forEach((t,i)=>{
@@ -2020,7 +2054,7 @@ async function getWeather(force){
       (byDay[day]=byDay[day]||[]).push({h, pop:hh.precipitation_probability?.[i]??0, code:hh.weathercode?.[i]??0});
     });
     const days=(dd.time||[]).map((t,i)=>({date:t, code:dd.weathercode[i], tmax:Math.round(dd.temperature_2m_max[i]), tmin:Math.round(dd.temperature_2m_min[i]), pop:dd.precipitation_probability_max[i]??0, rain:dd.precipitation_sum[i]??0, wind:Math.round(dd.windspeed_10m_max[i]??0), hours:byDay[t]||[]}));
-    state.weather={ts:Date.now(), days}; save();
+    state.weather={ts:Date.now(), loc:locKey, days}; save();
     return state.weather;
   }catch(e){ console.warn('vreme:',e.message); return w||null; }
 }
@@ -2063,10 +2097,13 @@ function weatherText(){
       deli=` | PO URAH: dopoldne ${j??'?'}%, popoldne ${p??'?'}%, zvečer ${v??'?'}% padavin`;
     }
     return `- ${d.date}: ${wi.t}, ${d.tmin}–${d.tmax}°C, max padavine ${d.pop}%${deli}${d.wind>=35?`, veter ${d.wind} km/h`:''}`; }).join('\n');
-  return `VREMENSKA NAPOVED (Vodice in okolica) — POZOR: dež je pogosto samo DEL dneva. Če je katerikoli del dneva suh, trening ostane ZUNAJ in v opisu navedi priporočeni čas (npr. "pojdi dopoldne — dež šele od 17h"). Trenažer/notranjo vadbo predpiši SAMO, če je mokro ves dan:\n${rows}`;
+  return `VREMENSKA NAPOVED (${state.settings.profile.kraj||'domača okolica uporabnika'}) — POZOR: dež je pogosto samo DEL dneva. Če je katerikoli del dneva suh, trening ostane ZUNAJ in v opisu navedi priporočeni čas (npr. "pojdi dopoldne — dež šele od 17h"). Trenažer/notranjo vadbo predpiši SAMO, če je mokro ves dan:\n${rows}`;
 }
 async function renderWeather(){
   const el=$('weatherStrip'); if(!el) return;
+  const kk=state.settings.profile.kraj;
+  const tE=$('wxTitle'); if(tE) tE.textContent='🌦️ Napoved — '+(kk||(LANG==='en'?'your area':'tvoja okolica'));
+  const sL=$('wxSetLoc'); if(sL) sL.style.display=kk?'none':'';
   const w=await getWeather();
   if(!w?.days?.length){ el.innerHTML=''; return; }
   el.innerHTML = w.days.filter(d=>d.date>=todayIso()).slice(0,7).map(d=>{ const wi=weatherInfo(d.code), dd=parseIso(d.date);
@@ -2104,6 +2141,7 @@ function buildContext(){
   L.push(`- max utrip: ${p.maxHr||'?'} | utrip v mirovanju: ${p.restHr||'?'} (trenira po srčnem utripu, NIMA merilca moči)`);
   L.push(`- ciljni obseg: ~${p.ure||6} ur/teden | cilji: ${p.cilj||'splošna forma'}`);
   L.push(`- IZBRANE AKTIVNOSTI (edine dovoljene; ❤️ = najljubše, naj prevladujejo): ${aktLabel()}`);
+  if (p.kraj) L.push(`- KRAJ BIVANJA: ${p.kraj} (vreme, ture in hribi veljajo za to okolico)`);
   if (p.omejitve) L.push(`- ⚠ ZDRAVSTVENE OMEJITVE (OBVEZNO upoštevaj — prilagodi/izpusti vaje, ki bi jih poslabšale): ${p.omejitve}`);
   if (_tdee){
     const gd0 = goalDeficit();
@@ -2233,15 +2271,6 @@ const STIL = `STIL PISANJA TRENINGOV — piši PREPROSTO IN RAZUMLJIVO, kot da r
 - Vsak korak mora biti razumljiv na prvi pogled, brez slovarja, tudi babici bi razumela.
 - Dnevi so treh vrst: KOLO, MOČ (zgibi, sklece, dipsi, trebušnjaki — serije × ponovitve, muscle-up progresija) in POHOD. Brez teka. Ob slabem vremenu kolo → trenažer.`;
 
-const STRATEGIJA = `POČITNIŠKA STRATEGIJA "LEAN" — razkrij mišico pod maščobo (STRIKTNO upoštevaj pri vsakem planiranju):
-1. KALORIČNI DEFICIT + PREHRANA: maščoba gre dol le ob deficitu, VISOK vnos beljakovin ščiti mišice. POMEMBNO: obroke pripravlja mama — NIKOLI ne predpisuj jedilnikov! Svetuj samo tisto, kar lahko kolesar SAM kontrolira ob serviranih obrokih: velikost porcije (manj priloge, več mesa/zelenjave), beljakovinski dodatki, ki si jih vzame sam (skuta, jajca, grški jogurt, tuna, mleko), brez sladkarij/sladkih pijač/prigrizkov, kruh zmerno, 2,5 l vode.
-2. MOČ ima KONKRETEN CILJ: naučiti se MUSCLE-UP. Vsak moč trening je korak progresije: sklece + zgibi + dipsi + trebušnjaki/dvigi nog (osnove) → eksplozivni zgibi do prsi → negativni muscle-upi → poskusi prehoda čez drog. Zgibi dajo V-hrbet, dipsi in sklece prsa/triceps, trup pa prehod. Brez treninga z odporom telo v deficitu izgublja mišice. KO POSTANE VAJA PRELAHKA (npr. zlahka narediš vse serije), dodaj obremenitev — nahrbtnik z utežjo, elastika ali obtežilni jopič — sicer se rast mišic z golo lastno težo sčasoma ustavi (plato).
-3. STRUKTURA TEDNA:
-   - JEDRO TEDNA = IZMENJAVA KOLESA IN POHODA (to je glavna, aktivna vsebina). Čez teden se izmenjujeta kolo in hoja v hribe — npr. kolo, pohod, kolo, pohod … skupaj 4–5× tedensko. To gradi kondicijo in kuri maščobo in je glavna postavka večine dni.
-   - MOČ JE DODATEK (2–3× tedensko, 20–40 min): krajši trening za zgornji del telesa proti muscle-upu, dodan POLEG glavne aktivnosti — lahko isti dan kot lažje kolo (v polju "vaje") ali kot kratek samostojen dan tipa "moč". Ni glavna postavka dneva, ampak nadgradnja.
-   - PRAVILO RAZPOREDA: dva težka dneva NE zaporedoma; po napornem pohodu ali intenzivnem kolesu lažji dan, samo moč ali regeneracija. 1 dan v tednu prosto/lahka regeneracija.
-4. POHODI — VEDNO predlagaj KONKRETEN bližnji hrib blizu VODIC (Slovenija). Primerni hribi: Šmarna gora (~1 h vzpona), Rašica, Sv. Jakob, Sv. Miklavž nad Vodicami, Gobavica (Mengeš), Šenturška gora / Sv. Ambrož, Sv. Ana. V naslovu in opisu navedi IME hriba, približen čas vzpona v eno smer in skupno trajanje pohoda (gor + dol), ki naj se UJEMA s trajanjem, predvidenim v planu (trajanje_min). Bolj kot je dan zahteven, višji/daljši hrib; za lažji dan bližji/nižji (npr. Šmarna gora).`;
-
 /* ---------- dinamična strategija glede na aktivnosti uporabnika ---------- */
 const AKT_INFO = { kolo:'🚴 Kolo', tek:'🏃 Tek', pohod:'🥾 Pohodi/hribi', moc:'💪 Moč (doma/fitnes)' };
 function aktPrefs(){
@@ -2275,12 +2304,12 @@ function strategija(){
   else if(vzdrz.length>1) jedro = `IZMENJAVA: ${vzdrz.join(' / ')} (nikoli dva enaka težka dneva zaporedoma)`;
   else jedro = vzdrz.length===1? vzdrz[0].toUpperCase() : 'MOČ in hoja';
   const L=[`STRATEGIJA (STRIKTNO — uporabnikove aktivnosti s priljubljenostjo: ${aktLabel()}; drugih športov NE predpisuj! ❤️ = najljubše → uporabljaj največ):`];
-  L.push(`1. KALORIČNI DEFICIT + PREHRANA: maščoba gre dol le ob deficitu, VISOK vnos beljakovin ščiti mišice. Obroke pripravlja družina — NIKOLI ne predpisuj jedilnikov! Svetuj le, kar lahko kolesar SAM kontrolira: velikost porcije, lasten beljakovinski dodatek (skuta, jajca, jogurt, tuna), brez sladkarij/sladkih pijač, 2,5 l vode.`);
+  L.push(`1. KALORIČNI DEFICIT + PREHRANA: maščoba gre dol le ob deficitu, VISOK vnos beljakovin ščiti mišice. NIKOLI ne predpisuj celih jedilnikov! Svetuj le, kar lahko uporabnik SAM kontrolira ob svojih obrokih: velikost porcije, lasten beljakovinski dodatek (skuta, jajca, jogurt, tuna), brez sladkarij/sladkih pijač, 2,5 l vode.`);
   if(a.includes('moc')) L.push(`2. MOČ ima KONKRETEN CILJ: muscle-up progresija (sklece+zgibi+dipsi+trup → eksplozivni zgibi → negativni MU → poskusi). 2–3× tedensko po 20–40 min, kot dodatek h glavnemu dnevu ali kratek samostojen dan. Ko postane prelahko, dodaj obremenitev.`);
   else L.push(`2. MOČ: uporabnik je NE izvaja — ne predpisuj je; za trup dodaj le kratke vaje stabilizacije (plank), če sploh.`);
   L.push(`3. STRUKTURA TEDNA: JEDRO = ${jedro}, skupaj 4–5 aktivnih dni; 1 dan prosto/regeneracija; dva težka dneva NIKOLI zaporedoma; postopnost ~+10 %/teden.`);
   if(a.includes('tek')) L.push(`4. TEK: večina tekov LAHKOTNIH (pogovorni tempo, utrip cona 2), dolg tek 1× tedensko (+10 % max), hitrejši deli šele ko baza stoji. Pazi na sklepe: raje pogosteje in krajše.`);
-  if(a.includes('pohod')) L.push(`${a.includes('tek')?5:4}. POHODI: predlagaj KONKRETEN bližnji hrib (okolica Vodic: Šmarna gora, Rašica, Sv. Jakob, Sv. Miklavž, Gobavica, Šenturška gora, Sv. Ana) z realnim časom vzpona, usklajenim s trajanje_min.`);
+  if(a.includes('pohod')){ const kk=state.settings.profile.kraj; L.push(`${a.includes('tek')?5:4}. POHODI: predlagaj KONKRETEN bližnji hrib${kk?` v okolici kraja ${kk} (uporabi svoje poznavanje tamkajšnjih hribov)`:' v uporabnikovi okolici'} z realnim časom vzpona v eno smer, skupno trajanje (gor + dol) usklajeno s trajanje_min. Če konkretnih hribov ne poznaš zanesljivo, namesto imena navedi profil vzpona (višinska razlika in čas).`); }
   return L.join('\n');
 }
 
@@ -2412,7 +2441,7 @@ NAVODILA:
 - DNEVNI PLAN za VSAK dan (tudi za dneve počitka od kolesa!) vsebuje:
   · "opis" = kolesarski trening po metodologiji trenerja (STIL spodaj); ob počitku od kolesa: "ODDIH od kolesa".
   · "vaje" = 10–20 min domačih vaj za trup in moč (trebušnjaki, plank, sklece, izpadni koraki …) s konkretnimi serijami × ponovitvami, progresivno iz dneva v dan — cilj je tudi vidno izklesan trup. Brez teka.
-  · "prehrana" = 1–3 KRATKI nasveti za ta dan, ki jih lahko izvede sam (obroke mu pripravi mama — NE predpisuj jedilnikov!): velikost porcije, lasten beljakovinski dodatek (skuta/jajca/jogurt/tuna — več po treningu moči), brez sladkarij in sladkih pijač, 2,5 l vode. Nasvete loči z |.
+  · "prehrana" = 1–3 KRATKI nasveti za ta dan, ki jih lahko izvede sam (NE predpisuj celih jedilnikov!): velikost porcije, lasten beljakovinski dodatek (skuta/jajca/jogurt/tuna — več po treningu moči), brez sladkarij in sladkih pijač, 2,5 l vode. Nasvete loči z |.
   · "kcal_vnos" in "kcal_poraba" = številki za ta dan (poraba = bazalna + trening), ki skupaj dasta potreben deficit.
 - Deficit dosleden, a NE večji od ~1000 kcal/dan. Če cilj v roku ni realen, to ISKRENO napiši v "povzetek" in naredi najboljši realno možni plan.
 
@@ -2567,7 +2596,7 @@ NAVODILA:
 - Plan se začne DANES, ne v ponedeljek! Prvi dan določi po TRENUTNI svežini (TSB) in zadnjih vožnjah: če je svež in ni treniral, lahko takoj kakovosten trening; če je utrujen ali je danes že treniral, začni z regeneracijo/oddihom. NE začenjaj avtomatsko z oddihom.
 - Kolesar trenira po srčnem utripu — cone C1–C5 iz konteksta (ključnim intervalom pripiši tudi utrip, npr. "C4 = utrip 160–172").
 - Postopnost obsega (~+10 % max glede na zadnje tedne).
-- ČE OBSTAJA GLAVNI CILJ Z ROKOM (npr. izguba mase${gd?` — potreben deficit ~${gd.deficit} kcal/dan`:''}): za VSAK dan obvezno dodaj tudi "vaje" (10–20 min domačih vaj za trup/moč s serijami × ponovitvami, progresivno; brez teka), "prehrana" (1–3 KRATKI nasveti, ki jih lahko izvede ob obrokih, ki mu jih pripravi mama — npr. "manjša porcija priloge | zvečer dodaj skuto (beljakovine) | brez sladkarij in sokov" — NE predpisuj jedilnikov, loči nasvete z |) ter "kcal_vnos" in "kcal_poraba". Deficit dosleden, a ne več kot ~1000 kcal/dan. Če cilja ni, pusti ta polja prazna.
+- ČE OBSTAJA GLAVNI CILJ Z ROKOM (npr. izguba mase${gd?` — potreben deficit ~${gd.deficit} kcal/dan`:''}): za VSAK dan obvezno dodaj tudi "vaje" (10–20 min domačih vaj za trup/moč s serijami × ponovitvami, progresivno; brez teka), "prehrana" (1–3 KRATKI nasveti, ki jih lahko izvede ob svojih obrokih — npr. "manjša porcija priloge | zvečer dodaj skuto (beljakovine) | brez sladkarij in sokov" — NE predpisuj jedilnikov, loči nasvete z |) ter "kcal_vnos" in "kcal_poraba". Deficit dosleden, a ne več kot ~1000 kcal/dan. Če cilja ni, pusti ta polja prazna.
 - Vključi 1–2 dneva ODDIHA ali regeneracije, razporejena pametno (po težkih dneh), ne po fiksni shemi.
 - Tipi: intervali, vzdržljivost, tempo, regeneracija, moč, pohod, počitek. Teden sestavi po POČITNIŠKI STRATEGIJI zgoraj: JEDRO = izmenjava kolo/pohod 4–5×, MOČ 2–3× kot krajši dodatek (ne kot glavna postavka), 1 dan regeneracija/prosto. Dva težka dneva ne zaporedoma.
 - VSAK dan mora povedati TOČNO, kaj naredi. Dan tipa "moč" (ali vaje moči na dan kolesa) naj bo v OBLIKI, ki jo zna prebrati vodeni trening: vsaka vaja v svoji vrstici (loči z \\n) kot "Ime: N serij po M ponovitev, odmor X" — npr. "Zgibi: 4 serije po 6 ponovitev, odmor 2 min\\nSklece: 4 serije po 15 ponovitev, odmor 90 sekund\\nDipsi: 3 serije po 8 ponovitev, odmor 2 min\\nDvigi nog na drogu: 3 serije po 10 ponovitev, odmor 90 sekund". Dodaj kratko ogrevanje ("Ogrevanje: 8 minut …") in zaključek ("Zaključek: 5 minut raztezanja"). Dan kolesa/pohoda ima "opis" po stilu trenerja, morebitne dodatne vaje moči pa v polju "vaje" v istem formatu. Nič ohlapno.
@@ -2582,6 +2611,94 @@ Točno 7 dni s temi datumi po vrsti: ${days.map(dayLbl).join(', ')}.` }], {temp:
     toast(fromIso ? 'Plan podaljšan za 7 dni. 📅' : 'Plan za naslednjih 7 dni je pripravljen! 📅','ok');
   }catch(e){ toast(e.message,'err'); }
   busy(btn, false);
+}
+
+/* ================================================================
+   UVOZ OBSTOJEČEGA PLANA + PRILAGODITEV DNEVA
+================================================================ */
+function openImportPlan(){ const t=$('impPlanTxt'); if(t) t.value=''; $('impPlanBack').classList.add('open'); }
+async function importPlanRun(){
+  const txt=($('impPlanTxt')?.value||'').trim();
+  if(txt.length<20){ toast('Prilepi svoj plan (vsaj nekaj vrstic).','err'); return; }
+  const btn=$('btnImpPlan'); busy(btn,true,'Berem tvoj plan …');
+  try{
+    const r=await gemini([{ text:
+`Si profesionalni trener. Uporabnik že ima SVOJ trening plan (od trenerja, iz drugega orodja, e-pošte, Excela …) in ga je prilepil spodaj. Tvoja naloga:
+1) Plan PRETVORI v strukturirane dneve — vsebine treningov NE spreminjaj in NE izmišljuj novih; samo uredi (in po potrebi prevedi v slovenščino).
+2) Na kratko ga TRENERSKO OCENI glede na uporabnikov profil in formo (ali mu ustreza, na kaj naj pazi).
+
+DANES JE: ${todayIso()} (${DNEVI[(new Date().getDay()+6)%7]})
+- Če so v besedilu samo dnevi v tednu (pon, tor …), jih preslikaj na prihodnje datume od danes naprej (prvi omenjeni dan = prvi tak dan v prihodnosti).
+- Če so datumi, uporabi te. Največ 21 dni.
+- "tip" izberi med: intervali, vzdržljivost, tempo, regeneracija, moč, pohod, tek, počitek.
+
+${buildContext()}
+
+PRILEPLJEN PLAN UPORABNIKA:
+<<<
+${txt.slice(0,6000)}
+>>>
+
+Vrni SAMO JSON:
+{"ocena":"2-4 stavki trenerske ocene tega plana (+ morebitna opozorila)","fokus":"kratek fokus plana","dnevi":[{"datum":"YYYY-MM-DD","tip":"...","naslov":"...","trajanje_min":number,"opis":"vrstice loči z \\n","tss_ocena":number,"vaje":"","prehrana":"","zakaj":""}]}` }], {temp:.3});
+    const dnevi=(r.dnevi||[]).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d.datum||'')).sort((a,b)=>a.datum.localeCompare(b.datum));
+    if(!dnevi.length) throw new Error('V besedilu nisem prepoznal dni plana — poskusi z bolj razčlenjenim zapisom.');
+    upsertPlanDays(dnevi.map(d=>normDay(d,d.datum)), { summary:'📥 Uvožen plan. '+(r.ocena||''), focus:r.fokus||'Uvožen plan' });
+    save(); renderAll(); closeModal('impPlanBack'); switchTab('plan');
+    toast('Uvoženih '+dnevi.length+' dni — plan je v koledarju. 📥','ok');
+    if(r.ocena) toast(r.ocena.slice(0,200));
+  }catch(e){ toast(e.message,'err'); }
+  busy(btn,false);
+}
+
+let adjDate=null;
+function openAdjustDay(iso){
+  adjDate=iso;
+  const d=planDayFor(iso);
+  const info=$('adjDayInfo');
+  if(info && d){ const dd=parseIso(iso); info.innerHTML=`<b>${DNEVI[(dd.getDay()+6)%7]} ${dd.getDate()}.${dd.getMonth()+1}.</b> — trenutno: ${esc(d.naslov||d.tip)} (${fmtDur(d.trajanje_min)}). Napiši, kaj se je spremenilo — AI prilagodi ta dan in pametno uravnoteži preostanek tedna.`; }
+  const t=$('adjDayTxt'); if(t) t.value='';
+  $('adjDayBack').classList.add('open');
+}
+async function adjustDayRun(){
+  const wish=($('adjDayTxt')?.value||'').trim();
+  if(!wish){ toast('Napiši, kaj se je spremenilo za ta dan.','err'); return; }
+  const plan=state.plans.find(p=>(p.days||[]).some(d=>d.datum===adjDate));
+  if(!plan){ toast('Tega dneva ni v nobenem planu.','err'); return; }
+  const btn=$('btnAdjDay'); busy(btn,true,'Prilagajam plan …');
+  try{
+    await getWeather();
+    const doneMap={}; plan.days.forEach(d=>{ if(d.done) doneMap[d.datum]=1; });
+    const r=await gemini([{ text:
+`Si profesionalni trener. Uporabnik želi SPREMEMBO obstoječega plana za dan ${adjDate}.
+NJEGOVA ŽELJA ZA TA DAN: "${wish}"
+
+${buildContext()}
+
+${weatherText()}
+
+${stil()}
+
+${strategija()}
+
+TRENUTNI PLAN (JSON): ${JSON.stringify(plan.days.map(d=>({datum:d.datum,tip:d.tip,naslov:d.naslov,trajanje_min:d.trajanje_min,opis:d.opis,tss_ocena:d.tss_ocena,vaje:d.vaje,prehrana:d.prehrana})))}
+
+NAVODILA:
+- Dneve PRED ${adjDate} vrni popolnoma NESPREMENJENE.
+- Dan ${adjDate} prilagodi želji. Če ima uporabnik ta dan svojo aktivnost (npr. tura s prijatelji, tekma), jo VGRADI v plan kot trening tega dne in realno oceni trajanje in TSS.
+- Dneve PO ${adjDate} pametno uravnoteži, da tedenska obremenitev in postopnost ostaneta smiselni (po težkem dnevu lažji dan, skupni tedenski TSS podoben). Spremeni SAMO, kar je res treba.
+- Vrni VSE dni z ISTIMI datumi kot v trenutnem planu.
+
+Vrni SAMO JSON:
+{"sprememba":"1-2 stavka: kaj si spremenil in zakaj","dnevi":[{"datum":"YYYY-MM-DD","tip":"...","naslov":"...","trajanje_min":number,"opis":"vrstice loči z \\n","tss_ocena":number,"vaje":"...","prehrana":"...","zakaj":"..."}]}` }], {temp:.4});
+    const dnevi=(r.dnevi||[]).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d.datum||''));
+    if(!dnevi.length) throw new Error('AI ni vrnil prilagojenega plana — poskusi znova.');
+    const nd=dnevi.map(d=>normDay(d,d.datum)); nd.forEach(d=>{ if(doneMap[d.datum]) d.done=true; });
+    upsertPlanDays(nd, { summary:plan.summary, focus:plan.focus });
+    save(); renderAll(); closeModal('adjDayBack');
+    toast(r.sprememba || 'Plan prilagojen. ✎','ok');
+  }catch(e){ toast(e.message,'err'); }
+  busy(btn,false);
 }
 
 /* ================================================================
@@ -3049,6 +3166,15 @@ function saveProfile(){
   p.ciljTeza = num($('pCiljTeza').value);
   if(p.ciljTeza!=null && p.ciljTeza<30) p.ciljTeza=null;   // -1 in podobne pomote
   p.omejitve = ($('pOmejitve')?.value||'').trim();
+  const nk = ($('pKraj')?.value||'').trim();
+  if(nk !== (p.kraj||'')){
+    p.kraj = nk||null; p.krajLat=null; p.krajLon=null;
+    if(nk) geocodeKraj(nk).then(g=>{
+      if(g){ p.krajLat=g.lat; p.krajLon=g.lon; save(); getWeather(true).then(()=>renderAll()); toast('Kraj nastavljen: '+g.label+' — vreme posodobljeno. 🌦️','ok'); }
+      else toast('Kraja "'+nk+'" ne najdem — preveri zapis.','err');
+    });
+    else getWeather(true).then(()=>renderAll());
+  }
   p.lthr = num($('pLthr').value); p.ftp = num($('pFtp').value); p.shema = +$('pShema').value || 5;
   for (const r of state.rides) r.tss = estimateTss(r);   // TSS se z novim profilom spremeni
   if(p.teza){
@@ -3069,6 +3195,7 @@ function fillSettings(){
   $('pNivo').value=p.nivo||'rekreativni'; $('pUre').value=p.ure??6; $('pCilj').value=p.cilj||'';
   $('pCiljDatum').value=p.ciljDatum||''; $('pCiljTeza').value=p.ciljTeza??'';
   if($('pOmejitve')) $('pOmejitve').value=p.omejitve||'';
+  if($('pKraj')) $('pKraj').value=p.kraj||'';
   const pa=$('profAvatar'), pn=$('profName'), ps=$('profSum');
   if(pa) pa.textContent=(p.ime||'?').charAt(0).toUpperCase();
   if(pn) pn.textContent=p.ime||'Tvoj profil';
@@ -3998,9 +4125,10 @@ function onbRender(){
     b.innerHTML=`<div class="onb-title">Povej nekaj<br>o sebi<span class="hl">.</span></div>
     <div class="onb-sub">Izbran nivo: <b style="color:var(--acc2)">${ONB_LVLS[onb.level].name}</b> · iz tega AI izračuna cone, kalorije in prvi plan.</div>
     <div style="max-width:560px;margin:34px auto 0;display:flex;flex-direction:column;gap:16px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
         <label class="fld" style="margin:0"><span>Starost</span><input type="number" id="onbStarost" value="${onb.starost}"></label>
         <label class="fld" style="margin:0"><span>Teža (kg)</span><input type="number" step="0.1" id="onbTeza" value="${onb.teza}"></label>
+        <label class="fld" style="margin:0"><span>Kraj <i style="color:var(--dim)">(vreme)</i></span><input id="onbKraj" value="${onb.kraj||''}" placeholder="npr. Kranj"></label>
       </div>
       <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Katere aktivnosti — in katere imaš najraje?</div>
         <div class="row" style="gap:8px">${[['kolo','🚴 Kolo'],['tek','🏃 Tek'],['pohod','🥾 Pohodi'],['moc','💪 Moč']].map(([v,n])=>{const pf=onb.prefs[v]||0;return `<div class="onb-chip ${pf?'on':''}" style="${pf===2?'border-color:#ffc247;':''}" onclick="onbAkt('${v}')">${pf===2?'❤️ ':''}${n}</div>`;}).join('')}</div>
@@ -4013,7 +4141,7 @@ function onbRender(){
   } else if(onb.step===1){
     const g = !!(window.FORMASYNC && FORMASYNC.uid && FORMASYNC.uid());
     b.innerHTML=`<div class="onb-title">Najprej<br>tvoj račun<span class="hl">.</span></div>
-    <div class="onb-sub">Prijavi se z Googlom — <b>vsi tvoji podatki se trajno shranijo na tvoj račun</b> in te čakajo na vsaki napravi.<br>Vsak (brat, prijatelj …) ima svoj račun — nič se ne meša.</div>
+    <div class="onb-sub">Prijavi se z Googlom — <b>vsi tvoji podatki se trajno shranijo na tvoj račun</b> in te čakajo na vsaki napravi.<br>Vsak uporabnik ima svoj račun — podatki se nikoli ne mešajo.</div>
     <div style="max-width:460px;margin:38px auto 0;display:flex;flex-direction:column;gap:12px">
       ${g? `<div class="conn-row" style="border-color:rgba(95,214,122,.4)"><span class="cn" style="font-size:14px">🔵 <b>Prijavljen</b> — podatki se shranjujejo na tvoj račun</span><span class="cs ok">✓</span></div>`
          : `<button class="btn btn-primary" style="width:100%;padding:15px;font-size:17px" onclick="FORMASYNC.signIn().then(()=>setTimeout(onbRender,900))">🔵 Prijava z Google</button>`}
@@ -4047,9 +4175,10 @@ function onbAkt(v){
   onbRender();
 }
 function onbCapture(){
-  const a=$('onbStarost'), t=$('onbTeza');
+  const a=$('onbStarost'), t=$('onbTeza'), k=$('onbKraj');
   if(a) onb.starost=a.value||onb.starost;
   if(t) onb.teza=t.value||onb.teza;
+  if(k) onb.kraj=k.value||onb.kraj;
 }
 function onbGo(dir){
   onbCapture();
@@ -4066,6 +4195,10 @@ function onbSaveProfile(){
   p.ure=onb.ure; if(onb.cilj) p.cilj=onb.cilj;
   p.aktPrefs=Object.assign({},onb.prefs);
   p.aktivnosti=Object.keys(onb.prefs);
+  if(onb.kraj && onb.kraj.trim()){
+    p.kraj=onb.kraj.trim();
+    geocodeKraj(p.kraj).then(g=>{ if(g){ p.krajLat=g.lat; p.krajLon=g.lon; save(); getWeather(true).then(()=>renderAll()); } });
+  }
   save();
 }
 function onbFinish(tab){

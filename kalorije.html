@@ -381,7 +381,7 @@ input:focus,select:focus{box-shadow:none!important}
   <div class="tabpane" id="pane-plan">
     <div class="card">
       <h3>📅 Moj trening plan <span class="sub" id="planSyncLbl"></span></h3>
-      <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px">🌦️ Napoved — Vodice in okolica</div>
+      <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px" id="wxTitleK">🌦️ Vremenska napoved</div>
       <div class="weather-strip" id="weatherStripK" style="margin-bottom:12px"></div>
       <div class="hint" style="margin-bottom:12px">Iz namizne aplikacije — kolo 🚴, pohod 🥾, moč 💪. Klikni "⏱ Nimam toliko časa", če je dan prekratek.</div>
       <div id="planList"></div>
@@ -1177,7 +1177,7 @@ function showPane(name){
   if (name==='trener') renderChatK();
   if (typeof syncPull==='function') syncPull(false);   // ob preklopu zavihka poberi najnovejše
 }
-/* --- VREME (Open-Meteo, Vodice) --- */
+/* --- VREME (Open-Meteo, lokacija uporabnika) --- */
 function weatherInfo(c){
   if(c===0) return {e:'☀️',t:'jasno',bad:0};
   if(c<=2)  return {e:'🌤️',t:'pretežno jasno',bad:0};
@@ -1192,13 +1192,15 @@ function weatherInfo(c){
 }
 let wxCache=null;
 async function getWeatherK(){
-  if(wxCache && (Date.now()-wxCache.ts < 3*3600e3) && (wxCache.days||[]).some(d=>d.hours&&d.hours.length)) return wxCache;
+  const p=(F?.settings?.profile)||{};
+  const lat=+p.krajLat||46.05, lon=+p.krajLon||14.51, lk=lat+','+lon;
+  if(wxCache && wxCache.loc===lk && (Date.now()-wxCache.ts < 3*3600e3) && (wxCache.days||[]).some(d=>d.hours&&d.hours.length)) return wxCache;
   try{
-    const u='https://api.open-meteo.com/v1/forecast?latitude=46.19&longitude=14.49&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&hourly=precipitation_probability,weathercode&timezone=Europe%2FLjubljana&forecast_days=7';
+    const u=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&hourly=precipitation_probability,weathercode&timezone=Europe%2FLjubljana&forecast_days=7`;
     const d=await (await fetch(u)).json(), dd=d.daily, hh=d.hourly||{};
     const byDay={};
     (hh.time||[]).forEach((t,i)=>{ const day=t.slice(0,10), h=+t.slice(11,13); if(h<6||h>21) return; (byDay[day]=byDay[day]||[]).push({h,pop:hh.precipitation_probability?.[i]??0,code:hh.weathercode?.[i]??0}); });
-    wxCache={ts:Date.now(), days:(dd.time||[]).map((t,i)=>({date:t,code:dd.weathercode[i],tmax:Math.round(dd.temperature_2m_max[i]),pop:dd.precipitation_probability_max[i]??0,hours:byDay[t]||[]}))};
+    wxCache={ts:Date.now(), loc:lk, days:(dd.time||[]).map((t,i)=>({date:t,code:dd.weathercode[i],tmax:Math.round(dd.temperature_2m_max[i]),pop:dd.precipitation_probability_max[i]??0,hours:byDay[t]||[]}))};
     return wxCache;
   }catch(e){ return F?.weather || null; }   // rezerva: iz sinhroniziranega plana
 }
@@ -1222,6 +1224,7 @@ function dryWindowK(iso, durMin){
 async function renderWeatherK(auto){
   const el=$('weatherStripK');
   const w=await getWeatherK();
+  const tE=$('wxTitleK'); if(tE) tE.textContent='🌦️ Napoved — '+((F?.settings?.profile?.kraj)||'tvoja okolica');
   if(el){
     if(!w?.days?.length){ el.innerHTML='<span class="hint">Napovedi trenutno ni.</span>'; }
     else el.innerHTML=w.days.filter(d=>d.date>=todayIso()).slice(0,7).map(d=>{ const wi=weatherInfo(d.code), dd=parseIso(d.date);
@@ -1379,7 +1382,7 @@ async function rebalanceWeek(){
   try{
     const wx = await getWeatherK();
     const segK=(hs,a,b)=>{ const s=(hs||[]).filter(x=>x.h>=a&&x.h<b); return s.length? Math.max(...s.map(x=>x.pop)) : null; };
-    const wxText = wx?.days?.length ? 'VREMENSKA NAPOVED PO URAH (Vodice) — dež je pogosto le DEL dneva: če je del dneva suh, trening OSTANE zunaj in v opis napiši priporočeni termin (npr. "pojdi do 17h"). Notri prestavi samo, ko je mokro ves dan:\n'+wx.days.filter(d=>d.date>=today).map(d=>{const wi=weatherInfo(d.code);const j=segK(d.hours,6,12),p=segK(d.hours,12,17),v=segK(d.hours,17,22);return `- ${d.date}: ${wi.t}, ${d.tmax}° | dopoldne ${j??'?'}%, popoldne ${p??'?'}%, zvečer ${v??'?'}% dežja`;}).join('\n') : '';
+    const wxText = wx?.days?.length ? 'VREMENSKA NAPOVED PO URAH ('+(F?.settings?.profile?.kraj||'domača okolica')+') — dež je pogosto le DEL dneva: če je del dneva suh, trening OSTANE zunaj in v opis napiši priporočeni termin (npr. "pojdi do 17h"). Notri prestavi samo, ko je mokro ves dan:\n'+wx.days.filter(d=>d.date>=today).map(d=>{const wi=weatherInfo(d.code);const j=segK(d.hours,6,12),p=segK(d.hours,12,17),v=segK(d.hours,17,22);return `- ${d.date}: ${wi.t}, ${d.tmax}° | dopoldne ${j??'?'}%, popoldne ${p??'?'}%, zvečer ${v??'?'}% dežja`;}).join('\n') : '';
     const prof=F?.settings?.profile||{};
     const r=await gemini([{text:`Si kolesarski trener. Kolesar želi, da glede na to, KAKO je dejansko izvedel treninge ta teden (v primerjavi s predpisanim) IN glede na VREME, PAMETNO prilagodiš PREOSTANEK tedna, da tedenski cilj ostane smiseln.
 Profil: ${prof.teza||'?'} kg, višina ${prof.visina||'?'} cm, cilj "${prof.cilj||'lean-fit'}", tedenski obseg ~${prof.ure||6} h. Danes je ${today}.
