@@ -961,9 +961,9 @@ function renderVadba(){
     ${sor>=3?`<div class="dn-card" style="border-color:rgba(255,92,92,.4)"><div class="dn-txt">🥵 Zelo te boli — današnja vadba bo regeneracijska (mobilnost + raztezanje). Bolečina z dnevi upade.</div></div>`:''}
     <button class="dn-cta" onclick="pwStartFor('${isMoc?today:(nextIso||today)}')">▶ Začni vodeno vadbo${(isMoc&&pd.trajanje_min)?' → '+pd.trajanje_min+' min':''}</button>
     <div class="dn-card">
-      <div style="display:flex;justify-content:space-between;align-items:baseline"><div class="dn-lbl">POT DO MUSCLE-UPA</div><div style="font-family:var(--bc);font-weight:800;font-size:17px;color:var(--acc2)">${pct} %</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><div class="dn-lbl">${wantsMUK()?'POT DO MUSCLE-UPA':'NAPREDEK MOČI'}</div><div style="font-family:var(--bc);font-weight:800;font-size:17px;color:var(--acc2)">${pct} %</div></div>
       <div style="height:5px;background:var(--border);margin-top:8px"><div style="width:${Math.max(3,pct)}%;height:100%;background:linear-gradient(90deg,#a34038,var(--acc))"></div></div>
-      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--dim);margin-top:5px;font-weight:700"><span>OSNOVE</span><span>EKSPL. ZGIB</span><span>NEG. MU</span><span>MUSCLE-UP</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--dim);margin-top:5px;font-weight:700">${wantsMUK()?'<span>OSNOVE</span><span>EKSPL. ZGIB</span><span>NEG. MU</span><span>MUSCLE-UP</span>':'<span>OSNOVE</span><span>VZTRAJNOST</span><span>MOČ</span><span>NAPREDNO</span>'}</div>
     </div>
     <div class="dn-card">
       <div class="dn-lbl" style="color:var(--dim)">BOLEČINA DANES?</div>
@@ -1177,6 +1177,12 @@ function showPane(name){
   if (name==='trener') renderChatK();
   if (typeof syncPull==='function') syncPull(false);   // ob preklopu zavihka poberi najnovejše
 }
+/* --- cilji uporabnika (iz sinhroniziranega profila) --- */
+function wantsMUK(){
+  const p=F?.settings?.profile||{};
+  if(Array.isArray(p.cilji)&&p.cilji.length) return p.cilji.includes('muscleup');
+  return /muscle/i.test(p.cilj||'');
+}
 /* --- VREME (Open-Meteo, lokacija uporabnika) --- */
 function weatherInfo(c){
   if(c===0) return {e:'☀️',t:'jasno',bad:0};
@@ -1322,7 +1328,7 @@ function renderPlanTab(){
       <div class="pd-title2">${esc(d.naslov||'')}</div>
       ${ct.l!=='POČITEK' && d.trajanje_min?`<div class="pd-time">⏱ Skupaj ~${fmtDur(d.trajanje_min)}${d.tss_ocena?` · ~${d.tss_ocena} TSS`:''}</div>`:''}
       ${d.opis?`<div class="pd-sec">${opisHtml(d.opis)}</div>`:''}
-      ${d.vaje?`<div class="pd-sec"><div class="pd-lbl">🏋️ Vaje (muscle-up)</div>${d.vaje.includes('\n')?opisHtml(d.vaje):`<div class="opis-line">${esc(d.vaje)}</div>`}</div>`:''}
+      ${d.vaje?`<div class="pd-sec"><div class="pd-lbl">🏋️ ${wantsMUK()?'Vaje (muscle-up)':'Vaje (moč)'}</div>${d.vaje.includes('\n')?opisHtml(d.vaje):`<div class="opis-line">${esc(d.vaje)}</div>`}</div>`:''}
       ${(d.prehrana||d.kcal_vnos)?`<div class="pd-sec"><div class="pd-lbl">🍽 Prehrana</div>${esc(d.prehrana||'').split(/\s*\|\s*/).filter(x=>x).map(x=>`<div class="opis-line">${x}</div>`).join('')}${d.kcal_vnos?`<div class="hint" style="color:var(--yellow);font-weight:700;margin-top:4px">🔥 vnos ~${d.kcal_vnos} · poraba ~${d.kcal_poraba||'?'} kcal</div>`:''}</div>`:''}
       <div class="pd-actions">
         ${hasStrength(d) ? `<button class="btn btn-primary btn-sm" onclick='pwStartFor("${d.datum}")'>▶ Začni vodeni trening${ct.l!=='TRENING MOČI'?' (moč)':''}</button>`:''}
@@ -1486,7 +1492,7 @@ async function pwStart(day){
 Naslov: "${src.naslov}".
 Vaje/opis:\n${src.opis||''}\n${src.vaje||''}
 Vrni SAMO JSON: {"blocks":[{"kind":"timed"|"sets","name":"kratko ime vaje","dur":sekunde_za_timed,"sets":stevilo_serij,"reps":ponovitve,"repsIsTime":true_ce_je_reps_v_sekundah,"rest":sekunde_odmora,"note":"kratek namig za pravilno izvedbo"}]}
-Ogrevanje in zaključek/raztezanje = "timed". Vsaka vaja = "sets" z odmorom (obicajno 60-120 s). Upoštevaj SAMO vaje za moč (zgibi, sklece, dipsi, trebušnjaki, muscle-up progresija) — NE kolesa ali pohoda. Če besedilo ni jasno, sestavi smiseln trening za zgornji del telesa proti muscle-upu.`}]);
+Ogrevanje in zaključek/raztezanje = "timed". Vsaka vaja = "sets" z odmorom (obicajno 60-120 s). Upoštevaj SAMO vaje za moč (zgibi, sklece, dipsi, trebušnjaki${wantsMUK()?', muscle-up progresija':''}) — NE kolesa ali pohoda. Če besedilo ni jasno, sestavi smiseln trening za zgornji del telesa${wantsMUK()?' proti muscle-upu':' (splošna moč, brez muscle-up progresije)'}.`}]);
       const b=(r.blocks||[]).map(x=>({kind:x.kind==='timed'?'timed':'sets', name:x.name||'Vaja', dur:+x.dur||300, sets:+x.sets||3, reps:+x.reps||10, repsIsTime:!!x.repsIsTime, rest:+x.rest||90, note:x.note||''}));
       if(b.length) blocks=b;
     }catch(e){ /* obdržimo lokalno razčlembo */ }

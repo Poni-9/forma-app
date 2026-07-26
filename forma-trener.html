@@ -1409,8 +1409,12 @@ function renderDashBadges(){
   if(first100) b.push(['💯', LANG==='en'?'First 100 km ride':'Prva stotka (100 km)', fmtDate(first100.date)]);
   else if(cumDate) b.push(['💯', LANG==='en'?'First 100 km total':'Prvih 100 km skupaj', fmtDate(cumDate)]);
   if(p.ftp) b.push(['⚡','FTP '+p.ftp+' W', p.teza?(p.ftp/p.teza).toFixed(1)+' W/kg':'']);
-  const muPct=Math.min(100,Math.round(((state.forma.level||1)-1)/9*100));
-  b.push(['🧗','Muscle-up '+muPct+' %', muPct>=100?(LANG==='en'?'done!':'osvojen!'):(LANG==='en'?'in progress':'v teku')]);
+  if(wantsMU()){
+    const muPct=Math.min(100,Math.round(((state.forma.level||1)-1)/9*100));
+    b.push(['🧗','Muscle-up '+muPct+' %', muPct>=100?(LANG==='en'?'done!':'osvojen!'):(LANG==='en'?'in progress':'v teku')]);
+  } else if(userAkt().includes('moc')){
+    b.push(['💪',(LANG==='en'?'Strength — level ':'Moč — nivo ')+(state.forma.level||1)+'/10', (state.forma.history||[]).length+(LANG==='en'?' workouts':' treningov')]);
+  }
   let wk=0, wchk=weekStart(new Date());
   while(wk<52){ const a=isoDate(wchk), z=isoDate(addDays(wchk,6));
     if(state.rides.filter(r=>r.date>=a&&r.date<=z).length>=3) { wk++; wchk=addDays(wchk,-7); } else break; }
@@ -1926,7 +1930,7 @@ function renderPlan(){
     }
     const cols = [];
     if (d.opis) cols.push(`<div class="dr-col"><div class="dr-lbl">${sl.i} ${sl.l}</div>${opisHtml(d.opis)}</div>`);
-    if (d.vaje) cols.push(`<div class="dr-col"><div class="dr-lbl">🏋️ Vaje (muscle-up)</div>${d.vaje.includes('\n')?opisHtml(d.vaje):esc(d.vaje).split(/,\s(?=[A-ZČŠŽ])/).join('<br>')}</div>`);
+    if (d.vaje) cols.push(`<div class="dr-col"><div class="dr-lbl">🏋️ ${wantsMU()?'Vaje (muscle-up)':'Vaje (moč)'}</div>${d.vaje.includes('\n')?opisHtml(d.vaje):esc(d.vaje).split(/,\s(?=[A-ZČŠŽ])/).join('<br>')}</div>`);
     if (d.prehrana || d.kcal_vnos) cols.push(`<div class="dr-col"><div class="dr-lbl">🍽 Prehrana</div>${esc(d.prehrana||'').split(/\s*\|\s*/).filter(x=>x).map(x=>`<div class="opis-line">${x}</div>`).join('')}${d.kcal_vnos?`<div class="dr-kcal">🔥 vnos ~${d.kcal_vnos} · poraba ~${d.kcal_poraba||'?'} kcal</div>`:''}</div>`);
     return `<div class="day-row ${d.datum===today?'today':''} ${done?'done':''}">
       <div class="dr-head">
@@ -2142,11 +2146,16 @@ function buildContext(){
   L.push(`- ciljni obseg: ~${p.ure||6} ur/teden | cilji: ${p.cilj||'splošna forma'}`);
   L.push(`- IZBRANE AKTIVNOSTI (edine dovoljene; ❤️ = najljubše, naj prevladujejo): ${aktLabel()}`);
   if (p.kraj) L.push(`- KRAJ BIVANJA: ${p.kraj} (vreme, ture in hribi veljajo za to okolico)`);
+  if (goalKeys().length) L.push(`- CILJI UPORABNIKA (izbrani ob začetku — VSE prilagodi tem ciljem): ${ciljeText()}`);
   if (p.omejitve) L.push(`- ⚠ ZDRAVSTVENE OMEJITVE (OBVEZNO upoštevaj — prilagodi/izpusti vaje, ki bi jih poslabšale): ${p.omejitve}`);
   if (_tdee){
-    const gd0 = goalDeficit();
-    const cilj = gd0 ? Math.max(_bmr+200, _tdee - gd0.deficit) : Math.round(_tdee - 290);
-    L.push(`- PREHRANSKI CILJ (lean-fit: počasno izgubljanje maščobe + gradnja mišic): ~${Math.round(cilj)} kcal/dan (rahli deficit glede na vzdrževanje ${_tdee}). Beljakovine KLJUČNE: ~${_prot} g/dan (ohranjajo mišice v deficitu). Maščobe ~0.9 g/kg, ostalo ogljikovi hidrati okoli treninga.`);
+    if (wantsLean()){
+      const gd0 = goalDeficit();
+      const cilj = gd0 ? Math.max(_bmr+200, _tdee - gd0.deficit) : Math.round(_tdee - 290);
+      L.push(`- PREHRANSKI CILJ (lean-fit: počasno izgubljanje maščobe + gradnja mišic): ~${Math.round(cilj)} kcal/dan (rahli deficit glede na vzdrževanje ${_tdee}). Beljakovine KLJUČNE: ~${_prot} g/dan (ohranjajo mišice v deficitu). Maščobe ~0.9 g/kg, ostalo ogljikovi hidrati okoli treninga.`);
+    } else {
+      L.push(`- PREHRANSKI CILJ (podpora treningom — cilj NI hujšanje, zato NE svetuj kaloričnega deficita): ~${_tdee} kcal/dan (vzdrževanje), beljakovine ~${_prot?Math.round(_prot*0.8):'?'} g/dan za regeneracijo, ogljikovi hidrati okoli treningov.`);
+    }
   }
   const z = hrZones();
   if (z) L.push(`- CONE UTRIPA (šema ${+p.shema===7?'7 con, Z1–Z7':'5 con, C1–C5'}): ${zonesText()}${lthrVal()?` | prag (LTHR) ~${lthrVal()}`:''}`);
@@ -2199,8 +2208,8 @@ function buildContext(){
   } else L.push(`\n(planov še ni bilo)`);
   if (state.forma && (state.forma.history||[]).length){
     const fm = state.forma;
-    L.push(`\nNAPREDEK MOČI (muscle-up): nivo ${fm.level||1}/10 · faktor ponovitev ${fm.repMult||1} (raste ob "prelahko", pada ob "težko") · ${(fm.history||[]).length} opravljenih moč treningov.`);
-    L.push(`Zadnje povratne informacije po treningu: ${(fm.history||[]).slice(-6).map(h=>h.fb).join(', ')}. Vaje za moč predpiši SKLADNO s tem nivojem — višji nivo = več ponovitev in težje variante proti muscle-upu (eksplozivni zgibi → negativni muscle-up → poskusi).`);
+    L.push(`\nNAPREDEK MOČI${wantsMU()?' (muscle-up progresija)':''}: nivo ${fm.level||1}/10 · faktor ponovitev ${fm.repMult||1} (raste ob "prelahko", pada ob "težko") · ${(fm.history||[]).length} opravljenih moč treningov.`);
+    L.push(`Zadnje povratne informacije po treningu: ${(fm.history||[]).slice(-6).map(h=>h.fb).join(', ')}. Vaje za moč predpiši SKLADNO s tem nivojem — ${wantsMU()?'višji nivo = težje variante proti muscle-upu (eksplozivni zgibi → negativni muscle-up → poskusi)':'višji nivo = več ponovitev in zahtevnejše variante (kontrolirano stopnjevanje, BREZ muscle-up progresije)'}.`);
   }
   return L.join('\n');
 }
@@ -2285,6 +2294,41 @@ function aktLabel(){
   const pf=aktPrefs();
   return Object.keys(pf).map(k=>(pf[k]===2?'❤️ ':'')+(AKT_INFO[k]||k)).join(', ');
 }
+/* ---------- cilji uporabnika (anketa ob začetku / nastavitve) ---------- */
+const GOAL_INFO={ fit:'🔥 Shujšam / postanem fit', kondicija:'🫀 Splošna kondicija', ftp:'⚡ Hitrejši na kolesu', muscleup:'🧗 Naučim se muscle-up', moc:'💪 Močnejši in bolj izklesan', tek10:'🏃 Pretečem 10 km', dogodek:'🏁 Priprava na dogodek' };
+function goalKeys(){
+  const p=state.settings.profile;
+  if(Array.isArray(p.cilji)&&p.cilji.length) return p.cilji;
+  const c=(p.cilj||'').toLowerCase(), g=[];
+  if(c.includes('muscle')) g.push('muscleup');
+  if(/maščob|hujša|shujš|fit/.test(c)) g.push('fit');
+  if(/ftp|hitrejši/.test(c)) g.push('ftp');
+  if(/10 ?km/.test(c)) g.push('tek10');
+  if(/maraton|dogodek|tekm/.test(c)) g.push('dogodek');
+  if(/kondicij/.test(c)) g.push('kondicija');
+  return g;
+}
+const hasGoal=k=>goalKeys().includes(k);
+const wantsMU=()=>hasGoal('muscleup');
+function wantsLean(){ return hasGoal('fit') || !!goalDeficit(); }
+function goalOptions(akt){
+  const a=akt||userAkt(), o=['fit','kondicija'];
+  if(a.includes('kolo')) o.push('ftp');
+  if(a.includes('moc')) o.push('muscleup','moc');
+  if(a.includes('tek')) o.push('tek10');
+  o.push('dogodek');
+  return o;
+}
+function ciljeText(){ return goalKeys().map(k=>GOAL_INFO[k]||k).join(', '); }
+function toggleCilj(k){
+  const p=state.settings.profile;
+  const g=goalKeys().slice();
+  const i=g.indexOf(k);
+  if(i>=0) g.splice(i,1); else g.push(k);
+  p.cilji=g;
+  save(); renderSetExtras(); renderAll();
+  toast('Cilji posodobljeni ✓','ok');
+}
 function stil(){
   const a=userAkt();
   const tipi=[a.includes('kolo')?'KOLO':null, a.includes('tek')?'TEK':null, a.includes('moc')?'MOČ (zgibi, sklece, dipsi, trebušnjaki — serije × ponovitve)':null, a.includes('pohod')?'POHOD':null].filter(Boolean).join(', ');
@@ -2303,9 +2347,13 @@ function strategija(){
   if(favs.length && obcasno.length) jedro = `GLAVNINA (≈70–80 % vzdržljivostnih dni): ${favs.join(' / ')} — to ima NAJRAJE; OBČASNO (1–2× tedensko, za popestritev): ${obcasno.join(' / ')}`;
   else if(vzdrz.length>1) jedro = `IZMENJAVA: ${vzdrz.join(' / ')} (nikoli dva enaka težka dneva zaporedoma)`;
   else jedro = vzdrz.length===1? vzdrz[0].toUpperCase() : 'MOČ in hoja';
-  const L=[`STRATEGIJA (STRIKTNO — uporabnikove aktivnosti s priljubljenostjo: ${aktLabel()}; drugih športov NE predpisuj! ❤️ = najljubše → uporabljaj največ):`];
-  L.push(`1. KALORIČNI DEFICIT + PREHRANA: maščoba gre dol le ob deficitu, VISOK vnos beljakovin ščiti mišice. NIKOLI ne predpisuj celih jedilnikov! Svetuj le, kar lahko uporabnik SAM kontrolira ob svojih obrokih: velikost porcije, lasten beljakovinski dodatek (skuta, jajca, jogurt, tuna), brez sladkarij/sladkih pijač, 2,5 l vode.`);
-  if(a.includes('moc')) L.push(`2. MOČ ima KONKRETEN CILJ: muscle-up progresija (sklece+zgibi+dipsi+trup → eksplozivni zgibi → negativni MU → poskusi). 2–3× tedensko po 20–40 min, kot dodatek h glavnemu dnevu ali kratek samostojen dan. Ko postane prelahko, dodaj obremenitev.`);
+  const L=[`STRATEGIJA (STRIKTNO — uporabnikove aktivnosti s priljubljenostjo: ${aktLabel()}; drugih športov NE predpisuj! ❤️ = najljubše → uporabljaj največ)${goalKeys().length?` — CILJI UPORABNIKA: ${ciljeText()}`:''}:`];
+  L.push(wantsLean()
+    ? `1. KALORIČNI DEFICIT + PREHRANA: maščoba gre dol le ob deficitu, VISOK vnos beljakovin ščiti mišice. NIKOLI ne predpisuj celih jedilnikov! Svetuj le, kar lahko uporabnik SAM kontrolira ob svojih obrokih: velikost porcije, lasten beljakovinski dodatek (skuta, jajca, jogurt, tuna), brez sladkarij/sladkih pijač, 2,5 l vode.`
+    : `1. PREHRANA: cilj NI hujšanje — NE svetuj kaloričnega deficita. Svetuj gorivo za treninge: ogljikovi hidrati okoli treningov, beljakovine za regeneracijo, 2,5 l vode. Jedilnikov ne predpisuj.`);
+  if(a.includes('moc')) L.push(wantsMU()
+    ? `2. MOČ ima KONKRETEN CILJ: muscle-up progresija (sklece+zgibi+dipsi+trup → eksplozivni zgibi → negativni MU → poskusi). 2–3× tedensko po 20–40 min, kot dodatek h glavnemu dnevu ali kratek samostojen dan. Ko postane prelahko, dodaj obremenitev.`
+    : `2. MOČ: cilj je splošna moč, stabilnost in postava (sklece, zgibi, dipsi, trup — serije × ponovitve, progresivno obremenjevanje). 2–3× tedensko po 20–40 min kot dodatek h glavnemu dnevu ali kratek samostojen dan. BREZ muscle-up progresije.`);
   else L.push(`2. MOČ: uporabnik je NE izvaja — ne predpisuj je; za trup dodaj le kratke vaje stabilizacije (plank), če sploh.`);
   L.push(`3. STRUKTURA TEDNA: JEDRO = ${jedro}, skupaj 4–5 aktivnih dni; 1 dan prosto/regeneracija; dva težka dneva NIKOLI zaporedoma; postopnost ~+10 %/teden.`);
   if(a.includes('tek')) L.push(`4. TEK: večina tekov LAHKOTNIH (pogovorni tempo, utrip cona 2), dolg tek 1× tedensko (+10 % max), hitrejši deli šele ko baza stoji. Pazi na sklepe: raje pogosteje in krajše.`);
@@ -3430,12 +3478,14 @@ function formaExercises(){
   const R=x=>Math.max(1,Math.round(x*m*rm));
   const serije = d.c==='hard'?4:3;
   const ex = [];
-  ex.push({ime: L>=3?'Eksplozivni zgibi (do prsi)':'Zgibi na drogu', serije, pon:R(L>=3?3+Math.floor(L/2):3+L)+' pon.', op:L>=3?'poteg čim višje — priprava na prehod čez drog':'cela amplituda, kontrolirano dol'});
+  const MU=wantsMU();
+  ex.push({ime: L>=3?'Eksplozivni zgibi (do prsi)':'Zgibi na drogu', serije, pon:R(L>=3?3+Math.floor(L/2):3+L)+' pon.', op:L>=3?(MU?'poteg čim višje — priprava na prehod čez drog':'poteg čim višje, eksplozivno gor — kontrolirano dol'):'cela amplituda, kontrolirano dol'});
   ex.push({ime:'Sklece', serije, pon:R(10+3*L)+' pon.', op:'do prsi, komolci ob telesu'});
-  ex.push({ime: L>=2?'Dipsi (bradlja ali drog)':'Dipsi na klopi/stolu', serije, pon:R(4+2*L)+' pon.', op:'globoko dol, moč za zgornji del muscle-upa'});
-  ex.push({ime:'Trebušnjaki + dvigi nog na drogu', serije, pon:R(10+2*L)+' pon.', op:'napet trup — nujen za prehod čez drog'});
-  if (L>=4) ex.push({ime:'Negativni muscle-up', serije:2, pon:R(2+Math.floor((L-3)/2))+' pon.', op:"skoči/splezaj gor, POČASI (5'') spuščaj dol"});
-  if (L>=7) ex.push({ime:'Muscle-up poskusi', serije:3, pon:R(1+Math.floor((L-6)/2))+' posk.', op:'eksploziven poteg do prsi + hiter preklop zapestij'});
+  ex.push({ime: L>=2?'Dipsi (bradlja ali drog)':'Dipsi na klopi/stolu', serije, pon:R(4+2*L)+' pon.', op:MU?'globoko dol, moč za zgornji del muscle-upa':'globoko dol, kontrolirano gor'});
+  ex.push({ime:'Trebušnjaki + dvigi nog na drogu', serije, pon:R(10+2*L)+' pon.', op:MU?'napet trup — nujen za prehod čez drog':'napet trup — stabilnost in drža'});
+  if (L>=4 && MU) ex.push({ime:'Negativni muscle-up', serije:2, pon:R(2+Math.floor((L-3)/2))+' pon.', op:"skoči/splezaj gor, POČASI (5'') spuščaj dol"});
+  if (L>=4 && !MU) ex.push({ime:'Pike sklece (ramena)', serije:3, pon:R(5+L)+' pon.', op:'boki visoko, glava med rokami'});
+  if (L>=7 && MU) ex.push({ime:'Muscle-up poskusi', serije:3, pon:R(1+Math.floor((L-6)/2))+' posk.', op:'eksploziven poteg do prsi + hiter preklop zapestij'});
   return ex;
 }
 function renderForma(){
@@ -3444,10 +3494,15 @@ function renderForma(){
   const pathEl=$('mocPath');
   if(pathEl){
     const pct=Math.min(100,Math.round((f.level-1)/9*100));
-    pathEl.innerHTML=`<div class="spread"><h3 style="margin:0">${t('muPath')}</h3><span class="pct">${pct} %</span></div>
+    const mu=wantsMU();
+    pathEl.innerHTML=`<div class="spread"><h3 style="margin:0">${mu? t('muPath') : (LANG==='en'?'Strength progression':'Napredek moči')}</h3><span class="pct">${pct} %</span></div>
       <div class="path-bar"><i style="width:${Math.max(3,pct)}%"></i></div>
-      <div class="path-marks"><span>OSNOVE</span><span>ZGIBI + DIPSI</span><span>EKSPLOZIVNI ZGIB</span><span>NEGATIVNI MU</span><span>MUSCLE-UP</span></div>`;
+      <div class="path-marks">${mu?'<span>OSNOVE</span><span>ZGIBI + DIPSI</span><span>EKSPLOZIVNI ZGIB</span><span>NEGATIVNI MU</span><span>MUSCLE-UP</span>':'<span>OSNOVE</span><span>VZTRAJNOST</span><span>MOČ</span><span>NAPREDNO</span><span>VRHUNSKO</span>'}</div>`;
   }
+  const subEl=document.querySelector('#tab-forma [data-i18n="subMoc"]');
+  if(subEl) subEl.textContent = wantsMU()
+    ? (LANG==='en'?'Progression to the muscle-up · difficulty adapts to how you feel':'Progresija do muscle-upa · težavnost se prilagaja dnevnemu počutju')
+    : (LANG==='en'?'Bodyweight strength · difficulty adapts to how you feel':'Trening moči z lastno težo · težavnost se prilagaja dnevnemu počutju');
   $('formaDotLbl').innerHTML = `<span class="dot ${d.c}"></span>${d.t} · nivo ${f.level}`;
   const doneToday = f.history.some(h=>h.date===todayIso());
   box.innerHTML =
@@ -3461,7 +3516,7 @@ function renderForma(){
     <div style="margin-bottom:10px"><div class="k" style="font-size:11px;color:var(--dim);font-weight:700;text-transform:uppercase">Skupaj treningov</div><div style="font-size:22px;font-weight:800">${f.history.length}</div></div>
     <div><div class="k" style="font-size:11px;color:var(--dim);font-weight:700;text-transform:uppercase">Nivo</div><div style="font-size:22px;font-weight:800">${f.level}<small style="font-size:12px;color:var(--dim)"> — vsakih 4 treningi +1</small></div></div>
     <div class="hint" style="margin-top:8px">🔧 Obremenitev: <b style="color:var(--acc2)">${Math.round((f.repMult||1)*100)}%</b> — dviga se ob "prelahko", pada ob "pretežko" ali bolečini.</div>
-    <div class="hint" style="margin-top:10px">🎯 Pot do muscle-upa: ${f.level<4?'faza 1/3 — osnove (zgibi, sklece, dipsi, trup)':f.level<7?'faza 2/3 — eksplozivni zgibi + negativni muscle-upi':f.level<10?'faza 3/3 — poskusi muscle-upa!':'MUSCLE-UP osvojen 💪'}</div>`;
+    <div class="hint" style="margin-top:10px">🎯 ${wantsMU()? 'Pot do muscle-upa: '+(f.level<4?'faza 1/3 — osnove (zgibi, sklece, dipsi, trup)':f.level<7?'faza 2/3 — eksplozivni zgibi + negativni muscle-upi':f.level<10?'faza 3/3 — poskusi muscle-upa!':'MUSCLE-UP osvojen 💪') : 'Cilj: splošna moč in stabilnost — nivo raste z opravljenimi treningi, vaje se stopnjujejo.'}</div>`;
 }
 function formaCheckin(){
   const v=+($('segSore').querySelector('.on')?.dataset.v||0);
@@ -3523,7 +3578,7 @@ ${buildContext()}
 
 ${strategija()}
 
-GLAVNI CILJ: naučiti se MUSCLE-UP (+ razkrita mišica pod maščobo). Trening sestavi kot korak muscle-up progresije za ta nivo: sklece, zgibi (eksplozivni pri višjem nivoju), dipsi, trebušnjaki/dvigi nog, od nivoja 4 negativni muscle-upi, od 7 poskusi. Konkretne serije in ponovitve. Brez teka.
+GLAVNI CILJ MOČI: ${wantsMU()?'naučiti se MUSCLE-UP — trening sestavi kot korak muscle-up progresije za ta nivo: sklece, zgibi (eksplozivni pri višjem nivoju), dipsi, trebušnjaki/dvigi nog, od nivoja 4 negativni muscle-upi, od 7 poskusi.':'splošna moč, stabilnost in postava — sklece, zgibi, dipsi, trup; variante prilagodi nivoju. BREZ muscle-up progresije.'} Konkretne serije in ponovitve. Brez teka.
 Vrni SAMO JSON: {"vaje":[{"ime":"...","serije":number,"pon":"npr. 8 pon. ali 40''","op":"kratek nasvet"}],"nasvet":"1-2 stavka"}` }],{temp:.5});
     state.forma.custom={ date:todayIso(), vaje:(r.vaje||[]).map(v=>({ime:v.ime||'Vaja',serije:+v.serije||3,pon:v.pon||'',op:v.op||''})), nasvet:r.nasvet||'' };
     save(); renderForma();
@@ -4044,7 +4099,10 @@ function renderSetExtras(){
       <div><div class="ln">${n}</div><div class="ld">${d}</div></div>${p.nivo===v?'<div class="lm">●</div>':''}</div>`).join('')+
       `<div style="margin-top:14px;font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);text-transform:uppercase">Tvoje aktivnosti</div>
        <div class="row" style="gap:8px;margin-top:8px">${[['kolo','🚴 Kolo'],['tek','🏃 Tek'],['pohod','🥾 Pohodi'],['moc','💪 Moč']].map(([v,n])=>{const pf=aktPrefs()[v]||0;return `<div class="onb-chip ${pf?'on':''}" style="padding:7px 13px;font-size:12.5px;${pf===2?'border-color:var(--yellow);':''}" onclick="toggleAkt('${v}')">${pf===2?'❤️ ':''}${n}</div>`;}).join('')}</div>
-       <div class="hint" style="margin:6px 0 0">Klik: izbrano → <b>❤️ najljubše</b> → izklop. AI gradi plane samo iz izbranih; ❤️ prevladujejo.</div>`+
+       <div class="hint" style="margin:6px 0 0">Klik: izbrano → <b>❤️ najljubše</b> → izklop. AI gradi plane samo iz izbranih; ❤️ prevladujejo.</div>
+       <div style="margin-top:14px;font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);text-transform:uppercase">Tvoji cilji</div>
+       <div class="row" style="gap:8px;margin-top:8px;flex-wrap:wrap">${goalOptions().map(k=>`<div class="onb-chip ${goalKeys().includes(k)?'on':''}" style="padding:7px 13px;font-size:12.5px" onclick="toggleCilj('${k}')">${GOAL_INFO[k]}</div>`).join('')}</div>
+       <div class="hint" style="margin:6px 0 0">Cilji krojijo aplikacijo: trening moči, prehrano, kartice in AI plane.</div>`+
       `<div class="hint" style="margin:10px 0 0">Nivo upošteva AI pri planih, razlagah in prehrani. Zamenjaš ga kadar koli.</div>`+
       `<div style="margin-top:10px;font-size:12px;color:var(--dim)">${LANG==='en'?'Language':'Jezik'}: <b style="color:var(--soft)">${LANG==='en'?'English':'Slovenščina'}</b> · <span style="cursor:pointer;color:var(--acc2)" onclick="toggleLang()">${LANG==='en'?'Slovenščina':'English'}</span></div>`;
   }
@@ -4133,8 +4191,9 @@ function onbRender(){
       <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Katere aktivnosti — in katere imaš najraje?</div>
         <div class="row" style="gap:8px">${[['kolo','🚴 Kolo'],['tek','🏃 Tek'],['pohod','🥾 Pohodi'],['moc','💪 Moč']].map(([v,n])=>{const pf=onb.prefs[v]||0;return `<div class="onb-chip ${pf?'on':''}" style="${pf===2?'border-color:#ffc247;':''}" onclick="onbAkt('${v}')">${pf===2?'❤️ ':''}${n}</div>`;}).join('')}</div>
         <div class="hint" style="margin:6px 0 0">Klik: izbrano → <b>❤️ najljubše</b> → izklop. Najljubši športi prevladujejo v planu (npr. ❤️ kolo + tek = večinoma kolo, tek 1–2× za popestritev). Nimaš kolesa? Ga pač ne izbereš.</div></div>
-      <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Glavni cilj</div>
-        <div class="row" style="gap:8px">${['Razkrij mišice pod maščobo','Splošna kondicija','Višji FTP','Muscle-up','10 km teka'].map(c=>`<div class="onb-chip ${onb.cilj===c?'on':''}" onclick="onb.cilj='${c}';onbCapture();onbRender()">${c}</div>`).join('')}</div></div>
+      <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Kaj želiš doseči? <span style="text-transform:none;letter-spacing:0;font-weight:600;color:var(--muted)">(izberi vse, kar velja)</span></div>
+        <div class="row" style="gap:8px;flex-wrap:wrap">${goalOptions(Object.keys(onb.prefs)).map(k=>`<div class="onb-chip ${(onb.cilji||[]).includes(k)?'on':''}" onclick="onbCilj('${k}')">${GOAL_INFO[k]}</div>`).join('')}</div>
+        <div class="hint" style="margin:6px 0 0">Aplikacija se prilagodi ciljem: trening moči, prehranski nasveti, kartice in AI plani.</div></div>
       <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Koliko časa imaš na teden?</div>
         <div class="row" style="gap:8px">${[['3–5 h',4],['6–9 h',7],['10+ h',10]].map(([t,u])=>`<div class="onb-chip ${onb.ure===u?'on':''}" style="flex:1;text-align:center;font-weight:700" onclick="onb.ure=${u};onbCapture();onbRender()">${t}</div>`).join('')}</div></div>
     </div>`;
@@ -4166,6 +4225,13 @@ function onbRender(){
     </div>`;
   }
 }
+function onbCilj(k){
+  onbCapture();
+  onb.cilji=onb.cilji||[];
+  const i=onb.cilji.indexOf(k);
+  if(i>=0) onb.cilji.splice(i,1); else onb.cilji.push(k);
+  onbRender();
+}
 function onbAkt(v){
   onbCapture();
   const cur=onb.prefs[v]||0;
@@ -4192,7 +4258,9 @@ function onbSaveProfile(){
   p.nivo=ONB_LVLS[onb.level].val;
   if(onb.starost) p.starost=+onb.starost;
   if(onb.teza) p.teza=+onb.teza;
-  p.ure=onb.ure; if(onb.cilj) p.cilj=onb.cilj;
+  p.ure=onb.ure;
+  if(onb.cilji&&onb.cilji.length) p.cilji=onb.cilji.slice();
+  else if(onb.cilj) p.cilj=onb.cilj;
   p.aktPrefs=Object.assign({},onb.prefs);
   p.aktivnosti=Object.keys(onb.prefs);
   if(onb.kraj && onb.kraj.trim()){
