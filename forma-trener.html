@@ -439,6 +439,85 @@ canvas{max-width:100%}
   .onb-title{font-size:32px}
 }
 
+
+/* ============ PREMIUM POLISH ============ */
+body{
+  background:
+    radial-gradient(1100px 520px at 88% -12%, rgba(255,61,46,.055), transparent 62%),
+    radial-gradient(900px 480px at -12% 108%, rgba(77,163,255,.035), transparent 60%),
+    var(--bg);
+}
+.topbar{
+  background:rgba(20,19,23,.86);
+  backdrop-filter:blur(14px) saturate(1.15);
+  -webkit-backdrop-filter:blur(14px) saturate(1.15);
+  border-bottom:1px solid var(--border);
+  box-shadow:0 1px 0 rgba(255,255,255,.03), 0 12px 32px -18px rgba(0,0,0,.8);
+}
+.logo-mark{box-shadow:0 4px 16px -4px rgba(255,61,46,.5)}
+.nav-item{position:relative}
+.nav-item.active{border-bottom-color:transparent}
+.nav-item.active::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:2px;
+  background:linear-gradient(90deg,var(--acc),var(--acc2));
+  box-shadow:0 0 12px rgba(255,61,46,.55);
+}
+.card{
+  background:linear-gradient(180deg, rgba(255,255,255,.016), rgba(255,255,255,0) 42%) , var(--panel);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035), 0 10px 26px -22px rgba(0,0,0,.85);
+  transition:border-color .18s;
+}
+.card:hover{border-color:#332f38}
+.stat{transition:background .18s}
+.stat:hover{background:#1b191f}
+.btn-primary,.cta-today{
+  background:linear-gradient(135deg,#ff4a32,#e42f1f);
+  box-shadow:0 6px 20px -8px rgba(255,61,46,.55), inset 0 1px 0 rgba(255,255,255,.16);
+  transition:transform .15s, box-shadow .15s, filter .15s;
+}
+.btn-primary:hover,.cta-today:hover{filter:brightness(1.07);transform:translateY(-1px)}
+.btn-primary:active,.cta-today:active{transform:translateY(0);filter:brightness(.98)}
+.btn-ghost{transition:border-color .15s,color .15s,transform .15s,background .15s}
+.btn-ghost:hover{transform:translateY(-1px);background:rgba(255,255,255,.025)}
+input,select,textarea{transition:border-color .15s, box-shadow .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-shadow:0 0 0 3px rgba(255,61,46,.15)}
+.modal-back{background:rgba(8,7,10,.68);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.modal{box-shadow:0 30px 80px -20px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.04);border-color:var(--border2)}
+.onb-back{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.onb-chip{transition:border-color .15s,color .15s,background .15s,transform .12s}
+.onb-chip:hover{border-color:var(--borderH);transform:translateY(-1px)}
+.onb-chip.on{background:var(--accSoft);border-color:var(--acc);color:var(--text);box-shadow:inset 0 0 0 1px rgba(255,61,46,.22)}
+.day-row{transition:border-color .18s, box-shadow .18s}
+.day-row:hover{border-color:var(--border2);box-shadow:0 12px 28px -20px rgba(0,0,0,.85)}
+.week-list .day-row.today{box-shadow:0 0 0 1px rgba(255,61,46,.32), 0 16px 38px -24px rgba(255,61,46,.4)}
+.toast{box-shadow:0 14px 40px -12px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.05)}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:#2b2830;border:2px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:#3a3641}
+.page-head h1{background:linear-gradient(180deg,#ffffff 60%,#c9c3d2);-webkit-background-clip:text;background-clip:text;color:transparent}
+.page-head h1 .hl{background:linear-gradient(135deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.dropzone{transition:border-color .15s,background .15s}
+.dropzone:hover{border-color:var(--acc);background:rgba(255,61,46,.05)}
+.path-bar i{box-shadow:0 0 14px rgba(255,61,46,.4)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ===== ZRAK — manj stisnjeno ===== */
+.main{max-width:1320px;padding:30px 36px 70px}
+.topbar{padding:0 34px}
+.nav{gap:22px}
+.page-head{margin-bottom:24px}
+.page-head h1{font-size:38px}
+.card{padding:18px 20px}
+.card h3{margin-bottom:14px}
+.grid-stats{margin-bottom:18px}
+.stat{padding:16px 18px}
+.stat .v{font-size:31px}
+.grid-dash3{gap:16px}
+.grid-2{gap:16px}
+.dash-cols{grid-template-columns:270px minmax(0,1fr);gap:16px}
+.week-list{gap:14px}
+.week-list .day-row{padding:16px 18px}
+@media(max-width:900px){.main{padding:22px 16px 70px}}
 </style>
 </head>
 <body>
@@ -1452,8 +1531,8 @@ function renderDashBadges(){
   for(let i=1;i<=3;i++){ const d=new Date(now.getFullYear(),now.getMonth()-i,1); const a=monthAgg(d.getFullYear(),d.getMonth()); if(a.km>best) best=a.km; }
   const target=Math.max(200, Math.ceil(best/50)*50);
   const pct=Math.min(100,Math.round(mAgg.km/target*100));
-  const cells = b.slice(0,4).map(([ic,nm,sub])=>`<div style="border:1px solid var(--border);background:var(--panel);padding:13px 15px;display:flex;gap:11px;align-items:center"><div style="font-size:22px">${ic}</div><div style="min-width:0"><div style="font-weight:700;font-size:12.5px;line-height:1.2">${esc(nm)}</div><div style="font-size:10.5px;color:var(--dim);margin-top:2px;font-weight:600">${esc(sub)}</div></div></div>`).join('');
-  el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px">${cells}
+  const cells = b.slice(0,4).map(([ic,nm,sub])=>`<div style="border:1px solid var(--border);background:var(--panel);padding:16px 18px;display:flex;gap:12px;align-items:center"><div style="font-size:22px">${ic}</div><div style="min-width:0"><div style="font-weight:700;font-size:12.5px;line-height:1.2">${esc(nm)}</div><div style="font-size:10.5px;color:var(--dim);margin-top:2px;font-weight:600">${esc(sub)}</div></div></div>`).join('');
+  el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px">${cells}
     <div style="border:1px solid rgba(255,61,46,.35);background:linear-gradient(135deg,rgba(255,61,46,.1),var(--panel));padding:13px 15px">
       <div style="font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--acc2)">${t('challenge')}</div>
       <div style="font-weight:700;font-size:12.5px;margin-top:3px">${target.toLocaleString('sl')} km</div>
@@ -1638,7 +1717,7 @@ function renderDashWeekPlan(){
       <span style="margin-left:auto;color:var(--green);flex:none">${done?'✓':''}</span>
     </div>`);
   }
-  el.innerHTML = any? `<div style="display:flex;flex-direction:column;gap:7px">${rows.join('')}</div>`
+  el.innerHTML = any? `<div style="display:flex;flex-direction:column;gap:10px">${rows.join('')}</div>`
     : `<div class="hint" style="margin:6px 0 10px">Za ta teden še ni plana.</div><button class="btn btn-primary btn-sm no-print" onclick="switchTab('plan')">⟳ Generiraj plan</button>`;
 }
 function renderWeeklySide(){
@@ -3512,6 +3591,7 @@ function handleFile(f){
    DOGODKI: prilepi / povleci / izberi sliko
 ================================================================ */
 document.addEventListener('paste', e=>{
+  if(document.getElementById('impPlanBack')?.classList.contains('open')) return;   // sliko plana prevzame poslušalec spodaj
   const it = [...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));
   if (it){ e.preventDefault(); loadShot(it.getAsFile()); }
 });
