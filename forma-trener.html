@@ -1137,6 +1137,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
   </div>
 </div>
 
+<!-- ======= MODAL: VODENA POVEZAVA VOŽENJ ======= -->
+<div class="modal-back" id="wizBack">
+  <div class="modal" style="max-width:660px">
+    <h2>🔌 Poveži svoje vožnje<span class="x" onclick="closeModal('wizBack')">✕</span></h2>
+    <div id="wizBody"></div>
+  </div>
+</div>
+
 <!-- ======= MODAL: PRILAGODI DAN ======= -->
 <div class="modal-back" id="adjDayBack">
   <div class="modal" style="max-width:560px">
@@ -1426,6 +1434,7 @@ document.querySelectorAll('.nav-item').forEach(el=>{
   el.addEventListener('click', ()=> switchTab(el.dataset.tab));
 });
 function switchTab(name){
+  if(name==='__wiz'){ try{ openConnectWizard(); }catch(_){} return; }
   if(!document.getElementById('tab-'+name)) name='dash';
   document.querySelectorAll('.nav-item').forEach(e=>e.classList.toggle('active', e.dataset.tab===name));
   document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('active', e.id==='tab-'+name));
@@ -1633,7 +1642,7 @@ function renderDash(){
   // vodič za začetek
   const steps = [
     { ok: !!state.settings.geminiKey || !!(window.FORMASYNC && FORMASYNC.uid && FORMASYNC.uid()), t:'Vklopi AI: klik na 🔵 Prijava z Google v Nastavitvah — brez ključa', tab:'settings' },
-    { ok: state.rides.length>0, t:'Dodaj vožnje — poveži Stravo/Intervals.icu ali prilepi screenshot', tab:'rides' },
+    { ok: state.rides.length>0, t:'Poveži svoje vožnje (vodena navodila za Garmin/Wahoo/Stravo) ali dodaj screenshot', tab:'__wiz' },
     { ok: !!(p.maxHr || p.ftp), t:'Dopolni profil (max utrip ali FTP → cone za treninge)', tab:'settings' },
     { ok: !!state.riderProfile, t:'Zaženi AI analizo: kakšen kolesar si', tab:'dash' },
     { ok: state.plans.length>0, t:'Generiraj prvi plan (ali Plan do cilja v Koledarju)', tab:'plan' }
@@ -1887,7 +1896,7 @@ function rideRowHtml(r){
 function renderRides(){
   const sorted = [...state.rides].sort((a,b)=>b.date.localeCompare(a.date));
   $('ridesList').innerHTML = sorted.length ? sorted.map(rideRowHtml).join('')
-    : `<div class="empty"><span class="big">📸</span>Še ni aktivnosti. Tri poti do podatkov:<br><b>Intervals.icu</b> (zastonj, samodejno) · <b>screenshot</b> (Ctrl+V) · <b>ročni vnos</b>.<br><button class="btn btn-primary btn-sm mt" onclick="switchTab('settings')">Poveži vir podatkov</button></div>`;
+    : `<div class="empty"><span class="big">🔌</span>Še ni aktivnosti.<br>Poveži svojo uro/Stravo — <b>vodena navodila za vsako napravo</b> — ali dodaj screenshot/FIT/ročno.<br><button class="btn btn-primary btn-sm mt" onclick="openConnectWizard()">🔌 Poveži svoje vožnje</button></div>`;
 }
 
 /* ---------- modal za vožnjo ---------- */
@@ -3820,6 +3829,70 @@ async function icuImport(quiet){
   }catch(e){ if (quiet) console.warn('ICU sync:', e.message); else toast(e.message,'err'); }
   if (!quiet) busy(btn, false);
 }
+/* ---------- VODEN ČAROVNIK: poveži svoje vožnje (A→Ž) ---------- */
+let wizChoice=null, _srvHealth=null;
+async function serverHealth(){
+  if(_srvHealth) return _srvHealth;
+  try{ _srvHealth = await (await fetch(AI_PROXY+'/health',{cache:'no-store'})).json(); }catch(_){ _srvHealth={}; }
+  return _srvHealth;
+}
+async function openConnectWizard(){
+  $('wizBack').classList.add('open');
+  renderWizard();
+  try{ await stravaEasyStatus(); await serverHealth(); }catch(_){}
+  renderWizard();
+}
+function wizChoose(k){ wizChoice=k; renderWizard(); }
+function renderWizard(){
+  const el=$('wizBody'); if(!el) return;
+  const signed=!!(window.FORMASYNC&&FORMASYNC.uid&&FORMASYNC.uid());
+  const stOk=!!state.stravaEasy?.connected;
+  const stSrv=_srvHealth? _srvHealth.strava!==false : true;
+  const nAuto=state.rides.filter(r=>r.stravaId!=null||r.icuId!=null).length;
+  const chk=(ok,txt,btn)=>`<div style="display:flex;align-items:center;gap:10px;padding:11px 13px;border:1px solid ${ok?'rgba(95,214,122,.35)':'var(--border2)'};background:${ok?'rgba(95,214,122,.06)':'var(--bg)'};margin-top:8px">
+    <span style="font-size:16px;flex:none">${ok?'✅':'⬜'}</span><span style="flex:1;font-size:12.5px;line-height:1.5">${txt}</span>${(!ok&&btn)?btn:''}</div>`;
+  if(!wizChoice){
+    el.innerHTML=`<div style="font-size:13px;color:var(--soft);margin-bottom:12px">Povej, kako beležiš treninge — in dobiš <b>točna navodila zase</b> (2–4 koraki, nastaviš enkrat).</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${[
+        ['garmin','⌚ Garmin ura','Edge, Forerunner, Fenix …'],
+        ['watch','🕰 Druga športna ura','Wahoo, Suunto, Coros, Polar'],
+        ['strava','📱 Strava na telefonu','beležim kar s Strava aplikacijo'],
+        ['none','✍️ Brez naprave','screenshot / FIT / ročni vnos']
+      ].map(([k,t,d])=>`<div class="onb-chip" style="text-align:left;padding:14px" onclick="wizChoose('${k}')"><div style="font-weight:800;font-size:14px">${t}</div><div style="font-size:11.5px;color:var(--muted);margin-top:3px">${d}</div></div>`).join('')}</div>`;
+    return;
+  }
+  const back=`<div style="font-size:11.5px;color:var(--acc2);cursor:pointer;margin-bottom:10px" onclick="wizChoose(null)">‹ nazaj na izbiro naprave</div>`;
+  const bPrijava=`<button class="btn btn-primary btn-sm" onclick="FORMASYNC.signIn().then(()=>setTimeout(renderWizard,900))">🔵 Prijava</button>`;
+  const bStrava= stSrv? `<button class="btn btn-primary btn-sm" onclick="stravaEasyConnect()">⭐ Poveži Stravo</button>`
+                      : `<span style="font-size:11px;color:var(--yellow)">kmalu — do takrat 📈 Intervals</span>`;
+  const stepPrijava=chk(signed,`<b>Prijava v PEAKFORM z Google</b> — vožnje in plani se trajno shranijo na tvoj račun.`,bPrijava);
+  const stepStrava=chk(stOk,`<b>Poveži Stravo s PEAKFORM</b> — en klik; Strava te vpraša za dovoljenje in te vrne sem.${state.stravaEasy?.name?' <b style=\'color:var(--green)\'>('+esc(state.stravaEasy.name)+')</b>':''}`,bStrava);
+  const stepDone=chk(nAuto>0,`<b>Uvoz voženj</b> — ${nAuto>0? nAuto+' aktivnosti uvoženih, naprej gre samodejno (vsake 3 min).':'zgodi se samodejno takoj po povezavi (prvič do leto nazaj).'}`,'');
+  if(wizChoice==='garmin'){
+    el.innerHTML=back+`<div class="analysis-box" style="margin-bottom:4px;font-size:12.5px">Garmin tretjim aplikacijam ne dovoli neposrednega dostopa do podatkov, zato gre pot prek <b>Strave (brezplačno)</b>: ura → Garmin Connect → Strava → PEAKFORM. Nastaviš <b>enkrat</b>, potem je vse samodejno.</div>`
+      +stepPrijava
+      +chk(false,`<b>V Garmin Connect poveži Stravo</b> — na telefonu: Garmin Connect → ⚙️ Nastavitve → <b>Povezane aplikacije</b> (Connected Apps) → <b>Strava</b> → prijava v svoj (brezplačen) Strava račun. Nove vožnje od takrat same skočijo na Stravo.`,
+        `<a class="btn btn-ghost btn-sm" target="_blank" rel="noopener" href="https://www.strava.com/register">Nov Strava račun</a>`)
+      +stepStrava+stepDone
+      +`<div class="hint" style="margin-top:10px">Stare vožnje: v Garmin Connect → Aktivnost → ⋯ → <b>Izvozi original (FIT)</b> in datoteko povleci v zavihek Aktivnosti — preberem vse.</div>`;
+  } else if(wizChoice==='watch'){
+    el.innerHTML=back+`<div class="analysis-box" style="margin-bottom:4px;font-size:12.5px">Najlažja pot je prek <b>Strave (brezplačno)</b>: ura → aplikacija tvoje ure → Strava → PEAKFORM. Nastaviš enkrat.</div>`
+      +stepPrijava
+      +chk(false,`<b>V aplikaciji svoje ure poveži Stravo</b> — Wahoo (ELEMNT app → Profile → Authorized apps), Suunto (app → Profil → Poveži storitve), Coros (app → Profil → 3rd Party), Polar (Flow → Nastavitve → Povezave) → izberi <b>Strava</b>.`,
+        `<a class="btn btn-ghost btn-sm" target="_blank" rel="noopener" href="https://www.strava.com/register">Nov Strava račun</a>`)
+      +stepStrava+stepDone;
+  } else if(wizChoice==='strava'){
+    el.innerHTML=back+stepPrijava+stepStrava+stepDone
+      +`<div class="hint" style="margin-top:10px">To je to — dva klika. Vsaka vožnja, ki jo zabeležiš s Strava aplikacijo, se sama pojavi tukaj.</div>`;
+  } else {
+    el.innerHTML=back+`<div style="font-size:12.5px;color:var(--soft);line-height:1.6;margin-bottom:4px">Brez naprave? Nič hudega — vse deluje tudi ročno:</div>`
+      +chk(true,`<b>📸 Screenshot</b> — slikaj zaslon kolesarskega računalnika/telefona in ga prilepi (Ctrl+V) v »+ Dodaj aktivnost« — AI prebere vse podatke sam.`,'')
+      +chk(true,`<b>📂 GPX / FIT datoteka</b> — povleci jo kamor koli v zavihek Aktivnosti.`,'')
+      +chk(true,`<b>✍️ Ročni vnos</b> — km, čas, utrip vpišeš v pol minute.`,'')
+      +`<div class="row mt"><button class="btn btn-primary btn-sm" onclick="closeModal('wizBack');switchTab('rides');openRideModal()">+ Dodaj prvo aktivnost</button></div>`;
+  }
+}
+
 /* ---------- STRAVA NA EN KLIK (prek PEAKFORM strežnika — brez ključev) ---------- */
 async function stravaEasyConnect(){
   try{
@@ -3830,6 +3903,8 @@ async function stravaEasyConnect(){
       state.stravaEasy=null; save(); renderSetExtras(); toast('Strava odklopljena.','ok'); return;
     }
     if(!t){ toast('Najprej se prijavi z Google (🔵 kartica zgoraj) — Strava se shrani na tvoj račun.','err'); return; }
+    const h = await serverHealth();
+    if(h && h.strava===false){ toast('Povezava na en klik še ni aktivirana — do takrat uporabi 📈 Intervals.icu ali FIT/screenshot.','err'); return; }
     location.href = AI_PROXY + '/strava/auth?t=' + encodeURIComponent(t);
   }catch(e){ toast(e.message,'err'); }
 }
@@ -4584,7 +4659,7 @@ function renderSetExtras(){
     const gOk=!!(document.getElementById('gsyncCard') && /Odjava/.test(document.getElementById('gsyncCard').innerHTML));
     const rows=[
       ['🔵 Google sinhronizacija — račun, sinhronizacija in AI', gOk, `document.getElementById('gsyncCard')?.scrollIntoView({behavior:'smooth',block:'center'})`],
-      ['⭐ Strava — poveži z ENIM klikom (priporočeno; tudi za Garmin ure prek Garmin→Strava)'+(state.stravaEasy?.name?' — '+state.stravaEasy.name:''), !!state.stravaEasy?.connected, `stravaEasyConnect()`],
+      ['⭐ Poveži svoje vožnje — vodena navodila za VSE naprave (Garmin, Wahoo, Strava …)'+(state.stravaEasy?.name?' — '+state.stravaEasy.name:''), !!state.stravaEasy?.connected, state.stravaEasy?.connected?`stravaEasyConnect()`:`openConnectWizard()`],
       ['📈 Intervals.icu — samodejni uvoz + FTP/cone (zastonj)', !!(state.icu?.athleteId&&state.icu?.apiKey&&state.icu?.name), `openConn('icu')`],
       ['🟠 Strava napredno — lasten API ključ', !!state.strava.accessToken, `openConn('strava')`]
     ];
@@ -4712,7 +4787,7 @@ function onbRender(){
           <b style="color:var(--soft)">iPhone:</b> Safari → gumb Deli <span style="border:1px solid var(--border2);padding:0 5px">↑</span> → <b>Na začetni zaslon</b>
         </div>
         <div class="hint" style="margin-top:10px">Lahko preskočiš — QR in navodila najdeš kadar koli v Nastavitvah.</div>
-        <div class="hint" style="margin-top:6px">📈 Za samodejni uvoz aktivnosti poveži <b>Intervals.icu</b> v Nastavitvah · 🎬 <span style="color:var(--acc2);cursor:pointer" onclick="onbFinish();demoLoad()">ali naloži demo podatke</span></div>
+        <div class="hint" style="margin-top:6px">🔌 <span style="color:var(--acc2);cursor:pointer" onclick="onbFinish();openConnectWizard()">Poveži svojo uro/Stravo — vodena navodila</span> · 🎬 <span style="color:var(--acc2);cursor:pointer" onclick="onbFinish();demoLoad()">ali naloži demo podatke</span></div>
       </div>
     </div>`;
   }
