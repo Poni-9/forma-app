@@ -1092,6 +1092,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
               <li><b>Athlete ID</b> piše tik nad ključem (oblika <code>i12345</code>) — ali v naslovu strani <code>intervals.icu/athlete/i12345/…</code></li>
               <li>Oboje prilepi spodaj → <b>Poveži</b>. Od takrat se vožnje uvažajo same (vsake 3 minute), FTP in cone pa prevzamem iz Intervals.</li>
             </ol>
+            <div class="hint" style="margin:6px 0 0">⚠️ Če tvoja ura sinhronizira <b>neposredno prek Garmin povezave</b>, Garmin teh podatkov ne dovoli deliti prek API-ja — v Intervals poveži <b>Stravo</b> (Garmin → Strava → Intervals) in izklopi Garmin povezavo.</div>
             <div class="hint" style="margin:6px 0 0">Nimaš športne ure? Nič hudega — aktivnosti dodaš s 📸 screenshotom (AI prebere vse) ali ročno v zavihku Aktivnosti.</div>
             <div class="frm-grid mt">
               <label class="fld"><span>Athlete ID</span><input id="icuId" placeholder="i12345"></label>
@@ -3696,7 +3697,7 @@ async function icuImport(quiet){
     let acts; const rawTxt = await res.text();
     try{ acts = JSON.parse(rawTxt); }catch(_){ throw new Error('Intervals.icu je vrnil nepričakovan odgovor — poskusi znova čez minuto.'); }
     let n = 0;
-    const skip={tipi:{}, kratke:0, ze:0};
+    const skip={tipi:{}, kratke:0, ze:0, garmin:0, nota:''};
     const sportOf = t => /Run/i.test(t)?'tek'
       : /Hike|Walk|Snowshoe|Alpine/i.test(t)?'pohod'
       : /WeightTraining|Workout|Crossfit|HIIT|Yoga|Pilates|Gym|Strength/i.test(t)?'moc'
@@ -3706,7 +3707,11 @@ async function icuImport(quiet){
     try{ if(Array.isArray(acts)&&acts.length) console.info('ICU vzorec zapisa:', JSON.stringify(acts[0]).slice(0,600)); }catch(_){}
     for (const a of (Array.isArray(acts)?acts:[])){
       const sp = sportOf(typeOf(a));
-      if (!sp){ const tk=typeOf(a)||'?'; skip.tipi[tk]=(skip.tipi[tk]||0)+1; continue; }
+      if (!sp){
+        if(a && a.type==null && a.source){ skip.garmin++; if(!skip.nota && a._note) skip.nota=String(a._note); }
+        else { const tk=typeOf(a)||'?'; skip.tipi[tk]=(skip.tipi[tk]||0)+1; }
+        continue;
+      }
       const _min=(a.moving_time||a.elapsed_time||0)/60, _km=(a.distance||0)/1000;
       if(sp==='pohod' && (_min<15 || _km<1)){ skip.kratke++; continue; }   // mini sprehodi = šum
       if(sp!=='pohod' && sp!=='moc' && _min<5){ skip.kratke++; continue; }
@@ -3743,6 +3748,25 @@ async function icuImport(quiet){
     if (n) toast(`${quiet?'Samodejno u':'U'}voženih ${n} voženj iz Intervals.icu. 📈`,'ok');
     else if (!quiet){
       const total = Array.isArray(acts)? acts.length : 0;
+      if (skip.garmin>0 && n===0){
+        const mt=$('dayModalTitle'); if(mt) mt.textContent='Zakaj se vožnje ne uvozijo?';
+        $('dayBody').innerHTML=`<div style="font-size:13.5px;color:var(--soft);line-height:1.7">
+          <p><b style="color:var(--yellow)">Tvoje aktivnosti (${skip.garmin}) pridejo v Intervals.icu neposredno iz Garmina.</b>
+          Garminovi pogoji tretjim aplikacijam prepovedujejo dostop do teh podatkov prek API-ja, zato jih Intervals vrne brez vsebine. To ni napaka tvoje povezave.</p>
+          ${skip.nota?`<p style="font-size:12px;color:var(--dim);border-left:2px solid var(--border2);padding-left:10px;margin-top:10px">Intervals sporoča: »${esc(skip.nota.slice(0,300))}«</p>`:''}
+          <p style="margin-top:12px"><b style="color:var(--green)">Rešitev (~10 min, brezplačno) — pot prek Strave:</b></p>
+          <ol style="margin:8px 0 0 18px;display:flex;flex-direction:column;gap:6px">
+            <li>Ustvari brezplačen račun na <b>strava.com</b> (če ga še nimaš).</li>
+            <li>V <b>Garmin Connect</b> (aplikacija/splet): Nastavitve → Povezane aplikacije → poveži <b>Stravo</b>.</li>
+            <li>Na <b>intervals.icu</b>: ⚙️ Settings → Connections → poveži <b>Stravo</b> in <b>izklopi Garmin</b>.</li>
+            <li>Pri Strava povezavi klikni še <b>»Download old data«</b>, da pridejo tudi stare vožnje.</li>
+          </ol>
+          <p style="margin-top:10px">Od takrat gredo vožnje Garmin → Strava → Intervals in uvoz tukaj deluje samodejno.</p>
+          <div class="modal-foot"><button class="btn btn-primary btn-sm" onclick="closeModal('dayModalBack')">Razumem</button></div>
+        </div>`;
+        $('dayModalBack').classList.add('open');
+        return busy(btn, false);
+      }
       if (total===0) toast('Povezava deluje, a tvoj Intervals.icu račun nima nobene aktivnosti (zadnje leto). Najprej v Intervals poveži svojo uro/napravo: intervals.icu → Settings → Connections (Garmin, Wahoo, Strava …). Ko se vožnje pojavijo tam, jih uvozim sem.','err');
       else{
         const deli=[];
@@ -4825,6 +4849,13 @@ setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) sy
         return;
       }
       localStorage.setItem('forma_owner_uid', fb.uid);
+      try{
+        const u=fb.auth.currentUser;
+        if(u && u.displayName && typeof state!=='undefined' && state?.settings?.profile && !state.settings.profile.ime){
+          state.settings.profile.ime = String(u.displayName).split(' ')[0];
+          save(); if(typeof fillSettings==='function') try{ fillSettings(); }catch(_){}
+        }
+      }catch(_){}
       const ref = fb.db.collection('formaSync').doc(fb.uid);
       const snap = await ref.get(); const rem = snap.exists?snap.data():null; const loc = readLocal(); let changed=false;
       [['forma','forma_trener_v1'],['kalorije','kalorije_v1']].forEach(([k,ls])=>{
