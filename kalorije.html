@@ -1067,7 +1067,13 @@ function renderDanes(){
       <text x="60" y="72" fill="var(--dim)" font-size="9.5" font-weight="700" text-anchor="middle" font-family="Barlow,sans-serif">${eaten>target?'ČEZ CILJ':'ŠE LAHKO POJEŠ'}</text>
     </svg>`; })() : `<div style="width:112px;height:112px;display:grid;place-items:center;border:1px solid var(--border);color:var(--dim);font-size:11px;text-align:center">nastavi cilj<br>v ⚙️</div>`;
   const bar=(k,v,tgt,c)=>`<div><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:var(--dim)"><span>${k}</span><span style="color:#c9c3ce">${v}</span></div><div style="height:4px;background:var(--border);margin-top:3px"><div style="width:${tgt?Math.min(100,Math.round((parseFloat(v)||0)/tgt*100)):0}%;height:100%;background:${c}"></div></div></div>`;
-  el.innerHTML=`
+  const signed = !!(window.FORMASYNC && FORMASYNC.uid && FORMASYNC.uid());
+  const signBanner = signed ? '' : `<div style="border:1px solid var(--acc);background:rgba(255,61,46,.07);padding:12px 14px;margin-bottom:12px">
+    <div style="font-weight:700;font-size:13.5px">🔵 Prijavi se z Googlom</div>
+    <div style="font-size:11.5px;color:var(--muted);margin-top:2px">Tvoj račun: sinhronizacija z namizjem + AI brez nastavljanja. Vsak ima svojega.</div>
+    <button class="dn-cta" style="margin-top:10px;padding:10px;font-size:14px" onclick="FORMASYNC&&FORMASYNC.signIn().then(()=>setTimeout(renderDanes,900))">Prijava z Google →</button>
+  </div>`;
+  el.innerHTML=signBanner+`
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px">
       <div class="dn-kicker">${DNEVI[(now.getDay()+6)%7].slice(0,3).toUpperCase()} ${now.getDate()} ${MESECI[now.getMonth()].toUpperCase()}${tedenK()}</div>
       ${stk>=2?`<span style="border:1px solid rgba(255,194,71,.4);color:var(--yellow,#ffc247);font-size:10px;font-weight:800;padding:2px 7px;white-space:nowrap">🔥 ${stk} DNI</span>`:''}
@@ -1963,6 +1969,21 @@ renderWeatherK(true);   // preveri vreme ob zagonu
   async function onIn(){
     render(); st('Preverjam oblak…');
     try{
+      const owner = localStorage.getItem('forma_owner_uid');
+      if(owner && owner!==fb.uid){
+        try{
+          localStorage.setItem('forma_stash_'+owner, JSON.stringify({
+            forma: localStorage.getItem('forma_trener_v1'),
+            kalorije: localStorage.getItem('kalorije_v1')
+          }));
+          ['forma_trener_v1','kalorije_v1','forma_chat'].forEach(k=>localStorage.removeItem(k));
+        }catch(_){}
+        localStorage.setItem('forma_owner_uid', fb.uid);
+        st('Nov račun — nalagam tvoje podatke…');
+        setTimeout(()=>location.reload(), 500);
+        return;
+      }
+      localStorage.setItem('forma_owner_uid', fb.uid);
       const ref=fb.db.collection('formaSync').doc(fb.uid);
       const snap=await ref.get(); const rem=snap.exists?snap.data():null; const loc=readLocal(); let changed=false;
       [['forma','forma_trener_v1'],['kalorije','kalorije_v1']].forEach(([k,ls])=>{
@@ -2012,7 +2033,7 @@ renderWeatherK(true);   // preveri vreme ob zagonu
     }
   }
   function saveCfg(){ const t=document.getElementById('gsyncCfgK'); if(!t) return; try{ const c=JSON.parse(t.value.trim()); localStorage.setItem(LS_CFG, JSON.stringify(c)); render(); initFB(c).catch(()=>{}); }catch(e){ alert('Neveljaven JSON — prekopiraj cel firebaseConfig.'); } }
-  window.FORMASYNC={ signIn, signOut, push, saveCfg, render,
+  window.FORMASYNC={ signIn, signOut, push, saveCfg, render, uid: ()=>fb.uid,
     idToken: async ()=>{ try{ return (fb.auth&&fb.auth.currentUser)? await fb.auth.currentUser.getIdToken() : null; }catch(_){ return null; } } };
   function boot(){ try{ render(); const c=getCfg(); if(c) initFB(c).catch(()=>{}); }catch(_){} }
   if(document.readyState!=='loading') boot(); else document.addEventListener('DOMContentLoaded', boot);

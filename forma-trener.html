@@ -488,6 +488,7 @@ canvas{max-width:100%}
       </div>
 
       <div id="onboardCard"></div>
+      <div id="phoneCard"></div>
       <div id="dashAlert"></div>
       <div class="grid-stats" id="dashStats"></div>
 
@@ -1025,9 +1026,9 @@ canvas{max-width:100%}
     <div class="onb-head">
       <div class="logo-mark" style="width:28px;height:28px"></div>
       <div class="logo-name" style="font-size:20px">PEAKFORM</div>
-      <div style="margin-left:auto;font-size:12px;color:var(--dim)">Korak <span id="onbStep">1</span> od 3</div>
+      <div style="margin-left:auto;font-size:12px;color:var(--dim)">Korak <span id="onbStep">1</span> od 4</div>
     </div>
-    <div class="onb-prog"><i id="onbP1" class="on"></i><i id="onbP2"></i><i id="onbP3"></i></div>
+    <div class="onb-prog"><i id="onbP1" class="on"></i><i id="onbP2"></i><i id="onbP3"></i><i id="onbP4"></i></div>
     <div id="onbBody"></div>
     <div class="onb-foot">
       <button class="btn btn-ghost" id="onbBackBtn" onclick="onbGo(-1)" style="visibility:hidden">← Nazaj</button>
@@ -1345,6 +1346,18 @@ function alertsCalc(){
     : 'Pripravljenost '+prip+'/100 — lažji dan se ti bo jutri obrestoval.');
   return out;
 }
+function renderPhoneCard(){
+  const el=$('phoneCard'); if(!el) return;
+  if(localStorage.getItem('forma_phone_done')){ el.innerHTML=''; return; }
+  el.innerHTML=`<div class="card mb" style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+    <div style="background:#fff;padding:7px;flex-shrink:0"><img src="https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=https%3A%2F%2Fponi-9.github.io%2Fforma-app%2Fkalorije.html" width="110" height="110" alt="QR"></div>
+    <div style="flex:1;min-width:240px">
+      <div style="font-family:var(--bc);font-weight:700;font-size:14.5px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase">📲 Namesti še na telefon</div>
+      <div style="font-size:12.5px;color:var(--soft);margin-top:6px;line-height:1.6">Poskeniraj QR → prijavi se z istim Googlom → <b>Android:</b> Chrome ⋮ → Dodaj na začetni zaslon · <b>iPhone:</b> Safari ↑ Deli → Na začetni zaslon.<br>Tam slikaš obroke in te vodi skozi vadbo — vse sinhronizirano.</div>
+    </div>
+    <span style="cursor:pointer;color:var(--dim);align-self:flex-start" title="Skrij" onclick="localStorage.setItem('forma_phone_done','1');renderPhoneCard()">✕</span>
+  </div>`;
+}
 function renderDashAlert(){
   const el=$('dashAlert'); if(!el) return;
   const p0=state.settings.profile;
@@ -1533,6 +1546,7 @@ function renderDash(){
   const stk=streakDays();
   const stEl=$('dashStreak');
   if(stEl) stEl.innerHTML = stk>=2? `<span style="border:1px solid rgba(255,194,71,.4);background:rgba(255,194,71,.08);color:var(--yellow);font-size:11.5px;font-weight:800;letter-spacing:.06em;padding:4px 10px;white-space:nowrap">🔥 ${stk} ${LANG==='en'? '-DAY STREAK':'DNI ZAPORED'}</span>` : '';
+  renderPhoneCard();
   renderDashAlert();
   renderDashBadges();
   renderCharts();
@@ -3971,16 +3985,16 @@ const ONB_LVLS=[
 function onbShow(){ $('onbBack').classList.add('open'); onbRender(); }
 function onbRender(){
   $('onbStep').textContent=onb.step;
-  for(let i=1;i<=3;i++) $('onbP'+i).classList.toggle('on', onb.step>=i);
+  for(let i=1;i<=4;i++) $('onbP'+i).classList.toggle('on', onb.step>=i);
   $('onbBackBtn').style.visibility = onb.step===1?'hidden':'visible';
-  $('onbNextBtn').textContent = onb.step===3?'V aplikacijo →':'Naprej →';
+  $('onbNextBtn').textContent = onb.step===4?'V aplikacijo →':'Naprej →';
   const b=$('onbBody');
-  if(onb.step===1){
+  if(onb.step===2){
     b.innerHTML=`<div class="onb-title">Kako globoko<br>gremo<span class="hl">?</span></div>
     <div class="onb-sub">Nivo prilagodi celotno izkušnjo — plane, prehrano, razlage in analitiko.<br>Zamenjaš ga lahko kadar koli.</div>
     <div class="onb-levels">${ONB_LVLS.map((l,i)=>`<div class="onb-lvl ${onb.level===i?'on':''}" onclick="onb.level=${i};onb.ure=${l.ure};onbRender()">
       <div class="oi">${l.icon}</div><div class="on1">${l.name}</div><div class="od">${l.desc}</div><div class="ot">${l.tag}</div></div>`).join('')}</div>`;
-  } else if(onb.step===2){
+  } else if(onb.step===3){
     b.innerHTML=`<div class="onb-title">Povej nekaj<br>o sebi<span class="hl">.</span></div>
     <div class="onb-sub">Izbran nivo: <b style="color:var(--acc2)">${ONB_LVLS[onb.level].name}</b> · iz tega AI izračuna cone, kalorije in prvi plan.</div>
     <div style="max-width:560px;margin:34px auto 0;display:flex;flex-direction:column;gap:16px">
@@ -3996,15 +4010,31 @@ function onbRender(){
       <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Koliko časa imaš na teden?</div>
         <div class="row" style="gap:8px">${[['3–5 h',4],['6–9 h',7],['10+ h',10]].map(([t,u])=>`<div class="onb-chip ${onb.ure===u?'on':''}" style="flex:1;text-align:center;font-weight:700" onclick="onb.ure=${u};onbCapture();onbRender()">${t}</div>`).join('')}</div></div>
     </div>`;
+  } else if(onb.step===1){
+    const g = !!(window.FORMASYNC && FORMASYNC.uid && FORMASYNC.uid());
+    b.innerHTML=`<div class="onb-title">Najprej<br>tvoj račun<span class="hl">.</span></div>
+    <div class="onb-sub">Prijavi se z Googlom — <b>vsi tvoji podatki se trajno shranijo na tvoj račun</b> in te čakajo na vsaki napravi.<br>Vsak (brat, prijatelj …) ima svoj račun — nič se ne meša.</div>
+    <div style="max-width:460px;margin:38px auto 0;display:flex;flex-direction:column;gap:12px">
+      ${g? `<div class="conn-row" style="border-color:rgba(95,214,122,.4)"><span class="cn" style="font-size:14px">🔵 <b>Prijavljen</b> — podatki se shranjujejo na tvoj račun</span><span class="cs ok">✓</span></div>`
+         : `<button class="btn btn-primary" style="width:100%;padding:15px;font-size:17px" onclick="FORMASYNC.signIn().then(()=>setTimeout(onbRender,900))">🔵 Prijava z Google</button>`}
+      ${g?'':'<div class="hint" style="text-align:center;cursor:pointer" onclick="onb.step=2;onbRender()">Nadaljuj brez računa (samo ta naprava) →</div>'}
+    </div>`;
   } else {
-    b.innerHTML=`<div class="onb-title">Poveži svoje<br>naprave<span class="hl">.</span></div>
-    <div class="onb-sub">Aktivnosti in podatki se sinhronizirajo samodejno. Lahko tudi preskočiš — vse nastaviš kasneje.</div>
-    <div style="max-width:520px;margin:34px auto 0;display:flex;flex-direction:column;gap:10px">
-      <div class="conn-row"><span class="cn">🔵 Google prijava — sinhronizacija + AI brez ključa</span><span class="cs go" onclick="FORMASYNC.signIn()">POVEŽI →</span></div>
-      <div class="conn-row"><span class="cn">📈 Intervals.icu — samodejni uvoz aktivnosti (brezplačno)</span><span class="cs go" onclick="onbFinish('settings')">NASTAVI →</span></div>
-      <div class="conn-row"><span class="cn">🟠 Strava</span><span class="cs go" onclick="onbFinish('settings')">NASTAVI →</span></div>
-      <div class="conn-row" style="cursor:pointer" onclick="onbFinish();demoLoad()"><span class="cn">🎬 Samo raziskujem — naloži demo podatke</span><span class="cs go">NALOŽI →</span></div>
-      <div class="plan-summary" style="margin-top:10px"><b>Tvoj prvi teden bo pripravljen v minuti:</b> na zavihku Plan klikni ⟳ Generiraj nov teden — AI ga sestavi iz tvojih podatkov in vremena ter ga nato vsak dan prilagaja.</div>
+    b.innerHTML=`<div class="onb-title">Še na telefon<span class="hl">.</span></div>
+    <div class="onb-sub">Na telefonu slikaš obroke in te vodi skozi vadbo. Z istim Google računom je vse samodejno usklajeno.</div>
+    <div style="max-width:640px;margin:34px auto 0;display:flex;gap:24px;align-items:center;flex-wrap:wrap;justify-content:center">
+      <div style="background:#fff;padding:10px;flex-shrink:0"><img src="https://api.qrserver.com/v1/create-qr-code/?size=170x170&data=https%3A%2F%2Fponi-9.github.io%2Fforma-app%2Fkalorije.html" width="170" height="170" alt="QR"></div>
+      <div style="flex:1;min-width:260px;text-align:left">
+        <div style="font-weight:700;margin-bottom:8px">1️⃣ S telefonom poskeniraj QR kodo (kamera)</div>
+        <div style="font-weight:700;margin-bottom:8px">2️⃣ Prijavi se z istim Google računom (⚙️ Nastavitve → 🔵)</div>
+        <div style="font-weight:700;margin-bottom:8px">3️⃣ Namesti kot aplikacijo:</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-left:8px">
+          <b style="color:var(--soft)">Android:</b> Chrome → meni ⋮ → <b>Dodaj na začetni zaslon</b><br>
+          <b style="color:var(--soft)">iPhone:</b> Safari → gumb Deli <span style="border:1px solid var(--border2);padding:0 5px">↑</span> → <b>Na začetni zaslon</b>
+        </div>
+        <div class="hint" style="margin-top:10px">Lahko preskočiš — navodila najdeš kadar koli na Pregledu.</div>
+        <div class="hint" style="margin-top:6px">📈 Za samodejni uvoz aktivnosti poveži <b>Intervals.icu</b> v Nastavitvah · 🎬 <span style="color:var(--acc2);cursor:pointer" onclick="onbFinish();demoLoad()">ali naloži demo podatke</span></div>
+      </div>
     </div>`;
   }
 }
@@ -4023,12 +4053,12 @@ function onbCapture(){
 }
 function onbGo(dir){
   onbCapture();
-  if(dir>0 && onb.step===3){ onbFinish(); return; }
-  onb.step=Math.max(1,Math.min(3,onb.step+dir));
+  if(dir>0 && onb.step===4){ onbFinish(); return; }
+  if(dir>0 && onb.step===3){ onbSaveProfile(); }   // profil shranjen po koraku 'o sebi'
+  onb.step=Math.max(1,Math.min(4,onb.step+dir));
   onbRender();
 }
-function onbFinish(tab){
-  onbCapture();
+function onbSaveProfile(){
   const p=state.settings.profile;
   p.nivo=ONB_LVLS[onb.level].val;
   if(onb.starost) p.starost=+onb.starost;
@@ -4036,8 +4066,13 @@ function onbFinish(tab){
   p.ure=onb.ure; if(onb.cilj) p.cilj=onb.cilj;
   p.aktPrefs=Object.assign({},onb.prefs);
   p.aktivnosti=Object.keys(onb.prefs);
+  save();
+}
+function onbFinish(tab){
+  onbCapture();
+  onbSaveProfile();
   localStorage.setItem('forma_onb_done','1');
-  save(); fillSettings(); renderAll();
+  fillSettings(); renderAll();
   $('onbBack').classList.remove('open');
   if(tab) switchTab(tab);
   toast('Dobrodošel v PEAKFORM! Generiraj svoj prvi plan. 🚀','ok');
@@ -4181,6 +4216,24 @@ setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) sy
   async function onIn(){
     render(); st('Preverjam oblak…');
     try{
+      // druga oseba na isti napravi? shrani stare podatke in začni z NJENIMI
+      const owner = localStorage.getItem('forma_owner_uid');
+      if(owner && owner!==fb.uid){
+        try{
+          localStorage.setItem('forma_stash_'+owner, JSON.stringify({
+            forma: localStorage.getItem('forma_trener_v1'),
+            kalorije: localStorage.getItem('kalorije_v1'),
+            chat: localStorage.getItem('forma_chat'),
+            weekly: localStorage.getItem('forma_weekly')
+          }));
+          ['forma_trener_v1','kalorije_v1','forma_chat','forma_weekly','forma_onb_done','forma_zone_nudge','forma_phone_done'].forEach(k=>localStorage.removeItem(k));
+        }catch(_){}
+        localStorage.setItem('forma_owner_uid', fb.uid);
+        st('Nov račun na tej napravi — nalagam tvoje podatke…');
+        setTimeout(()=>location.reload(), 500);
+        return;
+      }
+      localStorage.setItem('forma_owner_uid', fb.uid);
       const ref = fb.db.collection('formaSync').doc(fb.uid);
       const snap = await ref.get(); const rem = snap.exists?snap.data():null; const loc = readLocal(); let changed=false;
       [['forma','forma_trener_v1'],['kalorije','kalorije_v1']].forEach(([k,ls])=>{
