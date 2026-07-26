@@ -262,7 +262,7 @@ textarea{resize:vertical;min-height:70px}
 .wo-part .txt{font-size:13.5px;color:var(--soft);white-space:pre-wrap}
 
 /* ---------- Nastavitve ---------- */
-.set-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+.set-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:start}
 @media(max-width:1000px){.set-grid{grid-template-columns:1fr}}
 .steps{font-size:13px;color:var(--muted);line-height:1.7;margin:10px 0 14px;padding-left:18px}
 .steps li{margin-bottom:4px}
@@ -518,6 +518,25 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
 .week-list{gap:14px}
 .week-list .day-row{padding:16px 18px}
 @media(max-width:900px){.main{padding:22px 16px 70px}}
+
+/* ===== KROG 2 — po vizualnem pregledu ===== */
+.day-row{scroll-margin-top:84px}
+#planStrip>div{transition:border-color .15s, transform .15s, box-shadow .15s}
+#planStrip>div:hover{border-color:var(--borderH)!important;transform:translateY(-2px);box-shadow:0 12px 26px -20px rgba(0,0,0,.9)}
+.card h3{color:var(--soft)}
+.stat .v,.ms .v{font-variant-numeric:tabular-nums}
+.conn-row{transition:background .15s,border-color .15s}
+.conn-row:hover{background:rgba(255,255,255,.02)}
+.obAnim{animation:obF .33s ease}
+@keyframes obF{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.onb-lvl{transition:border-color .15s, transform .15s, background .15s}
+.onb-lvl:hover{transform:translateY(-2px)}
+.empty{padding:34px 18px;color:var(--muted)}
+.empty .big{filter:grayscale(.2);opacity:.9}
+
+/* modal vedno lepo centriran, dolgi se pomikajo znotraj */
+.modal-back{padding:28px 16px}
+.modal{margin:auto}
 </style>
 </head>
 <body>
@@ -729,7 +748,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
       <div class="page-head head-row">
         <div>
           <h1 data-i18n="h1Moc">Moč</h1>
-          <p data-i18n="subMoc">Progresija do muscle-upa · težavnost se prilagaja dnevnemu počutju</p>
+          <p id="subMocP">Trening moči · težavnost se prilagaja dnevnemu počutju</p>
         </div>
       </div>
       <div class="card mb path-card" id="mocPath"></div>
@@ -846,27 +865,11 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
     <section class="tab" id="tab-settings">
       <div class="page-head">
         <h1 data-i18n="h1Nastavitve">Nastavitve</h1>
-        <p>Profil, nivo, povezave in podatki</p>
-      </div>
-
-      <div class="set-grid mb">
-        <div class="card">
-          <h3>Profil in nivo</h3>
-          <div id="lvlCards"></div>
-        </div>
-        <div>
-          <div class="card mb">
-            <h3>Povezave</h3>
-            <div id="connRows"></div>
-          </div>
-          <div class="card">
-            <h3>Naročnina</h3>
-            <div id="subCard"></div>
-          </div>
-        </div>
+        <p>Račun, profil, povezave in podatki — vse na enem mestu</p>
       </div>
 
       <div class="set-grid">
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
         <div class="card">
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
             <div class="avatar" style="width:52px;height:52px;font-size:20px" id="profAvatar">?</div>
@@ -927,9 +930,24 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
           </div>
         </div>
 
-        <div>
+        <div class="card">
+          <h3>🎯 Nivo, športi in cilji</h3>
+          <div id="lvlCards"></div>
+        </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+          <div id="gsyncCard" class="card"></div>
+          <div class="card">
+            <h3>🔗 Povezave</h3>
+            <div id="connRows"></div>
+          </div>
           <div id="phoneCardSet"></div>
-          <div class="card mt">
+          <div class="card">
+            <h3>⭐ Naročnina</h3>
+            <div id="subCard"></div>
+          </div>
+          <div class="card">
             <h3>💾 Podatki</h3>
             <div class="row">
               <button class="btn btn-ghost" onclick="exportData()">Izvozi varnostno kopijo</button>
@@ -1061,23 +1079,27 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
   </div>
   <div id="connIcu">
           <div class="card mt">
-            <h3>📈 Intervals.icu <span class="sub">brezplačna alternativa</span></h3>
+            <h3>📈 Intervals.icu <span class="sub">brezplačno — najboljša pot brez Strava naročnine</span></h3>
             <div id="icuStatus"></div>
-            <details>
-              <summary style="cursor:pointer;font-weight:700;font-size:13.5px;color:var(--acc2)">Kako se povežem? (~2 min, brezplačno)</summary>
-              <ol class="steps">
-                <li>Registriraj se na <code>intervals.icu</code> in poveži svojo Stravo/Garmin (vožnje se sinhronizirajo same).</li>
-                <li>Pojdi v <b>Settings</b> → čisto spodaj <b>Developer Settings</b> → <b>API Key</b> (generiraj ključ).</li>
-                <li><b>Athlete ID</b> najdeš v naslovu strani, npr. <code>intervals.icu/athlete/i12345</code> → vpiši <code>i12345</code>.</li>
-              </ol>
-            </details>
+            <div class="analysis-box" style="margin:10px 0;border-color:rgba(255,194,71,.35)">
+              ⚠️ <b>Najpogostejša napaka:</b> Intervals.icu je samo posrednik — vožnje vanj prihajajo s tvoje ure/naprave.
+              Če je tvoj Intervals račun nov (prazen), najprej opravi <b>2. korak</b>, sicer ni česa uvoziti.
+            </div>
+            <ol class="steps">
+              <li><b>Ustvari račun</b> na <a href="https://intervals.icu" target="_blank" rel="noopener" style="color:var(--acc2)">intervals.icu</a> — Google prijava, 30 sekund.</li>
+              <li><b>Poveži vir voženj:</b> na intervals.icu odpri ⚙️ <b>Settings</b> → <b>Connections</b> → poveži <b>Garmin / Wahoo / Suunto / Coros / Polar ali Stravo</b>. Počakaj minuto-dve, da se v Intervals prikažejo tvoje aktivnosti.</li>
+              <li><b>API dostop:</b> Settings → čisto na dnu <b>Developer Settings</b> → pri <b>API Key</b> klikni <b>Generate</b> in ključ kopiraj.</li>
+              <li><b>Athlete ID</b> piše tik nad ključem (oblika <code>i12345</code>) — ali v naslovu strani <code>intervals.icu/athlete/i12345/…</code></li>
+              <li>Oboje prilepi spodaj → <b>Poveži</b>. Od takrat se vožnje uvažajo same (vsake 3 minute), FTP in cone pa prevzamem iz Intervals.</li>
+            </ol>
+            <div class="hint" style="margin:6px 0 0">Nimaš športne ure? Nič hudega — aktivnosti dodaš s 📸 screenshotom (AI prebere vse) ali ročno v zavihku Aktivnosti.</div>
             <div class="frm-grid mt">
               <label class="fld"><span>Athlete ID</span><input id="icuId" placeholder="i12345"></label>
               <label class="fld"><span>API ključ</span><input type="password" id="icuKey"></label>
             </div>
             <div class="row">
               <button class="btn btn-primary" id="btnIcu" onclick="icuConnect()">Poveži</button>
-              <button class="btn btn-ghost" onclick="icuImport(false)">Uvozi vožnje</button>
+              <button class="btn btn-ghost" onclick="icuImport(false)">⇅ Uvozi vožnje zdaj</button>
             </div>
           </div>
 
@@ -1403,6 +1425,7 @@ document.querySelectorAll('.nav-item').forEach(el=>{
   el.addEventListener('click', ()=> switchTab(el.dataset.tab));
 });
 function switchTab(name){
+  if(!document.getElementById('tab-'+name)) name='dash';
   document.querySelectorAll('.nav-item').forEach(e=>e.classList.toggle('active', e.dataset.tab===name));
   document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('active', e.id==='tab-'+name));
   if (name==='plan'){ renderWeather(); if(planView==='week') setTimeout(()=>{ document.querySelector('.day-row.today,.day-card.today')?.scrollIntoView({behavior:'smooth',block:'center'}); },200); }
@@ -1479,7 +1502,7 @@ function alertsCalc(){
 }
 function renderPhoneCard(){
   const el=$('phoneCardSet'); if(!el) return;
-  el.innerHTML=`<div class="card mt" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+  el.innerHTML=`<div class="card" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
     <div style="background:#fff;padding:6px;flex-shrink:0"><img src="https://api.qrserver.com/v1/create-qr-code/?size=96x96&data=https%3A%2F%2Fponi-9.github.io%2Fforma-app%2Fkalorije.html" width="96" height="96" alt="QR"></div>
     <div style="flex:1;min-width:200px">
       <h3 style="margin:0 0 6px">📲 Na telefon</h3>
@@ -2067,7 +2090,7 @@ function renderPlan(){
     return `<div class="day-row ${d.datum===today?'today':''} ${done?'done':''}" id="day-${d.datum}">
       <div class="dr-head">
         <span class="dr-day">${DNEVI[(dd.getDay()+6)%7].slice(0,3)} ${dd.getDate()}.${dd.getMonth()+1}.</span>
-        <span class="dr-sport">${sl.i} ${sl.l}</span>
+        ${sl.l.toLowerCase()===String(d.tip||'').toLowerCase()?'':`<span class="dr-sport">${sl.i} ${sl.l}</span>`}
         <span class="chip ${chipClass(d.tip)}">${esc(d.tip)}</span>
         <span class="dr-title">${esc(d.naslov)}</span>
         ${wxBadge}
@@ -3664,24 +3687,33 @@ async function icuImport(quiet){
   if (!state.icu?.athleteId || !state.icu?.apiKey){ if(!quiet) toast('Najprej poveži Intervals.icu.','err'); return; }
   const btn = $('btnStravaImport'); if (!quiet) busy(btn, true, 'Uvažam …');
   try{
-    const oldest = isoDate(addDays(new Date(), -120));
-    const res = await stravaFetch(`https://intervals.icu/api/v1/athlete/${encodeURIComponent(state.icu.athleteId)}/activities?oldest=${oldest}&newest=${isoDate(addDays(new Date(),1))}`,
-      { headers:{ Authorization: icuAuth() } });
+    const first = !state.rides.some(r=>r.icuId!=null);
+    const oldest = isoDate(addDays(new Date(), first ? -365 : -120));
+    const res = await stravaFetch(`https://intervals.icu/api/v1/athlete/${encodeURIComponent(String(state.icu.athleteId).trim())}/activities?oldest=${oldest}&newest=${isoDate(addDays(new Date(),1))}`,
+      { headers:{ Authorization: icuAuth(), Accept:'application/json' } });
+    if (res.status===401 || res.status===403) throw new Error('Intervals.icu zavrača dostop (HTTP '+res.status+') — preveri Athlete ID (oblika i12345) in API ključ v Nastavitvah.');
     if (!res.ok) throw new Error('Intervals.icu uvoz: HTTP '+res.status);
-    const acts = await res.json();
+    let acts; const rawTxt = await res.text();
+    try{ acts = JSON.parse(rawTxt); }catch(_){ throw new Error('Intervals.icu je vrnil nepričakovan odgovor — poskusi znova čez minuto.'); }
     let n = 0;
+    const skip={tipi:{}, kratke:0, ze:0};
+    const sportOf = t => /Run/i.test(t)?'tek'
+      : /Hike|Walk|Snowshoe|Alpine/i.test(t)?'pohod'
+      : /WeightTraining|Workout|Crossfit|HIIT|Yoga|Pilates|Gym|Strength/i.test(t)?'moc'
+      : /Ride|Cycling|Gravel|MountainBike|Velomobile|Handcycle|Swim|Row|Kayak|Paddle|Ski|Skate|Elliptical|Cardio/i.test(t)?'kolo'
+      : null;
     for (const a of (Array.isArray(acts)?acts:[])){
-      if (!/Ride|Cycling|VirtualRide|Gravel|MountainBike|Hike|Walk|Run/i.test(a.type||'')) continue;
+      const sp = sportOf(a.type||'');
+      if (!sp){ skip.tipi[a.type||'?']=(skip.tipi[a.type||'?']||0)+1; continue; }
       const _min=(a.moving_time||a.elapsed_time||0)/60, _km=(a.distance||0)/1000;
-      if(/Hike|Walk/i.test(a.type||'') && (_min<15 || _km<1)) continue;   // mini sprehodi = šum
-      if(!/Hike|Walk/i.test(a.type||'') && _min<5) continue;
-      if (state.rides.some(r=>r.icuId===a.id)) continue;
+      if(sp==='pohod' && (_min<15 || _km<1)){ skip.kratke++; continue; }   // mini sprehodi = šum
+      if(sp!=='pohod' && sp!=='moc' && _min<5){ skip.kratke++; continue; }
+      if (state.rides.some(r=>r.icuId===a.id)){ skip.ze++; continue; }
       const date = (a.start_date_local||a.start_date||'').slice(0,10);
       const dist = a.distance!=null ? +(a.distance/1000).toFixed(1) : null;
-      if (state.rides.some(r=>r.date===date && r.dist!=null && dist!=null && Math.abs(r.dist-dist)<0.3)) continue;
       const timeMin = Math.round((a.moving_time||a.elapsed_time||0)/60);
       const r = {
-        id:uid(), icuId:a.id, source:'intervals', sport:/Run/i.test(a.type||'')?'tek':/Hike|Walk/i.test(a.type||'')?'pohod':'kolo',
+        id:uid(), icuId:a.id, source:'intervals', sport:sp,
         date, name:a.name||'Vožnja', dist, time:timeMin||null,
         elev: a.total_elevation_gain!=null ? Math.round(a.total_elevation_gain) : (a.icu_climb!=null?Math.round(a.icu_climb):null),
         avgHr: a.average_heartrate?Math.round(a.average_heartrate):null,
@@ -3707,7 +3739,18 @@ async function icuImport(quiet){
     state.rides=dedupeRides(state.rides);
     save(); renderAll();
     if (n) toast(`${quiet?'Samodejno u':'U'}voženih ${n} voženj iz Intervals.icu. 📈`,'ok');
-    else if (!quiet) toast('Ni novih voženj (Intervals.icu).','ok');
+    else if (!quiet){
+      const total = Array.isArray(acts)? acts.length : 0;
+      if (total===0) toast('Povezava deluje, a tvoj Intervals.icu račun nima nobene aktivnosti (zadnje leto). Najprej v Intervals poveži svojo uro/napravo: intervals.icu → Settings → Connections (Garmin, Wahoo, Strava …). Ko se vožnje pojavijo tam, jih uvozim sem.','err');
+      else{
+        const deli=[];
+        if(skip.ze) deli.push(skip.ze+' že uvoženih');
+        if(skip.kratke) deli.push(skip.kratke+' prekratkih');
+        const tt=Object.entries(skip.tipi).map(([k,v])=>v+'× '+k).join(', ');
+        if(tt) deli.push('neuvoženi tipi: '+tt);
+        toast(`Najdenih ${total} aktivnosti v Intervals, novih 0 (${deli.join(' · ')||'ni razloga?'}). Če kaj manjka, mi sporoči tip aktivnosti.`,'ok');
+      }
+    }
   }catch(e){ if (quiet) console.warn('ICU sync:', e.message); else toast(e.message,'err'); }
   if (!quiet) busy(btn, false);
 }
@@ -3777,7 +3820,7 @@ function renderForma(){
       <div class="path-bar"><i style="width:${Math.max(3,pct)}%"></i></div>
       <div class="path-marks">${mu?'<span>OSNOVE</span><span>ZGIBI + DIPSI</span><span>EKSPLOZIVNI ZGIB</span><span>NEGATIVNI MU</span><span>MUSCLE-UP</span>':'<span>OSNOVE</span><span>VZTRAJNOST</span><span>MOČ</span><span>NAPREDNO</span><span>VRHUNSKO</span>'}</div>`;
   }
-  const subEl=document.querySelector('#tab-forma [data-i18n="subMoc"]');
+  const subEl=$('subMocP');
   if(subEl) subEl.textContent = wantsMU()
     ? (LANG==='en'?'Progression to the muscle-up · difficulty adapts to how you feel':'Progresija do muscle-upa · težavnost se prilagaja dnevnemu počutju')
     : (LANG==='en'?'Bodyweight strength · difficulty adapts to how you feel':'Trening moči z lastno težo · težavnost se prilagaja dnevnemu počutju');
@@ -3914,6 +3957,9 @@ function renderKalorije(){
   const t0=tdee();
   const cilj = day?.kcal_vnos || (t0? Math.round(t0-(wantsLean()?(goalDeficit()?.deficit||290):0)) : null);
   const mac=kalMacros(entries);
+  const b0k=bmr();
+  const trainK0=state.rides.filter(r=>r.date===todayIso()).reduce((a,r)=>a+(r.kcal||(r.tss?Math.round(r.tss*10):Math.round((+r.time||0)*7))),0);
+  const porabaK=b0k? b0k+(trainK0||(day?.kcal_poraba?Math.max(0,day.kcal_poraba-b0k):0)) : (day?.kcal_poraba||t0||null);
   const prot = proteinTarget();
   const fatT = p.teza? Math.round(p.teza*0.9) : null;
   const ohT = (cilj&&prot&&fatT)? Math.max(0,Math.round((cilj - prot*4 - fatT*9)/4)) : null;
@@ -3936,7 +3982,7 @@ function renderKalorije(){
   if (cilj && eaten<cilj){
     const rem=cilj-eaten, remP=Math.max(0,(prot||0)-mac.p);
     const ideje = remP>25? 'losos ali piščanec + krompir + solata' : rem>500? 'piščanec z rižem in zelenjavo' : rem>250? 'skuta z jagodičevjem' : 'grški jogurt ali sadje';
-    sugg=`<div class="dropzone" style="cursor:default;padding:16px">Do cilja še <b>${rem.toLocaleString('sl')} kcal</b>${remP?` · beljakovin še ~<b>${remP} g</b>`:''} — predlog: <b>${ideje}</b></div>`;
+    sugg=`<div class="dropzone" style="cursor:default;padding:16px">Do cilja še <b>${rem.toLocaleString('sl')} kcal</b>${remP?` · beljakovin še ~<b>${remP} g</b>`:''}${porabaK?` · poraba danes ~<b>${porabaK.toLocaleString('sl')} kcal</b>`:''} — predlog: <b>${ideje}</b></div>`;
   } else if (cilj && eaten>=cilj){
     sugg=`<div class="dropzone" style="cursor:default;padding:16px;border-color:rgba(95,214,122,.4)">Dnevni cilj dosežen (${eaten.toLocaleString('sl')} / ${cilj.toLocaleString('sl')} kcal) ✓</div>`;
   }
@@ -4577,6 +4623,7 @@ function onbGo(dir){
   if(dir>0 && (onb.step===3 || onb.step===4)){ onbSaveProfile(); }   // profil sproti shranjen
   onb.step=Math.max(1,Math.min(5,onb.step+dir));
   onbRender();
+  const ob=$('onbBody'); if(ob){ ob.classList.remove('obAnim'); void ob.offsetWidth; ob.classList.add('obAnim'); }
 }
 function onbSaveProfile(){
   const p=state.settings.profile;
@@ -4610,7 +4657,10 @@ function onbFinish(tab){
   if(tab) switchTab(tab);
   toast('Dobrodošel v PEAKFORM! Generiraj svoj prvi plan. 🚀','ok');
 }
-if (!localStorage.getItem('forma_onb_done') && !state.settings.profile.ime && !state.settings.profile.teza && !state.rides.length){
+if (new URLSearchParams(location.search).get('demo')==='1' && !state.rides.length){
+  try{ localStorage.setItem('forma_onb_done','1'); }catch(_){}
+  setTimeout(()=>{ try{ demoLoad(); }catch(_){} }, 350);
+} else if (!localStorage.getItem('forma_onb_done') && !state.settings.profile.ime && !state.settings.profile.teza && !state.rides.length){
   setTimeout(onbShow, 400);
 } else { try{ localStorage.setItem('forma_onb_done','1'); }catch(_){} }
 

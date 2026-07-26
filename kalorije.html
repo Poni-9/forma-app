@@ -937,7 +937,10 @@ function renderLink(){
         : `<div class="lb-plan" style="color:var(--muted);font-weight:600">Za danes ni plana — cilj izračunan iz profila.</div>`}
     </div>`;
   } else {
-    $('linkBanner').innerHTML = `<div class="link-banner no">○ Namizje PEAKFORM ni zaznano — nastavi 🔄 sinhronizacijo ali cilj ročno v ⚙️ Nastavitvah.</div>`;
+    const signed = !!(window.FORMASYNC && FORMASYNC.uid && FORMASYNC.uid());
+    $('linkBanner').innerHTML = signed
+      ? `<div class="link-banner no">○ Namizje PEAKFORM ni zaznano — nastavi 🔄 sinhronizacijo ali cilj ročno v ⚙️ Nastavitvah.</div>`
+      : '';   // neprijavljen: dovolj je prijavni banner, brez dvojnih opozoril
   }
 }
 

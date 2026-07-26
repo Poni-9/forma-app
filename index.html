@@ -98,7 +98,8 @@
 /* ============ PREMIUM POLISH ============ */
 .topnav{background:rgba(17,16,19,.8);backdrop-filter:blur(16px) saturate(1.2);-webkit-backdrop-filter:blur(16px) saturate(1.2);border-bottom:1px solid rgba(56,51,62,.7);box-shadow:0 10px 30px -20px rgba(0,0,0,.8)}
 .logo i{box-shadow:0 4px 16px -4px rgba(255,61,46,.5)}
-h1{background:linear-gradient(180deg,#ffffff 58%,#c9c3d2);-webkit-background-clip:text;background-clip:text;color:transparent}
+h1{background:linear-gradient(180deg,#ffffff 55%,#d9d4e0);-webkit-background-clip:text;background-clip:text;color:transparent}
+@media(max-width:600px){.navlinks a:nth-child(-n+3){display:none}}
 h1 .d{background:linear-gradient(135deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
 h2 .d{color:var(--acc)}
 .btn{transition:transform .15s, box-shadow .15s, filter .15s, border-color .15s, color .15s}
@@ -126,6 +127,12 @@ input:focus{outline:none;border-color:var(--acc)!important;box-shadow:0 0 0 3px 
 .rv{opacity:0;transform:translateY(16px);transition:opacity .55s ease, transform .55s ease}
 .rv.vis{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.rv{opacity:1;transform:none}}
+
+html{scroll-behavior:smooth}
+.navlinks a:not(.btn){position:relative}
+.navlinks a:not(.btn)::after{content:'';position:absolute;left:0;bottom:-6px;height:2px;width:0;background:var(--acc);transition:width .22s}
+.navlinks a:not(.btn):hover::after{width:100%}
+.ms .v{font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -149,6 +156,7 @@ input:focus{outline:none;border-color:var(--acc)!important;box-shadow:0 0 0 3px 
       <p class="sub">Izbereš nivo — od »postani fit« do »treniraj kot pro« — in PEAKFORM zgradi tvoj plan treningov, prehrane in moči. Potem ga vsak dan prilagaja tebi: tvoji formi, počutju in vremenu.</p>
       <div class="cta-row">
         <a class="btn" href="forma-trener.html">Začni brezplačno →</a>
+        <a class="btn ghost" href="forma-trener.html?demo=1">🎬 Poglej demo</a>
         <span class="cta-note">Brez kartice · v aplikaciji si v minuti</span>
       </div>
     </div>
@@ -164,7 +172,7 @@ input:focus{outline:none;border-color:var(--acc)!important;box-shadow:0 0 0 3px 
       <div class="mock-stats">
         <div class="ms"><div class="k">FTP</div><div class="v">+6 W</div></div>
         <div class="ms"><div class="k">Teža</div><div class="v">−1.8 kg</div></div>
-        <div class="ms"><div class="k">Muscle-up</div><div class="v">64 %</div></div>
+        <div class="ms"><div class="k">Kondicija</div><div class="v">+24</div></div>
       </div>
       <div class="mock-note">Primer napredka po 6 tednih plana</div>
     </div>
