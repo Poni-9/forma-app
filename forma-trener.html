@@ -967,7 +967,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
   <div class="modal" style="max-width:640px">
     <h2><span id="rideModalTitle">Nova aktivnost</span><span class="x" onclick="closeModal('rideModalBack')">✕</span></h2>
     <div class="dropzone" style="padding:14px 16px;font-size:12.5px" onclick="document.getElementById('fileInput').click()">
-      📸 Prilepi screenshot (Ctrl+V), povleci sliko/.GPX ali klikni<br>
+      📸 Prilepi screenshot (Ctrl+V), povleci sliko / .GPX / .FIT ali klikni<br>
       <span style="color:var(--blue);font-weight:600">✨ AI prebere vse podatke sam — ti jih le potrdiš</span>
     </div>
     <img id="shotPrev" class="shot-prev mt" style="display:none">
@@ -2020,6 +2020,14 @@ function chipClass(tip){
   return 'gray';
 }
 const sportEmoji = s => s==='pohod' ? '🥾 ' : s==='moc' ? '💪 ' : s==='tek' ? '🏃 ' : '';
+function sportOfType(t){
+  t=String(t||'');
+  if(/Run|running/i.test(t)) return 'tek';
+  if(/Hike|hiking|Walk|walking|Snowshoe|Alpine|mountaineering/i.test(t)) return 'pohod';
+  if(/WeightTraining|Workout|Crossfit|HIIT|Yoga|Pilates|Gym|Strength|^training$/i.test(t)) return 'moc';
+  if(/Ride|Cycling|cycling|biking|Gravel|MountainBike|Velomobile|Handcycle|Swim|swimming|Row|rowing|Kayak|Paddle|Ski|Skate|Elliptical|Cardio/i.test(t)) return 'kolo';
+  return null;
+}
 function sportLabel(tip){
   const c = chipClass(tip);
   return c==='pohod' ? {i:'🥾', l:'POHOD'} : c==='moc' ? {i:'💪', l:'TRENING MOČI'} : c==='tek' ? {i:'🏃', l:'TEK'} : c==='pocitek' ? {i:'🛌', l:'POČITEK'} : {i:'🚴', l:'KOLO'};
@@ -3603,11 +3611,43 @@ async function importGpx(file){
     toast(`GPX uvožen: ${r.name} — ${r.dist} km${timeMin?', '+fmtDur(timeMin):''}. ✓`,'ok');
   }catch(e){ toast(e.message||'GPX uvoz ni uspel.','err'); }
 }
+async function importFit(file){
+  try{
+    toast('Berem FIT datoteko …');
+    const buf = await file.arrayBuffer();
+    const mod = await import('https://cdn.jsdelivr.net/npm/fit-file-parser@4.0.1/+esm');
+    const FitParser = mod.default || mod.FitParser;
+    const fp = new FitParser({ force:true, speedUnit:'km/h', lengthUnit:'km', elapsedRecordField:true });
+    fp.parse(buf, (err, data)=>{
+      try{
+        if(err || !data){ toast('FIT ni berljiv ('+String(err||'?').slice(0,80)+') — izvozi GPX in povleci njega.','err'); return; }
+        const ss = (data.sessions && data.sessions[0]) || (data.activity && data.activity.sessions && data.activity.sessions[0]) || {};
+        const sp = sportOfType(String(ss.sport||data.sport||'')) || 'kolo';
+        const start = ss.start_time ? new Date(ss.start_time) : new Date();
+        const dist = ss.total_distance!=null ? +(+ss.total_distance).toFixed(1) : null;   // km
+        const timeMin = Math.round(((ss.total_timer_time||ss.total_elapsed_time||0))/60);
+        const r = { id:uid(), source:'manual', sport:sp, date:isoDate(start),
+          name:(file.name||'Aktivnost').replace(/\.fit$/i,''),
+          dist, time:timeMin||null,
+          elev:ss.total_ascent!=null?Math.round(ss.total_ascent):null,
+          avgHr:ss.avg_heart_rate?Math.round(ss.avg_heart_rate):null,
+          maxHr:ss.max_heart_rate?Math.round(ss.max_heart_rate):null,
+          avgPower:ss.avg_power?Math.round(ss.avg_power):null,
+          speed:(dist&&timeMin)?+(dist/(timeMin/60)).toFixed(1):null,
+          kcal:ss.total_calories?Math.round(ss.total_calories):null, notes:'' };
+        r.tss = estimateTss(r);
+        state.rides.push(r); state.rides = dedupeRides(state.rides);
+        save(); renderAll();
+        toast('FIT uvožen: '+r.name+' — '+(dist||'?')+' km, '+fmtDur(timeMin)+' ✓','ok');
+      }catch(e2){ toast('FIT uvoz ni uspel: '+e2.message,'err'); }
+    });
+  }catch(e){ toast('FIT uvoz ni uspel: '+e.message+' — izvozi GPX in povleci njega.','err'); }
+}
 function handleFile(f){
   if(!f) return;
   const n=(f.name||'').toLowerCase();
   if(n.endsWith('.gpx')) return importGpx(f);
-  if(n.endsWith('.fit')) return toast('FIT format prihaja kmalu — v napravi/aplikaciji izvozi GPX in povleci njega.','err');
+  if(n.endsWith('.fit')) return importFit(f);
   if(f.type.startsWith('image/')) return loadShot(f);
 }
 
@@ -3698,11 +3738,7 @@ async function icuImport(quiet){
     try{ acts = JSON.parse(rawTxt); }catch(_){ throw new Error('Intervals.icu je vrnil nepričakovan odgovor — poskusi znova čez minuto.'); }
     let n = 0;
     const skip={tipi:{}, kratke:0, ze:0, garmin:0, nota:''};
-    const sportOf = t => /Run/i.test(t)?'tek'
-      : /Hike|Walk|Snowshoe|Alpine/i.test(t)?'pohod'
-      : /WeightTraining|Workout|Crossfit|HIIT|Yoga|Pilates|Gym|Strength/i.test(t)?'moc'
-      : /Ride|Cycling|Gravel|MountainBike|Velomobile|Handcycle|Swim|Row|Kayak|Paddle|Ski|Skate|Elliptical|Cardio/i.test(t)?'kolo'
-      : null;
+    const sportOf = sportOfType;
     const typeOf = a => String(a?.type || a?.sport || a?.activity_type || a?.sport_type || a?.icu_type || '');
     try{ if(Array.isArray(acts)&&acts.length) console.info('ICU vzorec zapisa:', JSON.stringify(acts[0]).slice(0,600)); }catch(_){}
     for (const a of (Array.isArray(acts)?acts:[])){
@@ -3783,6 +3819,67 @@ async function icuImport(quiet){
     }
   }catch(e){ if (quiet) console.warn('ICU sync:', e.message); else toast(e.message,'err'); }
   if (!quiet) busy(btn, false);
+}
+/* ---------- STRAVA NA EN KLIK (prek PEAKFORM strežnika — brez ključev) ---------- */
+async function stravaEasyConnect(){
+  try{
+    const t = (window.FORMASYNC && FORMASYNC.idToken) ? await FORMASYNC.idToken() : null;
+    if(state.stravaEasy?.connected){
+      if(!confirm('Strava je že povezana'+(state.stravaEasy.name?' ('+state.stravaEasy.name+')':'')+'. Prekinem povezavo?')) return;
+      if(t) try{ await fetch(AI_PROXY+'/strava/disconnect',{method:'POST',headers:{Authorization:'Bearer '+t}}); }catch(_){}
+      state.stravaEasy=null; save(); renderSetExtras(); toast('Strava odklopljena.','ok'); return;
+    }
+    if(!t){ toast('Najprej se prijavi z Google (🔵 kartica zgoraj) — Strava se shrani na tvoj račun.','err'); return; }
+    location.href = AI_PROXY + '/strava/auth?t=' + encodeURIComponent(t);
+  }catch(e){ toast(e.message,'err'); }
+}
+async function stravaEasyStatus(){
+  try{
+    const t = (window.FORMASYNC && FORMASYNC.idToken) ? await FORMASYNC.idToken() : null;
+    if(!t) return;
+    const r = await fetch(AI_PROXY+'/strava/status',{headers:{Authorization:'Bearer '+t}});
+    if(!r.ok) return;
+    const d = await r.json();
+    const was = !!state.stravaEasy?.connected;
+    state.stravaEasy = d.connected ? {connected:true, name:d.athlete||''} : null;
+    if(was !== !!state.stravaEasy?.connected){ save(); try{ renderSetExtras(); }catch(_){} }
+  }catch(_){}
+}
+async function stravaEasyImport(quiet){
+  try{
+    if(!state.stravaEasy?.connected) return;
+    const t = await FORMASYNC.idToken(); if(!t) return;
+    const first = !state.rides.some(r=>r.stravaId!=null);
+    const after = Math.floor((Date.now() - (first?365:120)*864e5)/1000);
+    const res = await fetch(AI_PROXY+'/strava/activities?after='+after,{headers:{Authorization:'Bearer '+t}});
+    if(res.status===409){ state.stravaEasy=null; save(); return; }
+    if(!res.ok){ if(!quiet) toast('Strava uvoz: HTTP '+res.status,'err'); return; }
+    const acts = await res.json(); let n=0;
+    for(const a of (Array.isArray(acts)?acts:[])){
+      const sp = sportOfType(a.sport_type||a.type||''); if(!sp) continue;
+      const _min=(a.moving_time||a.elapsed_time||0)/60, _km=(a.distance||0)/1000;
+      if(sp==='pohod' && (_min<15||_km<1)) continue;
+      if(sp!=='pohod' && sp!=='moc' && _min<5) continue;
+      if(state.rides.some(r=>r.stravaId===a.id)) continue;
+      const dist = a.distance!=null ? +(a.distance/1000).toFixed(1) : null;
+      const timeMin = Math.round((a.moving_time||a.elapsed_time||0)/60);
+      const r2 = { id:uid(), stravaId:a.id, source:'strava', sport:sp,
+        date:String(a.start_date_local||a.start_date||'').slice(0,10), name:a.name||'Aktivnost',
+        dist, time:timeMin||null,
+        elev:a.total_elevation_gain!=null?Math.round(a.total_elevation_gain):null,
+        avgHr:a.average_heartrate?Math.round(a.average_heartrate):null,
+        maxHr:a.max_heartrate?Math.round(a.max_heartrate):null,
+        avgPower:a.average_watts?Math.round(a.average_watts):null,
+        speed:(dist&&timeMin)?+(dist/(timeMin/60)).toFixed(1):null,
+        kj:a.kilojoules?Math.round(a.kilojoules):null,
+        polyline:a.map?.summary_polyline||null, notes:'' };
+      r2.tss = estimateTss(r2);
+      state.rides.push(r2); n++;
+    }
+    state.rides = dedupeRides(state.rides);
+    if(n){ save(); renderAll(); toast((quiet?'Samodejno u':'U')+'voženih '+n+' aktivnosti s Strave. ⭐','ok'); setTimeout(enrichPlacesQueue, 1500); }
+    else if(!quiet) toast('Ni novih aktivnosti na Stravi.','ok');
+  }catch(e){ if(!quiet) toast(e.message,'err'); }
 }
 function renderIcu(){
   const el = $('icuStatus'); if (!el) return;
@@ -4487,8 +4584,9 @@ function renderSetExtras(){
     const gOk=!!(document.getElementById('gsyncCard') && /Odjava/.test(document.getElementById('gsyncCard').innerHTML));
     const rows=[
       ['🔵 Google sinhronizacija — račun, sinhronizacija in AI', gOk, `document.getElementById('gsyncCard')?.scrollIntoView({behavior:'smooth',block:'center'})`],
-      ['📈 Intervals.icu — samodejni uvoz aktivnosti (zastonj)', !!(state.icu?.athleteId&&state.icu?.apiKey&&state.icu?.name), `openConn('icu')`],
-      ['🟠 Strava — neposredno (zahteva Strava naročnino)', !!state.strava.accessToken, `openConn('strava')`]
+      ['⭐ Strava — poveži z ENIM klikom (priporočeno; tudi za Garmin ure prek Garmin→Strava)'+(state.stravaEasy?.name?' — '+state.stravaEasy.name:''), !!state.stravaEasy?.connected, `stravaEasyConnect()`],
+      ['📈 Intervals.icu — samodejni uvoz + FTP/cone (zastonj)', !!(state.icu?.athleteId&&state.icu?.apiKey&&state.icu?.name), `openConn('icu')`],
+      ['🟠 Strava napredno — lasten API ključ', !!state.strava.accessToken, `openConn('strava')`]
     ];
     cr.innerHTML=rows.map(([n,ok,act])=>`<div class="conn-row" style="cursor:pointer" onclick="${act}"><span class="cn">${n}</span><span class="cs ${ok?'ok':'go'}">${ok?'POVEZANO ✓':'POVEŽI →'}</span></div>`).join('')+
     `<div class="hint" style="margin:6px 0 0">Klik na vrstico odpre navodila in nastavitev. Garmin/Wahoo: poveži jih z Intervals.icu — naprej gre samodejno.</div>`;
@@ -4687,6 +4785,18 @@ function onbFinish(tab){
   if(tab) switchTab(tab);
   toast('Dobrodošel v PEAKFORM! Generiraj svoj prvi plan. 🚀','ok');
 }
+(function(){
+  const q=new URLSearchParams(location.search);
+  if(q.get('strava')==='ok'){
+    history.replaceState({},'',location.pathname);
+    toast('Strava povezana ✓ — uvažam tvoje vožnje …','ok');
+    setTimeout(async()=>{ try{ await stravaEasyStatus(); await stravaEasyImport(false); }catch(_){} }, 1500);
+  } else if(q.get('strava')==='err'){
+    history.replaceState({},'',location.pathname);
+    toast('Strava povezava ni uspela — poskusi znova (Nastavitve → ⭐ Strava).','err');
+  }
+})();
+setTimeout(()=>{ try{ stravaEasyStatus(); }catch(_){ } }, 6000);
 if (new URLSearchParams(location.search).get('demo')==='1' && !state.rides.length){
   try{ localStorage.setItem('forma_onb_done','1'); }catch(_){}
   setTimeout(()=>{ try{ demoLoad(); }catch(_){} }, 350);
@@ -4738,6 +4848,7 @@ function autoImport(){
   if (document.visibilityState!=='visible') return;
   if (Date.now()-_lastImp < 45000) return;   // ne prepogosto
   _lastImp = Date.now();
+  if (state.stravaEasy?.connected) stravaEasyImport(true);
   if (state.strava.accessToken) stravaImport(true);
   if (state.icu?.athleteId && state.icu?.apiKey) icuImport(true);
 }
