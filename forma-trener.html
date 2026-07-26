@@ -3702,9 +3702,11 @@ async function icuImport(quiet){
       : /WeightTraining|Workout|Crossfit|HIIT|Yoga|Pilates|Gym|Strength/i.test(t)?'moc'
       : /Ride|Cycling|Gravel|MountainBike|Velomobile|Handcycle|Swim|Row|Kayak|Paddle|Ski|Skate|Elliptical|Cardio/i.test(t)?'kolo'
       : null;
+    const typeOf = a => String(a?.type || a?.sport || a?.activity_type || a?.sport_type || a?.icu_type || '');
+    try{ if(Array.isArray(acts)&&acts.length) console.info('ICU vzorec zapisa:', JSON.stringify(acts[0]).slice(0,600)); }catch(_){}
     for (const a of (Array.isArray(acts)?acts:[])){
-      const sp = sportOf(a.type||'');
-      if (!sp){ skip.tipi[a.type||'?']=(skip.tipi[a.type||'?']||0)+1; continue; }
+      const sp = sportOf(typeOf(a));
+      if (!sp){ const tk=typeOf(a)||'?'; skip.tipi[tk]=(skip.tipi[tk]||0)+1; continue; }
       const _min=(a.moving_time||a.elapsed_time||0)/60, _km=(a.distance||0)/1000;
       if(sp==='pohod' && (_min<15 || _km<1)){ skip.kratke++; continue; }   // mini sprehodi = šum
       if(sp!=='pohod' && sp!=='moc' && _min<5){ skip.kratke++; continue; }
@@ -3748,7 +3750,11 @@ async function icuImport(quiet){
         if(skip.kratke) deli.push(skip.kratke+' prekratkih');
         const tt=Object.entries(skip.tipi).map(([k,v])=>v+'× '+k).join(', ');
         if(tt) deli.push('neuvoženi tipi: '+tt);
-        toast(`Najdenih ${total} aktivnosti v Intervals, novih 0 (${deli.join(' · ')||'ni razloga?'}). Če kaj manjka, mi sporoči tip aktivnosti.`,'ok');
+        let shema='';
+        if((skip.tipi['?']||0)===total && total>0){
+          try{ shema=' · POLJA ZAPISA: '+(Array.isArray(acts[0])?'[array!] ':'')+Object.keys(acts[0]||{}).slice(0,14).join(','); }catch(_){}
+        }
+        toast(`Najdenih ${total} aktivnosti v Intervals, novih 0 (${deli.join(' · ')||'ni razloga?'})${shema}. Pošlji mi ta izpis.`,'ok');
       }
     }
   }catch(e){ if (quiet) console.warn('ICU sync:', e.message); else toast(e.message,'err'); }
