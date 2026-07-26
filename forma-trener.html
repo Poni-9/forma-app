@@ -3869,21 +3869,29 @@ function renderWizard(){
   const stepStrava=chk(stOk,`<b>Poveži Stravo s PEAKFORM</b> — en klik; Strava te vpraša za dovoljenje in te vrne sem.${state.stravaEasy?.name?' <b style=\'color:var(--green)\'>('+esc(state.stravaEasy.name)+')</b>':''}`,bStrava);
   const stepDone=chk(nAuto>0,`<b>Uvoz voženj</b> — ${nAuto>0? nAuto+' aktivnosti uvoženih, naprej gre samodejno (vsake 3 min).':'zgodi se samodejno takoj po povezavi (prvič do leto nazaj).'}`,'');
   if(wizChoice==='garmin'){
-    el.innerHTML=back+`<div class="analysis-box" style="margin-bottom:4px;font-size:12.5px">Garmin tretjim aplikacijam ne dovoli neposrednega dostopa do podatkov, zato gre pot prek <b>Strave (brezplačno)</b>: ura → Garmin Connect → Strava → PEAKFORM. Nastaviš <b>enkrat</b>, potem je vse samodejno.</div>`
+    el.innerHTML=back
       +stepPrijava
-      +chk(false,`<b>V Garmin Connect poveži Stravo</b> — na telefonu: Garmin Connect → ⚙️ Nastavitve → <b>Povezane aplikacije</b> (Connected Apps) → <b>Strava</b> → prijava v svoj (brezplačen) Strava račun. Nove vožnje od takrat same skočijo na Stravo.`,
-        `<a class="btn btn-ghost btn-sm" target="_blank" rel="noopener" href="https://www.strava.com/register">Nov Strava račun</a>`)
-      +stepStrava+stepDone
-      +`<div class="hint" style="margin-top:10px">Stare vožnje: v Garmin Connect → Aktivnost → ⋯ → <b>Izvozi original (FIT)</b> in datoteko povleci v zavihek Aktivnosti — preberem vse.</div>`;
+      +chk(state.rides.length>0,`<b>NAJHITREJE — povleci FIT datoteke (30 s):</b> odpri <b>connect.garmin.com</b> → Aktivnosti → klik na aktivnost → ⚙️ → <b>Izvozi original</b>. Lahko označiš in povlečeš <b>več datotek naenkrat</b> v zavihek Aktivnosti — preberem šport, km, čas, utrip, moč, kalorije.`,
+        `<a class="btn btn-primary btn-sm" target="_blank" rel="noopener" href="https://connect.garmin.com/modern/activities">Odpri Garmin Connect</a>`)
+      +chk(!!(state.icu?.athleteId&&state.icu?.apiKey),`<b>SAMODEJNO za naprej (5 min, nastaviš enkrat):</b> ① v Garmin Connect aplikaciji poveži <b>Stravo</b> (⚙️ → Povezane aplikacije), ② na <b>intervals.icu</b> se prijavi z Google in poveži Stravo, ③ prilepi Intervals ključ sem. Od takrat vsaka vožnja pride sama.`,
+        `<button class="btn btn-ghost btn-sm" onclick="closeModal('wizBack');switchTab('settings');openConn('icu')">📈 Navodila</button>`)
+      +stepDone
+      +`<div class="hint" style="margin-top:10px">🔜 Neposredna povezava <b>»Poveži Garmin«</b> z enim klikom je v postopku odobritve pri Garminu — takoj ko jo odobrijo, bo tukaj.</div>`;
   } else if(wizChoice==='watch'){
-    el.innerHTML=back+`<div class="analysis-box" style="margin-bottom:4px;font-size:12.5px">Najlažja pot je prek <b>Strave (brezplačno)</b>: ura → aplikacija tvoje ure → Strava → PEAKFORM. Nastaviš enkrat.</div>`
+    el.innerHTML=back
       +stepPrijava
-      +chk(false,`<b>V aplikaciji svoje ure poveži Stravo</b> — Wahoo (ELEMNT app → Profile → Authorized apps), Suunto (app → Profil → Poveži storitve), Coros (app → Profil → 3rd Party), Polar (Flow → Nastavitve → Povezave) → izberi <b>Strava</b>.`,
-        `<a class="btn btn-ghost btn-sm" target="_blank" rel="noopener" href="https://www.strava.com/register">Nov Strava račun</a>`)
-      +stepStrava+stepDone;
+      +chk(state.rides.length>0,`<b>NAJHITREJE — povleci FIT/GPX datoteke:</b> v aplikaciji svoje ure izvozi aktivnost (Export) in datoteke povleci v zavihek Aktivnosti — lahko več naenkrat.`,
+        `<button class="btn btn-primary btn-sm" onclick="closeModal('wizBack');switchTab('rides')">Odpri Aktivnosti</button>`)
+      +chk(!!(state.icu?.athleteId&&state.icu?.apiKey),`<b>SAMODEJNO za naprej (5 min, enkrat):</b> ① v aplikaciji ure poveži <b>Stravo</b> (Wahoo: Profile → Authorized apps · Suunto: Poveži storitve · Coros: 3rd Party · Polar Flow: Povezave), ② na <b>intervals.icu</b> se prijavi z Google in poveži Stravo, ③ prilepi Intervals ključ sem.`,
+        `<button class="btn btn-ghost btn-sm" onclick="closeModal('wizBack');switchTab('settings');openConn('icu')">📈 Navodila</button>`)
+      +stepDone;
   } else if(wizChoice==='strava'){
-    el.innerHTML=back+stepPrijava+stepStrava+stepDone
-      +`<div class="hint" style="margin-top:10px">To je to — dva klika. Vsaka vožnja, ki jo zabeležiš s Strava aplikacijo, se sama pojavi tukaj.</div>`;
+    el.innerHTML=back
+      +stepPrijava
+      +(stSrv? stepStrava
+        : chk(!!(state.icu?.athleteId&&state.icu?.apiKey),`<b>Poveži prek Intervals.icu (brezplačno, 3 min, enkrat):</b> ① na <b>intervals.icu</b> klikni »Sign in with Strava« (2 klika), ② Settings → čisto spodaj <b>Developer Settings</b> → Generate API Key, ③ ID in ključ prilepi sem. Od takrat vsaka Strava vožnja pride sama.`,
+        `<button class="btn btn-ghost btn-sm" onclick="closeModal('wizBack');switchTab('settings');openConn('icu')">📈 Navodila</button>`))
+      +stepDone;
   } else {
     el.innerHTML=back+`<div style="font-size:12.5px;color:var(--soft);line-height:1.6;margin-bottom:4px">Brez naprave? Nič hudega — vse deluje tudi ročno:</div>`
       +chk(true,`<b>📸 Screenshot</b> — slikaj zaslon kolesarskega računalnika/telefona in ga prilepi (Ctrl+V) v »+ Dodaj aktivnost« — AI prebere vse podatke sam.`,'')
