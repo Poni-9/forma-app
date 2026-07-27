@@ -113,7 +113,7 @@ body{
 .stat .bar i{display:block;height:100%;background:var(--green)}
 .grid-2{display:grid;grid-template-columns:1.4fr 1fr;gap:12px}
 .grid-dash3{display:grid;grid-template-columns:1.7fr 1.1fr 1fr;gap:12px;margin-bottom:12px}
-@media(max-width:1120px){.grid-dash3{grid-template-columns:1fr 1fr}}
+@media(max-width:1400px){.grid-dash3{grid-template-columns:1fr 1fr}}
 @media(max-width:1050px){.grid-2{grid-template-columns:1fr}}
 @media(max-width:760px){.grid-dash3{grid-template-columns:1fr}}
 
@@ -603,6 +603,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
       <div id="dashAlert"></div>
       <div class="grid-stats" id="dashStats"></div>
 
+      <div class="dash-cols">
+      <div class="card" id="weeklySideCard">
+        <h3 data-i18n="weeklyVol">Tedenski obseg</h3>
+        <div class="hint" style="margin:0 0 12px">zadnjih 12 tednov · najnovejši zgoraj</div>
+        <div id="weeklySide"></div>
+      </div>
       <div style="min-width:0;display:flex;flex-direction:column;gap:14px">
 
       <div class="grid-dash3" style="margin:0">
@@ -627,12 +633,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
 
       <div class="card" id="riderCard"></div>
 
-      <div class="card" id="weeklySideCard">
-        <h3 data-i18n="weeklyVol">Tedenski obseg</h3>
-        <div class="hint" style="margin:0 0 12px">zadnjih 12 tednov · najnovejši zgoraj</div>
-        <div id="weeklySide"></div>
       </div>
-
       </div>
     </section>
     <!-- ===== AKTIVNOSTI ===== -->
