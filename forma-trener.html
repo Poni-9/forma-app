@@ -4511,6 +4511,7 @@ function renderKalorije(){
       <b style="color:var(--acc2)">${d.datum}</b> <span style="color:var(--dim)">~${d.kcal||'?'} kcal</span>${d.op?` <span style="color:var(--muted)">· ${esc(d.op)}</span>`:''}<br>
       🌅 ${esc(d.zajtrk||'')} &nbsp;·&nbsp; 🍲 ${esc(d.kosilo||'')} &nbsp;·&nbsp; 🌙 ${esc(d.vecerja||'')}${d.prigrizek?` &nbsp;·&nbsp; 🥜 ${esc(d.prigrizek)}`:''}
     </div>`).join('')}
+    ${(mw.nakup&&mw.nakup.length)?`<div style="border:1px dashed rgba(255,194,71,.5);background:rgba(255,194,71,.06);padding:9px 12px;margin-top:6px;font-size:12.5px">🛒 <b>Nakupovalni listek:</b> ${mw.nakup.map(esc).join(' · ')}</div>`:''}
     <div class="row mt no-print"><button class="btn btn-ghost btn-sm" onclick="mealWeekAI()">↻ Nov jedilnik</button><button class="btn btn-ghost btn-sm" onclick="state.mealWeek=null;save();renderAll()">✕ Odstrani</button></div>
   </div>` : '';
   box.innerHTML = (kal? '' : `<div class="analysis-box mb" style="margin-top:0">Ni sinhroniziranih podatkov s telefona — poveži 🔵 Google sinhronizacijo v Nastavitvah. Vnose lahko dodajaš tudi ročno tukaj.</div>`) + stats + mealWeekCard + fridgeCard + meals + sugg + fuel + recepti + telo;
@@ -5080,20 +5081,23 @@ function chatImgChipR(){
   el.innerHTML = chatImg? `<div style="display:flex;align-items:center;gap:8px;margin:0 0 8px;background:var(--bg);border:1px solid var(--border);padding:6px 10px;font-size:12px;color:var(--soft)"><img src="data:image/jpeg;base64,${chatImg}" style="height:34px">📷 Slika pripravljena — trener si jo ogleda ob naslednjem sporočilu <span style="cursor:pointer;color:var(--red);font-weight:800" onclick="chatImg=null;chatImgChipR()">✕</span></div>` : '';
 }
 document.addEventListener('change', e=>{ if(e.target && e.target.id==='chatImgFile'){ chatImgSet(e.target.files[0]); e.target.value=''; } });
-async function mealWeekAI(extra){
+async function mealWeekAI(extra, img){
   toast('🍽 Sestavljam tedenski jedilnik …','ok');
   try{
     const t0=tdee()||2200, pr=proteinTarget()||120;
     const cilj = wantsLean()? Math.round(Math.max((bmr()||1600)+200, t0-300)) : t0;
-    const r=await gemini([{text:`Si športni nutricionist. Sestavi TEDENSKI JEDILNIK (7 dni, začni ${todayIso()}) za tega športnika.
+    const parts=[]; if(img) parts.push({inline_data:{mime_type:'image/jpeg',data:img}});
+    parts.push({text:`Si športni nutricionist. Sestavi TEDENSKI JEDILNIK (7 dni, začni ${todayIso()}) za tega športnika.
 ${buildContext()}
-Cilj: ~${cilj} kcal/dan, beljakovine ~${pr} g/dan. Preprosta slovenska živila (oves, skuta, jajca, riž, piščanec, tuna, jogurt …), pripravljivo doma, brez eksotike. Ob dnevih s težjim treningom več ogljikovih hidratov, ob počitku manj.
-${extra?`POSEBNA ZAHTEVA UPORABNIKA: ${extra}`:''}
-Vrni SAMO JSON: {"dnevi":[{"datum":"YYYY-MM-DD","zajtrk":"...","kosilo":"...","vecerja":"...","prigrizek":"...","kcal":number,"op":"kratka opomba glede na trening tistega dne"}]}`}],{temp:.5});
+Cilj: ~${cilj} kcal/dan, beljakovine ~${pr} g/dan. Preprosta slovenska živila, pripravljivo doma, brez eksotike. Ob dnevih s težjim treningom več ogljikovih hidratov, ob počitku manj.
+${img?'NA SLIKI SO SESTAVINE, KI JIH IMA DOMA — jedilnik gradi ČIM BOLJ iz njih; kar nujno manjka, daj v "nakup".':''}
+${extra?`POSEBNA ZAHTEVA UPORABNIKA (če našteva sestavine, gradi iz njih): ${extra}`:''}
+Vrni SAMO JSON: {"dnevi":[{"datum":"YYYY-MM-DD","zajtrk":"...","kosilo":"...","vecerja":"...","prigrizek":"...","kcal":number,"op":"kratka opomba glede na trening tistega dne"}],"nakup":["5-10 stvari, ki naj jih dokupi za ta teden (prazno, če nič)"]}`});
+    const r=await gemini(parts,{temp:.5});
     if(!Array.isArray(r.dnevi) || !r.dnevi.length) throw new Error('Jedilnika ni uspelo sestaviti — poskusi znova.');
-    state.mealWeek={made:todayIso(), dnevi:r.dnevi.slice(0,7)};
+    state.mealWeek={made:todayIso(), dnevi:r.dnevi.slice(0,7), nakup:Array.isArray(r.nakup)?r.nakup.slice(0,12):[]};
     save(); renderAll();
-    const m=chatLoad(); m.push({r:'ai',t:'🍽 Tedenski jedilnik je pripravljen — cel je v zavihku Prehrana. Povzetek:\n\n'+state.mealWeek.dnevi.map(d=>`${d.datum}: 🌅 ${d.zajtrk} · 🍲 ${d.kosilo} · 🌙 ${d.vecerja}${d.prigrizek?' · 🥜 '+d.prigrizek:''} (~${d.kcal} kcal)`).join('\n'),ts:Date.now(),tag:'JEDILNIK'}); chatSave(m); renderChat();
+    const m=chatLoad(); m.push({r:'ai',t:'🍽 Tedenski jedilnik je pripravljen — cel je v zavihku Prehrana. Povzetek:\n\n'+state.mealWeek.dnevi.map(d=>`${d.datum}: 🌅 ${d.zajtrk} · 🍲 ${d.kosilo} · 🌙 ${d.vecerja}${d.prigrizek?' · 🥜 '+d.prigrizek:''} (~${d.kcal} kcal)`).join('\n')+(state.mealWeek.nakup.length?'\n\n🛒 DOKUPI: '+state.mealWeek.nakup.join(', '):''),ts:Date.now(),tag:'JEDILNIK'}); chatSave(m); renderChat();
   }catch(e){ toast(e.message,'err'); }
 }
 async function sleepPlanAI(extra){
@@ -5118,6 +5122,7 @@ async function chatSend(){
     const parts=[]; if(hasImg) parts.push({inline_data:{mime_type:'image/jpeg',data:chatImg}});
     parts.push({text:`Si moj osebni trener (kolo, moč, prehrana). Odgovori kratko (2-6 stavkov), konkretno, slovensko, prijateljsko. Če vprašanje ni povezano s treningom, zdravjem ali prehrano, prijazno usmeri nazaj.${hasImg?'\nUPORABNIK JE PRILOŽIL SLIKO — najprej jo natančno analiziraj (obrok? zaslon ure/aplikacije? oprema? drža?) in ugotovitve vključi v odgovor.':''}
 MOŽNOST UKREPANJA: če uporabnik IZRECNO želi, da mu spremeniš/prilagodiš tedenski PLAN (lažji teden, premik/menjava treningov, drugačen obseg …), ali da sestaviš TEDENSKI JEDILNIK, najprej na kratko odgovori, NATO pa v ZADNJI vrstici dodaj TOČNO ##AKCIJA{"tip":"plan","navodilo":"strnjena zahteva"} oziroma ##AKCIJA{"tip":"jedilnik","navodilo":"strnjena zahteva"} oziroma ##AKCIJA{"tip":"spanje","navodilo":"strnjena zahteva"} (če želi NAČRT SPANJA/regeneracije za teden). Če tega ni zahteval, vrstice NE dodajaj.
+KAJ IMA DOMA: če uporabnik NAŠTEJE ali POKAŽE (slika hladilnika/shrambe) svoje sestavine, mu predlagaj NAJBOLJŠO jed ZA ZDAJ glede na današnji trening, formo in preostale kalorije (kratek recept v 3-5 korakih + približne kalorije in beljakovine). Če se iz tega ne da sestaviti nič dobrega, napiši kratek 🛒 nakupovalni listek (5-8 stvari). Če pri tem želi JEDILNIK ZA CEL TEDEN iz teh sestavin, sproži ##AKCIJA jedilnik.
 Si tudi PODPORA za aplikacijo PEAKFORM — če uporabnik vpraša o njej, odgovori iz tega: prijava z Google (Nastavitve) vklopi AI in sinhronizacijo med napravami; AI je v zgodnjem dostopu NEOMEJEN in zastonj za vse prijavljene; povezava ur: Nastavitve → Povezave → čarovnik (Garmin: .FIT izvoz ali Intervals.icu, Strava: kmalu na en klik); uvoz aktivnosti: povleci .FIT/.GPX ali screenshot na zavihek Aktivnosti; telefon: QR koda v Nastavitvah odpre mobilno prehrano; varnostna kopija in izbris: Nastavitve → Podatki.
 
 ${buildContext()}
@@ -5127,6 +5132,7 @@ ${histTxt}
 
 Odgovori na zadnje sporočilo kolesarja. Vrni samo čisto besedilo (in po potrebi vrstico ##AKCIJA na koncu).${aiLangNote()}`});
     const txt=await gemini(parts,{json:false,temp:.6});
+    const imgAct = hasImg? chatImg : null;
     chatImg=null; chatImgChipR();
     const raw=String(txt).trim();
     const am=raw.match(/##AKCIJA\s*(\{[^]*?\})\s*$/);
@@ -5139,7 +5145,7 @@ Odgovori na zadnje sporočilo kolesarja. Vrni samo čisto besedilo (in po potreb
         await generatePlan(undefined, act.navodilo||q2);
         const m3=chatLoad(); m3.push({r:'ai',t:'✅ Plan sem prilagodil po tvoji zahtevi — poglej zavihek Plan.',ts:Date.now(),tag:'PLAN'}); chatSave(m3); renderChat();
       } else if(act && act.tip==='jedilnik'){
-        await mealWeekAI(act.navodilo||q2);
+        await mealWeekAI(act.navodilo||q2, imgAct);
       } else if(act && act.tip==='spanje'){
         await sleepPlanAI(act.navodilo||q2);
       }
