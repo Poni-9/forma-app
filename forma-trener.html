@@ -808,8 +808,11 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
       <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:12px" id="trenerGrid">
         <div class="card" style="display:flex;flex-direction:column;min-height:480px">
           <div class="chat-box" id="chatBox" style="flex:1"></div>
+          <div id="chatImgChip" class="no-print"></div>
           <div class="chat-input no-print">
             <input id="chatInput" data-i18n-ph="askAnything" placeholder="Vprašaj karkoli …" onkeydown="if(event.key==='Enter')chatSend()">
+            <button class="btn btn-ghost" id="btnChatImg" onclick="document.getElementById('chatImgFile').click()" title="Priloži sliko">🖼</button>
+            <input type="file" id="chatImgFile" accept="image/*" style="display:none">
             <button class="btn btn-ghost" id="btnMic" onclick="micToggle('chatInput','btnMic')" title="Govorni vnos">🎤</button>
             <button class="btn btn-primary" id="btnChat" onclick="chatSend()">→</button>
           </div>
@@ -2921,7 +2924,7 @@ function showDay(iso){
 /* ================================================================
    AI: TEDENSKI PLAN
 ================================================================ */
-async function generatePlan(fromIso){
+async function generatePlan(fromIso, extra){
   const start = fromIso ? parseIso(fromIso) : new Date();
   const days = Array.from({length:7}, (_,i)=>isoDate(addDays(start,i)));
   const dayLbl = d => `${d} (${DNEVI[(parseIso(d).getDay()+6)%7]})`;
@@ -2947,7 +2950,8 @@ ${stil()}
 
 ${strategija()}
 
-NAVODILA:
+${extra?`⚡ POSEBNA ZAHTEVA UPORABNIKA IZ POGOVORA S TRENERJEM — upoštevaj PREDNOSTNO: ${extra}
+`:''}NAVODILA:
 - UPOŠTEVAJ VREME PO URAH (napoved zgoraj): dež je pogosto samo DEL dneva! Če je vsaj del dneva suh, trening OSTANE ZUNAJ — v "opis" OBVEZNO napiši priporočeni termin (npr. "pojdi dopoldne, dež šele od 17h" ali "po 16h se zjasni"). Trenažer/moč namesto zunanjega treninga predpiši SAMO, ko je mokro ves dan (vsi deli dneva ≥60 %). Najtežje/najdaljše dneve postavi na najlepše dni. Ob vročini (>30 °C) svetuj zgodnji/večerni termin. Pri vsakem zunanjem dnevu na kratko omeni vreme in najboljši čas.
 - Plan gradi PO METODOLOGIJI TRENERJA (STIL zgoraj — enaki tipi treningov in struktura kot v profesionalnih planih), a ga PRILAGODI temu kolesarju: njegovemu AI profilu (krepi šibkosti, izkoristi moči), formi in ciljem.
 - Plan se začne DANES, ne v ponedeljek! Prvi dan določi po TRENUTNI svežini (TSB) in zadnjih vožnjah: če je svež in ni treniral, lahko takoj kakovosten trening; če je utrujen ali je danes že treniral, začni z regeneracijo/oddihom. NE začenjaj avtomatsko z oddihom.
@@ -3897,7 +3901,9 @@ async function importZip(f){   // 🗜 cel Garmin izvoz (ZIP z .fit/.gpx) z enim
 document.addEventListener('paste', e=>{
   if(document.getElementById('impPlanBack')?.classList.contains('open')) return;   // sliko plana prevzame poslušalec spodaj
   const it = [...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));
-  if (it){ e.preventDefault(); loadShot(it.getAsFile()); }
+  if (it){ e.preventDefault(); const f=it.getAsFile();
+    if(document.querySelector('.nav-item.active')?.dataset.tab==='trener') chatImgSet(f);
+    else loadShot(f); }
 });
 const dz = $('dropzone');
 ['dragover','dragenter'].forEach(ev=>dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.add('over'); }));
@@ -4498,7 +4504,16 @@ function renderKalorije(){
   } else {
     telo=`<div class="card mt"><h3>${t('bodyComp')}</h3><div class="hint" style="margin:2px 0">${LANG==='en'?'Update your weight in Settings — the trend chart builds here.':'Vsakič, ko v Nastavitvah posodobiš težo, se tukaj riše graf napredka.'}</div></div>`;
   }
-  box.innerHTML = (kal? '' : `<div class="analysis-box mb" style="margin-top:0">Ni sinhroniziranih podatkov s telefona — poveži 🔵 Google sinhronizacijo v Nastavitvah. Vnose lahko dodajaš tudi ročno tukaj.</div>`) + stats + fridgeCard + meals + sugg + fuel + recepti + telo;
+  const mw=state.mealWeek;
+  const mealWeekCard = (mw && Array.isArray(mw.dnevi) && mw.dnevi.length)? `<div class="card mt" style="border-color:rgba(255,194,71,.3)">
+    <h3>🍽 Tedenski jedilnik <span class="sub">pripravil AI trener (${mw.made||''}) — za spremembe mu samo povej v klepetu</span></h3>
+    ${mw.dnevi.map(d=>`<div style="border:1px solid var(--border);background:var(--bg);padding:9px 12px;margin-bottom:5px;font-size:12.5px;line-height:1.55">
+      <b style="color:var(--acc2)">${d.datum}</b> <span style="color:var(--dim)">~${d.kcal||'?'} kcal</span>${d.op?` <span style="color:var(--muted)">· ${esc(d.op)}</span>`:''}<br>
+      🌅 ${esc(d.zajtrk||'')} &nbsp;·&nbsp; 🍲 ${esc(d.kosilo||'')} &nbsp;·&nbsp; 🌙 ${esc(d.vecerja||'')}${d.prigrizek?` &nbsp;·&nbsp; 🥜 ${esc(d.prigrizek)}`:''}
+    </div>`).join('')}
+    <div class="row mt no-print"><button class="btn btn-ghost btn-sm" onclick="mealWeekAI()">↻ Nov jedilnik</button><button class="btn btn-ghost btn-sm" onclick="state.mealWeek=null;save();renderAll()">✕ Odstrani</button></div>
+  </div>` : '';
+  box.innerHTML = (kal? '' : `<div class="analysis-box mb" style="margin-top:0">Ni sinhroniziranih podatkov s telefona — poveži 🔵 Google sinhronizacijo v Nastavitvah. Vnose lahko dodajaš tudi ročno tukaj.</div>`) + stats + mealWeekCard + fridgeCard + meals + sugg + fuel + recepti + telo;
 }
 async function receptiAI(){
   const btn=$('btnRecAI'); busy(btn,true,'…');
@@ -4926,8 +4941,8 @@ function renderTrener(){
     <div style="font-size:10px;color:var(--dim);margin-top:8px;font-weight:700">${LANG==='en'?'WATCHING: overtraining, soreness, readiness drops':'SPREMLJAM: pretreniranost, bolečine, padce pripravljenosti'}</div>`;
   const qEl=$('quickQBox');
   const qs = LANG==='en'
-    ? ['Why is tomorrow like this?','What should I eat before the long ride?','Can I swap Saturday and Sunday?']
-    : ['Zakaj je jutrišnji trening tak?','Kaj naj jem pred dolgo turo?','Lahko soboto zamenjam z nedeljo?'];
+    ? ['Why is tomorrow like this?','Make this week easier — I am tired','Build me a weekly meal plan','Make me a sleep plan for this week']
+    : ['Zakaj je jutrišnji trening tak?','Prilagodi mi ta teden — preutrujen sem','Sestavi mi tedenski jedilnik','Naredi mi načrt spanja za ta teden'];
   qEl.innerHTML = qs.map(q=>`<div style="border:1px solid var(--border2);padding:8px 11px;cursor:pointer;color:var(--soft);font-size:12px;margin-bottom:6px" onmouseover="this.style.borderColor='var(--acc)'" onmouseout="this.style.borderColor='var(--border2)'" onclick="chatAsk('${q.replace(/'/g,"\\'")}')">${q}</div>`).join('');
 }
 function chatAsk(q){ const i=$('chatInput'); if(i){ i.value=q; chatSend(); } }
@@ -5048,14 +5063,61 @@ function micToggle(inpId, btnId){
   try{ micRec.start(); micOn=true; if(B){ B.textContent='🔴'; B.style.animation='pulse 1.2s infinite'; } toast('Poslušam … povej vprašanje in klikni 🔴 za konec.','ok'); }
   catch(_){ toast('Mikrofona ni bilo mogoče zagnati.','err'); }
 }
+let chatImg=null;
+function chatImgSet(file){
+  if(!file || !file.type || !file.type.startsWith('image/')) return;
+  const img=new Image(), url=URL.createObjectURL(file);
+  img.onload=()=>{ const MX=1280, sc=Math.min(1, MX/Math.max(img.width,img.height));
+    const c=document.createElement('canvas'); c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc);
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    chatImg=c.toDataURL('image/jpeg',.82).split(',')[1];
+    URL.revokeObjectURL(url); chatImgChipR(); try{ $('chatInput').focus(); }catch(_){}
+  };
+  img.src=url;
+}
+function chatImgChipR(){
+  const el=$('chatImgChip'); if(!el) return;
+  el.innerHTML = chatImg? `<div style="display:flex;align-items:center;gap:8px;margin:0 0 8px;background:var(--bg);border:1px solid var(--border);padding:6px 10px;font-size:12px;color:var(--soft)"><img src="data:image/jpeg;base64,${chatImg}" style="height:34px">📷 Slika pripravljena — trener si jo ogleda ob naslednjem sporočilu <span style="cursor:pointer;color:var(--red);font-weight:800" onclick="chatImg=null;chatImgChipR()">✕</span></div>` : '';
+}
+document.addEventListener('change', e=>{ if(e.target && e.target.id==='chatImgFile'){ chatImgSet(e.target.files[0]); e.target.value=''; } });
+async function mealWeekAI(extra){
+  toast('🍽 Sestavljam tedenski jedilnik …','ok');
+  try{
+    const t0=tdee()||2200, pr=proteinTarget()||120;
+    const cilj = wantsLean()? Math.round(Math.max((bmr()||1600)+200, t0-300)) : t0;
+    const r=await gemini([{text:`Si športni nutricionist. Sestavi TEDENSKI JEDILNIK (7 dni, začni ${todayIso()}) za tega športnika.
+${buildContext()}
+Cilj: ~${cilj} kcal/dan, beljakovine ~${pr} g/dan. Preprosta slovenska živila (oves, skuta, jajca, riž, piščanec, tuna, jogurt …), pripravljivo doma, brez eksotike. Ob dnevih s težjim treningom več ogljikovih hidratov, ob počitku manj.
+${extra?`POSEBNA ZAHTEVA UPORABNIKA: ${extra}`:''}
+Vrni SAMO JSON: {"dnevi":[{"datum":"YYYY-MM-DD","zajtrk":"...","kosilo":"...","vecerja":"...","prigrizek":"...","kcal":number,"op":"kratka opomba glede na trening tistega dne"}]}`}],{temp:.5});
+    if(!Array.isArray(r.dnevi) || !r.dnevi.length) throw new Error('Jedilnika ni uspelo sestaviti — poskusi znova.');
+    state.mealWeek={made:todayIso(), dnevi:r.dnevi.slice(0,7)};
+    save(); renderAll();
+    const m=chatLoad(); m.push({r:'ai',t:'🍽 Tedenski jedilnik je pripravljen — cel je v zavihku Prehrana. Povzetek:\n\n'+state.mealWeek.dnevi.map(d=>`${d.datum}: 🌅 ${d.zajtrk} · 🍲 ${d.kosilo} · 🌙 ${d.vecerja}${d.prigrizek?' · 🥜 '+d.prigrizek:''} (~${d.kcal} kcal)`).join('\n'),ts:Date.now(),tag:'JEDILNIK'}); chatSave(m); renderChat();
+  }catch(e){ toast(e.message,'err'); }
+}
+async function sleepPlanAI(extra){
+  toast('😴 Sestavljam načrt spanja …','ok');
+  try{
+    const r=await gemini([{text:`Si trener za regeneracijo. Sestavi NAČRT SPANJA za naslednjih 7 dni (začni ${todayIso()}) za tega športnika — uskladi ga z njegovim planom treningov (pred težkimi dnevi prej spat, po njih več spanja).
+${buildContext()}
+Vrni SAMO JSON: {"povzetek":"2 stavka","dnevi":[{"datum":"YYYY-MM-DD","spat":"HH:MM","vstani":"HH:MM","ure":number,"nasvet":"1 kratek konkreten nasvet za ta večer (rutina, zaslon, kofein, obrok)"}]}`}],{temp:.4});
+    if(!Array.isArray(r.dnevi)||!r.dnevi.length) throw new Error('Načrta spanja ni uspelo sestaviti — poskusi znova.');
+    const m=chatLoad(); m.push({r:'ai',t:'😴 NAČRT SPANJA — '+(r.povzetek||'')+'\n\n'+r.dnevi.slice(0,7).map(d=>`${d.datum}: v posteljo ${d.spat}, vstani ${d.vstani} (~${d.ure} h). ${d.nasvet||''}`).join('\n'),ts:Date.now(),tag:'SPANJE'}); chatSave(m); renderChat();
+  }catch(e){ toast(e.message,'err'); }
+}
 async function chatSend(){
-  const inp=$('chatInput'); const q=(inp.value||'').trim(); if(!q) return;
+  const inp=$('chatInput'); const q=(inp.value||'').trim();
+  const hasImg=!!chatImg; if(!q && !hasImg) return;
+  const q2=q || 'Poglej priloženo sliko in mi svetuj.';
   const msgs=chatLoad();
-  msgs.push({r:'me',t:q,ts:Date.now()}); chatSave(msgs); inp.value=''; renderChat();
+  msgs.push({r:'me',t:(hasImg?'🖼 ':'')+q2,ts:Date.now()}); chatSave(msgs); inp.value=''; renderChat();
   const btn=$('btnChat'); busy(btn,true,'…');
   try{
     const histTxt=chatLoad().slice(-8).map(m=>(m.r==='me'?'KOLESAR: ':'TRENER: ')+m.t).join('\n');
-    const txt=await gemini([{text:`Si moj osebni trener (kolo, moč, prehrana). Odgovori kratko (2-6 stavkov), konkretno, slovensko, prijateljsko. Če vprašanje ni povezano s treningom, zdravjem ali prehrano, prijazno usmeri nazaj.
+    const parts=[]; if(hasImg) parts.push({inline_data:{mime_type:'image/jpeg',data:chatImg}});
+    parts.push({text:`Si moj osebni trener (kolo, moč, prehrana). Odgovori kratko (2-6 stavkov), konkretno, slovensko, prijateljsko. Če vprašanje ni povezano s treningom, zdravjem ali prehrano, prijazno usmeri nazaj.${hasImg?'\nUPORABNIK JE PRILOŽIL SLIKO — najprej jo natančno analiziraj (obrok? zaslon ure/aplikacije? oprema? drža?) in ugotovitve vključi v odgovor.':''}
+MOŽNOST UKREPANJA: če uporabnik IZRECNO želi, da mu spremeniš/prilagodiš tedenski PLAN (lažji teden, premik/menjava treningov, drugačen obseg …), ali da sestaviš TEDENSKI JEDILNIK, najprej na kratko odgovori, NATO pa v ZADNJI vrstici dodaj TOČNO ##AKCIJA{"tip":"plan","navodilo":"strnjena zahteva"} oziroma ##AKCIJA{"tip":"jedilnik","navodilo":"strnjena zahteva"} oziroma ##AKCIJA{"tip":"spanje","navodilo":"strnjena zahteva"} (če želi NAČRT SPANJA/regeneracije za teden). Če tega ni zahteval, vrstice NE dodajaj.
 Si tudi PODPORA za aplikacijo PEAKFORM — če uporabnik vpraša o njej, odgovori iz tega: prijava z Google (Nastavitve) vklopi AI in sinhronizacijo med napravami; AI je v zgodnjem dostopu NEOMEJEN in zastonj za vse prijavljene; povezava ur: Nastavitve → Povezave → čarovnik (Garmin: .FIT izvoz ali Intervals.icu, Strava: kmalu na en klik); uvoz aktivnosti: povleci .FIT/.GPX ali screenshot na zavihek Aktivnosti; telefon: QR koda v Nastavitvah odpre mobilno prehrano; varnostna kopija in izbris: Nastavitve → Podatki.
 
 ${buildContext()}
@@ -5063,8 +5125,25 @@ ${buildContext()}
 POGOVOR DOSLEJ:
 ${histTxt}
 
-Odgovori na zadnje sporočilo kolesarja. Vrni samo čisto besedilo.${aiLangNote()}`}],{json:false,temp:.6});
-    const m2=chatLoad(); m2.push({r:'ai',t:String(txt).trim(),ts:Date.now()}); chatSave(m2); renderChat();
+Odgovori na zadnje sporočilo kolesarja. Vrni samo čisto besedilo (in po potrebi vrstico ##AKCIJA na koncu).${aiLangNote()}`});
+    const txt=await gemini(parts,{json:false,temp:.6});
+    chatImg=null; chatImgChipR();
+    const raw=String(txt).trim();
+    const am=raw.match(/##AKCIJA\s*(\{[^]*?\})\s*$/);
+    const show=raw.replace(/##AKCIJA[^]*$/,'').trim();
+    const m2=chatLoad(); m2.push({r:'ai',t:show||'✅',ts:Date.now()}); chatSave(m2); renderChat();
+    if(am){
+      let act=null; try{ act=JSON.parse(am[1]); }catch(_){}
+      if(act && act.tip==='plan'){
+        toast('🤖 Trener prilagaja tvoj tedenski plan …','ok');
+        await generatePlan(undefined, act.navodilo||q2);
+        const m3=chatLoad(); m3.push({r:'ai',t:'✅ Plan sem prilagodil po tvoji zahtevi — poglej zavihek Plan.',ts:Date.now(),tag:'PLAN'}); chatSave(m3); renderChat();
+      } else if(act && act.tip==='jedilnik'){
+        await mealWeekAI(act.navodilo||q2);
+      } else if(act && act.tip==='spanje'){
+        await sleepPlanAI(act.navodilo||q2);
+      }
+    }
   }catch(e){ toast(e.message,'err'); }
   busy(btn,false);
 }
