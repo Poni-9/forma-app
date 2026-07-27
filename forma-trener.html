@@ -3239,10 +3239,62 @@ function insertTodayWorkout(){
 /* ================================================================
    AI: OCENA VOŽNJE
 ================================================================ */
+function analyzeRideLocal(r){
+  // ocena BREZ AI — čista pravila nad tvojo lastno zgodovino (za Strava aktivnosti, ker njihova pravila AI ne dovolijo)
+  const same = state.rides.filter(x=>x.sport===r.sport && x.id!==r.id && (+x.time||0)>0);
+  const pct=(arr,v)=>arr.length>=3? Math.round(arr.filter(x=>x<=v).length/arr.length*100) : null;
+  const pD=pct(same.map(x=>+x.dist||0), +r.dist||0);
+  const pE=pct(same.map(x=>+x.elev||0), +r.elev||0);
+  const pT=pct(same.map(x=>x.tss||0), r.tss||0);
+  const ek=(+r.elev||0)/Math.max(1,+r.dist||1);
+  const sim=same.filter(x=>{ const e2=(+x.elev||0)/Math.max(1,+x.dist||1); return Math.abs(e2-ek)<6 && x.avgHr && x.speed; });
+  let eff=null;
+  if(r.speed && r.avgHr && sim.length>=3){
+    const ref=sim.reduce((a2,x)=>a2+x.speed/x.avgHr,0)/sim.length;
+    eff=Math.round(((r.speed/r.avgHr)/ref-1)*100);
+  }
+  const day=planDayFor(r.date);
+  let skl='dobro', sklTxt='Za ta dan ni bilo plana — tura šteje v tvojo bazo.';
+  if(day){
+    const dur=+day.trajanje_min||0, ratio=dur? (r.time/dur) : 1;
+    if(chipClass(day.tip)==='pocitek'){ skl='mimo plana'; sklTxt='Planiran je bil počitek — trening na tak dan rad poje regeneracijo.'; }
+    else if(ratio>=.85&&ratio<=1.25){ skl='odlično'; sklTxt=`Trajanje se lepo ujema s planiranim (${dur} min).`; }
+    else if(ratio>=.6&&ratio<=1.6){ skl='dobro'; sklTxt=`Trajanje ${Math.round(ratio*100)} % planiranega — sprejemljivo odstopanje.`; }
+    else { skl='delno'; sklTxt= ratio<1? 'Precej krajše od plana — štej kot lažji dan in nadaljuj po planu.' : 'Precej daljše od plana — obremenitev je bila večja od predvidene, jutri umiri.'; }
+  }
+  const z=hrZones(); let inten='';
+  if(r.avgHr && z){
+    const ks=Object.keys(z), lo=z[ks[1]]||z[ks[0]], hiZ=z[ks[Math.min(3,ks.length-1)]];
+    if(lo && r.avgHr<=lo[1]) inten='Utrip pretežno v aerobni coni — točno tak dražljaj gradi bazo in kuri maščobe.';
+    else if(hiZ && r.avgHr>=hiZ[0]) inten='Povprečni utrip visoko — oster dan; naslednja dva naj bosta mirnejša.';
+    else inten='Zmerna intenzivnost — dobra sredina med bazo in ostrino.';
+  }
+  const parts=[];
+  if(pD!=null && pD>=85) parts.push(`Daljša od ${pD} % tvojih ${r.sport==='tek'?'tekov':r.sport==='pohod'?'tur':'voženj'} — lep mejnik.`);
+  else if(pD!=null && pD<=20 && (+r.dist||0)>0) parts.push('Krajša izmed tvojih — kot dopolnilni dan povsem na mestu.');
+  if(pE!=null && pE>=85 && (+r.elev||0)>100) parts.push(`Višincev več kot na ${pE} % tvojih aktivnosti (${Math.round(r.elev)} m).`);
+  if(eff!=null && eff>=3) parts.push(`Pri enakem utripu si bil ~${eff} % hitrejši od svojega povprečja na podobnem terenu — forma raste. 📈`);
+  else if(eff!=null && eff<=-3) parts.push(`Pri enakem utripu ~${Math.abs(eff)} % počasneje od tvojega povprečja — verjetno utrujenost, vročina ali veter; ne beri preveč v en dan.`);
+  if(inten) parts.push(inten);
+  parts.push(sklTxt);
+  const f=currentForm();
+  let prip='Nadaljuj po planu — naslednji dnevi so že razporejeni.';
+  if(f && f.tsb<-15) prip='Svežina je nizka ('+f.tsb+') — jutri regeneracija ali prosto, da telo vsrka ta trening.';
+  else if(f && f.tsb>5 && (pT==null||pT<50)) prip='Svež si — jutri je pravi dan za kakovosten trening.';
+  else if(skl==='mimo plana') prip='Naslednjič raje spoštuj dan počitka — napredek se zgodi med oddihom.';
+  let ocena=6;
+  ocena += skl==='odlično'?1.5: skl==='dobro'?0.5: skl==='delno'?-0.5:-1.5;
+  if(eff!=null) ocena += Math.max(-1.5, Math.min(1.5, eff/4));
+  if(pD!=null && pD>=85) ocena += 0.5;
+  if(pE!=null && pE>=85) ocena += 0.5;
+  ocena=Math.max(3, Math.min(10, Math.round(ocena)));
+  return { ocena, skladnost:skl, komentar:parts.slice(0,4).join(' '), priporocilo:prip, lokalno:true };
+}
 async function analyzeRideAI(r){
   if(r && r.source==='strava'){
-    toast('Ta aktivnost je iz Strave — njihova pravila ne dovolijo AI obdelave. Povleci isto vožnjo kot .FIT iz Garmin Connect in AI analiza dela. Vsa statistika, forma in rekordi zanjo normalno delujejo.','err');
-    return;
+    const a=analyzeRideLocal(r);
+    r.analysis=a; save(); renderAll();
+    return a;
   }
   const day = planDayFor(r.date);
   const a = await gemini([{ text:
@@ -3262,7 +3314,7 @@ Vrni SAMO JSON:
 const sklClass = s => { const x=(s||'').toLowerCase(); return x.startsWith('odli')?'green':x.startsWith('dob')?'orange':'gray'; };
 function aiBoxHtml(r){
   const a = r.analysis;
-  return `<div class="analysis-box"><b>✨ AI ocena: ${a.ocena}/10</b> <span class="chip ${sklClass(a.skladnost)}" style="margin-left:6px">${esc(a.skladnost)}</span><br>${esc(a.komentar)}<br><i style="color:var(--dim)">${esc(a.priporocilo)}</i></div>`;
+  return `<div class="analysis-box"><b>${a.lokalno?'📐 Ocena (brez AI)':'✨ AI ocena'}: ${a.ocena}/10</b> <span class="chip ${sklClass(a.skladnost)}" style="margin-left:6px">${esc(a.skladnost)}</span><br>${esc(a.komentar)}<br><i style="color:var(--dim)">${esc(a.priporocilo)}</i></div>`;
 }
 async function evalRide(id){
   const r = state.rides.find(x=>x.id===id);
@@ -3277,6 +3329,7 @@ async function evalRide(id){
         <span style="color:var(--dim);font-size:13px">"${esc(r.name)}" · ${fmtDate(r.date)}</span></div>
       <div class="analysis-box"><b>Analiza:</b> ${esc(a.komentar)}</div>
       <div class="analysis-box"><b>Priporočilo:</b> ${esc(a.priporocilo)}</div>
+      ${a.lokalno?`<div class="hint" style="margin-top:6px">Ocena brez AI — izračunana iz tvoje lastne zgodovine (Strava aktivnosti po njihovih pravilih niso na voljo AI). Za AI analizo povleci isto vožnjo kot .FIT.</div>`:''}
       <div class="modal-foot"><button class="btn btn-primary" onclick="closeModal('evalModalBack')">V redu</button></div>`;
   }catch(e){
     $('evalBody').innerHTML = `<div class="analysis-box" style="border-color:rgba(255,92,92,.4)">${esc(e.message)}</div>`;
