@@ -1241,6 +1241,12 @@ function dedupeRides(arr){
     const k2=(r.date||'')+'|'+(r.sport||'kolo')+'|'+Math.round((+r.dist||0)*2)+'|'+Math.round((+r.time||0)/6);
     if(r.sport!=='moc' && seen2[k2]){
       const prev=seen2[k2];
+      if(prev.source==='strava' && r.source && r.source!=='strava'){
+        prev.source=r.source;            // ista vožnja prišla tudi iz uporabnikove datoteke → AI zanjo dovoljen
+        if(r.maxHr && !prev.maxHr) prev.maxHr=r.maxHr;
+        if(r.avgHr && !prev.avgHr) prev.avgHr=r.avgHr;
+        if(r.watts && !prev.watts) prev.watts=r.watts;
+      }
       if(prev.icuId==null && r.icuId!=null) prev.icuId=r.icuId;
       if(prev.stravaId==null && r.stravaId!=null) prev.stravaId=r.stravaId;
       if(!prev.polyline && r.polyline) prev.polyline=r.polyline;
@@ -3211,7 +3217,7 @@ function insertTodayWorkout(){
 ================================================================ */
 async function analyzeRideAI(r){
   if(r && r.source==='strava'){
-    toast('Ta aktivnost je uvožena iz Strave — Stravina pravila ne dovolijo njene obdelave z AI. Vsa statistika, forma in rekordi zanjo normalno delujejo.','err');
+    toast('Ta aktivnost je iz Strave — njihova pravila ne dovolijo AI obdelave. Povleci isto vožnjo kot .FIT iz Garmin Connect in AI analiza dela. Vsa statistika, forma in rekordi zanjo normalno delujejo.','err');
     return;
   }
   const day = planDayFor(r.date);
@@ -3410,7 +3416,7 @@ function renderRiderCard(){
     <button class="btn btn-primary" id="btnRider" onclick="analyzeRider()">🔍 Analiziraj moje vožnje</button>`);
 }
 async function analyzeRider(){
-  if (aiRides().length < 3){ toast(hasStravaRides()? 'Strava aktivnosti po njihovih pravilih niso na voljo AI analizi — dodaj vsaj 3 vožnje prek .FIT/GPX, screenshota ali ročno.' : 'Za analizo dodaj vsaj 3 vožnje.','err'); return; }
+  if (aiRides().length < 3){ toast(hasStravaRides()? 'Stravina pravila ne dovolijo AI analize njihovih uvozov. Odkleneš jo tako, da ISTE vožnje povlečeš kot .FIT iz Garmin Connect (Aktivnost → ⚙️ → Izvozi original) — poln AI za vse. 🔜 Z Garmin povezavo bo samodejno.' : 'Za analizo dodaj vsaj 3 vožnje.','err'); return; }
   const btn = $('btnRider'); busy(btn, true, 'Analiziram tvoje vožnje …');
   try{
     const r = await gemini([{ text:
