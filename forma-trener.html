@@ -719,6 +719,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
           <button class="btn btn-primary" id="btnGenPlan" onclick="generatePlan()">⟳ Generiraj nov teden</button>
           <button class="btn btn-ghost" id="btnMacro" onclick="generateMacro()">🎯 Plan do cilja</button>
           <button class="btn btn-ghost" onclick="openImportPlan()">📥 Uvozi svoj plan</button>
+          <input id="planWish" placeholder="Želje za ta teden — npr. »v soboto imam 4 ure«, »sredo izpusti«" style="min-width:230px;flex:1">
           <button class="btn btn-ghost" onclick="planBrezAI()" title="Deterministična pravila — nič se ne pošlje nikamor">⚙️ Hitri plan (brez AI)</button>
         </div>
       </div>
@@ -2983,6 +2984,7 @@ function showDay(iso){
    AI: TEDENSKI PLAN
 ================================================================ */
 async function generatePlan(fromIso, extra){
+  try{ const wish=(document.getElementById('planWish')?.value||'').trim(); if(wish) extra=[extra,wish].filter(Boolean).join(' | '); }catch(_){}
   const start = fromIso ? parseIso(fromIso) : new Date();
   const days = Array.from({length:7}, (_,i)=>isoDate(addDays(start,i)));
   const dayLbl = d => `${d} (${DNEVI[(parseIso(d).getDay()+6)%7]})`;
@@ -4617,6 +4619,39 @@ function renderKalorije(){
   } else {
     telo=`<div class="card mt"><h3>${t('bodyComp')}</h3><div class="hint" style="margin:2px 0">${LANG==='en'?'Update your weight in Settings — the trend chart builds here.':'Vsakič, ko v Nastavitvah posodobiš težo, se tukaj riše graf napredka.'}</div></div>`;
   }
+  const mt=state.mealsToday;
+  const mtOn = mt && mt.date===todayIso() && Array.isArray(mt.slots);
+  const mtSum = mtOn? mt.slots.reduce((a,ms,si)=>a+((ms.opts&&ms.opts[mt.pick[si]||0]&&+ms.opts[mt.pick[si]||0].kcal)||0),0) : 0;
+  const mealsTodayCard = `<div class="card mt" style="border-color:rgba(255,138,42,.3)">
+    <div class="spread" style="flex-wrap:wrap;gap:10px;align-items:flex-end">
+      <h3 style="margin:0">🍽 Plan jedi za danes <span class="sub">✨ 3 recepti na izbiro za vsak obrok — klik izbere</span></h3>
+      <div class="row no-print">${mtOn?`<button class="btn btn-ghost btn-sm" onclick="mealsShop()">🛒 Listek</button>`:''}<button class="btn ${mtOn?'btn-ghost':'btn-primary'} btn-sm" onclick="mealsTodayAI()">${mtOn?'⟳ Nov plan':'✨ Sestavi plan jedi'}</button></div>
+    </div>
+    ${mtOn? mt.slots.map((ms,si)=>{
+      const pi=mt.pick[si]||0;
+      return `<div style="border:1px solid var(--border);background:var(--bg);margin-top:10px">
+      <div style="display:flex;align-items:center;gap:12px;padding:9px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap">
+        <div style="font-family:var(--bc);font-weight:800;font-size:15px;letter-spacing:.08em;color:var(--muted);width:100px">${esc(ms.slot||'')}</div>
+        <div style="font-size:11px;color:var(--dim);font-weight:600">${esc(ms.timing||'')}</div>
+        <div style="margin-left:auto;font-size:11px;font-weight:700;color:var(--acc2)">${esc(ms.target||'')}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr)">
+        ${(ms.opts||[]).slice(0,3).map((o,oi)=>{ const on=pi===oi;
+          return `<div onclick="mealsPick(${si},${oi})" style="padding:12px 14px;border-right:1px solid var(--border);border-top:2px solid ${on?'var(--green)':'transparent'};background:${on?'rgba(95,214,122,.05)':'transparent'};cursor:pointer;display:flex;flex-direction:column;min-height:140px">
+          <div style="display:flex;justify-content:space-between;gap:8px"><div style="font-weight:700;font-size:13px;line-height:1.3">${esc(o.emoji||'🍽')} ${esc(o.ime||'')}</div>${on?'<div style="font-size:10px;font-weight:800;color:var(--green);white-space:nowrap">✓ IZBRANO</div>':''}</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-top:5px;flex:1">${esc(o.sestavine||'')}</div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:8px;gap:6px"><div style="font-family:var(--bc);font-weight:800;font-size:17px">${o.kcal||'?'} <span style="font-size:10px;color:var(--dim)">KCAL</span></div><div style="font-size:10px;color:var(--dim);font-weight:700;white-space:nowrap">B ${o.b??'–'} · OH ${o.oh??'–'} · M ${o.m??'–'} · ⏱ ${o.min??'–'}'</div></div>
+          <div style="font-size:10.5px;color:var(--acc2);margin-top:5px;line-height:1.45">✨ ${esc(o.zakaj||'')}</div>
+        </div>`; }).join('')}
+      </div>
+      ${mt.open===si? `<div style="padding:11px 14px;border-top:1px solid var(--border);background:rgba(0,0,0,.25)">
+        <div class="spread"><div style="font-size:10px;font-weight:800;letter-spacing:.1em;color:var(--acc2)">PRIPRAVA — ${esc(((ms.opts||[])[pi]||{}).ime||'')}</div><span style="cursor:pointer;color:var(--dim);padding:2px 6px" onclick="mealsRecipe(null)">✕</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px">${((((ms.opts||[])[pi]||{}).koraki)||[]).slice(0,3).map((st,i)=>`<div style="font-size:12px;color:var(--soft);line-height:1.55;display:flex;gap:8px"><b style="font-family:var(--bc);font-size:16px;color:var(--border2);flex:none">${i+1}</b><span>${esc(String(st))}</span></div>`).join('')}</div>
+      </div>` : `<div onclick="mealsRecipe(${si})" style="padding:8px 14px;border-top:1px solid var(--border);font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--dim);cursor:pointer;text-align:center">▾ Prikaži pripravo</div>`}
+      </div>`; }).join('') +
+      `<div style="display:flex;gap:12px;margin-top:10px;font-size:11px;color:var(--dim);flex-wrap:wrap;align-items:center"><span><b style="color:var(--green)">✓ IZBRANO</b> šteje v današnji cilj</span><span>· klik na drugo jed jo zamenja</span><span style="margin-left:auto;font-weight:800;color:var(--soft)">Izbrano skupaj: ${mtSum.toLocaleString('sl')} kcal</span></div>`
+    : `<div class="hint" style="margin-top:8px">AI sestavi zajtrk, kosilo, malico in večerjo — vsak s 3 recepti na izbiro, usklajeno z današnjim treningom, cilji in kalorijami.</div>`}
+  </div>`;
   const mw=state.mealWeek;
   const mealWeekCard = (mw && Array.isArray(mw.dnevi) && mw.dnevi.length)? `<div class="card mt" style="border-color:rgba(255,194,71,.3)">
     <h3>🍽 Tedenski jedilnik <span class="sub">pripravil AI trener (${mw.made||''}) — za spremembe mu samo povej v klepetu</span></h3>
@@ -4627,7 +4662,7 @@ function renderKalorije(){
     ${(mw.nakup&&mw.nakup.length)?`<div style="border:1px dashed rgba(255,194,71,.5);background:rgba(255,194,71,.06);padding:9px 12px;margin-top:6px;font-size:12.5px">🛒 <b>Nakupovalni listek:</b> ${mw.nakup.map(esc).join(' · ')}</div>`:''}
     <div class="row mt no-print"><button class="btn btn-ghost btn-sm" onclick="mealWeekAI()">↻ Nov jedilnik</button><button class="btn btn-ghost btn-sm" onclick="state.mealWeek=null;save();renderAll()">✕ Odstrani</button></div>
   </div>` : '';
-  box.innerHTML = (kal? '' : `<div class="analysis-box mb" style="margin-top:0">Ni sinhroniziranih podatkov s telefona — poveži 🔵 Google sinhronizacijo v Nastavitvah. Vnose lahko dodajaš tudi ročno tukaj.</div>`) + stats + mealWeekCard + fridgeCard + meals + sugg + fuel + recepti + telo;
+  box.innerHTML = (kal? '' : `<div class="analysis-box mb" style="margin-top:0">Ni sinhroniziranih podatkov s telefona — poveži 🔵 Google sinhronizacijo v Nastavitvah. Vnose lahko dodajaš tudi ročno tukaj.</div>`) + stats + mealsTodayCard + mealWeekCard + fridgeCard + meals + sugg + fuel + recepti + telo;
 }
 async function receptiAI(){
   const btn=$('btnRecAI'); busy(btn,true,'…');
@@ -5194,6 +5229,23 @@ function chatImgChipR(){
   el.innerHTML = chatImg? `<div style="display:flex;align-items:center;gap:8px;margin:0 0 8px;background:var(--bg);border:1px solid var(--border);padding:6px 10px;font-size:12px;color:var(--soft)"><img src="data:image/jpeg;base64,${chatImg}" style="height:34px">📷 Slika pripravljena — trener si jo ogleda ob naslednjem sporočilu <span style="cursor:pointer;color:var(--red);font-weight:800" onclick="chatImg=null;chatImgChipR()">✕</span></div>` : '';
 }
 document.addEventListener('change', e=>{ if(e.target && e.target.id==='chatImgFile'){ chatImgSet(e.target.files[0]); e.target.value=''; } });
+async function mealsTodayAI(){
+  toast('🍽 Sestavljam današnji plan jedi …','ok');
+  try{
+    const day0=planDayFor(todayIso());
+    const t0=tdee()||2200; const cilj=wantsLean()? Math.round(Math.max((bmr()||1600)+200,t0-300)):t0;
+    const r=await gemini([{text:`Si športni nutricionist. Za DANES sestavi 4 obroke (ZAJTRK, KOSILO, MALICA, VEČERJA) — za VSAK obrok TOČNO 3 različne recepte na izbiro. Preprosta slovenska živila, pripravljivo doma.
+${buildContext()}
+DANAŠNJI TRENING: ${day0? day0.tip+' — '+day0.naslov+' ('+(day0.trajanje_min||0)+' min)':'ni plana'}. Skupni cilj vnosa: ~${cilj} kcal (razdeli smiselno po obrokih).
+Vrni SAMO JSON: {"slots":[{"slot":"ZAJTRK","timing":"kdaj glede na trening","target":"makro poudarek danes","opts":[{"emoji":"🥣","ime":"...","sestavine":"kratko s količinami","kcal":n,"b":n,"oh":n,"m":n,"min":n,"zakaj":"1 stavek, zakaj ta jed danes","koraki":["1. korak","2. korak","3. korak"]}]}],"nakup":["kar verjetno manjka, max 8 stvari"]}`}],{temp:.5});
+    if(!Array.isArray(r.slots) || r.slots.length<3) throw new Error('Plana jedi ni uspelo sestaviti — poskusi znova.');
+    state.mealsToday={date:todayIso(), slots:r.slots.slice(0,4), pick:[0,0,0,0], open:null, nakup:Array.isArray(r.nakup)?r.nakup.slice(0,10):[]};
+    save(); renderAll(); toast('🍽 Plan jedi za danes je pripravljen ✅','ok');
+  }catch(e){ toast(e.message,'err'); }
+}
+function mealsPick(si,oi){ const mt=state.mealsToday; if(!mt) return; mt.pick[si]=oi; save(); renderAll(); }
+function mealsRecipe(si){ const mt=state.mealsToday; if(!mt) return; mt.open=(si==null||mt.open===si)?null:si; save(); renderAll(); }
+function mealsShop(){ const mt=state.mealsToday; if(!mt) return; toast(mt.nakup&&mt.nakup.length? '🛒 Dokupi: '+mt.nakup.join(' · ') : '🛒 Vse imaš doma — nič za dokupit.','ok'); }
 async function mealWeekAI(extra, img){
   toast('🍽 Sestavljam tedenski jedilnik …','ok');
   try{
