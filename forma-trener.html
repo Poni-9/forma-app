@@ -707,6 +707,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
           <button class="btn btn-primary" id="btnGenPlan" onclick="generatePlan()">⟳ Generiraj nov teden</button>
           <button class="btn btn-ghost" id="btnMacro" onclick="generateMacro()">🎯 Plan do cilja</button>
           <button class="btn btn-ghost" onclick="openImportPlan()">📥 Uvozi svoj plan</button>
+          <button class="btn btn-ghost" onclick="planBrezAI()" title="Deterministična pravila — nič se ne pošlje nikamor">⚙️ Hitri plan (brez AI)</button>
         </div>
       </div>
 
@@ -2317,6 +2318,14 @@ async function testGemini(){
 /* ================================================================
    KONTEKST ZA AI TRENERJA
 ================================================================ */
+/* STRAVA-SAFE: aktivnosti, ki smejo v AI pozive (Stravina pravila prepovedujejo
+   posredovanje njihovih podatkov zunanjim AI orodjem — zato Strava vožnje AI ne vidi;
+   lokalna matematika (forma, rekordi, realizacija) jih normalno uporablja) */
+function aiRides(){ return state.rides.filter(r=>r.source!=='strava'); }
+function stravaSafeNote(){
+  return state.rides.some(r=>r.source==='strava')
+    ? '\n(OPOMBA: del aktivnosti prihaja iz Strave in zaradi pravil Strava API ni vključen v ta seznam — skupno formo oceni tudi po CTL/TSB številkah in realizaciji.)' : '';
+}
 function buildContext(){
   const p = state.settings.profile;
   const f = currentForm();
@@ -2369,7 +2378,7 @@ function buildContext(){
   if (f) L.push(`\nTRENUTNA FORMA: kondicija CTL=${f.ctl}, akutna utrujenost ATL=${f.atl}, svežina TSB=${f.tsb} → ${f.opis}`);
 
   const cutoff = isoDate(addDays(new Date(), -28));
-  const recent = state.rides.filter(r=>r.date>=cutoff).sort((a,b)=>a.date.localeCompare(b.date));
+  const recent = aiRides().filter(r=>r.date>=cutoff).sort((a,b)=>a.date.localeCompare(b.date));
   const km = recent.reduce((a,r)=>a+(+r.dist||0),0), min = recent.reduce((a,r)=>a+(+r.time||0),0), tss = recent.reduce((a,r)=>a+(r.tss||0),0);
   L.push(`\nZADNJIH 28 DNI: ${recent.length} voženj, ${km.toFixed(0)} km, ${(min/60).toFixed(1)} h, skupni TSS ${tss}`);
   if (recent.length){
@@ -2377,6 +2386,7 @@ function buildContext(){
     for (const r of recent.slice(-12))
       L.push(`- ${r.date}: "${r.name}" ${r.dist??'?'} km, ${fmtDur(r.time)}, ${r.elev??'?'} m višincev, povp. utrip ${r.avgHr??'?'}, TSS ${r.tss}${r.places?` | pot: ${r.places}`:''}${r.notes?` | občutek: ${r.notes}`:''}${r.analysis?` | AI ocena: ${r.analysis.ocena}/10, ${r.analysis.skladnost}`:''}`);
   } else L.push(`(še ni zabeleženih voženj)`);
+  L.push(stravaSafeNote());
 
   if (state.riderProfile){
     const rp = state.riderProfile;
@@ -2874,8 +2884,77 @@ Točno 7 dni s temi datumi po vrsti: ${days.map(dayLbl).join(', ')}.` }], {temp:
     upsertPlanDays((r.dnevi||[]).map((d,i)=>normDay(d, days[i])), { summary:r.povzetek, focus:r.fokus });
     save(); renderAll();
     toast(fromIso ? 'Plan podaljšan za 7 dni. 📅' : 'Plan za naslednjih 7 dni je pripravljen! 📅','ok');
-  }catch(e){ toast(e.message,'err'); }
+  }catch(e){
+    toast(e.message,'err');
+    if(/limit|kvota|402/i.test(String(e.message))) setTimeout(()=>{ if(confirm('AI kvota je porabljena. Sestavim hitri plan brez AI (pravila + cone + vreme)?')) planBrezAI(); }, 600);
+  }
   busy(btn, false);
+}
+
+/* ================================================================
+   ⚙️ PLAN BREZ AI — deterministična pravila (periodizacija + cone + vreme)
+   Ne pošlje NIČESAR nikamor: čista matematika v brskalniku.
+================================================================ */
+function planBrezAI(){
+  const p=state.settings.profile;
+  const a=userAkt(), favs=aktFavs();
+  const z=hrZones()||{C1:[100,130],C2:[130,145],C3:[145,160],C4:[160,175],C5:[175,190]};
+  const Z=k=>z[k]?`utrip ${z[k][0]}–${z[k][1]}`:k;
+  const ure=+p.ure||6;
+  const f=currentForm();
+  const rp=planRealizacija();
+  const scale = (f&&f.tsb<-20)?0.85 : (rp&&rp.planned>=3&&rp.pct<50)?0.85 : 1;
+  const start=new Date(); const days=[];
+  const primar = favs.find(x=>['kolo','tek','pohod'].includes(x)) || a.find(x=>['kolo','tek','pohod'].includes(x)) || 'kolo';
+  const sekun  = a.find(x=>['kolo','tek','pohod'].includes(x) && x!==primar) || null;
+  const aktDni = ure<=4?3 : ure<=7?4 : 5;
+  const mocDni = a.includes('moc') ? (ure<=4?1:2) : 0;
+  // razporedi tipe po dnevih tedna (0=danes)
+  const wx=(i)=>{ const iso=isoDate(addDays(start,i)); const w=weatherByDate(iso); return w? (w.pop||0) : 30; };
+  const idxs=[0,1,2,3,4,5,6];
+  const vikend=idxs.filter(i=>{const d=addDays(start,i).getDay(); return d===0||d===6;});
+  const dolg = (vikend.length?vikend:[5,6]).sort((x,y)=>wx(x)-wx(y))[0];
+  const kakov = idxs.filter(i=>i!==dolg && i>=1).sort((x,y)=>wx(x)-wx(y))[0] ?? 2;
+  const tipi={};
+  tipi[dolg]='dolg'; tipi[kakov]='kakovost';
+  let dodani=2;
+  for(const i of idxs){ if(dodani>=aktDni) break; if(tipi[i]) continue; if(Math.abs(i-kakov)===1&&aktDni<=4) continue; tipi[i]='vzdr'; dodani++; }
+  let mocLeft=mocDni;
+  for(const i of idxs){ if(!mocLeft) break; if(tipi[i]) continue; tipi[i]='moc'; mocLeft--; }
+  const durBase=Math.round(ure*60/ (aktDni+0.5) /5)*5;
+  const mocOpis=()=>{
+    const sk=p.skills||[]; const lvl=(state.forma&&state.forma.level)||1;
+    if(wantsMU()||sk.includes('muscleup')) return 'Zgibi: 4 serije po '+(3+Math.floor(lvl/2))+' ponovitev, odmor 2 min\nSklece: 4 serije po '+(10+2*lvl)+' ponovitev, odmor 90 sekund\nDipsi: 3 serije po '+(4+lvl)+' ponovitev, odmor 2 min\nDvigi nog na drogu: 3 serije po '+(8+lvl)+' ponovitev, odmor 90 sekund';
+    return 'Sklece: 4 serije po '+(10+2*lvl)+' ponovitev, odmor 90 sekund\nZgibi ali veslanje z elastiko: 3 serije po '+(4+lvl)+' ponovitev, odmor 2 min\nIzpadni koraki: 3 serije po 12 na nogo, odmor 60 sekund\nPlank: 3 serije po '+(30+5*lvl)+' sekund, odmor 60 sekund';
+  };
+  const mk=(i,tip,naslov,minut,opis,tss,zakaj)=>{
+    const iso=isoDate(addDays(start,i));
+    days.push({datum:iso,tip,naslov,trajanje_min:Math.round(minut*scale),opis,tss_ocena:Math.round(tss*scale),vaje:'',prehrana:wantsLean()?'Manjša porcija priloge | beljakovinski dodatek po treningu | brez sladkih pijač':'',zakaj});
+  };
+  for(const i of idxs){
+    const t=tipi[i];
+    if(!t){ mk(i,'počitek','Prosto',0,'ODDIH — regeneracija je del treninga.',0,'Telo raste med počitkom.'); continue; }
+    if(t==='moc'){ mk(i,'moč','Moč doma ('+(wantsMU()?'muscle-up progresija':'celo telo')+')',35,'Ogrevanje: 8 minut kroženja in lahkotnih počepov\n'+mocOpis()+'\nZaključek: 5 minut raztezanja',35,'Moč ščiti mišice in drži telo v ravnovesju.'); continue; }
+    if(t==='dolg'){
+      if(primar==='pohod') mk(i,'pohod','Daljši pohod v hribe',Math.max(120,durBase*1.6),'Vzpon: enakomerno, pogovorni tempo ('+Z('C2')+')\nNa vrhu: 10 min odmora in prigrizek\nSestop: previdno, pazi na kolena ('+Z('C1')+')',Math.max(90,durBase),'Najdaljši dan tedna gradi vzdržljivost.');
+      else if(primar==='tek') mk(i,'tek','Dolgi počasni tek',Math.max(50,durBase*1.2),'Ogrevanje: 10 min hitre hoje in lahkotnega teka\nGlavni del: enakomeren počasen tek, pogovorni tempo ('+Z('C2')+')\nZaključek: 5 min hoje in raztezanje',Math.max(60,durBase*0.9),'Dolgi tek 1× tedensko, tempo pogovorni.');
+      else mk(i,'vzdržljivost','Dolga vožnja ('+Z('C2')+')',Math.max(90,durBase*1.6),'Ogrevanje: 15 min lahkotno ('+Z('C1')+')\nGlavni del: enakomerna vožnja ('+Z('C2')+'), vsakih 45 min kratko potegni 2 min ('+Z('C3')+')\nZaključek: 10 min sproščeno',Math.max(80,durBase),'Dolga vožnja je temelj kondicije.');
+      continue;
+    }
+    if(t==='kakovost'){
+      if(primar==='tek') mk(i,'intervali','Tekaški intervali 6×2 min',durBase,'Ogrevanje: 12 min lahkotnega teka\nGlavni del: 6× 2 min hitro ('+Z('C4')+'), vmes 2 min hoje/teka\nZaključek: 8 min lahkotno',durBase*1.1,'En hitrejši dražljaj na teden.');
+      else mk(i,'intervali','Intervali 4×6 min ('+Z('C4')+')',durBase,'Ogrevanje: 15 min postopno do ('+Z('C2')+')\nGlavni del: 4× 6 min močno ('+Z('C4')+'), vmes 4 min mirno\nZaključek: 10 min sproščeno ('+Z('C1')+')',durBase*1.2,'Ključni kakovostni trening tedna — na dan z najlepšim vremenom.');
+      continue;
+    }
+    const sp = (sekun && (i%2===1)) ? sekun : primar;
+    if(sp==='pohod') mk(i,'pohod','Pohod v bližnji hrib',Math.max(80,durBase*1.1),'Vzpon: zmeren, stalen tempo ('+Z('C2')+')\nSestop: umirjeno ('+Z('C1')+')',durBase*0.8,'Aktivni dan v hribih.');
+    else if(sp==='tek') mk(i,'tek','Lahkoten tek',Math.max(30,durBase*0.7),'Ogrevanje: 5 min hoje\nGlavni del: lahkoten tek, pogovorni tempo ('+Z('C2')+')\nZaključek: 5 min hoje',durBase*0.7,'Večina tekov lahkotnih.');
+    else mk(i,'vzdržljivost','Mirna vožnja ('+Z('C2')+')',durBase,'Ogrevanje: 10 min ('+Z('C1')+')\nGlavni del: enakomerno ('+Z('C2')+'), lahek prenos, hitro vrtenje\nZaključek: 10 min sproščeno',durBase*0.85,'Aerobna baza.');
+  }
+  days.sort((x,y)=>x.datum.localeCompare(y.datum));
+  upsertPlanDays(days.map(d=>normDay(d,d.datum)), { summary:'⚙️ Hitri plan (brez AI): '+aktDni+' aktivnih dni + '+mocDni+'× moč, kakovostni dan na najlepše vreme, obseg ~'+ure+' h'+(scale<1?' (olajšan zaradi utrujenosti/realizacije)':'')+'. Nič podatkov ni zapustilo tvoje naprave.', focus:'Hitri plan brez AI' });
+  save(); renderAll();
+  toast('⚙️ Plan sestavljen brez AI — nič ni bilo poslano nikamor. Za bolj oseben plan uporabi ✨ AI.','ok');
 }
 
 /* ================================================================
@@ -3075,6 +3154,10 @@ function insertTodayWorkout(){
    AI: OCENA VOŽNJE
 ================================================================ */
 async function analyzeRideAI(r){
+  if(r && r.source==='strava'){
+    toast('Ta aktivnost je uvožena iz Strave — Stravina pravila ne dovolijo njene obdelave z AI. Vsa statistika, forma in rekordi zanjo normalno delujejo.','err');
+    return;
+  }
   const day = planDayFor(r.date);
   const a = await gemini([{ text:
 `Si kolesarski trener. Oceni opravljeno vožnjo glede na plan in kolesarjevo formo.
