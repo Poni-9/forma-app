@@ -1242,25 +1242,33 @@ function dedupeRides(arr){
       if((r.analysis&&!prev.analysis)||(r.polyline&&!prev.polyline)){ out[out.indexOf(prev)]=r; seen[k]=r; }
       continue;
     }
-    // ista aktivnost iz DVEH virov (Strava + Intervals): isti dan, ~ista razdalja in čas
-    const k2=(r.date||'')+'|'+(r.sport||'kolo')+'|'+Math.round((+r.dist||0)*2)+'|'+Math.round((+r.time||0)/6);
-    if(r.sport!=='moc' && seen2[k2]){
-      const prev=seen2[k2];
-      if(prev.source==='strava' && r.source && r.source!=='strava'){
-        prev.source=r.source;            // ista vožnja prišla tudi iz uporabnikove datoteke → AI zanjo dovoljen
-        if(r.maxHr && !prev.maxHr) prev.maxHr=r.maxHr;
-        if(r.avgHr && !prev.avgHr) prev.avgHr=r.avgHr;
-        if(r.watts && !prev.watts) prev.watts=r.watts;
+    // ista aktivnost iz DVEH virov (Strava/Garmin/Intervals): isti dan in šport, PODOBNA razdalja in čas
+    // (Strava beleži čas premikanja, Garmin skupni čas — zato toleranca, ne točno ujemanje)
+    if(r.sport!=='moc'){
+      const kd=(r.date||'')+'|'+(r.sport||'kolo');
+      const lst=seen2[kd]||(seen2[kd]=[]);
+      const prev=lst.find(x=> (x.source||'')!==(r.source||'') &&
+        Math.abs((+x.dist||0)-(+r.dist||0)) <= Math.max(0.8,(+x.dist||0)*0.04) &&
+        Math.abs((+x.time||0)-(+r.time||0)) <= Math.max(12, Math.min(+x.time||0,+r.time||0)*0.28));
+      if(prev){
+        if(prev.source==='strava' && r.source && r.source!=='strava'){
+          prev.source=r.source;            // ista vožnja prišla tudi iz uporabnikove datoteke → AI zanjo dovoljen
+          if(r.maxHr && !prev.maxHr) prev.maxHr=r.maxHr;
+          if(r.avgHr && !prev.avgHr) prev.avgHr=r.avgHr;
+          if(r.watts && !prev.watts) prev.watts=r.watts;
+        }
+        if(prev.icuId==null && r.icuId!=null) prev.icuId=r.icuId;
+        if(prev.stravaId==null && r.stravaId!=null) prev.stravaId=r.stravaId;
+        if(!prev.polyline && r.polyline) prev.polyline=r.polyline;
+        if(!prev.analysis && r.analysis) prev.analysis=r.analysis;
+        if(!prev.places && r.places) prev.places=r.places;
+        if(r.kcal && !prev.kcal) prev.kcal=r.kcal;
+        if(isGenericName(prev.name) && r.name && !isGenericName(r.name)) prev.name=r.name;
+        continue;
       }
-      if(prev.icuId==null && r.icuId!=null) prev.icuId=r.icuId;
-      if(prev.stravaId==null && r.stravaId!=null) prev.stravaId=r.stravaId;
-      if(!prev.polyline && r.polyline) prev.polyline=r.polyline;
-      if(!prev.analysis && r.analysis) prev.analysis=r.analysis;
-      if(!prev.places && r.places) prev.places=r.places;
-      if(isGenericName(prev.name) && r.name && !isGenericName(r.name)) prev.name=r.name;
-      continue;
+      lst.push(r);
     }
-    seen[k]=r; if(r.sport!=='moc') seen2[k2]=r;
+    seen[k]=r;
     out.push(r);
   }
   setTimeout(autoMaxHr, 400);
@@ -3569,7 +3577,7 @@ async function reverseGeo(lat,lon){
     const r=await (await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=14&accept-language=sl`)).json();
     const a=r.address||{};
     if((r.category==='natural'||r.type==='peak') && r.name) return r.name;
-    return a.peak || a.village || a.hamlet || a.town || a.suburb || a.city || a.municipality || r.name || null;
+    return a.peak || a.town || a.city || a.village || a.hamlet || a.suburb || a.municipality || r.name || null;   // znan kraj (Bled) pred vasico (Mlino)
   }catch(_){
     try{
       const r=await (await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=sl`)).json();
@@ -5464,6 +5472,8 @@ function onbFinish(tab){
   toast('Dobrodošel v PEAKFORM! Generiraj svoj prvi plan. 🚀','ok');
 }
 (function(){
+  try{ const n0=state.rides.length; const nr=dedupeRides(state.rides);
+    if(nr.length!==n0){ state.rides=nr; save(); renderAll(); toast('🧹 Združil sem '+(n0-nr.length)+' podvojenih aktivnosti (Strava + Garmin ista vožnja).','ok'); } }catch(_){}
   const q=new URLSearchParams(location.search);
   if(q.get('pro')==='ok'){
     history.replaceState({},'',location.pathname);
