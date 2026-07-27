@@ -544,6 +544,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
 .ex-card .nm{font-weight:700;font-size:13.5px;min-width:0}
 .ex-card .nm small{display:block;font-weight:500;color:var(--muted);font-size:11px;margin-top:3px;line-height:1.4}
 .ex-card .rp{font-family:var(--bc);font-weight:800;color:var(--acc);font-size:20px;letter-spacing:.5px;white-space:nowrap;flex:none}
+@media(max-width:1050px){.kal-cols{grid-template-columns:1fr!important}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 </style>
 </head>
@@ -4590,7 +4591,7 @@ function renderKalorije(){
       const carbs = dur>=150? '60–90 g OH/h' : dur>=90? '40–60 g OH/h' : '30–40 g OH/h';
       const dd=parseIso(iso);
       const when = i===0? (LANG==='en'?'TODAY':'DANES') : i===1? (LANG==='en'?'TOMORROW':'JUTRI') : DNEVI[(dd.getDay()+6)%7].slice(0,3).toUpperCase();
-      fuel=`<div class="card mt" style="border-color:rgba(255,61,46,.3)">
+      fuel=`<div class="card" style="border-color:rgba(255,61,46,.3)">
         <h3 style="color:var(--acc2)">${t('fueling')} · ${when} — ${esc(d.naslov||d.tip)}</h3>
         <div style="display:flex;flex-direction:column;gap:7px;font-size:12px;color:var(--soft);line-height:1.45">
           <div style="display:flex;gap:8px"><span style="color:var(--dim);font-weight:800;width:44px;flex-shrink:0">${LANG==='en'?'PRE':'PRED'}</span><span>${LANG==='en'?'90 min out: 60 g carbs (oats + banana)':'90 min prej: 60 g OH (ovseni kosmiči + banana)'}</span></div>
@@ -4611,12 +4612,12 @@ function renderKalorije(){
     const mn=Math.min(...vals)-0.5, mx=Math.max(...vals)+0.5;
     const ptsT=hist.map((h,i)=>((i/(hist.length-1))*(W-20)+10).toFixed(1)+','+((H-8)-((h.teza-mn)/(mx-mn))*(H-16)).toFixed(1)).join(' ');
     const d0=hist[0].teza, d1=hist[hist.length-1].teza;
-    telo=`<div class="card mt"><h3>${t('bodyComp')} <span class="sub">${hist.length} ${LANG==='en'?'entries':'meritev'}</span></h3>
+    telo=`<div class="card"><h3>${t('bodyComp')} <span class="sub">${hist.length} ${LANG==='en'?'entries':'meritev'}</span></h3>
       <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-family:var(--bc);font-weight:800;font-size:19px;color:${d1<=d0?'var(--green)':'var(--yellow)'}">${d1} kg <span style="font-size:11px;color:var(--dim)">(${d1-d0>0?'+':''}${(d1-d0).toFixed(1)})</span></span>${p.bf?`<span style="font-size:12px;color:var(--muted)">BF ~${p.bf} %</span>`:''}</div>
       <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;margin-top:6px"><polyline points="${ptsT}" fill="none" stroke="var(--green)" stroke-width="2" stroke-linejoin="round"></polyline></svg>
     </div>`;
   } else {
-    telo=`<div class="card mt"><h3>${t('bodyComp')}</h3><div class="hint" style="margin:2px 0">${LANG==='en'?'Update your weight in Settings — the trend chart builds here.':'Vsakič, ko v Nastavitvah posodobiš težo, se tukaj riše graf napredka.'}</div></div>`;
+    telo=`<div class="card"><h3>${t('bodyComp')}</h3><div class="hint" style="margin:2px 0">${LANG==='en'?'Update your weight in Settings — the trend chart builds here.':'Vsakič, ko v Nastavitvah posodobiš težo, se tukaj riše graf napredka.'}</div></div>`;
   }
   const mt=state.mealsToday;
   const mtOn = mt && mt.date===todayIso() && Array.isArray(mt.slots);
@@ -4661,7 +4662,14 @@ function renderKalorije(){
     ${(mw.nakup&&mw.nakup.length)?`<div style="border:1px dashed rgba(255,194,71,.5);background:rgba(255,194,71,.06);padding:9px 12px;margin-top:6px;font-size:12.5px">🛒 <b>Nakupovalni listek:</b> ${mw.nakup.map(esc).join(' · ')}</div>`:''}
     <div class="row mt no-print"><button class="btn btn-ghost btn-sm" onclick="mealWeekAI()">↻ Nov jedilnik</button><button class="btn btn-ghost btn-sm" onclick="state.mealWeek=null;save();renderAll()">✕ Odstrani</button></div>
   </div>` : '';
-  box.innerHTML = (kal? '' : `<div class="analysis-box mb" style="margin-top:0">Ni sinhroniziranih podatkov s telefona — poveži 🔵 Google sinhronizacijo v Nastavitvah. Vnose lahko dodajaš tudi ročno tukaj.</div>`) + stats + mealsTodayCard + mealWeekCard + fridgeCard + meals + sugg + fuel + recepti + telo;
+  // postavitev po dizajnu: makri čez celo širino → levo obroki, desno fueling + telo → spodaj plani jedi
+  box.innerHTML = (kal? '' : `<div class="analysis-box mb" style="margin-top:0">Ni sinhroniziranih podatkov s telefona — poveži 🔵 Google sinhronizacijo v Nastavitvah. Vnose lahko dodajaš tudi ročno tukaj.</div>`)
+    + stats
+    + `<div style="display:grid;grid-template-columns:1.25fr 1fr;gap:14px;align-items:start" class="kal-cols">
+        <div style="min-width:0">${meals}${sugg}</div>
+        <div style="min-width:0;display:flex;flex-direction:column;gap:14px">${fuel}${telo}</div>
+       </div>`
+    + mealsTodayCard + mealWeekCard + fridgeCard + recepti;
 }
 async function receptiAI(){
   const btn=$('btnRecAI'); busy(btn,true,'…');
