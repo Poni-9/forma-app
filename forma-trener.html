@@ -4825,22 +4825,39 @@ function renderAnalitika(){
     const line=(arr,key,off)=>arr.map((x,i)=>X(i+off).toFixed(1)+','+Y(x[key]!==undefined?x[key]:x).toFixed(1)).join(' ');
     const endTsb=fut.length?fut[fut.length-1].tsb:hist[nH-1].tsb;
     const endCtl=fut.length?Math.round(fut[fut.length-1].ctl):Math.round(hist[nH-1].ctl);
+    const yB1=Y(Math.min(25,mx)), yB2=Y(10), xD=X(nH-1);
+    const EN=LANG==='en';
+    const kraj=p.ciljDatum? (EN?'on race day':'na dan cilja') : (EN?('in '+nF+' days'):('čez '+nF+' dni'));
+    let verdikt='';
+    if(endTsb>=10&&endTsb<=25) verdikt= EN?`🎯 You arrive ${kraj} <b style="color:var(--green)">perfectly fresh (+${endTsb})</b> — ideal for a top result.`:`🎯 ${kraj[0].toUpperCase()+kraj.slice(1)} prideš <b style="color:var(--green)">ravno prav svež (+${endTsb})</b> — idealno za top rezultat.`;
+    else if(endTsb>25) verdikt= EN?`You'll be <b>over-rested (+${endTsb})</b> ${kraj} — add a short sharp workout in the last week to keep the edge.`:`${kraj[0].toUpperCase()+kraj.slice(1)} boš <b>preveč spočit (+${endTsb})</b> — v zadnjem tednu dodaj kratek oster trening, da ne izgubiš ostrine.`;
+    else if(endTsb>=0) verdikt= EN?`You'll be <b>almost fresh (+${endTsb})</b> ${kraj} — ease off the last 5–7 days to peak.`:`${kraj[0].toUpperCase()+kraj.slice(1)} boš <b>skoraj svež (+${endTsb})</b> — če hočeš višek, zadnjih 5–7 dni umiri.`;
+    else if(endTsb>=-10) verdikt= EN?`⚠️ You arrive <b style="color:var(--yellow)">slightly tired (${endTsb})</b> ${kraj} — cut the final week ~30 % and freshness rises into the green.`:`⚠️ ${kraj[0].toUpperCase()+kraj.slice(1)} prideš <b style="color:var(--yellow)">rahlo utrujen (${endTsb})</b> — zadnji teden zmanjšaj obseg za ~30 % in svežina zleze v zeleno okno.`;
+    else verdikt= EN?`⚠️ This plan leaves you <b style="color:var(--red)">tired (${endTsb})</b> ${kraj} — a proper easy final week (taper) is a must.`:`⚠️ Po tem planu boš ${kraj} <b style="color:var(--red)">utrujen (${endTsb})</b> — zadnji teden pred ciljem obvezno olajšaj (tapering).`;
     fEl.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
+      <rect x="${x0}" y="${yB1.toFixed(1)}" width="${W-10-x0}" height="${Math.max(2,yB2-yB1).toFixed(1)}" fill="rgba(95,214,122,.10)"></rect>
+      <text x="${W-14}" y="${(yB1+11).toFixed(1)}" text-anchor="end" font-size="8.5" fill="#5fd67a" opacity=".8" font-weight="700">${EN?'IDEAL RACE WINDOW +10…+25':'IDEALNO OKNO ZA CILJ +10…+25'}</text>
       <line x1="${x0}" y1="${Y(0).toFixed(1)}" x2="${W-10}" y2="${Y(0).toFixed(1)}" stroke="#38333e" stroke-width="1.5"></line>
-      ${p.ciljDatum?`<line x1="${W-12}" y1="10" x2="${W-12}" y2="172" stroke="#ffc247" stroke-width="1.5" stroke-dasharray="4 4"></line>`:''}
+      <text x="${x0-4}" y="${(Y(0)+3).toFixed(1)}" text-anchor="end" font-size="8.5" fill="#6b7580">0</text>
+      <line x1="${xD.toFixed(1)}" y1="10" x2="${xD.toFixed(1)}" y2="172" stroke="#6b7580" stroke-width="1" stroke-dasharray="2 4"></line>
+      <text x="${(xD-4).toFixed(1)}" y="180" text-anchor="end" font-size="8.5" fill="#6b7580" font-weight="700">${EN?'TODAY':'DANES'} ◂ ${EN?'done':'opravljeno'}</text>
+      <text x="${(xD+4).toFixed(1)}" y="180" font-size="8.5" fill="#6b7580">▸ ${EN?'forecast if you follow the plan':'napoved, če slediš planu'}</text>
+      ${p.ciljDatum?`<line x1="${W-12}" y1="10" x2="${W-12}" y2="172" stroke="#ffc247" stroke-width="1.5" stroke-dasharray="4 4"></line><text x="${W-16}" y="18" text-anchor="end" font-size="9" fill="#ffc247" font-weight="700">🎯 ${p.ciljDatum.slice(8,10)}.${p.ciljDatum.slice(5,7)}.</text>`:''}
       <polyline points="${line(hist,'ctl',0)}" fill="none" stroke="#4da3ff" stroke-width="2.5" stroke-linejoin="round"></polyline>
       <polyline points="${line(fut,'ctl',nH)}" fill="none" stroke="#4da3ff" stroke-width="2" stroke-dasharray="3 4"></polyline>
       <polyline points="${line(hist,'tsb',0)}" fill="none" stroke="#5fd67a" stroke-width="2" stroke-linejoin="round"></polyline>
       <polyline points="${line(fut,'tsb',nH)}" fill="none" stroke="#5fd67a" stroke-width="2" stroke-dasharray="3 4"></polyline>
+      ${fut.length?`<circle cx="${X(tot-1).toFixed(1)}" cy="${Y(fut[fut.length-1].ctl).toFixed(1)}" r="3.5" fill="#4da3ff"></circle>
+      <text x="${(X(tot-1)-6).toFixed(1)}" y="${(Y(fut[fut.length-1].ctl)-7).toFixed(1)}" text-anchor="end" font-size="10" fill="#4da3ff" font-weight="800">${endCtl}</text>
+      <circle cx="${X(tot-1).toFixed(1)}" cy="${Y(endTsb).toFixed(1)}" r="3.5" fill="#5fd67a"></circle>
+      <text x="${(X(tot-1)-6).toFixed(1)}" y="${(Y(endTsb)+13).toFixed(1)}" text-anchor="end" font-size="10" fill="#5fd67a" font-weight="800">${endTsb>0?'+':''}${endTsb}</text>`:''}
     </svg>
-    <div style="font-size:11.5px;color:var(--muted);margin-top:6px">${
-      LANG==='en'
-      ? `${adher<1?`At your current plan adherence (~${rpF.pct} %): fitness`:`If you follow the plan: fitness`} <b style="color:#4da3ff">${endCtl}</b>, freshness <b style="color:#5fd67a">${endTsb>0?'+':''}${endTsb}</b> ${p.ciljDatum? 'on '+p.ciljDatum : 'in '+nF+' days'}. Ideal race window: +10 to +25.`
-      : `${adher<1?`Ob tvoji trenutni realizaciji plana (~${rpF.pct} %): kondicija`:`Če slediš planu: kondicija`} <b style="color:#4da3ff">${endCtl}</b>, svežina <b style="color:#5fd67a">${endTsb>0?'+':''}${endTsb}</b> ${p.ciljDatum? 'na '+p.ciljDatum : 'čez '+nF+' dni'}. Idealno okno za cilj: +10 do +25.`}</div>
-    <div style="display:flex;gap:14px;font-size:10.5px;font-weight:700;color:var(--muted);margin-top:6px">
-      <span><span style="display:inline-block;width:14px;height:3px;background:#4da3ff"></span> ${LANG==='en'?'FITNESS':'KONDICIJA'}</span>
-      <span><span style="display:inline-block;width:14px;height:3px;background:#5fd67a"></span> ${LANG==='en'?'FRESHNESS':'SVEŽINA'}</span>
-      <span style="color:var(--dim)">--- ${LANG==='en'?'forecast':'napoved'}</span>
+    <div style="font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5">💪 <b style="color:#4da3ff">${EN?'Fitness':'Kondicija'} ${endCtl}</b> = ${EN?'engine size — the higher, the more training you absorb.':'velikost motorja — višja ko je, več treninga preneseš in močnejši si.'} &nbsp;🔋 <b style="color:#5fd67a">${EN?'Freshness':'Svežina'}</b> = ${EN?'how rested you are: above 0 fresh, below 0 tired.':'spočitost: nad 0 si spočit, pod 0 utrujen.'}</div>
+    <div style="font-size:12.5px;color:var(--soft);margin-top:6px;line-height:1.5">${verdikt}${adher<1?` <span style="color:var(--dim)">(${EN?'at your ~'+rpF.pct+' % plan adherence':'ob tvoji ~'+rpF.pct+' % realizaciji plana'})</span>`:''}</div>
+    <div style="display:flex;gap:14px;font-size:10.5px;font-weight:700;color:var(--muted);margin-top:6px;flex-wrap:wrap">
+      <span><span style="display:inline-block;width:14px;height:3px;background:#4da3ff"></span> ${EN?'FITNESS':'KONDICIJA'}</span>
+      <span><span style="display:inline-block;width:14px;height:3px;background:#5fd67a"></span> ${EN?'FRESHNESS':'SVEŽINA'}</span>
+      <span style="color:var(--dim)">--- ${EN?'forecast':'napoved'}</span>
     </div>`;
   }
   // rekordi
