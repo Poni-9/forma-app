@@ -1837,7 +1837,7 @@ function renderCoachReport(){
 async function coachReportAI(){
   const btn=$('btnCoachAI'); busy(btn,true,'Pišem …');
   try{
-    const t=weekAgg(0), l=weekAgg(1), rp=planRealizacija(), f=currentForm();
+    const t=weekAggAI(0), l=weekAggAI(1), rp=planRealizacijaAI(), f=currentFormAI();
     const txt = await gemini([{text:
 `Si moj kolesarski trener. Napiši mi kratko osebno poročilo (5-7 stavkov, slovensko, prijateljsko a konkretno):
 1) kako mi gre glede na podatke, 2) kaj sem naredil dobro, 3) ENO stvar, ki naj jo ta teden izboljšam, 4) spodbuda.
@@ -2332,13 +2332,44 @@ async function testGemini(){
    posredovanje njihovih podatkov zunanjim AI orodjem — zato Strava vožnje AI ne vidi;
    lokalna matematika (forma, rekordi, realizacija) jih normalno uporablja) */
 function aiRides(){ return state.rides.filter(r=>r.source!=='strava'); }
+function hasStravaRides(){ return state.rides.some(r=>r.source==='strava'); }
+/* AI-varne različice metrik: za AI pozive štejejo SAMO ne-Strava aktivnosti (pravila Strava API).
+   Lokalni prikazi (dashboard, poročila na zaslonu, plan brez AI) še naprej uporabljajo vse podatke. */
+function currentFormAI(){
+  if(!hasStravaRides()) return currentForm();
+  const rides=aiRides(); if(!rides.length) return null;
+  const m={}; for(const r of rides){ m[r.date]=(m[r.date]||0)+(r.tss||0); }
+  const dates=rides.map(r=>r.date).sort();
+  let d=addDays(parseIso(dates[0]),-1); const end=new Date(); end.setHours(0,0,0,0);
+  let ctl=0,atl=0,last=null;
+  while(d<=end){ const tss=m[isoDate(d)]||0; ctl+=(tss-ctl)/42; atl+=(tss-atl)/7;
+    last={ctl:+ctl.toFixed(1),atl:+atl.toFixed(1),tsb:+(ctl-atl).toFixed(1)}; d=addDays(d,1); }
+  if(!last) return null;
+  last.opis = last.tsb>=10?'Svež in spočit':last.tsb>=-5?'Dobra forma':last.tsb>=-20?'Priden trening, rahla utrujenost':'Velika utrujenost — pazi!';
+  return last;
+}
+function weekAggAI(offset){
+  const ws=weekStart(addDays(new Date(),-7*offset)), a=isoDate(ws), b=isoDate(addDays(ws,6));
+  const rs=aiRides().filter(r=>r.date>=a&&r.date<=b);
+  return { n:rs.length, km:rs.reduce((x,r)=>x+(+r.dist||0),0), min:rs.reduce((x,r)=>x+(+r.time||0),0), tss:rs.reduce((x,r)=>x+(r.tss||0),0) };
+}
+function planRealizacijaAI(){
+  if(!hasStravaRides()) return planRealizacija();
+  const ar=aiRides(); const today=todayIso(); let planned=0, done=0;
+  for(const p of state.plans) for(const d of (p.days||[])){
+    if(d.datum>today || d.datum<isoDate(addDays(new Date(),-13))) continue;
+    if(chipClass(d.tip)==='pocitek') continue;
+    planned++; if(d.done || ar.some(r=>r.date===d.datum)) done++;
+  }
+  return planned? {planned,done,pct:Math.round(done/planned*100)} : null;
+}
 function stravaSafeNote(){
   return state.rides.some(r=>r.source==='strava')
-    ? '\n(OPOMBA: del aktivnosti prihaja iz Strave in zaradi pravil Strava API ni vključen v ta seznam — skupno formo oceni tudi po CTL/TSB številkah in realizaciji.)' : '';
+    ? '\n(OPOMBA: del aktivnosti je uvožen iz Strave in po pravilih Strava API ni na voljo AI obdelavi — VSE zgornje številke (forma, seznam, realizacija) so izračunane brez teh aktivnosti, zato je resnični obseg treninga lahko večji. Upoštevaj to in ne komentiraj navidez manjkajočih dni.)' : '';
 }
 function buildContext(){
   const p = state.settings.profile;
-  const f = currentForm();
+  const f = currentFormAI();
   const L = [];
   L.push(`DANES JE: ${todayIso()} (${DNEVI[(new Date().getDay()+6)%7]})`);
   L.push(`\nPROFIL KOLESARJA:`);
@@ -2413,7 +2444,7 @@ function buildContext(){
   if (pdays.length){
     L.push(`\nPLANIRANI TRENINGI (zadnjih 14 dni in naprej) IN REALIZACIJA:`);
     for (const d of pdays){
-      const done = d.done || state.rides.some(r=>r.date===d.datum);
+      const done = d.done || aiRides().some(r=>r.date===d.datum);
       const rest = chipClass(d.tip)==='pocitek';
       const fut = d.datum > todayIso();
       L.push(`- ${d.datum} ${d.tip}: ${d.naslov} (${d.trajanje_min||0} min)${(rest||fut)?'':done?' → OPRAVLJENO':' → NI opravljeno'}`);
@@ -3331,7 +3362,7 @@ function renderRideStreams(r){
    AI PROFIL KOLESARJA
 ================================================================ */
 function buildRiderStats(){
-  const rs = state.rides.filter(r=>r.time>0);
+  const rs = aiRides().filter(r=>r.time>0);
   if (rs.length < 3) return '(premalo voženj za statistiko)';
   const flat = rs.filter(r=>r.dist && r.elev!=null && r.elev/r.dist<8 && r.speed);
   const hilly = rs.filter(r=>r.dist && r.elev!=null && r.elev/r.dist>=12);
@@ -3364,7 +3395,7 @@ function renderRiderCard(){
     <button class="btn btn-primary" id="btnRider" onclick="analyzeRider()">🔍 Analiziraj moje vožnje</button>`);
 }
 async function analyzeRider(){
-  if (state.rides.length < 3){ toast('Za analizo dodaj vsaj 3 vožnje.','err'); return; }
+  if (aiRides().length < 3){ toast(hasStravaRides()? 'Strava aktivnosti po njihovih pravilih niso na voljo AI analizi — dodaj vsaj 3 vožnje prek .FIT/GPX, screenshota ali ročno.' : 'Za analizo dodaj vsaj 3 vožnje.','err'); return; }
   const btn = $('btnRider'); busy(btn, true, 'Analiziram tvoje vožnje …');
   try{
     const r = await gemini([{ text:
@@ -4759,7 +4790,7 @@ async function maybeAutoWeekly(){          // AI sam pripravi tedenski povzetek 
     if(off===null) return;
     const aiOn=!!state.settings.geminiKey || !!(window.FORMASYNC&&FORMASYNC.uid&&FORMASYNC.uid());
     if(!aiOn || !navigator.onLine) return;
-    if(weekAgg(off).n<2) return;                                   // premalo treningov za smiseln povzetek
+    if(weekAggAI(off).n<2) return;                                   // premalo treningov za smiseln povzetek
     const ws=isoDate(addDays(weekStart(new Date()),-7*off));
     if(weeklyLoad().some(w=>w.ws===ws)) return;                    // ta teden že narejen
     await weeklySummary(off,true);
@@ -4789,7 +4820,7 @@ function chatAsk(q){ const i=$('chatInput'); if(i){ i.value=q; chatSend(); } }
 async function weeklySummary(off,auto){ off=off?1:0;
   const btn=$('btnWeekly'); busy(btn,true,'…');
   try{
-    const t0=weekAgg(off), l=weekAgg(off+1), rp=planRealizacija(), f=currentForm();
+    const t0=weekAggAI(off), l=weekAggAI(off+1), rp=planRealizacijaAI(), f=currentFormAI();
     const txt=await gemini([{text:`Si moj trener. Napiši TEDENSKI POVZETEK (4-6 stavkov): 1) kaj sem naredil, 2) kaj je bilo dobro, 3) kaj popraviti, 4) fokus naslednjega tedna.
 ${off?'Pretekli teden':'Ta teden'}: ${t0.n} treningov, ${Math.round(t0.km)} km, ${t0.min} min, ${t0.tss} TSS. ${off?'Teden pred njim':'Prejšnji'}: ${l.n}/${Math.round(l.km)} km/${l.tss} TSS. ${rp?`Plan: ${rp.done}/${rp.planned}.`:''} ${f?`CTL ${f.ctl}, TSB ${f.tsb}.`:''}
 ${buildContext()}${aiLangNote()}
