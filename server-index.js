@@ -45,7 +45,9 @@ async function requireUser(req, res) {
 }
 
 async function isPro(uid) {
-  try { const d = await db.collection("formaSync").doc(uid).get();
+  // PRO živi v ločeni zbirki proUsers/{uid} — vanjo piše samo lastnik (konzola / Stripe),
+  // klient je ne more zapisati. formaSync.pro se NE upošteva več (zaščita pred samopodelitvijo).
+  try { const d = await db.collection("proUsers").doc(uid).get();
         return d.exists && d.data().pro === true; }
   catch { return false; }
 }

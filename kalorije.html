@@ -1790,6 +1790,7 @@ async function forceSync(){
   if(b){b.disabled=false; b.innerHTML=o;}
 }
 async function syncPull(manual){
+  if(window.FORMASYNC&&FORMASYNC.uid&&FORMASYNC.uid()){ if(manual&&typeof toast==='function') toast('Google sinhronizacija je aktivna — jsonbin ni več potreben.','ok'); return; }
   const c=db.settings.sync; if(!c?.bin){ if(manual) toast('Sinhronizacija ni nastavljena (⚙️).','err'); return; }
   try{
     const rec = await syncGet();
@@ -1811,6 +1812,7 @@ async function syncPull(manual){
 }
 let pushTimer=null;
 function syncPush(part){
+  if(window.FORMASYNC&&FORMASYNC.uid&&FORMASYNC.uid()) return;   // Google sync ima prednost
   const c=db.settings.sync; if(!c?.bin) return;
   clearTimeout(pushTimer);
   pushTimer = setTimeout(async ()=>{

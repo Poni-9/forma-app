@@ -1060,6 +1060,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
                 <li>Odpre se Strava — potrdi dostop. Preusmerilo te bo na "localhost" (stran se ne odpre — to je v redu!). Iz naslovne vrstice skopiraj cel naslov (ali samo kodo za <code>code=</code>) in jo prilepi nazaj sem.</li>
               </ol>
             </details>
+            <div style="color:var(--warn,#e8b34b);font-size:11.5px;margin-top:6px">⚠️ Ta napredna pot pošilja zahtevke prek javnega CORS posrednika — če je le mogoče, uporabi ⭐ povezavo na en klik (žetoni ostanejo na strežniku).</div>
             <div class="frm-grid mt">
               <label class="fld"><span>Client ID</span><input id="sCid"></label>
               <label class="fld"><span>Client Secret</span><input type="password" id="sSec"></label>
@@ -1366,6 +1367,15 @@ function busy(btn, on, txt){
   else { btn.disabled = false; btn.innerHTML = btn.dataset.orig || btn.innerHTML; }
 }
 function closeModal(id){ $(id).classList.remove('open'); }
+function proThanks(){
+  const d=document.createElement('div'); d.id='proTyBack';
+  d.style.cssText='position:fixed;inset:0;background:rgba(4,10,18,.74);backdrop-filter:blur(4px);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px';
+  d.innerHTML=`<div style="background:var(--card,#0d1826);border:1px solid rgba(255,255,255,.12);border-radius:16px;max-width:400px;padding:26px;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.5)">
+    <div style="font-size:40px">⭐</div><div style="font-weight:800;font-size:18px;margin:8px 0">Hvala za nakup!</div>
+    <div style="font-size:13.5px;line-height:1.55;color:var(--soft,#c7d5e4)">Plačilo je prejeto. <b>PRO se aktivira najkasneje v 24 urah</b> (običajno v nekaj urah) — potem imaš neomejen AI.<br><br>Če ga rabiš takoj, piši na <a href="mailto:blaz.gregorc05@gmail.com" style="color:var(--acc2,#39d98a)">blaz.gregorc05@gmail.com</a>.</div>
+    <button class="btn mt" onclick="document.getElementById('proTyBack').remove()">V redu</button></div>`;
+  document.body.appendChild(d);
+}
 
 /* ================================================================
    OBREMENITEV (TSS) IN FORMA (CTL/ATL/TSB)
@@ -4592,6 +4602,7 @@ function mergeForma(local, remote){
   return base;
 }
 async function syncPullF(manual){
+  if(window.FORMASYNC&&FORMASYNC.uid&&FORMASYNC.uid()){ if(manual) toast('Google sinhronizacija je aktivna — jsonbin ni več potreben.','ok'); return; }
   const c=state.sync; if(!c?.bin){ if(manual) toast('Najprej nastavi sinhronizacijo (spodaj).','err'); return; }
   try{
     const rec = await syncGetF();
@@ -4615,6 +4626,7 @@ async function syncPullF(manual){
 }
 let syncTimerF=null;
 function syncPush(){
+  if(window.FORMASYNC&&FORMASYNC.uid&&FORMASYNC.uid()) return;   // Google sync ima prednost — en vir resnice
   const c=state.sync; if(!c?.bin) return;
   clearTimeout(syncTimerF);
   syncTimerF = setTimeout(async ()=>{
@@ -4739,6 +4751,21 @@ function renderAnalitika(){
 const WEEKLY_KEY='forma_weekly';
 function weeklyLoad(){ try{ return JSON.parse(localStorage.getItem(WEEKLY_KEY)||'[]'); }catch(_){ return []; } }
 function weeklySave(a){ try{ localStorage.setItem(WEEKLY_KEY, JSON.stringify(a.slice(-12))); }catch(_){} }
+async function maybeAutoWeekly(){          // AI sam pripravi tedenski povzetek (ned zvečer; pon/tor za pretekli teden)
+  try{
+    const d=new Date(), dow=d.getDay(); let off=null;
+    if(dow===0 && d.getHours()>=16) off=0;
+    else if(dow===1 || dow===2) off=1;
+    if(off===null) return;
+    const aiOn=!!state.settings.geminiKey || !!(window.FORMASYNC&&FORMASYNC.uid&&FORMASYNC.uid());
+    if(!aiOn || !navigator.onLine) return;
+    if(weekAgg(off).n<2) return;                                   // premalo treningov za smiseln povzetek
+    const ws=isoDate(addDays(weekStart(new Date()),-7*off));
+    if(weeklyLoad().some(w=>w.ws===ws)) return;                    // ta teden že narejen
+    await weeklySummary(off,true);
+    if(weeklyLoad().some(w=>w.ws===ws)) toast('📊 AI je pripravil tvoj tedenski povzetek — zavihek Poročila.','ok');
+  }catch(_){}
+}
 function renderTrener(){
   renderChat();
   const wEl=$('weeklySumBox'); if(!wEl) return;
@@ -4759,21 +4786,21 @@ function renderTrener(){
   qEl.innerHTML = qs.map(q=>`<div style="border:1px solid var(--border2);padding:8px 11px;cursor:pointer;color:var(--soft);font-size:12px;margin-bottom:6px" onmouseover="this.style.borderColor='var(--acc)'" onmouseout="this.style.borderColor='var(--border2)'" onclick="chatAsk('${q.replace(/'/g,"\\'")}')">${q}</div>`).join('');
 }
 function chatAsk(q){ const i=$('chatInput'); if(i){ i.value=q; chatSend(); } }
-async function weeklySummary(){
+async function weeklySummary(off,auto){ off=off?1:0;
   const btn=$('btnWeekly'); busy(btn,true,'…');
   try{
-    const t0=weekAgg(0), l=weekAgg(1), rp=planRealizacija(), f=currentForm();
+    const t0=weekAgg(off), l=weekAgg(off+1), rp=planRealizacija(), f=currentForm();
     const txt=await gemini([{text:`Si moj trener. Napiši TEDENSKI POVZETEK (4-6 stavkov): 1) kaj sem naredil, 2) kaj je bilo dobro, 3) kaj popraviti, 4) fokus naslednjega tedna.
-Ta teden: ${t0.n} treningov, ${Math.round(t0.km)} km, ${t0.min} min, ${t0.tss} TSS. Prejšnji: ${l.n}/${Math.round(l.km)} km/${l.tss} TSS. ${rp?`Plan: ${rp.done}/${rp.planned}.`:''} ${f?`CTL ${f.ctl}, TSB ${f.tsb}.`:''}
+${off?'Pretekli teden':'Ta teden'}: ${t0.n} treningov, ${Math.round(t0.km)} km, ${t0.min} min, ${t0.tss} TSS. ${off?'Teden pred njim':'Prejšnji'}: ${l.n}/${Math.round(l.km)} km/${l.tss} TSS. ${rp?`Plan: ${rp.done}/${rp.planned}.`:''} ${f?`CTL ${f.ctl}, TSB ${f.tsb}.`:''}
 ${buildContext()}${aiLangNote()}
 Vrni samo čisto besedilo.`}],{json:false,temp:.55});
-    const ws=isoDate(weekStart(new Date()));
+    const ws=isoDate(addDays(weekStart(new Date()),-7*off));
     const all=weeklyLoad().filter(w=>w.ws!==ws);
     all.push({ws, text:String(txt).trim(), ts:Date.now()});
     weeklySave(all);
     const msgs=chatLoad(); msgs.push({r:'ai',t:String(txt).trim(),ts:Date.now(),tag:(LANG==='en'?'WEEKLY SUMMARY':'TEDENSKI POVZETEK')}); chatSave(msgs);
     renderTrener();
-  }catch(e){ toast(e.message,'err'); }
+  }catch(e){ if(!auto) toast(e.message,'err'); }
   busy(btn,false);
 }
 
@@ -4865,6 +4892,7 @@ async function chatSend(){
   try{
     const histTxt=chatLoad().slice(-8).map(m=>(m.r==='me'?'KOLESAR: ':'TRENER: ')+m.t).join('\n');
     const txt=await gemini([{text:`Si moj osebni trener (kolo, moč, prehrana). Odgovori kratko (2-6 stavkov), konkretno, slovensko, prijateljsko. Če vprašanje ni povezano s treningom, zdravjem ali prehrano, prijazno usmeri nazaj.
+Si tudi PODPORA za aplikacijo PEAKFORM — če uporabnik vpraša o njej, odgovori iz tega: prijava z Google (Nastavitve) vklopi AI in sinhronizacijo med napravami; FREE = 10 AI dejanj/dan, PRO 9,99 €/mes = neomejeno (Nastavitve → Naročnina); povezava ur: Nastavitve → Povezave → čarovnik (Garmin: .FIT izvoz ali Intervals.icu, Strava: kmalu na en klik); uvoz aktivnosti: povleci .FIT/.GPX ali screenshot na zavihek Aktivnosti; telefon: QR koda v Nastavitvah odpre mobilno prehrano; varnostna kopija in izbris: Nastavitve → Podatki.
 
 ${buildContext()}
 
@@ -4938,6 +4966,12 @@ function openConn(kind){
   $('connModalBack').classList.add('open');
 }
 function setNivo(v){ state.settings.profile.nivo=v; save(); fillSettings(); toast('Nivo nastavljen: '+v+'. AI ga upošteva pri naslednjem planu.','ok'); }
+const STRIPE_LINK='';   // <- sem prilepi Stripe Payment Link (https://buy.stripe.com/...) in gumb PRO ozivi
+function stripeUrl(){
+  let u=STRIPE_LINK; if(!u) return '';
+  try{ const uid=(window.FORMASYNC&&FORMASYNC.uid&&FORMASYNC.uid())||''; if(uid) u+=(u.includes('?')?'&':'?')+'client_reference_id='+encodeURIComponent(uid); }catch(_){}
+  return u;
+}
 async function renderSubCard(){
   const el=$('subCard'); if(!el) return;
   let signed=false, pro=false;
@@ -4947,7 +4981,9 @@ async function renderSubCard(){
     el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-weight:700;font-size:14px">PEAKFORM PRO</div><div style="font-size:11.5px;color:var(--muted)">Neomejena AI brez ključa</div></div><span style="color:var(--green);font-weight:700;font-size:12px">AKTIVNO ✓</span></div>`;
   } else if(signed){
     el.innerHTML=`<div style="font-weight:700;font-size:14px">FREE</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">10 AI dejanj na dan</div>
-    <div style="font-size:12px;color:var(--soft);margin-top:8px"><b style="color:var(--acc2)">PRO 9,99 €/mesec</b> — neomejena AI. <a href="mailto:blaz.gregorc05@gmail.com?subject=PEAKFORM%20PRO" style="color:var(--acc2)">Piši za nadgradnjo →</a></div>`;
+    ${stripeUrl()
+      ? `<a class="btn btn-sm mt" href="${stripeUrl()}" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#08131f;font-weight:800;border:none">⭐ Nadgradi na PRO — 9,99 €/mes</a><div style="font-size:11px;color:var(--muted);margin-top:6px">Varno plačilo prek Stripe · prekineš kadarkoli</div>`
+      : `<div style="font-size:12px;color:var(--soft);margin-top:8px"><b style="color:var(--acc2)">PRO 9,99 €/mesec</b> — neomejena AI. <a href="mailto:blaz.gregorc05@gmail.com?subject=PEAKFORM%20PRO" style="color:var(--acc2)">Piši za nadgradnjo →</a></div>`}`;
   } else {
     el.innerHTML=`<div style="font-size:12.5px;color:var(--muted)">Prijavi se z Googlom (🔵 zgoraj) — AI se takoj vklopi: 10 dejanj/dan zastonj, PRO 9,99 €/mesec neomejeno.</div>`;
   }
@@ -5109,6 +5145,10 @@ function onbFinish(tab){
 }
 (function(){
   const q=new URLSearchParams(location.search);
+  if(q.get('pro')==='ok'){
+    history.replaceState({},'',location.pathname);
+    setTimeout(()=>{ try{ proThanks(); }catch(_){ toast('Hvala! PRO bo aktiviran najkasneje v 24h.','ok'); } }, 700);
+  }
   if(q.get('strava')==='ok'){
     history.replaceState({},'',location.pathname);
     toast('Strava povezana ✓ — uvažam tvoje vožnje …','ok');
@@ -5119,6 +5159,7 @@ function onbFinish(tab){
   }
 })();
 setTimeout(()=>{ try{ stravaEasyStatus(); }catch(_){ } }, 6000);
+setTimeout(()=>{ try{ maybeAutoWeekly(); }catch(_){ } }, 9000);
 if (new URLSearchParams(location.search).get('demo')==='1' && !state.rides.length){
   try{ localStorage.setItem('forma_onb_done','1'); }catch(_){}
   setTimeout(()=>{ try{ demoLoad(); }catch(_){} }, 350);
@@ -5355,7 +5396,9 @@ setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) sy
   function saveCfg(){ const t=document.getElementById('gsyncCfg'); if(!t) return; try{ const c=JSON.parse(t.value.trim()); localStorage.setItem(LS_CFG, JSON.stringify(c)); render(); initFB(c).catch(()=>{}); }catch(e){ alert('Neveljaven JSON — prekopiraj cel firebaseConfig.'); } }
   window.FORMASYNC={ signIn, signOut, push, saveCfg, render, uid: ()=>fb.uid,
     idToken: async ()=> { try{ return (fb.auth&&fb.auth.currentUser)? await fb.auth.currentUser.getIdToken() : null; }catch(_){ return null; } },
-    isPro: async ()=> { try{ if(!fb.uid||!fb.db) return false; const s=await fb.db.collection('formaSync').doc(fb.uid).get(); return !!(s.exists && s.data().pro===true); }catch(_){ return false; } } };
+    isPro: async ()=> { try{ if(!fb.uid||!fb.db) return false;
+      try{ const p=await fb.db.collection('proUsers').doc(fb.uid).get(); if(p.exists && p.data().pro===true) return true; }catch(_){ }
+      const s=await fb.db.collection('formaSync').doc(fb.uid).get(); return !!(s.exists && s.data().pro===true); }catch(_){ return false; } } };
   function boot(){ try{ render(); const c=getCfg(); if(c) initFB(c).catch(()=>{}); }catch(_){} }
   if(document.readyState!=='loading') boot(); else document.addEventListener('DOMContentLoaded', boot);
 })();
