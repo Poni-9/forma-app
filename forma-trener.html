@@ -537,6 +537,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
 /* modal vedno lepo centriran, dolgi se pomikajo znotraj */
 .modal-back{padding:28px 16px}
 .modal{margin:auto}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 </style>
 </head>
 <body>
@@ -809,6 +810,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
           <div class="chat-box" id="chatBox" style="flex:1"></div>
           <div class="chat-input no-print">
             <input id="chatInput" data-i18n-ph="askAnything" placeholder="Vprašaj karkoli …" onkeydown="if(event.key==='Enter')chatSend()">
+            <button class="btn btn-ghost" id="btnMic" onclick="micToggle('chatInput','btnMic')" title="Govorni vnos">🎤</button>
             <button class="btn btn-primary" id="btnChat" onclick="chatSend()">→</button>
           </div>
         </div>
@@ -5009,6 +5011,25 @@ function renderChat(){
   box.innerHTML = msgs.length? msgs.map(m=>`<div class="chat-msg ${m.r==='me'?'me':'ai'}">${m.tag?`<span style="display:block;font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--green);margin-bottom:4px">${esc(m.tag)}</span>`:''}${esc(m.t)}<span class="cm">${m.r==='me'?(LANG==='en'?'YOU':'TI'):'AI'} · ${new Date(m.ts).toLocaleTimeString('sl-SI',{hour:'2-digit',minute:'2-digit'})}</span></div>`).join('')
     : `<div class="chat-msg ai">${LANG==='en'?'Hi! Ask me anything about training, nutrition or progress — I know all your data.':'Živjo! Vprašaj me karkoli o treningu, prehrani ali napredku — poznam vse tvoje podatke.'}<span class="cm">AI</span></div>`;
   box.scrollTop=box.scrollHeight;
+}
+
+/* 🎤 govorni vnos (Web Speech API) */
+let micRec=null, micOn=false;
+function micToggle(inpId, btnId){
+  const B=document.getElementById(btnId), inp=document.getElementById(inpId);
+  if(micOn){ try{ micRec.stop(); }catch(_){} return; }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ toast('Ta brskalnik ne podpira govornega vnosa — uporabi Chrome ali Edge.','err'); return; }
+  micRec=new SR();
+  micRec.lang=(typeof LANG!=='undefined'&&LANG==='en')?'en-US':'sl-SI';
+  micRec.interimResults=true; micRec.continuous=true;
+  const base=inp&&inp.value? inp.value.trim()+' ' : '';
+  micRec.onresult=e=>{ let fin='',tmp=''; for(let i=0;i<e.results.length;i++){ const r=e.results[i]; if(r.isFinal) fin+=r[0].transcript; else tmp+=r[0].transcript; } if(inp) inp.value=(base+fin+tmp).trim(); };
+  micRec.onend=()=>{ micOn=false; if(B){ B.textContent='🎤'; B.style.animation=''; } };
+  micRec.onerror=ev=>{ micOn=false; if(B){ B.textContent='🎤'; B.style.animation=''; }
+    if(ev.error==='not-allowed'||ev.error==='service-not-allowed') toast('Dovoli mikrofon (ikona ključavnice v naslovni vrstici brskalnika).','err'); };
+  try{ micRec.start(); micOn=true; if(B){ B.textContent='🔴'; B.style.animation='pulse 1.2s infinite'; } toast('Poslušam … povej vprašanje in klikni 🔴 za konec.','ok'); }
+  catch(_){ toast('Mikrofona ni bilo mogoče zagnati.','err'); }
 }
 async function chatSend(){
   const inp=$('chatInput'); const q=(inp.value||'').trim(); if(!q) return;

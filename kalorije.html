@@ -294,6 +294,7 @@ input:focus,select:focus{box-shadow:none!important}
 .dn-card{background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,0) 45%), var(--panel)}
 input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px rgba(255,61,46,.14)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 </style>
 </head>
 <body>
@@ -420,6 +421,7 @@ input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px rgba(255,61,46,.14)
       </div>
       <div class="chat-input">
         <input id="chatInpK" placeholder="Vprašaj karkoli …" onkeydown="if(event.key==='Enter')chatSendK()">
+        <button class="btn" id="btnMicK" onclick="micToggle('chatInpK','btnMicK')" title="Govorni vnos" style="padding:0 12px">🎤</button>
         <button class="btn btn-primary" id="btnChatK" onclick="chatSendK()">→</button>
       </div>
     </div>
@@ -1163,6 +1165,25 @@ function chatCtxK(){
     `DANES POJEDENO: ~${eaten} kcal`;
 }
 function chatAskK(q){ const i=$('chatInpK'); if(i){ i.value=q; chatSendK(); } }
+
+/* 🎤 govorni vnos (Web Speech API) */
+let micRec=null, micOn=false;
+function micToggle(inpId, btnId){
+  const B=document.getElementById(btnId), inp=document.getElementById(inpId);
+  if(micOn){ try{ micRec.stop(); }catch(_){} return; }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ toast('Ta brskalnik ne podpira govornega vnosa — uporabi Chrome ali Edge.','err'); return; }
+  micRec=new SR();
+  micRec.lang=(typeof LANG!=='undefined'&&LANG==='en')?'en-US':'sl-SI';
+  micRec.interimResults=true; micRec.continuous=true;
+  const base=inp&&inp.value? inp.value.trim()+' ' : '';
+  micRec.onresult=e=>{ let fin='',tmp=''; for(let i=0;i<e.results.length;i++){ const r=e.results[i]; if(r.isFinal) fin+=r[0].transcript; else tmp+=r[0].transcript; } if(inp) inp.value=(base+fin+tmp).trim(); };
+  micRec.onend=()=>{ micOn=false; if(B){ B.textContent='🎤'; B.style.animation=''; } };
+  micRec.onerror=ev=>{ micOn=false; if(B){ B.textContent='🎤'; B.style.animation=''; }
+    if(ev.error==='not-allowed'||ev.error==='service-not-allowed') toast('Dovoli mikrofon (ikona ključavnice v naslovni vrstici brskalnika).','err'); };
+  try{ micRec.start(); micOn=true; if(B){ B.textContent='🔴'; B.style.animation='pulse 1.2s infinite'; } toast('Poslušam … povej vprašanje in klikni 🔴 za konec.','ok'); }
+  catch(_){ toast('Mikrofona ni bilo mogoče zagnati.','err'); }
+}
 async function chatSendK(){
   const inp=$('chatInpK'); const q=(inp.value||'').trim(); if(!q) return;
   const msgs=chatLoadK(); msgs.push({r:'me',t:q,ts:Date.now()}); chatSaveK(msgs); inp.value=''; renderChatK();
