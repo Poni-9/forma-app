@@ -656,7 +656,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
         <span class="big">📸</span>
         <b>Prilepi screenshot</b> (Ctrl+V), <b>povleci sliko ali .GPX datoteko sem</b> ali klikni<br>
         <span style="font-size:12px">AI sam prebere razdaljo, čas, višince, utrip …</span>
-        <input type="file" id="fileInput" accept="image/*,.gpx,.fit,.zip" style="display:none" multiple>
+        <input type="file" id="fileInput" accept="image/*,.gpx,.fit,.zip,.csv" style="display:none" multiple>
       </div>
     </section>
 
@@ -3811,9 +3811,43 @@ function handleFile(f){
   if(!f) return;
   const n=(f.name||'').toLowerCase();
   if(n.endsWith('.zip')) return importZip(f);
+  if(n.endsWith('.csv')) return importCsv(f);
   if(n.endsWith('.gpx')) return importGpx(f);
   if(n.endsWith('.fit')) return importFit(f);
   if(f.type.startsWith('image/')) return loadShot(f);
+}
+async function importCsv(f){    // 📄 Garmin Connect "Izvoz CSV" seznama aktivnosti — lastni podatki, AI dovoljen
+  try{
+    const txt = await f.text();
+    const lines = txt.split(/\r?\n/).filter(l=>l.trim());
+    if(!/Vrsta dejavnosti|Activity Type/i.test(lines[0]||'')){ toast('Ta CSV ni Garminov izvoz seznama aktivnosti.','err'); return; }
+    const tok = line=>{ const out=[]; let cur='',q=false; for(let i=0;i<line.length;i++){ const ch=line[i];
+      if(ch==='"'){ if(q&&line[i+1]==='"'){cur+='"';i++;} else q=!q; }
+      else if(ch===','&&!q){ out.push(cur); cur=''; } else cur+=ch; } out.push(cur); return out; };
+    const num = v=>{ v=String(v??'').replace(/["']/g,'').trim(); if(!v||v==='--') return null; v=v.replace(/,(?=\d{3}\b)/g,''); const x=parseFloat(v); return isNaN(x)?null:x; };
+    const mins = v=>{ const m=String(v||'').trim().match(/^(\d+):(\d\d):(\d\d)/); if(m) return Math.round(+m[1]*60 + +m[2] + +m[3]/60);
+      const m2=String(v||'').trim().match(/^(\d+):(\d\d)/); return m2? Math.round(+m2[1] + +m2[2]/60) : null; };
+    const spOf = t=>{ if(/koles|cycl|bike/i.test(t)) return 'kolo'; if(/tek|running|steza/i.test(t)) return 'tek';
+      if(/pohod|hoja|hik|walk/i.test(t)) return 'pohod'; if(/moč|strength|vadba/i.test(t)) return 'moc'; return sportOfType(t) || 'kolo'; };
+    const newR=[]; 
+    for(let i=1;i<lines.length;i++){
+      const c = tok(lines[i]); if(c.length<15) continue;
+      const vrsta=c[0], date=(c[1]||'').slice(0,10);
+      if(!/^\d{4}-\d\d-\d\d$/.test(date)) continue;
+      let dist=num(c[4])||0; if(/plav|swim/i.test(vrsta) && dist>15) dist=+(dist/1000).toFixed(2);
+      const time=mins(c[6]); if(!time) continue;
+      const r={ id:uid(), source:'garmin', sport:spOf(vrsta), date, name:(c[3]||vrsta)||vrsta,
+        dist:+(+dist).toFixed(1), time, elev:num(c[14])!=null?Math.round(num(c[14])):null,
+        avgHr:num(c[7])!=null?Math.round(num(c[7])):null, maxHr:num(c[8])!=null?Math.round(num(c[8])):null,
+        kcal:num(c[5])!=null?Math.round(num(c[5])):null, watts:num(c[26])!=null?Math.round(num(c[26])):null };
+      const t24=num(c[24]); r.tss=(t24&&t24>0)? Math.round(t24) : estimateTss(r);
+      newR.push(r);
+    }
+    if(!newR.length){ toast('V CSV nisem našel aktivnosti.','err'); return; }
+    state.rides = dedupeRides([...state.rides, ...newR].sort((a,b)=>(b.date||'').localeCompare(a.date||'')));
+    save(); renderAll();
+    toast('📄 Garmin CSV: prebranih '+newR.length+' aktivnosti — dvojniki s Stravo združeni in odklenjeni za AI. ✅','ok');
+  }catch(e){ toast('CSV uvoz ni uspel: '+e.message,'err'); }
 }
 async function importZip(f){   // 🗜 cel Garmin izvoz (ZIP z .fit/.gpx) z enim povlekom
   toast('🗜 Odpiram ZIP …','ok');
