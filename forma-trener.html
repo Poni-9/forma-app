@@ -1145,6 +1145,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
   </div>
 </div>
 
+<!-- ======= MODAL: PREDLAGANA TRASA ======= -->
+<div class="modal-back" id="trasaBack">
+  <div class="modal" style="max-width:640px">
+    <h2>🗺 Predlagana trasa<span class="x" onclick="closeTrasa()">✕</span></h2>
+    <div id="trasaBody"></div>
+  </div>
+</div>
+
 <!-- ======= MODAL: PRILAGODI DAN ======= -->
 <div class="modal-back" id="adjDayBack">
   <div class="modal" style="max-width:560px">
@@ -2113,8 +2121,10 @@ function renderPlan(){
         <span class="dr-title">${esc(d.naslov)}</span>
         ${wxBadge}
         <span class="dr-meta">${isRest?'—':fmtDur(d.trajanje_min)+' · ~'+(d.tss_ocena||'?')+' TSS'}${done?'<span class="okk">✓ opravljeno</span>':''}</span>
+        ${(!done && d.datum>=today && ['pohod','vzdrzljivost','tempo','intervali','regeneracija'].includes(chipClass(d.tip)))?`<button class="dr-edit" onclick="openTrasa('${d.datum}')">🗺 Trasa</button>`:''}
         ${(!done && d.datum>=today)?`<button class="dr-edit" onclick="openAdjustDay('${d.datum}')">✎ Prilagodi</button>`:''}
       </div>
+      ${d.trasa?`<div style="margin-top:7px;font-size:12px;color:var(--acc2)">🗺 Trasa: ${esc(d.trasa)}</div>`:''}
       ${wxWarn}
       ${(()=>{const acts=state.rides.filter(r=>r.date===d.datum); if(!done||!acts.length) return ''; return `<div style="margin-top:8px;border:1px solid rgba(95,214,122,.3);background:rgba(95,214,122,.06);padding:8px 12px;font-size:12px;color:var(--soft)"><b style="color:var(--green)">✓ ${LANG==='en'?'Actually done':'Dejansko opravljeno'}:</b> ${acts.map(a=>`${sportEmoji(a.sport)||'🚴 '}${esc(a.name)}${a.dist?` — ${a.dist} km`:''}${a.time?` · ${fmtDur(a.time)}`:''}${a.elev?` · ${a.elev} m`:''}`).join(' &nbsp;·&nbsp; ')}</div>`;})()}
       ${cols.length?`<div class="dr-body" style="grid-template-columns:${cols.length===3?'1.25fr 1fr 1fr':'repeat('+cols.length+',1fr)'}">${cols.join('')}</div>`:''}
@@ -4280,6 +4290,79 @@ Vrni SAMO JSON: {"r1":{"ime":"...","info":"kcal · B g · min priprave"},"r2":{"
   }catch(e){ toast(e.message,'err'); }
   busy(btn,false);
 }
+/* ---------- 🗺 PREDLAGANA TRASA iz preteklih voženj ---------- */
+let trasaMap=null, trasaDate=null, trasaPick=0, trasaCands=[];
+function closeTrasa(){ try{ if(trasaMap){ trasaMap.remove(); trasaMap=null; } }catch(_){ } closeModal('trasaBack'); }
+function openTrasa(iso){
+  trasaDate=iso;
+  const d=planDayFor(iso); if(!d){ toast('Ta dan ni v planu.','err'); return; }
+  const sport = chipClass(d.tip)==='pohod' ? 'pohod' : 'kolo';
+  const target = +d.trajanje_min||60;
+  trasaCands = state.rides
+    .filter(r=>r.polyline && (r.sport||'kolo')===sport && +r.time>15)
+    .map(r=>{
+      const dt=Math.abs((+r.time||0)-target)/Math.max(30,target);
+      const rate=(+r.elev||0)/Math.max(1,+r.dist||1);
+      let pen=0; const c=chipClass(d.tip);
+      if(c==='regeneracija' && rate>8) pen+=.4;
+      if((c==='intervali'||c==='tempo') && rate<3) pen+=.15;
+      return {r, score: dt+pen};
+    })
+    .sort((a,b)=>a.score-b.score).slice(0,3).map(x=>x.r);
+  if(!trasaCands.length){ toast('Ni shranjenih tras za ta šport — trase se naberejo z uvozom voženj z zemljevidom (Strava/FIT/Intervals).','err'); return; }
+  trasaPick=0;
+  $('trasaBack').classList.add('open');
+  renderTrasa(d);
+}
+function renderTrasa(d){
+  d=d||planDayFor(trasaDate);
+  const el=$('trasaBody'); if(!el) return;
+  const r=trasaCands[trasaPick]; if(!r) return;
+  el.innerHTML=`
+    <div class="hint" style="margin-bottom:8px">Za <b>${esc(d?.naslov||'trening')}</b> (${fmtDur(d?.trajanje_min)}) — izbrano iz TVOJIH preteklih voženj po ujemanju časa, višincev in tipa treninga.</div>
+    ${trasaCands.length>1?`<div class="row" style="gap:6px;margin-bottom:10px">${trasaCands.map((c,i)=>`<div class="onb-chip ${i===trasaPick?'on':''}" style="padding:6px 11px;font-size:11.5px" onclick="trasaPick=${i};renderTrasa()">${esc((c.name||'Trasa').slice(0,26))}</div>`).join('')}</div>`:''}
+    <div style="font-weight:800;font-size:15px">${sportEmoji(r.sport)||'🚴 '}${esc(r.name||'Trasa')}</div>
+    ${r.places?`<div style="font-size:12.5px;color:var(--acc2);margin-top:3px">📍 ${esc(r.places)}</div>`:''}
+    <div style="font-size:12px;color:var(--muted);margin-top:3px">${r.dist??'?'} km · ${fmtDur(r.time)} · ${r.elev??'?'} m višincev${r.avgHr?` · povp. utrip ${r.avgHr}`:''}</div>
+    <div id="trasaMapBox" style="height:240px;margin-top:10px;border:1px solid var(--border)"></div>
+    <div class="row mt" style="flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" onclick="trasaGpx()">⬇ Prenesi GPX (Garmin/Wahoo)</button>
+      <button class="btn btn-ghost btn-sm" onclick="trasaAccept()">✓ To bo moja trasa</button>
+      <a class="btn btn-ghost btn-sm" target="_blank" rel="noopener" href="https://connect.garmin.com/modern/courses">Garmin Courses →</a>
+    </div>
+    <div class="hint" style="margin-top:8px">GPX uvoziš v Garmin Connect → Training → <b>Courses → Import</b> in trasa je na tvoji uri. Neposredno pošiljanje na uro pride z Garmin povezavo.</div>`;
+  setTimeout(()=>{ try{
+    if(trasaMap){ trasaMap.remove(); trasaMap=null; }
+    if(typeof L==='undefined' || !document.getElementById('trasaMapBox')) return;
+    const pts=decodePolyline(r.polyline);
+    trasaMap=L.map('trasaMapBox',{attributionControl:false});
+    L.tileLayer('https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',{maxZoom:19}).addTo(trasaMap);
+    const pl=L.polyline(pts,{color:'#ff3d2e',weight:3.5}).addTo(trasaMap);
+    L.circleMarker(pts[0],{radius:5,color:'#5fd67a',fillColor:'#5fd67a',fillOpacity:1}).addTo(trasaMap);
+    trasaMap.fitBounds(pl.getBounds(),{padding:[16,16]});
+  }catch(_){ } },80);
+}
+function trasaGpx(){
+  const r=trasaCands[trasaPick]; if(!r) return;
+  try{
+    const pts=decodePolyline(r.polyline);
+    const nm=String(r.name||'Trasa').replace(/[<&>"]/g,'');
+    const gpx='<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="PEAKFORM" xmlns="http://www.topografix.com/GPX/1/1"><trk><name>'+nm+'</name><trkseg>'+pts.map(p=>'<trkpt lat="'+p[0].toFixed(6)+'" lon="'+p[1].toFixed(6)+'"></trkpt>').join('')+'</trkseg></trk></gpx>';
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([gpx],{type:'application/gpx+xml'}));
+    a.download=nm.replace(/[^\wčšžČŠŽ -]/g,'').slice(0,40)+'.gpx';
+    a.click(); URL.revokeObjectURL(a.href);
+    toast('GPX prenesen — uvozi ga v Garmin Connect → Courses. 🗺','ok');
+  }catch(e){ toast('GPX ni uspel: '+e.message,'err'); }
+}
+function trasaAccept(){
+  const r=trasaCands[trasaPick]; if(!r) return;
+  const p=state.plans.find(pp=>(pp.days||[]).some(dd=>dd.datum===trasaDate));
+  const d=p && p.days.find(dd=>dd.datum===trasaDate);
+  if(d){ d.trasa=(r.name||'Trasa')+(r.places&&!(r.name||'').includes('→')?' — '+r.places:''); save(); renderAll(); }
+  closeTrasa(); toast('Trasa pripeta k dnevu. 🗺','ok');
+}
+
 /* ---------- 🧊 KAJ NAJ SKUHAM? — slikaj sestavine, AI sestavi obrok ---------- */
 let fridgeShot=null, fridgeOutHtml='';
 function fridgeSetShot(f){
