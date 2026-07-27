@@ -609,6 +609,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
         <div id="weeklySide"></div>
       </div>
       <div style="min-width:0;display:flex;flex-direction:column;gap:14px">
+      <div class="card" id="forma90Card" style="display:none">
+        <h3>Forma · zadnjih 90 dni <span class="sub">kondicija raste počasi, utrujenost niha, svežina = razlika</span></h3>
+        <div id="forma90"></div>
+      </div>
 
       <div class="grid-dash3" style="margin:0">
         <div class="card">
@@ -1681,6 +1685,32 @@ function tedenInfo(){
   }
   return null;
 }
+function renderForma90(){
+  const card=$('forma90Card'), el=$('forma90'); if(!card||!el) return;
+  const s=formSeries().slice(-90);
+  if(s.length<14){ card.style.display='none'; return; }
+  card.style.display='';
+  const W=640,H=150,x0=26;
+  const all=[...s.map(x=>x.ctl),...s.map(x=>x.atl),...s.map(x=>x.tsb)];
+  const mx=Math.max(20,...all)*1.1, mn=Math.min(-15,...all)*1.1;
+  const X=i=>x0+(W-8-x0)*i/(s.length-1);
+  const Y=v=>8+(mx-v)*((H-26)/(mx-mn));
+  const line=k=>s.map((x,i)=>X(i).toFixed(1)+','+Y(x[k]).toFixed(1)).join(' ');
+  const lab=i=>{ const d=parseIso(s[i].date); return d.getDate()+'.'+(d.getMonth()+1)+'.'; };
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
+    <line x1="${x0}" y1="${Y(0).toFixed(1)}" x2="${W-8}" y2="${Y(0).toFixed(1)}" stroke="#38333e"></line>
+    <text x="${x0-4}" y="${(Y(0)+3).toFixed(1)}" text-anchor="end" font-size="8.5" fill="#6b7580">0</text>
+    <polyline points="${line('atl')}" fill="none" stroke="#ffc247" stroke-width="1.8" opacity=".9"></polyline>
+    <polyline points="${line('ctl')}" fill="none" stroke="#4da3ff" stroke-width="2.4"></polyline>
+    <polyline points="${line('tsb')}" fill="none" stroke="#5fd67a" stroke-width="1.8" opacity=".95"></polyline>
+    ${[0,Math.floor(s.length/2),s.length-1].map(i=>`<text x="${X(i).toFixed(1)}" y="${H-2}" text-anchor="${i===0?'start':i===s.length-1?'end':'middle'}" font-size="8.5" fill="#6b7580">${lab(i)}</text>`).join('')}
+  </svg>
+  <div style="display:flex;gap:14px;font-size:10px;font-weight:700;color:var(--muted);margin-top:6px;flex-wrap:wrap">
+    <span><span style="display:inline-block;width:12px;height:3px;background:#4da3ff"></span> ${LANG==='en'?'FITNESS':'KONDICIJA'}</span>
+    <span><span style="display:inline-block;width:12px;height:3px;background:#ffc247"></span> ${LANG==='en'?'FATIGUE':'UTRUJENOST'}</span>
+    <span><span style="display:inline-block;width:12px;height:3px;background:#5fd67a"></span> ${LANG==='en'?'FRESHNESS':'SVEŽINA'}</span>
+  </div>`;
+}
 function renderDash(){
   const p = state.settings.profile;
   const ti = tedenInfo();
@@ -1765,6 +1795,7 @@ function renderDash(){
 
   renderDashWeekPlan();
   renderWeeklySide();
+  renderForma90();
 
   const last5 = [...state.rides].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
 
