@@ -1252,7 +1252,22 @@ function dedupeRides(arr){
     seen[k]=r; if(r.sport!=='moc') seen2[k2]=r;
     out.push(r);
   }
+  setTimeout(autoMaxHr, 400);
   return out;
+}
+function autoMaxHr(){   // ob uvozu voženj sam oceni max utrip, če ga uporabnik še ni vpisal
+  try{
+    const p=state.settings?.profile; if(!p || p.maxHr) return;
+    const vals=state.rides.map(r=>+r.maxHr||0).filter(v=>v>=150 && v<=220);
+    if(vals.length<3) return;                       // premalo podatkov za zanesljivo oceno
+    const est=Math.max(...vals);
+    p.maxHr=est; save();
+    if(localStorage.getItem('forma_maxhr_auto')!==String(est)){
+      localStorage.setItem('forma_maxhr_auto', String(est));
+      toast('❤️ Max utrip ocenjen iz tvojih voženj: '+est+' — preveri v Nastavitvah (Srce in moč).','ok');
+    }
+    if(typeof fillSettings==='function') try{ fillSettings(); }catch(_){}
+  }catch(_){}
 }
 try{
   const pre=state.rides.length;
@@ -4963,14 +4978,20 @@ function renderSetExtras(){
   const cr=$('connRows');
   if(cr){
     const gOk=!!(document.getElementById('gsyncCard') && /Odjava/.test(document.getElementById('gsyncCard').innerHTML));
+    const icuOk=!!(state.icu?.athleteId&&state.icu?.apiKey&&state.icu?.name);
+    const stOk2=!!state.strava.accessToken;
     const rows=[
       ['🔵 Google sinhronizacija — račun, sinhronizacija in AI', gOk, `document.getElementById('gsyncCard')?.scrollIntoView({behavior:'smooth',block:'center'})`],
-      ['⭐ Poveži svoje vožnje — vodena navodila za VSE naprave (Garmin, Wahoo, Strava …)'+(state.stravaEasy?.name?' — '+state.stravaEasy.name:''), !!state.stravaEasy?.connected, state.stravaEasy?.connected?`stravaEasyConnect()`:`openConnectWizard()`],
-      ['📈 Intervals.icu — samodejni uvoz + FTP/cone (zastonj)', !!(state.icu?.athleteId&&state.icu?.apiKey&&state.icu?.name), `openConn('icu')`],
-      ['🟠 Strava napredno — lasten API ključ', !!state.strava.accessToken, `openConn('strava')`]
+      ['⭐ Poveži svoje vožnje — Garmin, Wahoo, Strava … (vodena navodila)'+(state.stravaEasy?.name?' — '+state.stravaEasy.name:''), !!state.stravaEasy?.connected, state.stravaEasy?.connected?`stravaEasyConnect()`:`openConnectWizard()`]
     ];
-    cr.innerHTML=rows.map(([n,ok,act])=>`<div class="conn-row" style="cursor:pointer" onclick="${act}"><span class="cn">${n}</span><span class="cs ${ok?'ok':'go'}">${ok?'POVEZANO ✓':'POVEŽI →'}</span></div>`).join('')+
-    `<div class="hint" style="margin:6px 0 0">Klik na vrstico odpre navodila in nastavitev. Garmin/Wahoo: poveži jih z Intervals.icu — naprej gre samodejno.</div>`;
+    if(icuOk)  rows.push(['📈 Intervals.icu — samodejni uvoz + FTP/cone', true, `openConn('icu')`]);
+    if(stOk2)  rows.push(['🟠 Strava (lasten ključ)', true, `openConn('strava')`]);
+    const row=([n,ok,act])=>`<div class="conn-row" style="cursor:pointer" onclick="${act}"><span class="cn">${n}</span><span class="cs ${ok?'ok':'go'}">${ok?'POVEZANO ✓':'POVEŽI →'}</span></div>`;
+    const adv=(icuOk&&stOk2)? '' : `<details style="margin-top:8px"><summary style="cursor:pointer;font-size:12px;color:var(--muted)">⚙️ Napredno (za tehnične uporabnike)</summary>${
+      (icuOk?'':row(['📈 Intervals.icu — samodejni uvoz + FTP/cone (zastonj)', false, `openConn('icu')`]))+
+      (stOk2?'':row(['🟠 Strava z lastnim API ključem', false, `openConn('strava')`]))}</details>`;
+    cr.innerHTML=rows.map(row).join('')+adv+
+    `<div class="hint" style="margin:6px 0 0">Za povezavo ure klikni ⭐ — čarovnik te vodi korak za korakom.</div>`;
   }
   renderSubCard();
 }
