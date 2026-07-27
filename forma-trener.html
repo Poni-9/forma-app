@@ -1788,7 +1788,7 @@ function renderDashWeekPlan(){
     const lbl = (iso<=today && mainAct)
       ? `${sportEmoji(mainAct.sport)||'🚴 '}${mainAct.name}${dayActs.some(r=>r.sport==='moc'&&r!==mainAct)?' + moč':''}`
       : d? (d.naslov||d.tip) : '—';
-    rows.push(`<div title="${d?esc('Plan: '+(d.naslov||d.tip)):''}" style="display:flex;gap:9px;align-items:center;font-size:12px;${isToday?'background:rgba(255,61,46,.08);margin:0 -8px;padding:4px 8px;border:1px solid rgba(255,61,46,.3)':'padding:4px 0'}">
+    rows.push(`<div onclick="openPlanDay('${iso}')" title="${d?esc('Plan: '+(d.naslov||d.tip))+' — klik za podrobnosti':'klik odpre plan'}" style="display:flex;gap:9px;align-items:center;font-size:12px;cursor:pointer;${isToday?'background:rgba(255,61,46,.08);margin:0 -8px;padding:4px 8px;border:1px solid rgba(255,61,46,.3)':'padding:4px 0'}">
       <span style="width:3px;height:15px;background:${stripe};flex:none"></span>
       <span style="color:var(--dim);width:30px;font-weight:700;flex:none">${DNEVI[i].slice(0,3).toUpperCase()}</span>
       <span style="font-weight:${isToday?'700':'600'};color:${isToday?'var(--acc2)':'inherit'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">${esc(lbl)}</span>
@@ -2087,6 +2087,18 @@ function sportLabel(tip){
   return c==='pohod' ? {i:'🥾', l:'POHOD'} : c==='moc' ? {i:'💪', l:'TRENING MOČI'} : c==='tek' ? {i:'🏃', l:'TEK'} : c==='pocitek' ? {i:'🛌', l:'POČITEK'} : {i:'🚴', l:'KOLO'};
 }
 
+function openPlanDay(iso){
+  planIdx=null;
+  switchTab('plan');
+  setTimeout(()=>{
+    const el=document.getElementById('day-'+iso);
+    if(el){
+      el.scrollIntoView({behavior:'smooth',block:'center'});
+      el.style.outline='2px solid var(--acc)'; el.style.outlineOffset='3px';
+      setTimeout(()=>{ el.style.outline=''; el.style.outlineOffset=''; }, 2400);
+    } else if(!planDayFor(iso)) toast('Za ta dan (še) ni plana — generiraj ga tukaj.','err');
+  }, 380);
+}
 function renderPlan(){
   const plan = viewedPlan();
   const delBtn = $('btnDelPlan'); if (delBtn) delBtn.style.display = plan ? 'inline-flex' : 'none';
