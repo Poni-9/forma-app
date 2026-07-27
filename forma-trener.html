@@ -656,7 +656,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
         <span class="big">📸</span>
         <b>Prilepi screenshot</b> (Ctrl+V), <b>povleci sliko ali .GPX datoteko sem</b> ali klikni<br>
         <span style="font-size:12px">AI sam prebere razdaljo, čas, višince, utrip …</span>
-        <input type="file" id="fileInput" accept="image/*,.gpx,.fit" style="display:none" multiple>
+        <input type="file" id="fileInput" accept="image/*,.gpx,.fit,.zip" style="display:none" multiple>
       </div>
     </section>
 
@@ -2932,7 +2932,7 @@ NAVODILA:
 - Plan gradi PO METODOLOGIJI TRENERJA (STIL zgoraj — enaki tipi treningov in struktura kot v profesionalnih planih), a ga PRILAGODI temu kolesarju: njegovemu AI profilu (krepi šibkosti, izkoristi moči), formi in ciljem.
 - Plan se začne DANES, ne v ponedeljek! Prvi dan določi po TRENUTNI svežini (TSB) in zadnjih vožnjah: če je svež in ni treniral, lahko takoj kakovosten trening; če je utrujen ali je danes že treniral, začni z regeneracijo/oddihom. NE začenjaj avtomatsko z oddihom.
 - Kolesar trenira po srčnem utripu — cone C1–C5 iz konteksta (ključnim intervalom pripiši tudi utrip, npr. "C4 = utrip 160–172").
-- Postopnost obsega (~+10 % max glede na zadnje tedne).
+- CILJNI OBSEG JE ZAVEZUJOČ: uporabnik želi ~${state.settings.profile.ure||6} h/teden — SEŠTEVEK trajanje_min čez teden mora biti ${state.settings.profile.ure||6} h ±10 %. Znižaš ga lahko SAMO ob rdeči svežini (TSB < −20) ali če VIDNE zadnje vožnje kažejo bistveno manjši dejanski obseg — a nikoli pod 60 % cilja; razlog znižanja napiši v povzetek. ${hasStravaRides()?'POZOR: uporabnikove aktivnosti iz Strave v kontekstu NISO vidne, a trenira redno — NE predpisuj uvajalnega/previdnega mini tedna zaradi navidez prazne zgodovine; drži se ciljnega obsega.':'Postopnost: če vidne vožnje kažejo nižji obseg, dviguj ~+10 %/teden proti cilju.'}
 - ČE OBSTAJA GLAVNI CILJ Z ROKOM (npr. izguba mase${gd?` — potreben deficit ~${gd.deficit} kcal/dan`:''}): za VSAK dan obvezno dodaj tudi "vaje" (10–20 min domačih vaj za trup/moč s serijami × ponovitvami, progresivno; brez teka), "prehrana" (1–3 KRATKI nasveti, ki jih lahko izvede ob svojih obrokih — npr. "manjša porcija priloge | zvečer dodaj skuto (beljakovine) | brez sladkarij in sokov" — NE predpisuj jedilnikov, loči nasvete z |) ter "kcal_vnos" in "kcal_poraba". Deficit dosleden, a ne več kot ~1000 kcal/dan. Če cilja ni, pusti ta polja prazna.
 - Vključi 1–2 dneva ODDIHA ali regeneracije, razporejena pametno (po težkih dneh), ne po fiksni shemi.
 - Tipi: intervali, vzdržljivost, tempo, regeneracija, moč, pohod, počitek. Teden sestavi po POČITNIŠKI STRATEGIJI zgoraj: JEDRO = izmenjava kolo/pohod 4–5×, MOČ 2–3× kot krajši dodatek (ne kot glavna postavka), 1 dan regeneracija/prosto. Dva težka dneva ne zaporedoma.
@@ -3810,9 +3810,31 @@ async function importFit(file){
 function handleFile(f){
   if(!f) return;
   const n=(f.name||'').toLowerCase();
+  if(n.endsWith('.zip')) return importZip(f);
   if(n.endsWith('.gpx')) return importGpx(f);
   if(n.endsWith('.fit')) return importFit(f);
   if(f.type.startsWith('image/')) return loadShot(f);
+}
+async function importZip(f){   // 🗜 cel Garmin izvoz (ZIP z .fit/.gpx) z enim povlekom
+  toast('🗜 Odpiram ZIP …','ok');
+  try{
+    const { default: JSZip } = await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm');
+    const zip = await JSZip.loadAsync(await f.arrayBuffer());
+    const names = Object.keys(zip.files).filter(n2=>!zip.files[n2].dir && /\.(fit|gpx)$/i.test(n2));
+    if(!names.length){ toast('V ZIP-u ni .FIT/.GPX datotek.','err'); return; }
+    toast('🗜 Najdenih '+names.length+' aktivnosti — uvažam (traja lahko minuto ali dve) …','ok');
+    let done=0;
+    for(const n2 of names){
+      try{
+        const blob = await zip.files[n2].async('blob');
+        const file = new File([blob], n2.split('/').pop(), {type:'application/octet-stream'});
+        if(/\.gpx$/i.test(n2)) await importGpx(file); else await importFit(file);
+        done++;
+      }catch(_){}
+      if(done && done%25===0) toast('🗜 '+done+'/'+names.length+' …','ok');
+    }
+    toast('🗜 ZIP uvožen: '+done+' aktivnosti. AI zdaj vidi celotno zgodovino. ✅','ok');
+  }catch(e){ toast('ZIP uvoz ni uspel: '+e.message,'err'); }
 }
 
 /* ================================================================
@@ -4035,7 +4057,7 @@ function renderWizard(){
   if(wizChoice==='garmin'){
     el.innerHTML=back
       +stepPrijava
-      +chk(state.rides.length>0,`<b>NAJHITREJE — povleci FIT datoteke (30 s):</b> odpri <b>connect.garmin.com</b> → Aktivnosti → klik na aktivnost → ⚙️ → <b>Izvozi original</b>. Lahko označiš in povlečeš <b>več datotek naenkrat</b> v zavihek Aktivnosti — preberem šport, km, čas, utrip, moč, kalorije.`,
+      +chk(state.rides.length>0,`<b>NAJHITREJE — povleci FIT datoteke (30 s):</b> odpri <b>connect.garmin.com</b> → Aktivnosti → klik na aktivnost → ⚙️ → <b>Izvozi original</b>. Lahko označiš in povlečeš <b>več datotek naenkrat</b> v zavihek Aktivnosti — preberem šport, km, čas, utrip, moč, kalorije. <b>Celo zgodovino naenkrat:</b> na garmin.com → račun → <b>Export Your Data</b> dobiš ZIP — povleci kar cel ZIP sem in uvozim vse (odklene tudi AI za vožnje, ki so prišle prek Strave).`,
         `<a class="btn btn-primary btn-sm" target="_blank" rel="noopener" href="https://connect.garmin.com/modern/activities">Odpri Garmin Connect</a>`)
       +chk(!!(state.icu?.athleteId&&state.icu?.apiKey),`<b>SAMODEJNO za naprej (5 min, nastaviš enkrat):</b> ① v Garmin Connect aplikaciji poveži <b>Stravo</b> (⚙️ → Povezane aplikacije), ② na <b>intervals.icu</b> se prijavi z Google in poveži Stravo, ③ prilepi Intervals ključ sem. Od takrat vsaka vožnja pride sama.`,
         `<button class="btn btn-ghost btn-sm" onclick="closeModal('wizBack');switchTab('settings');openConn('icu')">📈 Navodila</button>`)
