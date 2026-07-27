@@ -602,22 +602,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
       <div id="dashAlert"></div>
       <div class="grid-stats" id="dashStats"></div>
 
-      <div class="dash-cols">
-      <div class="card" id="weeklySideCard">
-        <h3 data-i18n="weeklyVol">Tedenski obseg</h3>
-        <div class="hint" style="margin:0 0 12px">zadnjih 12 tednov · najnovejši zgoraj</div>
-        <div id="weeklySide"></div>
-      </div>
       <div style="min-width:0;display:flex;flex-direction:column;gap:14px">
-      <div class="card" id="forma90Card" style="display:none">
-        <h3>Forma · zadnjih 90 dni <span class="sub">kondicija raste počasi, utrujenost niha, svežina = razlika</span></h3>
-        <div id="forma90"></div>
-      </div>
 
       <div class="grid-dash3" style="margin:0">
-        <div class="card">
+        <div class="card" id="forma90Card">
           <h3><span data-i18n="chartForma">Forma · zadnjih 90 dni</span> <span class="sub" data-i18n="chartFormaSub">kondicija · utrujenost · svežina</span></h3>
-          <div style="position:relative;height:225px"><canvas id="chartForm"></canvas></div>
+          <div id="forma90"><div style="position:relative;height:225px"><canvas id="chartForm"></canvas></div></div>
         </div>
         <div class="card">
           <h3 data-i18n="weeklyPlan">Tedenski plan</h3>
@@ -636,7 +626,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
 
       <div class="card" id="riderCard"></div>
 
+      <div class="card" id="weeklySideCard">
+        <h3 data-i18n="weeklyVol">Tedenski obseg</h3>
+        <div class="hint" style="margin:0 0 12px">zadnjih 12 tednov · najnovejši zgoraj</div>
+        <div id="weeklySide"></div>
       </div>
+
       </div>
     </section>
     <!-- ===== AKTIVNOSTI ===== -->
@@ -1689,28 +1684,32 @@ function tedenInfo(){
 function renderForma90(){
   const card=$('forma90Card'), el=$('forma90'); if(!card||!el) return;
   const s=formSeries().slice(-90);
-  if(s.length<14){ card.style.display='none'; return; }
-  card.style.display='';
-  const W=640,H=150,x0=26;
+  if(s.length<14){ el.innerHTML=`<div class="hint" style="margin:4px 0">Dodaj aktivnosti — graf se izriše, ko je vsaj 14 dni podatkov.</div>`; return; }
+  const W=620,H=185,x0=30;
   const all=[...s.map(x=>x.ctl),...s.map(x=>x.atl),...s.map(x=>x.tsb)];
-  const mx=Math.max(20,...all)*1.1, mn=Math.min(-15,...all)*1.1;
-  const X=i=>x0+(W-8-x0)*i/(s.length-1);
-  const Y=v=>8+(mx-v)*((H-26)/(mx-mn));
+  const mx=Math.max(20,...all)*1.12, mn=Math.min(-15,...all)*1.12;
+  const X=i=>x0+(W-10-x0)*i/(s.length-1);
+  const Y=v=>10+(mx-v)*((H-24)/(mx-mn));
   const line=k=>s.map((x,i)=>X(i).toFixed(1)+','+Y(x[k]).toFixed(1)).join(' ');
+  const fill=`${X(0).toFixed(1)},${Y(0).toFixed(1)} ${line('ctl')} ${X(s.length-1).toFixed(1)},${Y(0).toFixed(1)}`;
   const lab=i=>{ const d=parseIso(s[i].date); return d.getDate()+'.'+(d.getMonth()+1)+'.'; };
-  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
-    <line x1="${x0}" y1="${Y(0).toFixed(1)}" x2="${W-8}" y2="${Y(0).toFixed(1)}" stroke="#38333e"></line>
-    <text x="${x0-4}" y="${(Y(0)+3).toFixed(1)}" text-anchor="end" font-size="8.5" fill="#6b7580">0</text>
+  const gridV=[mx*0.75, mx*0.375, 0, mn*0.5];
+  el.innerHTML=`<div class="spread" style="flex-wrap:wrap;gap:8px;margin-bottom:8px">
+    <span></span>
+    <div style="display:flex;gap:14px;font-size:10.5px;font-weight:700;color:var(--muted)">
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:3px;background:#4da3ff"></span>${LANG==='en'?'FITNESS':'KONDICIJA'}</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:3px;background:#ffc247"></span>${LANG==='en'?'FATIGUE':'UTRUJENOST'}</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:3px;background:repeating-linear-gradient(90deg,#5fd67a 0 4px,transparent 4px 7px)"></span>${LANG==='en'?'FRESHNESS':'SVEŽINA'}</span>
+    </div></div>
+  <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
+    ${gridV.map(v=>`<line x1="${x0}" y1="${Y(v).toFixed(1)}" x2="${W-10}" y2="${Y(v).toFixed(1)}" stroke="${Math.abs(v)<0.5?'#38333e':'#26232a'}" stroke-width="${Math.abs(v)<0.5?1.5:1}"></line><text x="${x0-6}" y="${(Y(v)+4).toFixed(1)}" text-anchor="end" font-size="10" fill="#6f6876" font-weight="600">${Math.round(v)}</text>`).join('')}
+    <polygon points="${fill}" fill="rgba(77,163,255,.12)"></polygon>
     <polyline points="${line('atl')}" fill="none" stroke="#ffc247" stroke-width="1.8" opacity=".9"></polyline>
     <polyline points="${line('ctl')}" fill="none" stroke="#4da3ff" stroke-width="2.4"></polyline>
-    <polyline points="${line('tsb')}" fill="none" stroke="#5fd67a" stroke-width="1.8" opacity=".95"></polyline>
-    ${[0,Math.floor(s.length/2),s.length-1].map(i=>`<text x="${X(i).toFixed(1)}" y="${H-2}" text-anchor="${i===0?'start':i===s.length-1?'end':'middle'}" font-size="8.5" fill="#6b7580">${lab(i)}</text>`).join('')}
+    <polyline points="${line('tsb')}" fill="none" stroke="#5fd67a" stroke-width="1.8" stroke-dasharray="4 3"></polyline>
+    ${[0,Math.floor(s.length/3),Math.floor(2*s.length/3),s.length-1].map(i=>`<text x="${X(i).toFixed(1)}" y="${H-1}" text-anchor="${i===0?'start':i===s.length-1?'end':'middle'}" font-size="9.5" fill="#6f6876" font-weight="600">${lab(i)}</text>`).join('')}
   </svg>
-  <div style="display:flex;gap:14px;font-size:10px;font-weight:700;color:var(--muted);margin-top:6px;flex-wrap:wrap">
-    <span><span style="display:inline-block;width:12px;height:3px;background:#4da3ff"></span> ${LANG==='en'?'FITNESS':'KONDICIJA'}</span>
-    <span><span style="display:inline-block;width:12px;height:3px;background:#ffc247"></span> ${LANG==='en'?'FATIGUE':'UTRUJENOST'}</span>
-    <span><span style="display:inline-block;width:12px;height:3px;background:#5fd67a"></span> ${LANG==='en'?'FRESHNESS':'SVEŽINA'}</span>
-  </div>`;
+`;
 }
 function renderDash(){
   const p = state.settings.profile;
@@ -1933,8 +1932,8 @@ function renderCharts(){
   Chart.defaults.font.family = 'Barlow, sans-serif';
 
   const s = formSeries().slice(-90);
-  if (chartFormObj) chartFormObj.destroy();
-  chartFormObj = new Chart($('chartForm'), {
+  if (chartFormObj) { try{ chartFormObj.destroy(); }catch(_){} chartFormObj=null; }
+  if ($('chartForm')) chartFormObj = new Chart($('chartForm'), {
     type:'line',
     data:{ labels:s.map(x=>{const d=parseIso(x.date);return `${d.getDate()}.${d.getMonth()+1}.`}),
       datasets:[
