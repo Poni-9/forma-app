@@ -2231,7 +2231,25 @@ async function gemini(parts, {json=true, temp=0.4}={}){
   txt = txt.trim().replace(/^```(json)?/i,'').replace(/```$/,'').trim();
   const a = txt.indexOf('{'), b = txt.lastIndexOf('}');
   if (a>-1 && b>a) txt = txt.slice(a, b+1);
-  return JSON.parse(txt);
+  try{ return JSON.parse(txt); }
+  catch(e1){
+    // samodejna popravila najpogostejših napak modela
+    let t2 = txt
+      .replace(/[\u201C\u201D\u201E]/g,'"').replace(/[\u2018\u2019]/g,"'")   // pametni narekovaji
+      .replace(/,\s*([}\]])/g,'$1')                                             // viseče vejice
+      .replace(/([{,]\s*)'([^']+)'\s*:/g,'$1"$2":')                             // enojni narekovaji ključev
+      .replace(/\bNaN\b/g,'null');
+    try{ return JSON.parse(t2); }
+    catch(e2){
+      try{                                                                        // zadnji izhod: model naj sam popravi
+        const fixed = await gemini([{text:'Popravi ta JSON, da bo 100% veljaven. Ne spreminjaj vsebine, vrni SAMO JSON:\n'+txt.slice(0,12000)}],{json:false,temp:0});
+        let f2 = String(fixed).trim().replace(/^```(json)?/i,'').replace(/```$/,'').trim();
+        const a2=f2.indexOf('{'), b2=f2.lastIndexOf('}');
+        if(a2>-1&&b2>a2) f2=f2.slice(a2,b2+1);
+        return JSON.parse(f2);
+      }catch(_){ throw new Error('AI je vrnil pokvarjen odgovor — klikni še enkrat (ponavadi drugič uspe).'); }
+    }
+  }
 }
 
 /* ================================================================
