@@ -537,6 +537,13 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
 /* modal vedno lepo centriran, dolgi se pomikajo znotraj */
 .modal-back{padding:28px 16px}
 .modal{margin:auto}
+.ex-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:900px){.ex-grid{grid-template-columns:1fr}}
+.ex-card{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--border);padding:12px 14px;transition:border-color .15s}
+.ex-card:hover{border-color:var(--acc)}
+.ex-card .nm{font-weight:700;font-size:13.5px;min-width:0}
+.ex-card .nm small{display:block;font-weight:500;color:var(--muted);font-size:11px;margin-top:3px;line-height:1.4}
+.ex-card .rp{font-family:var(--bc);font-weight:800;color:var(--acc);font-size:20px;letter-spacing:.5px;white-space:nowrap;flex:none}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 </style>
 </head>
@@ -4355,9 +4362,11 @@ function renderForma(){
     : (LANG==='en'?'Bodyweight strength · difficulty adapts to how you feel':'Trening moči z lastno težo · težavnost se prilagaja dnevnemu počutju');
   $('formaDotLbl').innerHTML = `<span class="dot ${d.c}"></span>${d.t} · nivo ${f.level}`;
   const doneToday = f.history.some(h=>h.date===todayIso());
+  const prejsnjic=(ime)=>{ for(let i=f.history.length-1;i>=0;i--){ const hv=f.history[i].vaje; if(hv&&hv.length){ const m2=hv.find(x=>x.ime===ime); if(m2) return m2.s+'×'+String(m2.p).replace(/ ?pon\.?| ?posk\.?/g,''); } } return null; };
   box.innerHTML =
     (sor>=3 ? `<div class="analysis-box" style="border-color:rgba(255,92,92,.4);margin-bottom:10px">🥵 Zelo te boli — danes raje počitek ali samo kratek plank. Bolečina z dnevi upade in trening se sam olajša.</div>` : '') +
-    formaExercises().map(e=>`<div class="ex-row"><div class="nm">${esc(e.ime)}<small>${esc(e.op||'')}</small></div><div class="rp">${e.serije}× ${esc(String(e.pon))}</div></div>`).join('') +
+    `<div class="ex-grid">`+formaExercises().map(e=>{ const pz=prejsnjic(e.ime);
+      return `<div class="ex-card"><div class="nm">${esc(e.ime)}<small>${esc(e.op||'')}${pz?` · <b style="color:var(--soft)">prejšnjič ${esc(pz)}</b>`:''}</small></div><div class="rp">${e.serije} × ${esc(String(e.pon)).replace(/ ?pon\.?$| ?posk\.?$/,'')}</div></div>`; }).join('')+`</div>`+
     ((f.custom&&f.custom.date===todayIso()&&f.custom.nasvet)?`<div class="hint" style="margin-top:8px">✨ ${esc(f.custom.nasvet)}</div>`:'') +
     (doneToday?`<div class="conn-status ok mt">✓ Danes že opravljeno — bravo!</div>`:'');
   const t7=f.history.filter(h=>h.date>=isoDate(addDays(new Date(),-7))).length;
@@ -4395,7 +4404,7 @@ function formaDone(){
   const f=state.forma;
   if (f.history.some(h=>h.date===todayIso())){ toast('Danes je trening moči že zabeležen.'); return; }
   const d=formaDotInfo();
-  f.history.push({date:todayIso(), dot:d.c});
+  f.history.push({date:todayIso(), dot:d.c, vaje:formaExercises().map(e=>({ime:e.ime, s:e.serije, p:String(e.pon)}))});
   const r={ id:uid(), source:'manual', sport:'moc', date:todayIso(), name:'Trening moči (FORMA)', dist:null,
     time:25, elev:null, avgHr:null, maxHr:null, avgPower:null, speed:null, notes:'zgibi/sklece/trup', tss: d.c==='hard'?45:d.c==='med'?35:25 };
   state.rides.push(r);
