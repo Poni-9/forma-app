@@ -1759,7 +1759,7 @@ function renderDanesHero(){
   const done=d.done || state.rides.some(r=>r.date===iso);
   const sl=(typeof sportOfType==='function'? null : null);
   const ico=sportEmoji(d.tip==='moč'?'moc':(chipClass(d.tip)==='pohod'?'pohod':chipClass(d.tip)==='tek'?'tek':'kolo'))||'🚴 ';
-  const kcal=d.kcal_poraba? Math.round(d.kcal_poraba*0.55) : (d.tss_ocena? Math.round(d.tss_ocena*10) : null);
+  const kcal = d.tss_ocena? Math.round(d.tss_ocena*11) : (d.trajanje_min? Math.round(d.trajanje_min*9) : null);   // ocena porabe SAMEGA treninga
   const chips=[
     `${ico}${(chipClass(d.tip)==='moc'?'MOČ · DOMA':chipClass(d.tip)==='pohod'?'POHOD':chipClass(d.tip)==='tek'?'TEK':'KOLO · ZUNAJ')}`,
     rest? null : `${d.trajanje_min||0} MIN`,
@@ -1772,13 +1772,24 @@ function renderDanesHero(){
   const L=(d.opis||'').split('\n').filter(x=>x.trim());
   if(!rest && L.length>=2){
     const segs=L.map(line=>{
-      const m=line.match(/(\d+)\s*(min|minut)/i); const mins=m? +m[1] : Math.max(10,Math.round((d.trajanje_min||60)/L.length));
+      const rep2=line.match(/(\d+)\s*[×x]\s*(\d+)\s*(min|minut)/i);            // 4× 6 minut
+      const one=line.match(/(\d+)\s*(min|minut)/i);
+      let mins = rep2? (+rep2[1]*+rep2[2]) : (one? +one[1] : null);
+      if(rep2){ const pav=line.match(/vmes[^.]*?(\d+)\s*(min|minut)/i); if(pav) mins += (+rep2[1]-1)*(+pav[1]); }   // + odmori
+      if(!mins) mins = Math.max(10,Math.round((d.trajanje_min||60)/L.length));
       const hard=/interval|glavni|klanec|tempo|prag|z4|z3|c4|c3|močno|hitro/i.test(line);
       const warm=/ogrev/i.test(line), cool=/zaključ|ohlaj|sprošč/i.test(line);
       return { mins, c: hard?'var(--acc)': (warm||cool)?'#4da3ff':'#4a4452',
                lbl: warm?(LANG==='en'?'WARM-UP':'OGREVANJE'):cool?(LANG==='en'?'COOL-DOWN':'OHLAJANJE'):(LANG==='en'?'MAIN':'GLAVNI DEL') };
     });
-    const tot=segs.reduce((a,x)=>a+x.mins,0)||1;
+    let tot=segs.reduce((a,x)=>a+x.mins,0)||1;
+    const target=+d.trajanje_min||tot;
+    if(Math.abs(tot-target)>4){                      // razliko pripiši glavnemu delu, da se vsota ujema s trajanjem
+      const mainI=segs.findIndex(x=>x.c==='var(--acc)');
+      const i2 = mainI>=0? mainI : segs.findIndex(x=>x.lbl.startsWith('GLAVNI'))>=0? segs.findIndex(x=>x.lbl.startsWith('GLAVNI')) : 0;
+      segs[i2].mins = Math.max(5, segs[i2].mins + (target-tot));
+      tot = segs.reduce((a,x)=>a+x.mins,0)||1;
+    }
     strip=`<div class="profile">${segs.map(x=>`<div style="flex:${x.mins};background:${x.c};height:${x.c==='var(--acc)'?'100%':'62%'}"></div>`).join('')}</div>
       <div class="profile-l">${segs.map(x=>`<div style="flex:${x.mins};white-space:nowrap;overflow:hidden">${x.lbl} ${x.mins}'</div>`).join('')}</div>`;
   }
@@ -2339,7 +2350,8 @@ function renderPlan(){
     }
     const cols = [];
     const isMocDay = chipClass(d.tip)==='moc';
-    const vajeHtml = d.vaje? (d.vaje.includes('\n')?opisHtml(d.vaje):esc(d.vaje).split(/,\s(?=[A-ZČŠŽ])/).join('<br>')) : '';
+    const vajeEmpty = !d.vaje || /^\s*(ni\s|brez |nič|-|–)/i.test(d.vaje) || /ni predvidenih|ni vaj|brez vaj|poudarek je na/i.test(d.vaje);
+    const vajeHtml = (!vajeEmpty && d.vaje)? (d.vaje.includes('\n')?opisHtml(d.vaje):esc(d.vaje).split(/,\s(?=[A-ZČŠŽ])/).join('<br>')) : '';
     if (isMocDay){
       // dan moči = EN stolpec: potek + vaje skupaj (brez podvojenega bloka)
       const body = (d.opis? opisHtml(d.opis):'') + (vajeHtml? `${d.opis?'<div style="height:8px"></div>':''}${vajeHtml}` : '');
