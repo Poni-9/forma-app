@@ -74,7 +74,7 @@ body{
   width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#ff8a2a);
   display:grid;place-items:center;font-family:var(--bc);font-weight:800;font-size:13px;color:#fff;flex-shrink:0;
 }
-.tb-form{font-size:11px;font-weight:600;color:var(--muted);border:1px solid var(--border2);padding:4px 9px;border-radius:4px;white-space:nowrap}
+.tb-form{font-size:11px;font-weight:600;color:var(--muted);border:1px solid var(--border2);padding:4px 9px;border-radius:0;white-space:nowrap}
 .tb-form b{font-weight:800}
 
 .main{flex:1;min-width:0;padding:24px 28px 60px;max-width:1200px;margin:0 auto;width:100%}
@@ -496,7 +496,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
 ::-webkit-scrollbar{width:9px;height:9px}
 ::-webkit-scrollbar-thumb{background:#2b2830;border:2px solid var(--bg)}
 ::-webkit-scrollbar-thumb:hover{background:#3a3641}
-.page-head h1{background:linear-gradient(180deg,#ffffff 60%,#c9c3d2);-webkit-background-clip:text;background-clip:text;color:transparent}
+.page-head h1{background:linear-gradient(180deg,#f2efe9 60%,#c9c3ce);-webkit-background-clip:text;background-clip:text;color:transparent}
 .page-head h1 .hl{background:linear-gradient(135deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
 .dropzone{transition:border-color .15s,background .15s}
 .dropzone:hover{border-color:var(--acc);background:rgba(255,61,46,.05)}
@@ -1455,9 +1455,9 @@ function closeModal(id){ $(id).classList.remove('open'); }
 function proThanks(){
   const d=document.createElement('div'); d.id='proTyBack';
   d.style.cssText='position:fixed;inset:0;background:rgba(4,10,18,.74);backdrop-filter:blur(4px);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px';
-  d.innerHTML=`<div style="background:var(--card,#0d1826);border:1px solid rgba(255,255,255,.12);border-radius:16px;max-width:400px;padding:26px;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.5)">
+  d.innerHTML=`<div style="background:var(--panel,#18161b);border:1px solid var(--border2,#38333e);border-radius:0;max-width:400px;padding:26px;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.5)">
     <div style="font-size:40px">⭐</div><div style="font-weight:800;font-size:18px;margin:8px 0">Hvala za nakup!</div>
-    <div style="font-size:13.5px;line-height:1.55;color:var(--soft,#c7d5e4)">Plačilo je prejeto — <b>PRO se aktivira samodejno v nekaj sekundah</b>. Če se znak ne pojavi v minuti, osveži stran ali piši na <a href="mailto:blaz.gregorc05@gmail.com" style="color:var(--acc2,#39d98a)">blaz.gregorc05@gmail.com</a>.</div>
+    <div style="font-size:13.5px;line-height:1.55;color:var(--soft,#c9c3ce)">Plačilo je prejeto — <b>PRO se aktivira samodejno v nekaj sekundah</b>. Če se znak ne pojavi v minuti, osveži stran ali piši na <a href="mailto:blaz.gregorc05@gmail.com" style="color:var(--acc2,#ff6a5e)">blaz.gregorc05@gmail.com</a>.</div>
     <button class="btn mt" onclick="document.getElementById('proTyBack').remove()">V redu</button></div>`;
   document.body.appendChild(d);
 }
@@ -2993,6 +2993,30 @@ const proteinTarget = () => { const t=state.settings.profile.teza; return t?Math
 const normDay = (d, datum) => ({ datum: datum||d.datum, tip:d.tip||'vzdržljivost', naslov:d.naslov||'Trening',
   trajanje_min:+d.trajanje_min||0, opis:d.opis||'', tss_ocena:+d.tss_ocena||0,
   prehrana:d.prehrana||'', vaje:d.vaje||'', zakaj:d.zakaj||'', kcal_vnos:+d.kcal_vnos||null, kcal_poraba:+d.kcal_poraba||null });
+// ── Zavezujoč tedenski obseg: po AI generaciji uskladi vsoto trajanj na cilj ±10 %
+function enforceWeekVolume(days){
+  try{
+    const p=state.settings.profile||{}; const targetMin=Math.round((+p.ure||6)*60);
+    if(!targetMin || !Array.isArray(days) || days.length<5) return days;
+    const f=currentFormAI(); const tsb=f?f.tsb:0;
+    const rest=d=>/počitek|pocitek|prosto|rest/i.test(String(d.tip||'')+' '+String(d.naslov||''));
+    const act=days.filter(d=>!rest(d) && (+d.trajanje_min||0)>0);
+    if(!act.length) return days;
+    let tot=act.reduce((a,d)=>a+(+d.trajanje_min||0),0);
+    // dovoljeno okno; ob veliki utrujenosti sme biti nižje (a nikoli pod 60 % cilja)
+    const lo = tsb<-20 ? Math.round(targetMin*0.6) : Math.round(targetMin*0.9);
+    const hi = Math.round(targetMin*1.1);
+    if(tot>=lo && tot<=hi) return days;
+    const want = tot<lo ? Math.round(targetMin*(tsb<-20?0.8:1)) : hi;
+    const k = want/tot;
+    act.forEach(d=>{
+      const m=Math.max(20, Math.round((+d.trajanje_min||0)*k/5)*5);
+      if(+d.tss_ocena) d.tss_ocena=Math.max(5, Math.round(d.tss_ocena*(m/(+d.trajanje_min||m))));
+      d.trajanje_min=m;
+    });
+    return days;
+  }catch(e){ return days; }
+}
 function upsertPlanDays(newDays, meta){
   const dates = newDays.map(d=>d.datum);
   for (const p of state.plans) p.days = (p.days||[]).filter(d=>!dates.includes(d.datum));
@@ -3303,7 +3327,7 @@ Vrni SAMO JSON:
 {"povzetek":"2-3 stavki o tednu","fokus":"kratek fokus","dnevi":[{"datum":"YYYY-MM-DD","tip":"intervali|vzdržljivost|tempo|regeneracija|moč|pohod|tek|počitek (VRSTA treninga, NE šport!)","naslov":"naslov v slogu trenerja","trajanje_min":number,"opis":"...","tss_ocena":number,"vaje":"","prehrana":"","zakaj":"1 stavek: zakaj ta trening ta dan glede na formo, vreme in cilj","kcal_vnos":number|null,"kcal_poraba":number|null}]}
 Točno 7 dni s temi datumi po vrsti: ${days.map(dayLbl).join(', ')}.` }], {temp:.5});
 
-    upsertPlanDays((r.dnevi||[]).map((d,i)=>normDay(d, days[i])), { summary:r.povzetek, focus:r.fokus });
+    upsertPlanDays(enforceWeekVolume((r.dnevi||[]).map((d,i)=>normDay(d, days[i]))), { summary:r.povzetek, focus:r.fokus });
     save(); renderAll();
     toast(fromIso ? 'Plan podaljšan za 7 dni. 📅' : 'Plan za naslednjih 7 dni je pripravljen! 📅','ok');
   }catch(e){
@@ -5143,7 +5167,7 @@ function renderSyncF(){
   const el = $('syncStatus2'); if (!el) return;
   const c = state.sync;
   el.innerHTML = c?.bin
-    ? `✅ Aktivna. <b>Koda za telefon:</b> <code style="user-select:all;background:#111013;padding:2px 7px;border-radius:6px">${c.bin}|${c.key}</code>`
+    ? `✅ Aktivna. <b>Koda za telefon:</b> <code style="user-select:all;background:#111013;padding:2px 7px;border-radius:0">${c.bin}|${c.key}</code>`
     : 'Ni nastavljena — plan živi samo na tem računalniku.';
   if (c?.bin && $('sSyncF') && !$('sSyncF').value) $('sSyncF').value = c.bin+'|'+c.key;
 }
@@ -5314,10 +5338,10 @@ function renderAnalitika(){
       <rect x="${x0}" y="${yB1.toFixed(1)}" width="${W-10-x0}" height="${Math.max(2,yB2-yB1).toFixed(1)}" fill="rgba(95,214,122,.10)"></rect>
       <text x="${W-14}" y="${(yB1+11).toFixed(1)}" text-anchor="end" font-size="8.5" fill="#5fd67a" opacity=".8" font-weight="700">${EN?'IDEAL RACE WINDOW +10…+25':'IDEALNO OKNO ZA CILJ +10…+25'}</text>
       <line x1="${x0}" y1="${Y(0).toFixed(1)}" x2="${W-10}" y2="${Y(0).toFixed(1)}" stroke="#38333e" stroke-width="1.5"></line>
-      <text x="${x0-4}" y="${(Y(0)+3).toFixed(1)}" text-anchor="end" font-size="8.5" fill="#6b7580">0</text>
-      <line x1="${xD.toFixed(1)}" y1="10" x2="${xD.toFixed(1)}" y2="172" stroke="#6b7580" stroke-width="1" stroke-dasharray="2 4"></line>
-      <text x="${(xD-4).toFixed(1)}" y="180" text-anchor="end" font-size="8.5" fill="#6b7580" font-weight="700">${EN?'TODAY':'DANES'} ◂ ${EN?'done':'opravljeno'}</text>
-      <text x="${(xD+4).toFixed(1)}" y="180" font-size="8.5" fill="#6b7580">▸ ${EN?'forecast if you follow the plan':'napoved, če slediš planu'}</text>
+      <text x="${x0-4}" y="${(Y(0)+3).toFixed(1)}" text-anchor="end" font-size="8.5" fill="#6f6876">0</text>
+      <line x1="${xD.toFixed(1)}" y1="10" x2="${xD.toFixed(1)}" y2="172" stroke="#6f6876" stroke-width="1" stroke-dasharray="2 4"></line>
+      <text x="${(xD-4).toFixed(1)}" y="180" text-anchor="end" font-size="8.5" fill="#6f6876" font-weight="700">${EN?'TODAY':'DANES'} ◂ ${EN?'done':'opravljeno'}</text>
+      <text x="${(xD+4).toFixed(1)}" y="180" font-size="8.5" fill="#6f6876">▸ ${EN?'forecast if you follow the plan':'napoved, če slediš planu'}</text>
       ${p.ciljDatum?`<line x1="${W-12}" y1="10" x2="${W-12}" y2="172" stroke="#ffc247" stroke-width="1.5" stroke-dasharray="4 4"></line>`:''}
       <polyline points="${line(hist,'ctl',0)}" fill="none" stroke="#4da3ff" stroke-width="2.5" stroke-linejoin="round"></polyline>
       <polyline points="${line(fut,'ctl',nH)}" fill="none" stroke="#4da3ff" stroke-width="2" stroke-dasharray="3 4"></polyline>
@@ -5746,7 +5770,7 @@ async function renderSubCard(){
     el.innerHTML=`<div style="font-weight:700;font-size:14px">🚀 ZGODNJI DOSTOP</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">Neomejen AI — zastonj za prve uporabnike</div>
     <div style="font-size:11.5px;color:var(--soft);margin-top:8px;line-height:1.5">PEAKFORM PRO (9,99 €/mes) <b>podpre razvoj</b> — dobiš znak podpornika, prednost pri novih funkcijah (Garmin push na uro, spanje/HRV) in <b>zaklenjeno ceno za vedno</b>.</div>
     ${stripeUrl()
-      ? `<a class="btn btn-sm mt" href="${stripeUrl()}" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#08131f;font-weight:800;border:none">⭐ Nadgradi na PRO — 9,99 €/mes</a><div style="font-size:11px;color:var(--muted);margin-top:6px">Varno plačilo prek Stripe · prekineš kadarkoli</div>`
+      ? `<a class="btn btn-sm mt" href="${stripeUrl()}" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#111013;font-weight:800;border:none">⭐ Nadgradi na PRO — 9,99 €/mes</a><div style="font-size:11px;color:var(--muted);margin-top:6px">Varno plačilo prek Stripe · prekineš kadarkoli</div>`
       : `<div style="font-size:11.5px;color:var(--muted);margin-top:8px">Ko pride uradni cenik, zgodnji uporabniki obdržijo ugodnosti.</div>`}`;
   } else {
     el.innerHTML=`<div style="font-size:12.5px;color:var(--muted)">Prijavi se z Googlom (🔵 zgoraj) — AI se takoj vklopi, v zgodnjem dostopu neomejeno in zastonj.</div>`;
