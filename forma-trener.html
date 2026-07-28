@@ -18,7 +18,7 @@
 :root{
   --bg:#111013; --bg2:#0c0b0e; --panel:#18161b; --panel2:#141317;
   --border:#26232a; --border2:#38333e; --borderH:#5e5668;
-  --text:#f2efe9; --soft:#c9c3ce; --muted:#9a939f; --dim:#6f6876;
+  --text:#f2efe9; --soft:#c9c3ce; --muted:#9a939f; --dim:#8a8290; --dim2:#6f6876;
   --acc:#ff3d2e; --accH:#ff5546; --acc2:#ff6a5e; --accSoft:rgba(255,61,46,.12);
   --green:#5fd67a; --greenSoft:rgba(95,214,122,.12);
   --red:#ff5c5c; --redSoft:rgba(255,92,92,.12);
@@ -1964,7 +1964,7 @@ function renderDashWeekPlan(){
     rows.push(`<div onclick="openPlanDay('${iso}')" title="${d?esc('Plan: '+(d.naslov||d.tip))+' — klik za podrobnosti':'klik odpre plan'}" style="display:flex;gap:9px;align-items:center;font-size:12px;cursor:pointer;${isToday?'background:rgba(255,61,46,.08);margin:0 -8px;padding:4px 8px;border:1px solid rgba(255,61,46,.3)':'padding:4px 0'}">
       <span style="width:3px;height:15px;background:${stripe};flex:none"></span>
       <span style="color:var(--dim);width:30px;font-weight:700;flex:none">${DNEVI[i].slice(0,3).toUpperCase()}</span>
-      <span style="font-weight:${isToday?'700':'600'};color:${isToday?'var(--acc2)':'inherit'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">${esc(lbl)}</span>
+      <span style="font-weight:${isToday?'700':'600'};color:${isToday?'var(--text)':'inherit'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">${esc(lbl)}</span>
       <span style="margin-left:auto;color:var(--green);flex:none">${done?'✓':''}</span>
     </div>`);
   }
