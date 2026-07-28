@@ -562,12 +562,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
       </div>
       <nav class="nav">
         <div class="nav-item active" data-tab="dash" data-i18n="navPregled">Pregled</div>
-        <div class="nav-item" data-tab="rides" data-i18n="navAktivnosti">Aktivnosti</div>
-        <div class="nav-item" data-tab="analitika" data-i18n="navAnalitika">Analitika</div>
         <div class="nav-item" data-tab="plan" data-i18n="navPlan">Plan</div>
         <div class="nav-item" data-tab="kalorije" data-i18n="navPrehrana">Prehrana</div>
         <div class="nav-item" data-tab="forma" data-i18n="navMoc">Moč</div>
         <div class="nav-item" data-tab="trener" data-i18n="navTrener">Trener</div>
+        <div class="nav-item" data-tab="rides" data-i18n="navAktivnosti">Aktivnosti</div>
+        <div class="nav-item" data-tab="analitika" data-i18n="navAnalitika">Analitika</div>
         <div class="nav-item" data-tab="porocila" data-i18n="navPorocila">Poročila</div>
         <div class="nav-item" data-tab="settings" data-i18n="navNastavitve">Nastavitve</div>
       </nav>
@@ -602,6 +602,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
       </div>
 
       <div id="onboardCard"></div>
+      <div id="danesHero"></div>
       <div id="dashAlert"></div>
       <div class="grid-stats" id="dashStats"></div>
 
@@ -1722,6 +1723,65 @@ function renderForma90(){
   </svg>
 `;
 }
+function renderDanesHero(){
+  const el=$('danesHero'); if(!el) return;
+  const iso=todayIso(), d=planDayFor(iso), p=state.settings.profile;
+  const now=new Date();
+  const kick=`${LANG==='en'?'TODAY':'DANES'} · ${DNEVI[(now.getDay()+6)%7]} ${now.getDate()}. ${MESECI[now.getMonth()]}${tedenInfo()&&tedenInfo().tot?` · ${LANG==='en'?'WEEK':'TEDEN'} ${tedenInfo().n}/${tedenInfo().tot}`:''}`.toUpperCase();
+  let wxTxt='';
+  try{ const w=weatherByDate(iso); if(w){ const wi=weatherInfo(w.code)||{};
+        wxTxt=`${wi.e||''} ${w.tmax!=null?Math.round(w.tmax)+'°':''}${w.pop!=null?' · '+(w.pop>=60?(LANG==='en'?'RAIN':'DEŽ'):w.pop>=30?(LANG==='en'?'RAIN POSSIBLE':'MOŽEN DEŽ'):(LANG==='en'?'DRY':'SUHO')):''}`; } }catch(_){}
+  if(!d){
+    el.innerHTML=`<div class="card mb" style="border-color:rgba(255,61,46,.35);background:linear-gradient(180deg,rgba(255,61,46,.06),var(--panel))">
+      <div style="font-size:10.5px;font-weight:800;letter-spacing:.12em;color:var(--dim)">${kick}</div>
+      <div style="font-family:var(--bc);font-size:34px;font-weight:900;line-height:1.02;margin-top:6px">${LANG==='en'?'NO PLAN FOR TODAY':'ZA DANES NI PLANA'}</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:6px">${LANG==='en'?'Generate a week and the coach will guide you daily.':'Generiraj teden in trener te bo vodil vsak dan.'}</div>
+      <div class="row mt"><button class="btn btn-primary" onclick="switchTab('plan');setTimeout(()=>generatePlan(),200)">✨ ${LANG==='en'?'Create weekly plan':'Ustvari tedenski plan'} →</button></div></div>`;
+    return;
+  }
+  const rest=chipClass(d.tip)==='pocitek';
+  const done=d.done || state.rides.some(r=>r.date===iso);
+  const sl=(typeof sportOfType==='function'? null : null);
+  const ico=sportEmoji(d.tip==='moč'?'moc':(chipClass(d.tip)==='pohod'?'pohod':chipClass(d.tip)==='tek'?'tek':'kolo'))||'🚴 ';
+  const kcal=d.kcal_poraba? Math.round(d.kcal_poraba*0.55) : (d.tss_ocena? Math.round(d.tss_ocena*10) : null);
+  const chips=[
+    `${ico}${(chipClass(d.tip)==='moc'?'MOČ · DOMA':chipClass(d.tip)==='pohod'?'POHOD':chipClass(d.tip)==='tek'?'TEK':'KOLO · ZUNAJ')}`,
+    rest? null : `${d.trajanje_min||0} MIN`,
+    (p.ftp && ['intervali','tempo'].includes(chipClass(d.tip)))? `${Math.round(p.ftp*0.85)}–${Math.round(p.ftp*1.05)} W` : null,
+    kcal? `~${kcal} KCAL` : null,
+    d.tss_ocena? `${d.tss_ocena} TSS` : null
+  ].filter(Boolean);
+  // trak intervalov iz opisa (ogrevanje / glavni del / zaključek)
+  let strip='';
+  const L=(d.opis||'').split('\n').filter(x=>x.trim());
+  if(!rest && L.length>=2){
+    const segs=L.map(line=>{
+      const m=line.match(/(\d+)\s*(min|minut)/i); const mins=m? +m[1] : Math.max(10,Math.round((d.trajanje_min||60)/L.length));
+      const hard=/interval|glavni|klanec|tempo|prag|z4|z3|c4|c3|močno|hitro/i.test(line);
+      const warm=/ogrev/i.test(line), cool=/zaključ|ohlaj|sprošč/i.test(line);
+      return { mins, c: hard?'var(--acc)': (warm||cool)?'#4da3ff':'#4a4452',
+               lbl: warm?(LANG==='en'?'WARM-UP':'OGREVANJE'):cool?(LANG==='en'?'COOL-DOWN':'OHLAJANJE'):(LANG==='en'?'MAIN':'GLAVNI DEL') };
+    });
+    const tot=segs.reduce((a,x)=>a+x.mins,0)||1;
+    strip=`<div style="display:flex;gap:3px;height:26px;margin-top:14px">${segs.map(x=>`<div style="flex:${x.mins};background:${x.c}"></div>`).join('')}</div>
+      <div style="display:flex;gap:3px;margin-top:5px">${segs.map(x=>`<div style="flex:${x.mins};font-size:9px;font-weight:800;letter-spacing:.06em;color:var(--dim);white-space:nowrap;overflow:hidden">${x.lbl} ${x.mins}'</div>`).join('')}</div>`;
+  }
+  el.innerHTML=`<div class="card mb" style="border-color:rgba(255,61,46,.35);background:linear-gradient(180deg,rgba(255,61,46,.06),var(--panel))">
+    <div class="spread" style="align-items:flex-start;gap:10px;flex-wrap:wrap">
+      <div style="font-size:10.5px;font-weight:800;letter-spacing:.12em;color:var(--dim)">${kick}</div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap">${esc(wxTxt)}</div>
+    </div>
+    <div style="font-family:var(--bc);font-size:38px;font-weight:900;line-height:1.02;margin-top:4px;text-transform:uppercase">${esc(d.naslov||d.tip)}</div>
+    <div class="row" style="gap:6px;flex-wrap:wrap;margin-top:10px">${chips.map(c=>`<span style="border:1px solid var(--border2);color:var(--soft);font-size:11px;font-weight:700;letter-spacing:.05em;padding:5px 10px">${esc(c)}</span>`).join('')}</div>
+    ${strip}
+    ${d.zakaj?`<div style="margin-top:12px;background:rgba(77,163,255,.06);border:1px solid rgba(77,163,255,.25);padding:10px 13px;font-size:12.5px;color:var(--soft);line-height:1.55"><b style="color:var(--blue)">✨ ${LANG==='en'?'WHY TODAY LOOKS LIKE THIS':'ZAKAJ JE DANES TAK TRENING'}:</b> ${esc(d.zakaj)}</div>`:''}
+    <div class="row mt no-print" style="flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="openPlanDay('${iso}')">${done?'✓ '+(LANG==='en'?'Details':'Podrobnosti'):(LANG==='en'?'Workout details':'Podrobnosti treninga')} →</button>
+      ${rest?'':`<button class="btn btn-ghost" onclick="openAdjustDay('${iso}')">⏱ ${LANG==='en'?"I don't have that much time":'Nimam toliko časa'}</button>`}
+      <button class="btn btn-ghost" onclick="switchTab('settings')">📱 ${LANG==='en'?'Send to phone':'Pošlji na telefon'}</button>
+    </div>
+  </div>`;
+}
 function renderDash(){
   const p = state.settings.profile;
   const ti = tedenInfo();
@@ -1804,6 +1864,7 @@ function renderDash(){
       : S('kcal',`<div class="k">${t('calories')} ⓘ</div><div class="v">${eaten!=null?eaten.toLocaleString('sl'):'–'}${poraba?` <small>/ ${poraba.toLocaleString('sl')} kcal</small>`:' <small>kcal</small>'}</div>${(eaten!=null&&poraba)?`<div class="bar"><i style="width:${Math.min(100,Math.round(eaten/poraba*100))}%;background:${eaten<=poraba?'var(--green)':'var(--yellow)'}"></i></div><div class="t">${(()=>{const bal=eaten-poraba;if(eaten===0)return sl?'danes še brez vnosov':'no entries yet today';return bal<=0?(sl?`deficit ${(-bal).toLocaleString('sl')} kcal danes`:`${(-bal).toLocaleString('sl')} kcal deficit today`):(sl?`presežek +${bal.toLocaleString('sl')} kcal danes`:`+${bal.toLocaleString('sl')} kcal surplus today`);})()}${kcalCilj?` · ${sl?'cilj vnosa':'intake goal'} ~${kcalCilj.toLocaleString('sl')}`:''}</div>`:`<div class="t">${sl?'pojedene / porabljene':'eaten / burned'}</div>`}`))+
     S('teza',`<div class="k">${t('weight')} ⓘ</div><div class="v">${p.teza??'–'} <small>kg</small></div><div class="t">${(p.ciljTeza>0&&p.teza>p.ciljTeza)?((sl?'še ':'')+(p.teza-p.ciljTeza).toFixed(1)+' kg '+(sl?'do cilja':'to goal')):(p.teza?(sl?'vpiši cilj v Nastavitvah':'set a goal in Settings'):'kg')}</div>`);
 
+  renderDanesHero();
   renderDashWeekPlan();
   renderWeeklySide();
   renderForma90();
