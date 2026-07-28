@@ -1755,15 +1755,15 @@ function renderDanesHero(){
       <div class="row mt"><button class="btn btn-primary" onclick="switchTab('plan');setTimeout(()=>generatePlan(),200)">✨ ${LANG==='en'?'Create weekly plan':'Ustvari tedenski plan'} →</button></div></div>`;
     return;
   }
-  const rest=chipClass(d.tip)==='pocitek';
+  const rest=chipClass(d.tip,d)==='pocitek';
   const done=d.done || state.rides.some(r=>r.date===iso);
   const sl=(typeof sportOfType==='function'? null : null);
-  const ico=sportEmoji(d.tip==='moč'?'moc':(chipClass(d.tip)==='pohod'?'pohod':chipClass(d.tip)==='tek'?'tek':'kolo'))||'🚴 ';
+  const ico=sportEmoji(d.tip==='moč'?'moc':(chipClass(d.tip,d)==='pohod'?'pohod':chipClass(d.tip,d)==='tek'?'tek':'kolo'))||'🚴 ';
   const kcal = d.tss_ocena? Math.round(d.tss_ocena*11) : (d.trajanje_min? Math.round(d.trajanje_min*9) : null);   // ocena porabe SAMEGA treninga
   const chips=[
-    `${ico}${(chipClass(d.tip)==='moc'?'MOČ · DOMA':chipClass(d.tip)==='pohod'?'POHOD':chipClass(d.tip)==='tek'?'TEK':'KOLO · ZUNAJ')}`,
+    `${ico}${(chipClass(d.tip,d)==='moc'?'MOČ · DOMA':chipClass(d.tip,d)==='pohod'?'POHOD':chipClass(d.tip,d)==='tek'?'TEK':'KOLO · ZUNAJ')}`,
     rest? null : `${d.trajanje_min||0} MIN`,
-    (p.ftp && ['intervali','tempo'].includes(chipClass(d.tip)))? `${Math.round(p.ftp*0.85)}–${Math.round(p.ftp*1.05)} W` : null,
+    (p.ftp && ['intervali','tempo'].includes(chipClass(d.tip,d)))? `${Math.round(p.ftp*0.85)}–${Math.round(p.ftp*1.05)} W` : null,
     kcal? `~${kcal} KCAL` : null,
     d.tss_ocena? `${d.tss_ocena} TSS` : null
   ].filter(Boolean);
@@ -1950,7 +1950,7 @@ function renderDashWeekPlan(){
     const mainAct=dayActs.filter(r=>r.sport!=='moc').sort((a,b)=>(b.time||0)-(a.time||0))[0]||dayActs[0]||null;
     const done=(d&&d.done)||dayActs.length>0;
     const isToday=iso===today;
-    const stripe = mainAct? (stripes[chipClass(mainAct.sport||'kolo')]||'var(--acc)') : d? (stripes[chipClass(d.tip)]||'var(--border2)') : 'var(--border2)';
+    const stripe = mainAct? (stripes[chipClass(mainAct.sport||'kolo')]||'var(--acc)') : d? (stripes[chipClass(d.tip,d)]||'var(--border2)') : 'var(--border2)';
     const lbl = (iso<=today && mainAct)
       ? `${sportEmoji(mainAct.sport)||'🚴 '}${mainAct.name}${dayActs.some(r=>r.sport==='moc'&&r!==mainAct)?' + moč':''}`
       : d? (d.naslov||d.tip) : '—';
@@ -1994,7 +1994,7 @@ function planRealizacija(){
     for(const d of (p.days||[])){
       if(d.datum> today) continue;
       if(d.datum < isoDate(addDays(new Date(),-13))) continue;   // zadnjih 14 dni
-      if(chipClass(d.tip)==='pocitek') continue;
+      if(chipClass(d.tip,d)==='pocitek') continue;
       planned++; if(d.done || state.rides.some(r=>r.date===d.datum)) done++;
     }
   }
@@ -2251,16 +2251,30 @@ function moveDay(iso){
   toast(tgt ? 'Treninga zamenjana med dnevoma. ↔' : 'Trening prestavljen. ↔','ok');
 }
 
-function chipClass(tip){
-  const t = (tip||'').toLowerCase();
-  if (t.includes('interval')) return 'intervali';
+function chipClass(tip, day){
+  // tip lahko pride kot vrsta treninga (intervali …) ALI kot šport (KOLO) — v tem primeru
+  // vrsto ugotovimo iz naslova/opisa, sicer barve, cone in fueling ne bi delovali
+  let t = (tip||'').toLowerCase();
+  const extra = day? ((day.naslov||'')+' '+(day.opis||'')).toLowerCase() : '';
+  const has = re => re.test(t) || re.test(extra);
+  if (/interval|4×|4x|serij|ponovit.*minut|vo2|sprint|pospe/.test(t)) return 'intervali';
   if (t.includes('vzdr')) return 'vzdrzljivost';
   if (t.includes('tempo')) return 'tempo';
   if (t.includes('regener')) return 'regeneracija';
-  if (t.includes('poči')||t.includes('poci')||t.includes('prosto')) return 'pocitek';
-  if (t.includes('moč')||t.includes('moc')) return 'moc';
-  if (t.includes('pohod')||t.includes('hrib')) return 'pohod';
+  if (t.includes('poči')||t.includes('poci')||t.includes('prosto')||t.includes('oddih')) return 'pocitek';
+  if (t.includes('moč')||t.includes('moc')||t.includes('vaje')) return 'moc';
+  if (t.includes('pohod')||t.includes('hrib')||t.includes('sprehod')||t.includes('hoja')) return 'pohod';
   if (t.includes('tek')||t.includes('run')) return 'tek';
+  // tip je le šport (kolo/ride) ali neznano → sklepaj iz naslova in opisa
+  if (has(/počitek|prosto|oddih|brez treninga/)) return 'pocitek';
+  if (has(/interval|4\s*[×x]\s*\d|3\s*[×x]\s*\d|5\s*[×x]\s*\d|vo2|sprint|klanc.*ponov/)) return 'intervali';
+  if (has(/tempo|prag|sweet ?spot|c3|z3/)) return 'tempo';
+  if (has(/regener|lahkoten|sprostitv|umirjen|obnova/)) return 'regeneracija';
+  if (has(/moč|zgib|sklec|dips|trebušnjak|plank/)) return 'moc';
+  if (has(/pohod|hrib|vzpon|sprehod/)) return 'pohod';
+  if (has(/tek\b|running/)) return 'tek';
+  if (has(/dolg|vzdržljiv|baza|aerobn|z2|c2/)) return 'vzdrzljivost';
+  if (/kolo|ride|cycl|bike/.test(t)) return 'vzdrzljivost';   // privzeto za kolo
   return 'gray';
 }
 const sportEmoji = s => s==='pohod' ? '🥾 ' : s==='moc' ? '💪 ' : s==='tek' ? '🏃 ' : '';
@@ -2306,9 +2320,9 @@ function renderPlan(){
   $('planWeekLabel').textContent = `Plan ${s.getDate()}. ${MESECI[s.getMonth()]} – ${e.getDate()}. ${MESECI[e.getMonth()]} ${e.getFullYear()}` + (aktualni?' (aktualni)':'');
 
   const ph = macroPhaseFor(isoDate(weekStart(s)));
-  const totMin = plan.days.filter(d=>chipClass(d.tip)!=='pocitek').reduce((a,d)=>a+(+d.trajanje_min||0),0);
+  const totMin = plan.days.filter(d=>chipClass(d.tip,d)!=='pocitek').reduce((a,d)=>a+(+d.trajanje_min||0),0);
   const totTss = plan.days.reduce((a,d)=>a+(+d.tss_ocena||0),0);
-  const past = plan.days.filter(d=>d.datum<=today && chipClass(d.tip)!=='pocitek');
+  const past = plan.days.filter(d=>d.datum<=today && chipClass(d.tip,d)!=='pocitek');
   const doneN = past.filter(d=>d.done || state.rides.some(r=>r.date===d.datum)).length;
   const kcalDays = plan.days.filter(d=>d.kcal_vnos);
   $('planSummary').innerHTML =
@@ -2325,7 +2339,7 @@ function renderPlan(){
       return `<div onclick="document.getElementById('day-${d.datum}')?.scrollIntoView({behavior:'smooth',block:'start'})" style="cursor:pointer;border:1px solid ${isT?'var(--acc)':'var(--border)'};background:${isT?'rgba(255,61,46,.07)':'var(--panel)'};padding:9px 10px;min-width:0">
         <div style="display:flex;justify-content:space-between;font-size:9.5px;font-weight:800;letter-spacing:.06em;color:${isT?'var(--acc2)':'var(--dim)'}"><span>${DNEVI[(dd.getDay()+6)%7].slice(0,3).toUpperCase()} ${dd.getDate()}.</span><span>${dn?'<span style="color:var(--green)">✓</span>':(wi?wi.e:'')}</span></div>
         <div style="font-size:11.5px;font-weight:700;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${sl2.i} ${esc(d.naslov||d.tip)}</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:2px">${chipClass(d.tip)==='pocitek'?'počitek':fmtDur(d.trajanje_min)+(d.tss_ocena?' · ~'+d.tss_ocena+' TSS':'')}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">${chipClass(d.tip,d)==='pocitek'?'počitek':fmtDur(d.trajanje_min)+(d.tss_ocena?' · ~'+d.tss_ocena+' TSS':'')}</div>
       </div>`;
     }).join('');
   }
@@ -2334,11 +2348,11 @@ function renderPlan(){
   grid.innerHTML = plan.days.map(d=>{
     const dd = parseIso(d.datum);
     const done = d.done || state.rides.some(r=>r.date===d.datum);
-    const isRest = chipClass(d.tip)==='pocitek';
+    const isRest = chipClass(d.tip,d)==='pocitek';
     const sl = sportLabel(d.tip);
     const wd = weatherByDate(d.datum);
     const wi = wd ? weatherInfo(wd.code) : null;
-    const outdoor = chipClass(d.tip)==='pohod' || (['vzdrzljivost','tempo','intervali','regeneracija'].includes(chipClass(d.tip)) || (sl.l==='KOLO'));
+    const outdoor = chipClass(d.tip,d)==='pohod' || (['vzdrzljivost','tempo','intervali','regeneracija'].includes(chipClass(d.tip,d)) || (sl.l==='KOLO'));
     const wxBadge = wi ? `<span class="dr-wx ${(wi.bad&&outdoor)?'warn':''}" title="${wi.t}, dež ${wd.pop}%">${wi.e} ${wd.tmax}°${wd.pop>=40?` · ${wd.pop}%💧`:''}</span>` : '';
     let wxWarn='';
     if (wi && wi.bad && outdoor && !isRest && !done){
@@ -2346,10 +2360,10 @@ function renderPlan(){
       const rp=rainPeriodTxt(d.datum);
       wxWarn = win
         ? `<div class="dr-wxwarn" style="color:var(--green);border-color:rgba(95,214,122,.35);background:rgba(95,214,122,.07)">☔→☀️ Dež ${rp?('okoli '+rp):'del dneva'} — <b>pojdi med ${win.from}h in ${win.to}h</b> (${win.pop}% možnost dežja) in trening normalno opraviš zunaj.</div>`
-        : `<div class="dr-wxwarn">${wi.e} ${wi.t} ves dan (dež ${wd.pop}%) — ${chipClass(d.tip)==='pohod'?'prestavi pohod na lepši dan':'danes raje trenažer ali moč'}.</div>`;
+        : `<div class="dr-wxwarn">${wi.e} ${wi.t} ves dan (dež ${wd.pop}%) — ${chipClass(d.tip,d)==='pohod'?'prestavi pohod na lepši dan':'danes raje trenažer ali moč'}.</div>`;
     }
     const cols = [];
-    const isMocDay = chipClass(d.tip)==='moc';
+    const isMocDay = chipClass(d.tip,d)==='moc';
     const vajeEmpty = !d.vaje || /^\s*(ni\s|brez |nič|-|–)/i.test(d.vaje) || /ni predvidenih|ni vaj|brez vaj|poudarek je na/i.test(d.vaje);
     const vajeHtml = (!vajeEmpty && d.vaje)? (d.vaje.includes('\n')?opisHtml(d.vaje):esc(d.vaje).split(/,\s(?=[A-ZČŠŽ])/).join('<br>')) : '';
     if (isMocDay){
@@ -2365,11 +2379,11 @@ function renderPlan(){
       <div class="dr-head">
         <span class="dr-day">${DNEVI[(dd.getDay()+6)%7].slice(0,3)} ${dd.getDate()}.${dd.getMonth()+1}.</span>
         ${sl.l.toLowerCase()===String(d.tip||'').toLowerCase()?'':`<span class="dr-sport">${sl.i} ${sl.l}</span>`}
-        <span class="chip ${chipClass(d.tip)}">${esc(d.tip)}</span>
+        <span class="chip ${chipClass(d.tip,d)}">${esc(d.tip)}</span>
         <span class="dr-title">${esc(d.naslov)}</span>
         ${wxBadge}
         <span class="dr-meta">${isRest?'—':fmtDur(d.trajanje_min)+' · ~'+(d.tss_ocena||'?')+' TSS'}${done?'<span class="okk">✓ opravljeno</span>':''}</span>
-        ${(!done && d.datum>=today && ['pohod','vzdrzljivost','tempo','intervali','regeneracija'].includes(chipClass(d.tip)))?`<button class="dr-edit" onclick="openTrasa('${d.datum}')">🗺 Trasa</button>`:''}
+        ${(!done && d.datum>=today && ['pohod','vzdrzljivost','tempo','intervali','regeneracija'].includes(chipClass(d.tip,d)))?`<button class="dr-edit" onclick="openTrasa('${d.datum}')">🗺 Trasa</button>`:''}
         ${(!done && d.datum>=today)?`<button class="dr-edit" onclick="openAdjustDay('${d.datum}')">✎ Prilagodi</button>`:''}
       </div>
       ${d.trasa?`<div style="margin-top:7px;font-size:12px;color:var(--acc2)">🗺 Trasa: ${esc(d.trasa)}</div>`:''}
@@ -2613,7 +2627,7 @@ function planRealizacijaAI(){
   const ar=aiRides(); const today=todayIso(); let planned=0, done=0;
   for(const p of state.plans) for(const d of (p.days||[])){
     if(d.datum>today || d.datum<isoDate(addDays(new Date(),-13))) continue;
-    if(chipClass(d.tip)==='pocitek') continue;
+    if(chipClass(d.tip,d)==='pocitek') continue;
     planned++; if(d.done || ar.some(r=>r.date===d.datum)) done++;
   }
   return planned? {planned,done,pct:Math.round(done/planned*100)} : null;
@@ -2700,7 +2714,7 @@ function buildContext(){
     L.push(`\nPLANIRANI TRENINGI (zadnjih 14 dni in naprej) IN REALIZACIJA:`);
     for (const d of pdays){
       const done = d.done || aiRides().some(r=>r.date===d.datum);
-      const rest = chipClass(d.tip)==='pocitek';
+      const rest = chipClass(d.tip,d)==='pocitek';
       const fut = d.datum > todayIso();
       L.push(`- ${d.datum} ${d.tip}: ${d.naslov} (${d.trajanje_min||0} min)${(rest||fut)?'':done?' → OPRAVLJENO':' → NI opravljeno'}`);
     }
@@ -3058,7 +3072,7 @@ function planDeviation(iso, aiSafe){
   const doneMin = rides.reduce((a,r)=>a+(+r.time||0),0);
   const doneTss = rides.reduce((a,r)=>a+(r.tss||0),0);
   const planMin = +d.trajanje_min||0, planTss = +d.tss_ocena||0;
-  const rest = chipClass(d.tip)==='pocitek';
+  const rest = chipClass(d.tip,d)==='pocitek';
   const ratio = planMin? doneMin/planMin : (doneMin? 2 : 1);
   let kind='ok';
   if(rest && doneMin>=45) kind='trained_on_rest';
@@ -3083,15 +3097,15 @@ function adaptWeekLocal(dev){          // brez AI (Strava-safe / brez povezave)
   else if(dev.kind==='trained_on_rest'){ f=0.85; why='treniral si na dan počitka — vgrajujem regeneracijo'; }
   else return 0;
   const fm=currentForm(); if(fm && fm.tsb<-20) f=Math.min(f,0.85);
-  days.forEach((d,i)=>{ if(chipClass(d.tip)==='pocitek') return;
+  days.forEach((d,i)=>{ if(chipClass(d.tip,d)==='pocitek') return;
     const k = i<3? f : 1+(f-1)*0.4;                       // najmočneje na prve dni
     d.trajanje_min = Math.max(20, Math.round((+d.trajanje_min||0)*k/5)*5);
     d.tss_ocena = Math.max(10, Math.round((+d.tss_ocena||0)*k));
     d.zakaj = (d.zakaj? d.zakaj+' ' : '') + `(prilagojeno: ${why})`;
   });
   if(dev.kind==='over' || dev.kind==='trained_on_rest'){   // prvi prihodnji dan naj bo lažji
-    const d0=days.find(d=>chipClass(d.tip)!=='pocitek');
-    if(d0 && chipClass(d0.tip)!=='regeneracija'){ d0.tip='regeneracija'; d0.naslov='Regeneracija (prilagojeno po včerajšnjem)'; d0.trajanje_min=Math.min(d0.trajanje_min,60); d0.tss_ocena=Math.round(d0.tss_ocena*0.6); }
+    const d0=days.find(d=>chipClass(d.tip,d)!=='pocitek');
+    if(d0 && chipClass(d0.tip,d0)!=='regeneracija'){ d0.tip='regeneracija'; d0.naslov='Regeneracija (prilagojeno po včerajšnjem)'; d0.trajanje_min=Math.min(d0.trajanje_min,60); d0.tss_ocena=Math.round(d0.tss_ocena*0.6); }
   }
   save(); renderAll();
   return days.length;
@@ -3186,7 +3200,7 @@ function renderCal(){
     const col = ph ? fazaColor(ph.faza) : null;
     let items = '';
     if (pd){
-      const rest = chipClass(pd.tip)==='pocitek';
+      const rest = chipClass(pd.tip,pd)==='pocitek';
       items += `<div class="cal-item">${rest ? '🛌 ODDIH' : `${sportLabel(pd.tip).i} ${esc(pd.naslov)}<span style="color:var(--dim)"> · ${fmtDur(pd.trajanje_min)}</span>`}</div>`;
     }
     if (pd && (pd.kcal_vnos || pd.vaje)) items += `<div class="cal-item">${pd.kcal_vnos?`🍽 ${pd.kcal_vnos}`:''}${(pd.kcal_vnos&&pd.vaje)?' · ':''}${pd.vaje?'🏋️ vaje':''}</div>`;
@@ -3207,14 +3221,14 @@ function showDay(iso){
   let h = `<div style="font-weight:800;font-size:15px;margin-bottom:10px">${DNEVI[(dd.getDay()+6)%7]}, ${fmtDate(iso)}
     ${ph?`<span class="chip gray" style="margin-left:8px;border:1px solid ${fazaColor(ph.faza)};color:${fazaColor(ph.faza)}">${esc(ph.faza)}</span>`:''}</div>`;
   if (pd){
-    h += `<div><span class="dr-sport" style="margin-right:8px">${sportLabel(pd.tip).i} ${sportLabel(pd.tip).l}</span><span class="chip ${chipClass(pd.tip)}">${esc(pd.tip)}</span></div>
+    h += `<div><span class="dr-sport" style="margin-right:8px">${sportLabel(pd.tip).i} ${sportLabel(pd.tip).l}</span><span class="chip ${chipClass(pd.tip,pd)}">${esc(pd.tip)}</span></div>
       <div style="font-weight:800;font-size:16px;margin:9px 0 4px">${esc(pd.naslov)}</div>
       <div class="analysis-box">${opisHtml(pd.opis||'—')}</div>
       ${pd.vaje?`<div class="analysis-box">🏋️ <b>Dodatne vaje danes:</b><br>${opisHtml(pd.vaje)||esc(pd.vaje)}</div>`:''}
       ${pd.prehrana?`<div class="analysis-box">🍽 <b>Prehrana:</b> ${esc(pd.prehrana)}${pd.kcal_vnos?`<br>🔥 <b>Kalorije:</b> vnos ~${pd.kcal_vnos} kcal · poraba ~${pd.kcal_poraba||'?'} kcal`:''}</div>`:''}
       <div class="dc-meta mt">${fmtDur(pd.trajanje_min)} · ~${pd.tss_ocena||'?'} TSS${pd.done?' · <span style="color:var(--green)">✓ označeno kot opravljeno</span>':''}</div>
       <div class="row mt">
-        ${(!pd.done && iso<=todayIso() && !rides.length && chipClass(pd.tip)!=='pocitek')?`<button class="btn btn-ghost btn-sm" onclick="markDayDone('${iso}')">✓ Opravljeno (brez beleženja)</button>`:''}
+        ${(!pd.done && iso<=todayIso() && !rides.length && chipClass(pd.tip,pd)!=='pocitek')?`<button class="btn btn-ghost btn-sm" onclick="markDayDone('${iso}')">✓ Opravljeno (brez beleženja)</button>`:''}
         <input type="date" id="moveDayTo" style="width:auto;padding:6px 10px;font-size:12.5px">
         <button class="btn btn-ghost btn-sm" onclick="moveDay('${iso}')">↔ Prestavi</button>
         <button class="btn btn-danger btn-sm" onclick="removePlanDay('${iso}')">🗑 Odstrani</button>
@@ -3276,7 +3290,7 @@ ${extra?`⚡ POSEBNA ZAHTEVA UPORABNIKA IZ POGOVORA S TRENERJEM — upoštevaj P
 - "opis": vsaka vrstica en korak (loči z \\n), npr.: "Ogrevanje: 15 min lahkotno (utrip do 130)\\nGlavni del: 3× 8 min v klanec (utrip 160–175), vmes 5 min mirno\\nZaključek: 15 min sproščeno domov".
 
 Vrni SAMO JSON:
-{"povzetek":"2-3 stavki o tednu","fokus":"kratek fokus","dnevi":[{"datum":"YYYY-MM-DD","tip":"...","naslov":"naslov v slogu trenerja","trajanje_min":number,"opis":"...","tss_ocena":number,"vaje":"","prehrana":"","zakaj":"1 stavek: zakaj ta trening ta dan glede na formo, vreme in cilj","kcal_vnos":number|null,"kcal_poraba":number|null}]}
+{"povzetek":"2-3 stavki o tednu","fokus":"kratek fokus","dnevi":[{"datum":"YYYY-MM-DD","tip":"intervali|vzdržljivost|tempo|regeneracija|moč|pohod|tek|počitek (VRSTA treninga, NE šport!)","naslov":"naslov v slogu trenerja","trajanje_min":number,"opis":"...","tss_ocena":number,"vaje":"","prehrana":"","zakaj":"1 stavek: zakaj ta trening ta dan glede na formo, vreme in cilj","kcal_vnos":number|null,"kcal_poraba":number|null}]}
 Točno 7 dni s temi datumi po vrsti: ${days.map(dayLbl).join(', ')}.` }], {temp:.5});
 
     upsertPlanDays((r.dnevi||[]).map((d,i)=>normDay(d, days[i])), { summary:r.povzetek, focus:r.fokus });
@@ -3474,7 +3488,7 @@ function renderTodayBox(){
   const d = planDayFor(todayIso());
   el.innerHTML = d ? `<div class="card mb">
     <h3>📅 Danes v koledarju <span class="sub">izhodišče — spodaj ga prilagodiš svojemu času</span></h3>
-    <span class="chip ${chipClass(d.tip)}">${esc(d.tip)}</span>
+    <span class="chip ${chipClass(d.tip,d)}">${esc(d.tip)}</span>
     <div style="font-weight:800;font-size:15px;margin:8px 0 4px">${esc(d.naslov)} · ${fmtDur(d.trajanje_min)}</div>
     <div style="font-size:13px">${opisHtml(d.opis||'')}</div>
     ${d.vaje?`<div class="dc-meta mt">🏋️ ${esc(d.vaje)}</div>`:''}
@@ -3569,7 +3583,7 @@ function analyzeRideLocal(r){
   let skl='dobro', sklTxt='Za ta dan ni bilo plana — tura šteje v tvojo bazo.';
   if(day){
     const dur=+day.trajanje_min||0, ratio=dur? (r.time/dur) : 1;
-    if(chipClass(day.tip)==='pocitek'){ skl='mimo plana'; sklTxt='Planiran je bil počitek — trening na tak dan rad poje regeneracijo.'; }
+    if(chipClass(day.tip,day)==='pocitek'){ skl='mimo plana'; sklTxt='Planiran je bil počitek — trening na tak dan rad poje regeneracijo.'; }
     else if(ratio>=.85&&ratio<=1.25){ skl='odlično'; sklTxt=`Trajanje se lepo ujema s planiranim (${dur} min).`; }
     else if(ratio>=.6&&ratio<=1.6){ skl='dobro'; sklTxt=`Trajanje ${Math.round(ratio*100)} % planiranega — sprejemljivo odstopanje.`; }
     else { skl='delno'; sklTxt= ratio<1? 'Precej krajše od plana — štej kot lažji dan in nadaljuj po planu.' : 'Precej daljše od plana — obremenitev je bila večja od predvidene, jutri umiri.'; }
@@ -4864,7 +4878,7 @@ function renderKalorije(){
     const iso=isoDate(addDays(new Date(),i));
     const d=planDayFor(iso);
     if(!d) continue;
-    const c=chipClass(d.tip);
+    const c=chipClass(d.tip,d);
     const dur=+d.trajanje_min||0;
     if(['intervali','tempo'].includes(c) || (c==='vzdrzljivost'&&dur>=100) || c==='pohod'&&dur>=120){
       const carbs = dur>=150? '60–90 g OH/h' : dur>=90? '40–60 g OH/h' : '30–40 g OH/h';
@@ -4969,14 +4983,14 @@ function closeTrasa(){ try{ if(trasaMap){ trasaMap.remove(); trasaMap=null; } }c
 function openTrasa(iso){
   trasaDate=iso;
   const d=planDayFor(iso); if(!d){ toast('Ta dan ni v planu.','err'); return; }
-  const sport = chipClass(d.tip)==='pohod' ? 'pohod' : 'kolo';
+  const sport = chipClass(d.tip,d)==='pohod' ? 'pohod' : 'kolo';
   const target = +d.trajanje_min||60;
   trasaCands = state.rides
     .filter(r=>r.polyline && (r.sport||'kolo')===sport && +r.time>15)
     .map(r=>{
       const dt=Math.abs((+r.time||0)-target)/Math.max(30,target);
       const rate=(+r.elev||0)/Math.max(1,+r.dist||1);
-      let pen=0; const c=chipClass(d.tip);
+      let pen=0; const c=chipClass(d.tip,d);
       if(c==='regeneracija' && rate>8) pen+=.4;
       if((c==='intervali'||c==='tempo') && rate<3) pen+=.15;
       return {r, score: dt+pen};
