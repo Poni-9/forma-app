@@ -78,9 +78,9 @@ body{
 .tb-form b{font-weight:800}
 
 .main{flex:1;min-width:0;padding:24px 28px 60px;max-width:1200px;margin:0 auto;width:100%}
-.tab{display:none;animation:fadeIn .25s ease}
+.tab{display:none;animation:fadeIn .16s ease}
 .tab.active{display:block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
 .page-head{margin-bottom:18px}
 .page-head h1{font-family:var(--bc);font-size:34px;font-weight:800;letter-spacing:.01em;line-height:1;text-transform:uppercase}
@@ -529,7 +529,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
 .stat .v,.ms .v{font-variant-numeric:tabular-nums}
 .conn-row{transition:background .15s,border-color .15s}
 .conn-row:hover{background:rgba(255,255,255,.02)}
-.obAnim{animation:obF .33s ease}
+.obAnim{animation:obF .2s ease}
 @keyframes obF{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 .onb-lvl{transition:border-color .15s, transform .15s, background .15s}
 .onb-lvl:hover{transform:translateY(-2px)}
@@ -744,12 +744,12 @@ html,body{max-width:100%;overflow-x:hidden}
           <button class="btn btn-ghost btn-sm" onclick="shiftWeek(-1)">‹</button>
           <button class="btn btn-ghost btn-sm" onclick="shiftWeek(0)" data-i18n="aktualni">Aktualni</button>
           <button class="btn btn-ghost btn-sm" onclick="shiftWeek(1)">›</button>
-          <button class="btn btn-danger btn-sm" id="btnDelPlan" onclick="deleteViewedPlan()" style="display:none">🗑 Izbriši plan</button>
           <button class="btn btn-primary" id="btnGenPlan" onclick="generatePlan()">⟳ Generiraj nov teden</button>
           <button class="btn btn-ghost" id="btnMacro" onclick="generateMacro()">🎯 Plan do cilja</button>
-          <button class="btn btn-ghost" onclick="openImportPlan()">📥 Uvozi svoj plan</button>
           <button class="btn btn-ghost" onclick="adaptPlanNow()" title="Pogleda včerajšnji trening in prilagodi preostale dni">🔄 Prilagodi po včerajšnjem</button>
+          <button class="btn btn-ghost" onclick="openImportPlan()">📥 Uvozi svoj plan</button>
           <button class="btn btn-ghost" onclick="planBrezAI()" title="Deterministična pravila — nič se ne pošlje nikamor">⚙️ Hitri plan (brez AI)</button>
+          <button class="btn btn-ghost btn-sm" id="btnDelPlan" onclick="deleteViewedPlan()" style="display:none;margin-left:auto;color:var(--red);border-color:rgba(255,92,92,.35)">🗑 Izbriši plan</button>
         </div>
       </div>
 
@@ -2580,7 +2580,8 @@ function weatherText(){
 async function renderWeather(){
   const el=$('weatherStrip'); if(!el) return;
   const kk=state.settings.profile.kraj;
-  const tE=$('wxTitle'); if(tE) tE.textContent='🌦️ Napoved — '+(kk||(LANG==='en'?'your area':'tvoja okolica'));
+  const kkC = kk? kk.replace(/(^|[\s\-\/])([\p{Ll}])/gu,(m,a,b)=>a+b.toUpperCase()) : null;
+  const tE=$('wxTitle'); if(tE) tE.textContent='🌦️ Napoved — '+(kkC||(LANG==='en'?'your area':'tvoja okolica'));
   const sL=$('wxSetLoc'); if(sL) sL.style.display=kk?'none':'';
   const w=await getWeather();
   if(!w?.days?.length){ el.innerHTML=''; return; }
@@ -4941,7 +4942,12 @@ function renderKalorije(){
     const d0=hist[0].teza, d1=hist[hist.length-1].teza;
     telo=`<div class="card"><h3>${t('bodyComp')} <span class="sub">${hist.length} ${LANG==='en'?'entries':'meritev'}</span></h3>
       <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-family:var(--bc);font-weight:800;font-size:19px;color:${d1<=d0?'var(--green)':'var(--yellow)'}">${d1} kg <span style="font-size:11px;color:var(--dim)">(${d1-d0>0?'+':''}${(d1-d0).toFixed(1)})</span></span>${p.bf?`<span style="font-size:12px;color:var(--muted)">BF ~${p.bf} %</span>`:''}</div>
-      <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;margin-top:6px"><polyline points="${ptsT}" fill="none" stroke="var(--green)" stroke-width="2" stroke-linejoin="round"></polyline></svg>
+      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:64px;display:block;margin-top:8px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)"><polyline points="${ptsT}" fill="none" stroke="var(--green)" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline></svg>
+      <div style="display:flex;justify-content:space-between;font-size:9.5px;font-weight:700;color:var(--dim);margin-top:4px">
+        <span>${fmtDate(hist[0].datum||hist[0].date||'')||(LANG==='en'?'start':'začetek')} · ${d0} kg</span>
+        <span>${mn.toFixed(1)}–${mx.toFixed(1)} kg</span>
+        <span>${LANG==='en'?'now':'zdaj'} · ${d1} kg${p.ciljTeza?' · '+(LANG==='en'?'goal':'cilj')+' '+p.ciljTeza+' kg':''}</span>
+      </div>
     </div>`;
   } else {
     telo=`<div class="card"><h3>${t('bodyComp')}</h3><div class="hint" style="margin:2px 0">${LANG==='en'?'Update your weight in Settings — the trend chart builds here.':'Vsakič, ko v Nastavitvah posodobiš težo, se tukaj riše graf napredka.'}</div></div>`;
