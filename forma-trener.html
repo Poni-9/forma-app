@@ -5694,7 +5694,7 @@ Odgovori na zadnje sporočilo kolesarja. Vrni samo čisto besedilo (in po potreb
     chatImg=null; chatImgChipR();
     const raw=String(txt).trim();
     const am=raw.match(/##AKCIJA\s*(\{[^]*?\})\s*$/);
-    const show=raw.replace(/##AKCIJA[^]*$/,'').trim();
+    const show=sanitizeGaps(raw.replace(/##AKCIJA[^]*$/,'').trim());
     const m2=chatLoad(); m2.push({r:'ai',t:show||'✅',ts:Date.now()}); chatSave(m2); renderChat();
     if(am){
       let act=null; try{ act=JSON.parse(am[1]); }catch(_){}
