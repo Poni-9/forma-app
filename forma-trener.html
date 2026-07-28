@@ -170,7 +170,7 @@ textarea{resize:vertical;min-height:70px}
 
 /* ---------- Aktivnosti (tabela) ---------- */
 .ride-row{
-  display:grid;grid-template-columns:52px 1.6fr repeat(4,minmax(70px,.7fr)) 90px auto;
+  display:grid;grid-template-columns:52px minmax(0,1.6fr) repeat(4,minmax(70px,.7fr)) 90px 122px;
   gap:10px;align-items:center;padding:13px 16px;border-bottom:1px solid #201d24;
 }
 .ride-row:last-child{border-bottom:none}
@@ -192,8 +192,8 @@ textarea{resize:vertical;min-height:70px}
 }
 .icon-btn:hover{color:var(--text);border-color:var(--borderH)}
 .icon-btn.del:hover{color:var(--red);border-color:rgba(255,92,92,.4)}
-.rides-head{display:grid;grid-template-columns:52px 1.6fr repeat(4,minmax(70px,.7fr)) 90px auto;gap:10px;padding:10px 16px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--border)}
-@media(max-width:900px){.ride-row,.rides-head{grid-template-columns:52px 1.4fr repeat(2,.7fr) auto}.hide-sm{display:none}}
+.rides-head{display:grid;grid-template-columns:52px minmax(0,1.6fr) repeat(4,minmax(70px,.7fr)) 90px 122px;gap:10px;padding:10px 16px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--border)}
+@media(max-width:900px){.ride-row,.rides-head{grid-template-columns:52px minmax(0,1.4fr) repeat(2,minmax(60px,.7fr)) 70px 122px}.hide-sm{display:none}}
 
 .dropzone{
   border:1px dashed var(--border2);border-radius:0;padding:26px 20px;text-align:center;
@@ -247,6 +247,8 @@ textarea{resize:vertical;min-height:70px}
 .dr-edit{background:none;border:1px solid var(--border2);color:var(--muted);font-family:'Barlow',sans-serif;font-size:10.5px;font-weight:700;padding:3px 9px;cursor:pointer;margin-left:8px;letter-spacing:.04em}
 .dr-edit:hover{border-color:var(--acc);color:var(--acc2)}
 .dash-cols{display:grid;grid-template-columns:250px minmax(0,1fr);gap:14px;align-items:start}
+.dash-main{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.85fr);gap:14px;align-items:start}
+@media(max-width:1050px){.dash-main{grid-template-columns:1fr}}
 #weeklySideCard{position:sticky;top:64px;max-height:calc(100vh - 80px);overflow-y:auto}
 @media(max-width:1150px){.dash-cols{grid-template-columns:1fr}#weeklySideCard{position:static;max-height:none}}
 
@@ -554,7 +556,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
   <!-- ======= ZGORNJA VRSTICA ======= -->
   <header class="topbar">
     <div class="topbar-left">
-      <div class="logo">
+      <div class="logo" style="cursor:pointer" title="Na Pregled" onclick="switchTab('dash');window.scrollTo({top:0,behavior:'smooth'})">
         <div class="logo-mark"></div>
         <div class="logo-name">PEAKFORM</div>
       </div>
@@ -603,38 +605,32 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
       <div id="dashAlert"></div>
       <div class="grid-stats" id="dashStats"></div>
 
-      <div class="dash-cols">
-      <div class="card" id="weeklySideCard">
-        <h3 data-i18n="weeklyVol">Tedenski obseg</h3>
-        <div class="hint" style="margin:0 0 12px">zadnjih 12 tednov · najnovejši zgoraj</div>
-        <div id="weeklySide"></div>
-      </div>
-      <div style="min-width:0;display:flex;flex-direction:column;gap:14px">
-
-      <div class="card" id="forma90Card" style="margin:0">
-        <h3><span data-i18n="chartForma">Forma · zadnjih 90 dni</span> <span class="sub" data-i18n="chartFormaSub">kondicija · utrujenost · svežina</span></h3>
-        <div id="forma90"><div style="position:relative;height:225px"><canvas id="chartForm"></canvas></div></div>
-      </div>
-
-      <div class="grid-dash3" style="margin:0;grid-template-columns:1.25fr 1fr">
-        <div class="card">
-          <h3 data-i18n="weeklyPlan">Tedenski plan</h3>
-          <div id="dashWeekPlan"></div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+      <div class="dash-main">
+        <div style="min-width:0;display:flex;flex-direction:column;gap:14px">
+          <div class="card">
+            <h3 data-i18n="weeklyPlan">Tedenski plan <span class="sub">klik na dan odpre podrobnosti</span></h3>
+            <div id="dashWeekPlan"></div>
+          </div>
           <div id="coachReport"></div>
-          <div class="card" style="flex:1">
+          <div id="dashBadges"></div>
+          <div class="card" id="riderCard"></div>
+        </div>
+
+        <div style="min-width:0;display:flex;flex-direction:column;gap:14px">
+          <div class="card" id="forma90Card" style="margin:0">
+            <h3><span data-i18n="chartForma">Forma · 90 dni</span></h3>
+            <div id="forma90"><div style="position:relative;height:200px"><canvas id="chartForm"></canvas></div></div>
+          </div>
+          <div class="card">
             <h3 data-i18n="lastAct">Zadnja aktivnost</h3>
             <div id="lastAct"></div>
           </div>
+          <div class="card" id="weeklySideCard">
+            <h3 data-i18n="weeklyVol">Tedenski obseg</h3>
+            <div class="hint" style="margin:0 0 12px">zadnjih 12 tednov</div>
+            <div id="weeklySide"></div>
+          </div>
         </div>
-      </div>
-
-      <div id="dashBadges"></div>
-
-      <div class="card" id="riderCard"></div>
-
-      </div>
       </div>
     </section>
     <!-- ===== AKTIVNOSTI ===== -->
@@ -765,28 +761,37 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
         </div>
       </div>
       <div class="card mb path-card" id="mocPath"></div>
-      <div class="grid-2">
-        <div class="card">
-          <h3>Današnji trening moči <span class="sub" id="formaDotLbl"></span></h3>
-          <div id="formaWorkout"></div>
-          <div class="row mt" id="formaActions">
-            <button class="btn btn-primary" onclick="formaDone()">✅ Opravil trening</button>
-            <button class="btn btn-ghost" id="btnFormaAI" onclick="formaAI()">✨ AI prilagodi vaje</button>
-          </div>
-          <div id="formaFb" class="mt"></div>
+
+      <!-- 1) POČUTJE (najprej vprašanje, ker določi trening) -->
+      <div class="card mb">
+        <div class="spread" style="flex-wrap:wrap;gap:10px">
+          <h3 style="margin:0">Kako se počutiš danes? <span class="sub">določi današnjo težavnost</span></h3>
+          <button class="btn btn-ghost btn-sm no-print" onclick="formaCheckin()">Shrani počutje</button>
         </div>
-        <div>
-          <div class="card mb">
-            <h3>Kako se počutiš danes?</h3>
-            <div class="seg" id="segSore">
-              <button data-v="0" class="on">💪 Nič</button>
-              <button data-v="1">🙂 Malo</button>
-              <button data-v="2">😖 Precej</button>
-              <button data-v="3">🥵 Zelo</button>
-            </div>
-            <p class="hint mt" style="margin-bottom:8px">"Nič me ne boli" dvigne težavnost (rdeča pikica), bolečina jo zniža (modra). Bolečina z dnevi sama upada.</p>
-            <button class="btn btn-ghost btn-sm" onclick="formaCheckin()">Shrani počutje</button>
+        <div class="seg mt" id="segSore" style="max-width:520px">
+          <button data-v="0" class="on">💪 Nič</button>
+          <button data-v="1">🙂 Malo</button>
+          <button data-v="2">😖 Precej</button>
+          <button data-v="3">🥵 Zelo</button>
+        </div>
+      </div>
+
+      <!-- 2) DANAŠNJI TRENING (čez celo širino) -->
+      <div class="card mb">
+        <div class="spread" style="flex-wrap:wrap;gap:10px">
+          <h3 style="margin:0">Današnji trening moči <span class="sub" id="formaDotLbl"></span></h3>
+          <div class="row no-print">
+            <button class="btn btn-ghost btn-sm" id="btnFormaAI" onclick="formaAI()">✨ AI prilagodi vaje</button>
+            <button class="btn btn-primary btn-sm" onclick="formaDone()">✅ Opravil trening</button>
           </div>
+        </div>
+        <div id="formaWorkout" class="mt"></div>
+        <div id="formaFb" class="mt"></div>
+      </div>
+
+      <!-- 3) NAPREDEK + ZGODOVINA -->
+      <div class="grid-2">
+        <div>
           <div class="card">
             <h3>Napredek</h3>
             <div id="formaStats"></div>
@@ -1887,6 +1892,14 @@ function planRealizacija(){
 }
 function renderCoachReport(){
   const box=$('coachReport'); if(!box) return;
+  const cc=coachCache();
+  if(cc.date===todayIso() && cc.txt){
+    box.innerHTML=`<div class="card" style="border-color:rgba(255,61,46,.3)">
+      <div class="spread"><h3 style="margin:0">🤖 AI trener <span class="sub">danes</span></h3><span style="font-size:10px;color:var(--dim);font-weight:700">SAMODEJNO</span></div>
+      <div style="font-size:12.5px;color:var(--soft);line-height:1.65;margin-top:8px">${nl2br(cc.txt)}</div>
+      <button class="btn btn-ghost btn-sm mt no-print" id="btnCoachAI" onclick="coachReportAI()">↻ Osveži poročilo</button></div>`;
+    return;
+  }
   if(state.rides.length<1){ box.innerHTML=''; return; }
   const t=weekAgg(0), l=weekAgg(1), f=currentForm();
   const s=formSeries(); const prev=s.length>8? s[s.length-8] : null;
@@ -1911,8 +1924,19 @@ function renderCoachReport(){
     <button class="btn btn-ghost btn-sm mt no-print" id="btnCoachAI" onclick="coachReportAI()">✨ AI poročilo</button>
   </div>`;
 }
-async function coachReportAI(){
-  const btn=$('btnCoachAI'); busy(btn,true,'Pišem …');
+const COACH_KEY='forma_coach_ai';
+function coachCache(){ try{ return JSON.parse(localStorage.getItem(COACH_KEY)||'{}'); }catch(_){ return {}; } }
+async function maybeAutoCoach(){
+  try{
+    const c=coachCache();
+    if(c.date===todayIso()) return;
+    const aiOn=!!state.settings.geminiKey || !!(window.FORMASYNC&&FORMASYNC.uid&&FORMASYNC.uid());
+    if(!aiOn || !navigator.onLine || !state.rides.length) return;
+    await coachReportAI(true);
+  }catch(_){}
+}
+async function coachReportAI(auto){
+  const btn=$('btnCoachAI'); if(!auto) busy(btn,true,'Pišem …');
   try{
     const t=weekAggAI(0), l=weekAggAI(1), rp=planRealizacijaAI(), f=currentFormAI();
     const txt = await gemini([{text:
@@ -1922,12 +1946,17 @@ Ta teden: ${t.n} voženj, ${Math.round(t.km)} km, ${t.min} min, ${t.tss} TSS. Pr
 ${rp?`Realizacija plana (14 dni): ${rp.done}/${rp.planned}.`:''} ${f?`Forma: CTL ${f.ctl}, TSB ${f.tsb} (${f.opis}).`:''}
 ${buildContext()}
 Vrni SAMO čisto besedilo, brez naslova.${aiLangNote()}`}], {json:false, temp:.6});
-    const mt=$('dayModalTitle'); if(mt) mt.textContent = LANG==='en'?'AI coach report':'AI poročilo trenerja';
-    $('dayBody').innerHTML=`<div style="font-size:13.5px;color:var(--soft);line-height:1.7">${nl2br(String(txt).trim())}</div>
-      <div class="modal-foot"><button class="btn btn-primary btn-sm" onclick="closeModal('dayModalBack')">${LANG==='en'?'Got it':'Razumem'}</button></div>`;
-    $('dayModalBack').classList.add('open');
-  }catch(e){ toast(e.message,'err'); }
-  busy(btn,false);
+    const clean=String(txt).trim();
+    try{ localStorage.setItem(COACH_KEY, JSON.stringify({date:todayIso(), txt:clean})); }catch(_){}
+    renderCoachReport();
+    if(!auto){
+      const mt=$('dayModalTitle'); if(mt) mt.textContent = LANG==='en'?'AI coach report':'AI poročilo trenerja';
+      $('dayBody').innerHTML=`<div style="font-size:13.5px;color:var(--soft);line-height:1.7">${nl2br(clean)}</div>
+        <div class="modal-foot"><button class="btn btn-primary btn-sm" onclick="closeModal('dayModalBack')">${LANG==='en'?'Got it':'Razumem'}</button></div>`;
+      $('dayModalBack').classList.add('open');
+    }
+  }catch(e){ if(!auto) toast(e.message,'err'); }
+  if(!auto) busy(btn,false);
 }
 
 function renderCharts(){
@@ -2210,8 +2239,16 @@ function renderPlan(){
         : `<div class="dr-wxwarn">${wi.e} ${wi.t} ves dan (dež ${wd.pop}%) — ${chipClass(d.tip)==='pohod'?'prestavi pohod na lepši dan':'danes raje trenažer ali moč'}.</div>`;
     }
     const cols = [];
-    if (d.opis) cols.push(`<div class="dr-col"><div class="dr-lbl">${sl.i} ${sl.l}</div>${opisHtml(d.opis)}</div>`);
-    if (d.vaje) cols.push(`<div class="dr-col"><div class="dr-lbl">🏋️ ${wantsMU()?'Vaje (muscle-up)':'Vaje (moč)'}</div>${d.vaje.includes('\n')?opisHtml(d.vaje):esc(d.vaje).split(/,\s(?=[A-ZČŠŽ])/).join('<br>')}</div>`);
+    const isMocDay = chipClass(d.tip)==='moc';
+    const vajeHtml = d.vaje? (d.vaje.includes('\n')?opisHtml(d.vaje):esc(d.vaje).split(/,\s(?=[A-ZČŠŽ])/).join('<br>')) : '';
+    if (isMocDay){
+      // dan moči = EN stolpec: potek + vaje skupaj (brez podvojenega bloka)
+      const body = (d.opis? opisHtml(d.opis):'') + (vajeHtml? `${d.opis?'<div style="height:8px"></div>':''}${vajeHtml}` : '');
+      if (body) cols.push(`<div class="dr-col"><div class="dr-lbl">${sl.i} ${sl.l}</div>${body}</div>`);
+    } else {
+      if (d.opis) cols.push(`<div class="dr-col"><div class="dr-lbl">${sl.i} ${sl.l}</div>${opisHtml(d.opis)}</div>`);
+      if (vajeHtml) cols.push(`<div class="dr-col"><div class="dr-lbl">🏋️ ${LANG==='en'?'Extra strength':'Dodatek: moč'}</div>${vajeHtml}</div>`);
+    }
     if (d.prehrana || d.kcal_vnos) cols.push(`<div class="dr-col"><div class="dr-lbl">🍽 Prehrana</div>${esc(d.prehrana||'').split(/\s*\|\s*/).filter(x=>x).map(x=>`<div class="opis-line">${x}</div>`).join('')}${d.kcal_vnos?`<div class="dr-kcal">🔥 vnos ~${d.kcal_vnos} · poraba ~${d.kcal_poraba||'?'} kcal</div>`:''}</div>`);
     return `<div class="day-row ${d.datum===today?'today':''} ${done?'done':''}" id="day-${d.datum}">
       <div class="dr-head">
@@ -2472,7 +2509,7 @@ function planRealizacijaAI(){
 }
 function stravaSafeNote(){
   return state.rides.some(r=>r.source==='strava')
-    ? '\n(OPOMBA: del aktivnosti je uvožen iz Strave in po pravilih Strava API ni na voljo AI obdelavi — VSE zgornje številke (forma, seznam, realizacija) so izračunane brez teh aktivnosti, zato je resnični obseg treninga lahko večji. Upoštevaj to in ne komentiraj navidez manjkajočih dni.)' : '';
+    ? '\n⚠ POMEMBNO: del uporabnikovih aktivnosti prihaja iz Strave in po njihovih pravilih NI viden AI — vse zgornje številke so izračunane BREZ njih. Uporabnik trenira redno. STROGO PREPOVEDANO je trditi ali namigovati, da je bil neaktiven, da je imel premor/pavzo, da se je vrnil po neaktivnosti, ali komentirati manjkajoče dneve in nizke številke. Piši samo o tem, kar VIDIŠ, brez sklepanja o obsegu.' : '';
 }
 function buildContext(){
   const p = state.settings.profile;
@@ -3123,6 +3160,7 @@ ${extra?`⚡ POSEBNA ZAHTEVA UPORABNIKA IZ POGOVORA S TRENERJEM — upoštevaj P
 - ČE OBSTAJA GLAVNI CILJ Z ROKOM (npr. izguba mase${gd?` — potreben deficit ~${gd.deficit} kcal/dan`:''}): za VSAK dan obvezno dodaj tudi "vaje" (10–20 min domačih vaj za trup/moč s serijami × ponovitvami, progresivno; brez teka), "prehrana" (1–3 KRATKI nasveti, ki jih lahko izvede ob svojih obrokih — npr. "manjša porcija priloge | zvečer dodaj skuto (beljakovine) | brez sladkarij in sokov" — NE predpisuj jedilnikov, loči nasvete z |) ter "kcal_vnos" in "kcal_poraba". Deficit dosleden, a ne več kot ~1000 kcal/dan. Če cilja ni, pusti ta polja prazna.
 - Vključi 1–2 dneva ODDIHA ali regeneracije, razporejena pametno (po težkih dneh), ne po fiksni shemi.
 - Tipi: intervali, vzdržljivost, tempo, regeneracija, moč, pohod, počitek. Teden sestavi po POČITNIŠKI STRATEGIJI zgoraj: JEDRO = izmenjava kolo/pohod 4–5×, MOČ 2–3× kot krajši dodatek (ne kot glavna postavka), 1 dan regeneracija/prosto. Dva težka dneva ne zaporedoma.
+- Na dnevu tipa "moč" napiši vaje SAMO v "opis" (polje "vaje" pusti prazno) — sicer se podvoji. Na dnevih kolesa/teka/pohoda gre morebitna dodatna moč v polje "vaje".
 - VSAK dan mora povedati TOČNO, kaj naredi. Dan tipa "moč" (ali vaje moči na dan kolesa) naj bo v OBLIKI, ki jo zna prebrati vodeni trening: vsaka vaja v svoji vrstici (loči z \\n) kot "Ime: N serij po M ponovitev, odmor X" — npr. "Zgibi: 4 serije po 6 ponovitev, odmor 2 min\\nSklece: 4 serije po 15 ponovitev, odmor 90 sekund\\nDipsi: 3 serije po 8 ponovitev, odmor 2 min\\nDvigi nog na drogu: 3 serije po 10 ponovitev, odmor 90 sekund". Dodaj kratko ogrevanje ("Ogrevanje: 8 minut …") in zaključek ("Zaključek: 5 minut raztezanja"). Dan kolesa/pohoda ima "opis" po stilu trenerja, morebitne dodatne vaje moči pa v polju "vaje" v istem formatu. Nič ohlapno.
 - "opis": vsaka vrstica en korak (loči z \\n), npr.: "Ogrevanje: 15 min lahkotno (utrip do 130)\\nGlavni del: 3× 8 min v klanec (utrip 160–175), vmes 5 min mirno\\nZaključek: 15 min sproščeno domov".
 
@@ -4664,7 +4702,16 @@ function renderKalorije(){
     cell('Beljakovine', mac.p, 'g', prot, 'var(--green)')}${
     cell('Ogljikovi h.', mac.c, 'g', ohT, 'var(--blue)')}${
     cell('Maščobe', mac.f, 'g', fatT, 'var(--yellow)')}</div>`;
-  const fridgeCard = `<div class="card mt" style="border-color:rgba(95,214,122,.3)">
+  const emptyCta = entries.length? '' : `<div class="card" style="border-color:rgba(255,61,46,.3)">
+    <h3>Danes še ni vnosov <span class="sub">dodaj v 5 sekundah</span></h3>
+    <div class="row mt" style="flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" onclick="kalManualAdd()">+ Ročni vnos</button>
+      <button class="btn btn-ghost btn-sm" onclick="mealsTodayAI()">✨ Sestavi plan jedi</button>
+      <button class="btn btn-ghost btn-sm" onclick="switchTab('settings')">📱 QR za telefon (slikaj obrok)</button>
+    </div>
+    <div class="hint mt">${porabaK?`Danes porabiš ~<b>${porabaK.toLocaleString('sl')} kcal</b>${cilj?` · cilj vnosa ~<b>${cilj.toLocaleString('sl')} kcal</b>`:''}.`:'Nastavi težo in cilj v Nastavitvah za natančne kalorije.'}</div>
+  </div>`;
+  const fridgeCard = `<div class="card" style="border-color:rgba(95,214,122,.3);margin:0">
     <h3>🧊 Kaj naj skuham? <span class="sub">slikaj hladilnik / shrambo / sestavine — AI sestavi obrok ZATE</span></h3>
     <div class="dropzone" style="padding:13px 15px;font-size:12.5px" onclick="document.getElementById('fridgeFile').click()">
       📸 Slikaj ali naloži sestavine, ki jih imaš doma<br>
@@ -4740,20 +4787,10 @@ function renderKalorije(){
   } else {
     telo=`<div class="card"><h3>${t('bodyComp')}</h3><div class="hint" style="margin:2px 0">${LANG==='en'?'Update your weight in Settings — the trend chart builds here.':'Vsakič, ko v Nastavitvah posodobiš težo, se tukaj riše graf napredka.'}</div></div>`;
   }
-  const ph=phLoad();
-  const phSlot=(k,lbl)=>{ const x=ph[k];
-    return `<div style="min-width:0">
-      <div style="font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:5px">${lbl}${x?` · ${x.date.slice(8,10)}.${x.date.slice(5,7)}.`:''}</div>
-      ${x? `<div style="position:relative"><img src="${x.d}" style="width:100%;height:150px;object-fit:cover;border:1px solid var(--border);display:block"><span onclick="phDel('${k}')" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;padding:2px 6px;cursor:pointer">✕</span></div>`
-          : `<div onclick="phPick('${k}')" style="height:150px;border:1px dashed var(--border2);display:grid;place-items:center;color:var(--dim);font-size:11.5px;text-align:center;cursor:pointer;line-height:1.5">🖼<br>klikni in naloži<br>sliko</div>`}
-    </div>`; };
-  telo += `<div class="card"><h3>📸 Napredek postave <span class="sub">samo na tvoji napravi — nikamor se ne pošlje</span></h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${phSlot('start','ZAČETEK')}${phSlot('now','ZDAJ')}</div>
-    <div class="hint" style="margin-top:8px">Fotografiraj se v enaki pozi in svetlobi vsakih par tednov — razlika je pogosto večja od številke na tehtnici.</div></div>`;
   const mt=state.mealsToday;
   const mtOn = mt && mt.date===todayIso() && Array.isArray(mt.slots);
   const mtSum = mtOn? mt.slots.reduce((a,ms,si)=>a+((ms.opts&&ms.opts[mt.pick[si]||0]&&+ms.opts[mt.pick[si]||0].kcal)||0),0) : 0;
-  const mealsTodayCard = `<div class="card mt" style="border-color:rgba(255,138,42,.3)">
+  const mealsTodayCard = `<div class="card" style="border-color:rgba(255,138,42,.3);margin:0">
     <div class="spread" style="flex-wrap:wrap;gap:10px;align-items:flex-end">
       <h3 style="margin:0">🍽 Plan jedi za danes <span class="sub">✨ 3 recepti na izbiro za vsak obrok — klik izbere</span></h3>
       <div class="row no-print">${mtOn?`<button class="btn btn-ghost btn-sm" onclick="mealsShop()">🛒 Listek</button>`:''}<button class="btn ${mtOn?'btn-ghost':'btn-primary'} btn-sm" onclick="mealsTodayAI()">${mtOn?'⟳ Nov plan':'✨ Sestavi plan jedi'}</button></div>
@@ -4797,10 +4834,12 @@ function renderKalorije(){
   box.innerHTML = (kal? '' : `<div class="analysis-box mb" style="margin-top:0">Ni sinhroniziranih podatkov s telefona — poveži 🔵 Google sinhronizacijo v Nastavitvah. Vnose lahko dodajaš tudi ročno tukaj.</div>`)
     + stats
     + `<div style="display:grid;grid-template-columns:1.25fr 1fr;gap:14px;align-items:start" class="kal-cols">
-        <div style="min-width:0">${meals}${sugg}</div>
+        <div style="min-width:0;display:flex;flex-direction:column;gap:14px">${entries.length? meals+sugg : emptyCta}${mtOn? mealsTodayCard : ''}</div>
         <div style="min-width:0;display:flex;flex-direction:column;gap:14px">${fuel}${telo}</div>
        </div>`
-    + mealsTodayCard + mealWeekCard + fridgeCard + recepti;
+    + (mtOn? '' : `<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;margin-top:14px" class="kal-cols">${mealsTodayCard}${fridgeCard}</div>`)
+    + (mtOn? `<div style="margin-top:14px">${fridgeCard}</div>` : '')
+    + mealWeekCard;
 }
 async function receptiAI(){
   const btn=$('btnRecAI'); busy(btn,true,'…');
@@ -5144,16 +5183,18 @@ function renderAnalitika(){
       <line x1="${xD.toFixed(1)}" y1="10" x2="${xD.toFixed(1)}" y2="172" stroke="#6b7580" stroke-width="1" stroke-dasharray="2 4"></line>
       <text x="${(xD-4).toFixed(1)}" y="180" text-anchor="end" font-size="8.5" fill="#6b7580" font-weight="700">${EN?'TODAY':'DANES'} ◂ ${EN?'done':'opravljeno'}</text>
       <text x="${(xD+4).toFixed(1)}" y="180" font-size="8.5" fill="#6b7580">▸ ${EN?'forecast if you follow the plan':'napoved, če slediš planu'}</text>
-      ${p.ciljDatum?`<line x1="${W-12}" y1="10" x2="${W-12}" y2="172" stroke="#ffc247" stroke-width="1.5" stroke-dasharray="4 4"></line><text x="${W-16}" y="18" text-anchor="end" font-size="9" fill="#ffc247" font-weight="700">🎯 ${p.ciljDatum.slice(8,10)}.${p.ciljDatum.slice(5,7)}.</text>`:''}
+      ${p.ciljDatum?`<line x1="${W-12}" y1="10" x2="${W-12}" y2="172" stroke="#ffc247" stroke-width="1.5" stroke-dasharray="4 4"></line>`:''}
       <polyline points="${line(hist,'ctl',0)}" fill="none" stroke="#4da3ff" stroke-width="2.5" stroke-linejoin="round"></polyline>
       <polyline points="${line(fut,'ctl',nH)}" fill="none" stroke="#4da3ff" stroke-width="2" stroke-dasharray="3 4"></polyline>
       <polyline points="${line(hist,'tsb',0)}" fill="none" stroke="#5fd67a" stroke-width="2" stroke-linejoin="round"></polyline>
       <polyline points="${line(fut,'tsb',nH)}" fill="none" stroke="#5fd67a" stroke-width="2" stroke-dasharray="3 4"></polyline>
       ${fut.length?`<circle cx="${X(tot-1).toFixed(1)}" cy="${Y(fut[fut.length-1].ctl).toFixed(1)}" r="3.5" fill="#4da3ff"></circle>
-      <text x="${(X(tot-1)-6).toFixed(1)}" y="${(Y(fut[fut.length-1].ctl)-7).toFixed(1)}" text-anchor="end" font-size="10" fill="#4da3ff" font-weight="800">${endCtl}</text>
-      <circle cx="${X(tot-1).toFixed(1)}" cy="${Y(endTsb).toFixed(1)}" r="3.5" fill="#5fd67a"></circle>
-      <text x="${(X(tot-1)-6).toFixed(1)}" y="${(Y(endTsb)+13).toFixed(1)}" text-anchor="end" font-size="10" fill="#5fd67a" font-weight="800">${endTsb>0?'+':''}${endTsb}</text>`:''}
+      <circle cx="${X(tot-1).toFixed(1)}" cy="${Y(endTsb).toFixed(1)}" r="3.5" fill="#5fd67a"></circle>`:''}
     </svg>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--border);border:1px solid var(--border);margin-top:10px">
+      <div style="background:var(--bg);padding:9px 12px"><div style="font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--dim)">${EN?'FITNESS ON GOAL DAY':'KONDICIJA '+(p.ciljDatum?('NA '+p.ciljDatum.slice(8,10)+'.'+p.ciljDatum.slice(5,7)+'.'):('ČEZ '+nF+' DNI'))}</div><div style="font-family:var(--bc);font-size:24px;font-weight:800;color:#4da3ff">${endCtl}</div></div>
+      <div style="background:var(--bg);padding:9px 12px"><div style="font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--dim)">${EN?'FRESHNESS':'SVEŽINA'} ${EN?'':'TAKRAT'}</div><div style="font-family:var(--bc);font-size:24px;font-weight:800;color:${endTsb>=10&&endTsb<=25?'var(--green)':endTsb<-10?'var(--red)':'var(--yellow)'}">${endTsb>0?'+':''}${endTsb}</div></div>
+    </div>
     <div style="font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5">💪 <b style="color:#4da3ff">${EN?'Fitness':'Kondicija'} ${endCtl}</b> = ${EN?'engine size — the higher, the more training you absorb.':'velikost motorja — višja ko je, več treninga preneseš in močnejši si.'} &nbsp;🔋 <b style="color:#5fd67a">${EN?'Freshness':'Svežina'}</b> = ${EN?'how rested you are: above 0 fresh, below 0 tired.':'spočitost: nad 0 si spočit, pod 0 utrujen.'}</div>
     <div style="font-size:12.5px;color:var(--soft);margin-top:6px;line-height:1.5">${verdikt}${adher<1?` <span style="color:var(--dim)">(${EN?'at your ~'+rpF.pct+' % plan adherence':'ob tvoji ~'+rpF.pct+' % realizaciji plana'})</span>`:''}</div>
     <div style="display:flex;gap:14px;font-size:10.5px;font-weight:700;color:var(--muted);margin-top:6px;flex-wrap:wrap">
@@ -5200,10 +5241,10 @@ function weeklyLoad(){ try{ return JSON.parse(localStorage.getItem(WEEKLY_KEY)||
 function weeklySave(a){ try{ localStorage.setItem(WEEKLY_KEY, JSON.stringify(a.slice(-12))); }catch(_){} }
 async function maybeAutoWeekly(){          // AI sam pripravi tedenski povzetek (ned zvečer; pon/tor za pretekli teden)
   try{
-    const d=new Date(), dow=d.getDay(); let off=null;
-    if(dow===0 && d.getHours()>=16) off=0;
-    else if(dow===1 || dow===2) off=1;
-    if(off===null) return;
+    const d=new Date(), dow=d.getDay();
+    // teden = ponedeljek–nedelja; povzetek za PRETEKLI teden naredi takoj, ko ga še ni;
+    // za tekoči teden ga naredi v nedeljo zvečer
+    let off = (dow===0 && d.getHours()>=16) ? 0 : 1;
     const aiOn=!!state.settings.geminiKey || !!(window.FORMASYNC&&FORMASYNC.uid&&FORMASYNC.uid());
     if(!aiOn || !navigator.onLine) return;
     if(weekAggAI(off).n<2) return;                                   // premalo treningov za smiseln povzetek
@@ -5217,8 +5258,9 @@ function renderTrener(){
   renderChat();
   const wEl=$('weeklySumBox'); if(!wEl) return;
   const ws=isoDate(weekStart(new Date()));
-  const cur=weeklyLoad().find(w=>w.ws===ws);
-  wEl.innerHTML = (cur? `<div style="font-size:12.5px;color:var(--soft);line-height:1.6">${nl2br(cur.text)}</div>` :
+  const all=weeklyLoad().sort((a,b)=>(a.ws||'').localeCompare(b.ws||''));
+  const cur=all.find(w=>w.ws===ws) || all[all.length-1];
+  wEl.innerHTML = (cur? `<div style="font-size:11px;color:var(--dim);font-weight:700;margin-bottom:6px">TEDEN OD ${cur.ws.slice(8,10)}. ${MESECI[+cur.ws.slice(5,7)-1]}${cur.ws!==ws?' (zadnji zaključen)':''}</div><div style="font-size:12.5px;color:var(--soft);line-height:1.6">${nl2br(cur.text)}</div>` :
     `<div style="font-size:12.5px;color:var(--soft);line-height:1.6">${LANG==='en'?'Every week the coach writes a review: what worked, what to change, the plan ahead.':'Vsak teden ti trener napiše povzetek: kaj je delovalo, kaj spremeniti, plan za naprej.'}</div>`)+
     `<button class="btn btn-ghost btn-sm mt no-print" id="btnWeekly" onclick="weeklySummary()">✨ ${cur? (LANG==='en'?'Refresh summary':'Osveži povzetek') : (LANG==='en'?'Create weekly summary':'Ustvari povzetek tedna')}</button>`;
   const aEl=$('warnBox');
@@ -5238,7 +5280,7 @@ async function weeklySummary(off,auto){ off=off?1:0;
   try{
     const t0=weekAggAI(off), l=weekAggAI(off+1), rp=planRealizacijaAI(), f=currentFormAI();
     const txt=await gemini([{text:`Si moj trener. Napiši TEDENSKI POVZETEK (4-6 stavkov): 1) kaj sem naredil, 2) kaj je bilo dobro, 3) kaj popraviti, 4) fokus naslednjega tedna.
-${off?'Pretekli teden':'Ta teden'}: ${t0.n} treningov, ${Math.round(t0.km)} km, ${t0.min} min, ${t0.tss} TSS. ${off?'Teden pred njim':'Prejšnji'}: ${l.n}/${Math.round(l.km)} km/${l.tss} TSS. ${rp?`Plan: ${rp.done}/${rp.planned}.`:''} ${f?`CTL ${f.ctl}, TSB ${f.tsb}.`:''}
+${hasStravaRides()?'⚠ Del aktivnosti (Strava) ti ni viden — NE piši o neaktivnosti, premoru ali vrnitvi po pavzi; te številke so nepopolne.\n':''}${off?'Pretekli teden':'Ta teden'}: ${t0.n} treningov, ${Math.round(t0.km)} km, ${t0.min} min, ${t0.tss} TSS. ${off?'Teden pred njim':'Prejšnji'}: ${l.n}/${Math.round(l.km)} km/${l.tss} TSS. ${rp?`Plan: ${rp.done}/${rp.planned}.`:''} ${f?`CTL ${f.ctl}, TSB ${f.tsb}.`:''}
 ${buildContext()}${aiLangNote()}
 Vrni samo čisto besedilo.`}],{json:false,temp:.55});
     const ws=isoDate(addDays(weekStart(new Date()),-7*off));
@@ -5296,17 +5338,34 @@ function renderPorocila(){
     }).join('') : `<div class="hint" style="margin:4px 0">${LANG==='en'?'Weekly summaries from the Coach tab appear here.':'Tedenski povzetki iz zavihka Trener se zbirajo tukaj.'}</div>`;
   }
 }
-async function porociloAI(){
-  const btn=$('btnPorAI'); busy(btn,true,'Pišem …');
+async function maybeAutoMonth(){
+  try{
+    const key='forma_month_ai', now=new Date(), tag=now.getFullYear()+'-'+pad(now.getMonth()+1);
+    let cache={}; try{ cache=JSON.parse(localStorage.getItem(key)||'{}'); }catch(_){}
+    const fresh = cache[tag] && (Date.now()-(cache[tag].t||0) < 5*864e5);      // osveži vsakih ~5 dni
+    if(fresh){ const el=$('porAI'); if(el) el.innerHTML=`<div class="analysis-box"><b>Ocena meseca:</b> ${nl2br(cache[tag].txt)}</div>`; return; }
+    const aiOn=!!state.settings.geminiKey || !!(window.FORMASYNC&&FORMASYNC.uid&&FORMASYNC.uid());
+    if(!aiOn || !navigator.onLine) return;
+    const t=monthAgg(now.getFullYear(),now.getMonth());
+    if(t.n<3) return;
+    await porociloAI(true);
+  }catch(_){}
+}
+async function porociloAI(auto){
+  const btn=$('btnPorAI'); if(!auto) busy(btn,true,'Pišem …');
   try{
     const now=new Date(); const t=monthAgg(now.getFullYear(),now.getMonth());
     const txt=await gemini([{text:`Si moj trener. Napiši kratko oceno mojega meseca (4-6 stavkov, slovensko, konkretno): kaj je šlo dobro, kaj naj popravim, kaj je fokus naslednji mesec.
 Ta mesec: ${t.n} treningov, ${t.km.toFixed(0)} km, ${(t.min/60).toFixed(1)} h, ${t.tss} TSS, od tega ${t.moc} treningov moči.
 ${buildContext()}${aiLangNote()}
 Vrni samo čisto besedilo.`}],{json:false,temp:.6});
-    $('porAI').innerHTML=`<div class="analysis-box"><b>Ocena meseca:</b> ${nl2br(String(txt).trim())}</div>`;
-  }catch(e){ toast(e.message,'err'); }
-  busy(btn,false);
+    const clean=String(txt).trim();
+    const el=$('porAI'); if(el) el.innerHTML=`<div class="analysis-box"><b>Ocena meseca:</b> ${nl2br(clean)}</div>`;
+    try{ const key='forma_month_ai'; let c={}; try{ c=JSON.parse(localStorage.getItem(key)||'{}'); }catch(_){}
+      c[new Date().getFullYear()+'-'+pad(new Date().getMonth()+1)]={txt:clean,t:Date.now()};
+      localStorage.setItem(key, JSON.stringify(c)); }catch(_){}
+  }catch(e){ if(!auto) toast(e.message,'err'); }
+  if(!auto) busy(btn,false);
 }
 function porociloText(){
   const now=new Date(); const t=monthAgg(now.getFullYear(),now.getMonth());
@@ -5726,6 +5785,8 @@ function onbFinish(tab){
 setTimeout(()=>{ try{ stravaEasyStatus(); }catch(_){ } }, 6000);
 setTimeout(()=>{ try{ maybeAutoWeekly(); }catch(_){ } }, 9000);
 setTimeout(()=>{ try{ maybeAdaptPlan(); }catch(_){ } }, 12000);
+setTimeout(()=>{ try{ maybeAutoMonth(); }catch(_){ } }, 15000);
+setTimeout(()=>{ try{ maybeAutoCoach(); }catch(_){ } }, 6500);
 if (new URLSearchParams(location.search).get('demo')==='1' && !state.rides.length){
   try{ localStorage.setItem('forma_onb_done','1'); }catch(_){}
   setTimeout(()=>{ try{ demoLoad(); }catch(_){} }, 350);
