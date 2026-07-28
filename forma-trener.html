@@ -113,7 +113,7 @@ body{
 .stat .bar i{display:block;height:100%;background:var(--green)}
 .grid-2{display:grid;grid-template-columns:1.4fr 1fr;gap:12px}
 .grid-dash3{display:grid;grid-template-columns:1.7fr 1.1fr 1fr;gap:12px;margin-bottom:12px}
-@media(max-width:1400px){.grid-dash3{grid-template-columns:1fr 1fr}}
+@media(max-width:1150px){.grid-dash3{grid-template-columns:1fr 1fr}}
 @media(max-width:1050px){.grid-2{grid-template-columns:1fr}}
 @media(max-width:760px){.grid-dash3{grid-template-columns:1fr}}
 
@@ -605,32 +605,33 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
       <div id="dashAlert"></div>
       <div class="grid-stats" id="dashStats"></div>
 
-      <div class="dash-main">
-        <div style="min-width:0;display:flex;flex-direction:column;gap:14px">
-          <div class="card">
-            <h3 data-i18n="weeklyPlan">Tedenski plan <span class="sub">klik na dan odpre podrobnosti</span></h3>
-            <div id="dashWeekPlan"></div>
-          </div>
-          <div id="coachReport"></div>
-          <div id="dashBadges"></div>
-          <div class="card" id="riderCard"></div>
+      <div class="grid-dash3" style="margin:0">
+        <div class="card" id="forma90Card" style="margin:0">
+          <h3><span data-i18n="chartForma">Forma · zadnjih 90 dni</span></h3>
+          <div id="forma90"><div style="position:relative;height:200px"><canvas id="chartForm"></canvas></div></div>
         </div>
-
-        <div style="min-width:0;display:flex;flex-direction:column;gap:14px">
-          <div class="card" id="forma90Card" style="margin:0">
-            <h3><span data-i18n="chartForma">Forma · 90 dni</span></h3>
-            <div id="forma90"><div style="position:relative;height:200px"><canvas id="chartForm"></canvas></div></div>
-          </div>
-          <div class="card">
+        <div class="card">
+          <h3 data-i18n="weeklyPlan">Tedenski plan</h3>
+          <div id="dashWeekPlan"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <div id="coachReport"></div>
+          <div class="card" style="flex:1">
             <h3 data-i18n="lastAct">Zadnja aktivnost</h3>
             <div id="lastAct"></div>
           </div>
-          <div class="card" id="weeklySideCard">
-            <h3 data-i18n="weeklyVol">Tedenski obseg</h3>
-            <div class="hint" style="margin:0 0 12px">zadnjih 12 tednov</div>
-            <div id="weeklySide"></div>
-          </div>
         </div>
+      </div>
+
+      <div id="dashBadges" style="margin-top:14px"></div>
+
+      <div class="dash-cols" style="margin-top:14px">
+        <div class="card" id="weeklySideCard">
+          <h3 data-i18n="weeklyVol">Tedenski obseg</h3>
+          <div class="hint" style="margin:0 0 12px">zadnjih 12 tednov · najnovejši zgoraj</div>
+          <div id="weeklySide"></div>
+        </div>
+        <div class="card" id="riderCard"></div>
       </div>
     </section>
     <!-- ===== AKTIVNOSTI ===== -->
@@ -1695,7 +1696,7 @@ function renderForma90(){
   const card=$('forma90Card'), el=$('forma90'); if(!card||!el) return;
   const s=formSeries().slice(-90);
   if(s.length<14){ el.innerHTML=`<div class="hint" style="margin:4px 0">Dodaj aktivnosti — graf se izriše, ko je vsaj 14 dni podatkov.</div>`; return; }
-  const W=620,H=250,x0=32;
+  const W=620,H=225,x0=34;
   const all=[...s.map(x=>x.ctl),...s.map(x=>x.atl),...s.map(x=>x.tsb)];
   const mx=Math.max(20,...all)*1.12, mn=Math.min(-15,...all)*1.12;
   const X=i=>x0+(W-10-x0)*i/(s.length-1);
