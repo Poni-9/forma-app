@@ -747,7 +747,6 @@ html,body{max-width:100%;overflow-x:hidden}
           <button class="btn btn-primary" id="btnGenPlan" onclick="generatePlan()">⟳ Generiraj nov teden</button>
           <button class="btn btn-ghost" id="btnMacro" onclick="generateMacro()">🎯 Plan do cilja</button>
           <button class="btn btn-ghost" onclick="openImportPlan()">📥 Uvozi svoj plan</button>
-          <input id="planWish" placeholder="Želje za ta teden — npr. »v soboto imam 4 ure«, »sredo izpusti«" style="min-width:230px;flex:1">
           <button class="btn btn-ghost" onclick="adaptPlanNow()" title="Pogleda včerajšnji trening in prilagodi preostale dni">🔄 Prilagodi po včerajšnjem</button>
           <button class="btn btn-ghost" onclick="planBrezAI()" title="Deterministična pravila — nič se ne pošlje nikamor">⚙️ Hitri plan (brez AI)</button>
         </div>
@@ -3268,7 +3267,7 @@ function showDay(iso){
    AI: TEDENSKI PLAN
 ================================================================ */
 async function generatePlan(fromIso, extra){
-  try{ const wish=(document.getElementById('planWish')?.value||'').trim(); if(wish) extra=[extra,wish].filter(Boolean).join(' | '); }catch(_){}
+  try{ const wish=(document.getElementById('planWishes')?.value||'').trim(); if(wish) extra=[extra,wish].filter(Boolean).join(' | '); }catch(_){}
   const start = fromIso ? parseIso(fromIso) : new Date();
   const days = Array.from({length:7}, (_,i)=>isoDate(addDays(start,i)));
   const dayLbl = d => `${d} (${DNEVI[(parseIso(d).getDay()+6)%7]})`;
@@ -5531,7 +5530,18 @@ function renderChat(){
   const box=$('chatBox'); if(!box) return;
   const msgs=chatLoad();
   box.innerHTML = msgs.length? msgs.map(m=>`<div class="chat-msg ${m.r==='me'?'me':'ai'}">${m.tag?`<span style="display:block;font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--green);margin-bottom:4px">${esc(m.tag)}</span>`:''}${esc(m.t)}<span class="cm">${m.r==='me'?(LANG==='en'?'YOU':'TI'):'AI'} · ${new Date(m.ts).toLocaleTimeString('sl-SI',{hour:'2-digit',minute:'2-digit'})}</span></div>`).join('')
-    : `<div class="chat-msg ai">${LANG==='en'?'Hi! Ask me anything about training, nutrition or progress — I know all your data.':'Živjo! Vprašaj me karkoli o treningu, prehrani ali napredku — poznam vse tvoje podatke.'}<span class="cm">AI</span></div>`;
+    : `<div class="chat-msg ai">${LANG==='en'?'Hi! Ask me anything about training, nutrition or progress — I know all your data.':'Živjo! Vprašaj me karkoli o treningu, prehrani ali napredku — poznam vse tvoje podatke.'}<span class="cm">AI</span></div>
+      <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:9px">
+        ${[['🔄',(LANG==='en'?'Adjust my week':'Prilagodi mi teden'),(LANG==='en'?'I rewrite the remaining days':'prepišem preostale dneve')],
+           ['🍽',(LANG==='en'?'Meal plan':'Plan jedi / jedilnik'),(LANG==='en'?'from what you have at home':'iz tega, kar imaš doma')],
+           ['😴',(LANG==='en'?'Sleep plan':'Načrt spanja'),(LANG==='en'?'synced with hard days':'usklajen s težkimi dnevi')],
+           ['🖼',(LANG==='en'?'Send a photo':'Pošlji sliko'),(LANG==='en'?'meal, watch screen, gear':'obrok, zaslon ure, oprema')],
+           ['🎤',(LANG==='en'?'Speak instead of typing':'Govori namesto tipkanja'),(LANG==='en'?'tap the mic':'klikni mikrofon')],
+           ['❓',(LANG==='en'?'Why this workout?':'Zakaj tak trening?'),(LANG==='en'?'I explain every day':'razložim vsak dan')]
+        ].map(([i,t2,sub])=>`<div style="border:1px solid var(--border);background:var(--bg);padding:10px 12px">
+          <div style="font-weight:700;font-size:12.5px">${i} ${t2}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${sub}</div></div>`).join('')}
+      </div>`;
   box.scrollTop=box.scrollHeight;
 }
 
