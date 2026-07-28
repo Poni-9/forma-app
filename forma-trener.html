@@ -2265,16 +2265,19 @@ function chipClass(tip, day){
   if (t.includes('moč')||t.includes('moc')||t.includes('vaje')) return 'moc';
   if (t.includes('pohod')||t.includes('hrib')||t.includes('sprehod')||t.includes('hoja')) return 'pohod';
   if (t.includes('tek')||t.includes('run')) return 'tek';
-  // tip je le šport (kolo/ride) ali neznano → sklepaj iz naslova in opisa
+  // tip je le šport (kolo/ride/tek/pohod) ali neznano → vrsto ugotovi iz naslova in opisa
+  const jeKolo = /kolo|ride|cycl|bike|trenažer/.test(t);
+  const jeTek  = /tek|run/.test(t);
+  const jePoh  = /pohod|hik|walk|hoja|sprehod/.test(t);
   if (has(/počitek|prosto|oddih|brez treninga/)) return 'pocitek';
-  if (has(/interval|4\s*[×x]\s*\d|3\s*[×x]\s*\d|5\s*[×x]\s*\d|vo2|sprint|klanc.*ponov/)) return 'intervali';
-  if (has(/tempo|prag|sweet ?spot|c3|z3/)) return 'tempo';
-  if (has(/regener|lahkoten|sprostitv|umirjen|obnova/)) return 'regeneracija';
-  if (has(/moč|zgib|sklec|dips|trebušnjak|plank/)) return 'moc';
-  if (has(/pohod|hrib|vzpon|sprehod/)) return 'pohod';
-  if (has(/tek\b|running/)) return 'tek';
-  if (has(/dolg|vzdržljiv|baza|aerobn|z2|c2/)) return 'vzdrzljivost';
-  if (/kolo|ride|cycl|bike/.test(t)) return 'vzdrzljivost';   // privzeto za kolo
+  if (has(/interval|\d\s*[×x]\s*\d+\s*(min|')|vo2|sprint|pospešk|ponovitev v klanec/)) return 'intervali';
+  if (has(/tempo|prag|sweet ?spot|\bc3\b|\bz3\b/)) return 'tempo';
+  if (has(/regener|lahkoten|sprostitv|umirjen|obnova|razbremen/)) return 'regeneracija';
+  if (!jeKolo && !jeTek && !jePoh && has(/zgib|sklec|dips|trebušnjak|plank|lastno težo|serij[ea]? ?[×x]? ?\d+ ?ponovit/)) return 'moc';
+  if (jePoh) return 'pohod';
+  if (jeTek) return 'tek';
+  if (has(/dolg|vzdržljiv|baza|aerobn|\bz2\b|\bc2\b/)) return 'vzdrzljivost';
+  if (jeKolo) return 'vzdrzljivost';   // privzeto za kolo
   return 'gray';
 }
 const sportEmoji = s => s==='pohod' ? '🥾 ' : s==='moc' ? '💪 ' : s==='tek' ? '🏃 ' : '';
