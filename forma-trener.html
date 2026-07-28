@@ -562,6 +562,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
 .profile-l{display:flex;gap:2px;margin-top:5px;font-size:9px;font-weight:800;letter-spacing:.06em;color:var(--dim)}
 .ready{display:flex;gap:16px;align-items:center;padding:16px 18px;border:1px solid var(--border);background:var(--panel)}
 .ready-list{display:flex;flex-direction:column;gap:9px;flex:1}
+.mini-row{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:13px}
+.mini-c{border:1px solid var(--border);background:var(--panel);padding:13px 15px;min-width:0}
+@media(max-width:520px){.mini-row{grid-template-columns:1fr}}
 .coach1a{border:1px solid rgba(255,194,71,.4);background:linear-gradient(180deg,rgba(255,194,71,.09),var(--panel));padding:15px 17px;flex:1;display:flex;flex-direction:column;margin-top:13px}
 html,body{max-width:100%;overflow-x:hidden}
 @media(max-width:520px){
@@ -655,8 +658,6 @@ html,body{max-width:100%;overflow-x:hidden}
           </div>
         </div>
       </div>
-
-      <div id="dashBadges" style="margin-top:14px"></div>
 
     </section>
     <!-- ===== AKTIVNOSTI ===== -->
@@ -1639,43 +1640,6 @@ function renderDashAlert(){
   const a=alertsCalc();
   el.innerHTML = a.length? `<div style="margin-bottom:12px;border:1px solid rgba(255,194,71,.35);background:linear-gradient(90deg,rgba(255,194,71,.09),transparent);padding:11px 15px;font-size:12.5px;color:var(--soft);display:flex;gap:10px;align-items:center"><span style="color:var(--yellow);font-weight:800;letter-spacing:.08em;font-size:10.5px;border:1px solid rgba(255,194,71,.4);padding:2px 7px;white-space:nowrap">${t('opozorilo')}</span><span>${esc(a[0])}</span></div>` : '';
 }
-function renderDashBadges(){
-  const el=$('dashBadges'); if(!el) return;
-  const rs=state.rides;
-  const p=state.settings.profile;
-  const b=[];
-  const first100=rs.filter(r=>+r.dist>=100).sort((a,c)=>a.date.localeCompare(c.date))[0];
-  const cum=rs.slice().sort((a,c)=>a.date.localeCompare(c.date));
-  let acc=0, cumDate=null; for(const r of cum){ acc+=+r.dist||0; if(acc>=100){ cumDate=r.date; break; } }
-  if(first100) b.push(['💯', LANG==='en'?'First 100 km ride':'Prva stotka (100 km)', fmtDate(first100.date)]);
-  else if(cumDate) b.push(['💯', LANG==='en'?'First 100 km total':'Prvih 100 km skupaj', fmtDate(cumDate)]);
-  if(p.ftp) b.push(['⚡','FTP '+p.ftp+' W', p.teza?(p.ftp/p.teza).toFixed(1)+' W/kg':'']);
-  if(wantsMU()){
-    const muPct=Math.min(100,Math.round(((state.forma.level||1)-1)/9*100));
-    b.push(['🧗','Muscle-up '+muPct+' %', muPct>=100?(LANG==='en'?'done!':'osvojen!'):(LANG==='en'?'in progress':'v teku')]);
-  } else if(userAkt().includes('moc')){
-    b.push(['💪',(LANG==='en'?'Strength — level ':'Moč — nivo ')+(state.forma.level||1)+'/10', (state.forma.history||[]).length+(LANG==='en'?' workouts':' treningov')]);
-  }
-  let wk=0, wchk=weekStart(new Date());
-  while(wk<52){ const a=isoDate(wchk), z=isoDate(addDays(wchk,6));
-    if(state.rides.filter(r=>r.date>=a&&r.date<=z).length>=3) { wk++; wchk=addDays(wchk,-7); } else break; }
-  if(wk>=2) b.push(['🌙', wk+(LANG==='en'?' weeks of consistent training':' tednov rednega treninga'), LANG==='en'?'in progress':'v teku']);
-  // mesečni izziv
-  const now=new Date();
-  const mAgg=monthAgg(now.getFullYear(),now.getMonth());
-  let best=0;
-  for(let i=1;i<=3;i++){ const d=new Date(now.getFullYear(),now.getMonth()-i,1); const a=monthAgg(d.getFullYear(),d.getMonth()); if(a.km>best) best=a.km; }
-  const target=Math.max(200, Math.ceil(best/50)*50);
-  const pct=Math.min(100,Math.round(mAgg.km/target*100));
-  const cells = b.slice(0,4).map(([ic,nm,sub])=>`<div style="border:1px solid var(--border);background:var(--panel);padding:16px 18px;display:flex;gap:12px;align-items:center"><div style="font-size:22px">${ic}</div><div style="min-width:0"><div style="font-weight:700;font-size:12.5px;line-height:1.2">${esc(nm)}</div><div style="font-size:10.5px;color:var(--dim);margin-top:2px;font-weight:600">${esc(sub)}</div></div></div>`).join('');
-  el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px">${cells}
-    <div style="border:1px solid rgba(255,61,46,.35);background:linear-gradient(135deg,rgba(255,61,46,.1),var(--panel));padding:13px 15px">
-      <div style="font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--acc2)">${t('challenge')}</div>
-      <div style="font-weight:700;font-size:12.5px;margin-top:3px">${target.toLocaleString('sl')} km</div>
-      <div style="height:3px;background:var(--border);margin-top:8px"><i style="display:block;height:100%;width:${pct}%;background:var(--acc)"></i></div>
-      <div style="font-size:10.5px;color:var(--muted);margin-top:4px;font-weight:600">${Math.round(mAgg.km).toLocaleString('sl')} / ${target.toLocaleString('sl')} km · ${pct}%</div>
-    </div></div>`;
-}
 const STAT_INFO = {
   prip:[['Pripravljenost (0–100)','Koliko "goriva" imaš danes. Izračunam jo iz svežine (razmerje med treningom in počitkom), bolečin v mišicah in tega, kako redno slediš planu.\n\n70+ → odličen dan za težak trening.\n45–69 → normalen trening po planu.\npod 45 → telo rabi počitek; lahek dan ali prosto.\n\nDvigneš jo s spanjem, počitkom po težkih dneh in rednim ritmom.'],
        ['Readiness (0–100)','How much fuel you have today, computed from freshness (training vs recovery balance), muscle soreness and plan consistency.\n\n70+ → great day to go hard.\n45–69 → train as planned.\nbelow 45 → your body needs rest.']],
@@ -1753,6 +1717,35 @@ function renderForma90(){
     ${[0,Math.floor(s.length/3),Math.floor(2*s.length/3),s.length-1].map(i=>`<text x="${X(i).toFixed(1)}" y="${H-1}" text-anchor="${i===0?'start':i===s.length-1?'end':'middle'}" font-size="9.5" fill="#6f6876" font-weight="600">${lab(i)}</text>`).join('')}
   </svg>
 `;
+}
+function heroMiniCards(){
+  const p=state.settings.profile||{};
+  const now=new Date();
+  const mAgg=monthAgg(now.getFullYear(),now.getMonth());
+  let best=0;
+  for(let i=1;i<=3;i++){ const d=new Date(now.getFullYear(),now.getMonth()-i,1); const a=monthAgg(d.getFullYear(),d.getMonth()); if(a.km>best) best=a.km; }
+  const target=Math.max(200, Math.ceil(best/50)*50);
+  const pct=Math.min(100,Math.round(mAgg.km/target*100));
+  const ftpCard = p.ftp? `<div class="mini-c" onclick="statInfo('ftp')" style="cursor:pointer">
+      <div style="display:flex;gap:10px;align-items:center">
+        <div style="font-size:19px;line-height:1">⚡</div>
+        <div style="min-width:0">
+          <div style="font-weight:700;font-size:12.5px;line-height:1.2">FTP ${p.ftp} W</div>
+          <div style="font-size:10.5px;color:var(--dim);margin-top:2px;font-weight:600">${p.teza?(p.ftp/p.teza).toFixed(1)+' W/kg':(LANG==='en'?'set weight':'vnesi težo')}</div>
+        </div></div></div>` : `<div class="mini-c" onclick="switchTab('settings')" style="cursor:pointer">
+      <div style="display:flex;gap:10px;align-items:center">
+        <div style="font-size:19px;line-height:1">⚡</div>
+        <div style="min-width:0">
+          <div style="font-weight:700;font-size:12.5px;line-height:1.2">${LANG==='en'?'FTP not set':'FTP ni nastavljen'}</div>
+          <div style="font-size:10.5px;color:var(--acc2);margin-top:2px;font-weight:600">${LANG==='en'?'estimate from rides →':'oceni iz voženj →'}</div>
+        </div></div></div>`;
+  return `<div class="mini-row">${ftpCard}
+    <div class="mini-c" style="border-color:rgba(255,61,46,.35);background:linear-gradient(135deg,rgba(255,61,46,.1),var(--panel))">
+      <div style="font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--acc2)">${t('challenge')}</div>
+      <div style="font-weight:700;font-size:12.5px;margin-top:3px">${target.toLocaleString('sl')} km</div>
+      <div style="height:3px;background:var(--border);margin-top:7px"><i style="display:block;height:100%;width:${pct}%;background:var(--acc)"></i></div>
+      <div style="font-size:10.5px;color:var(--muted);margin-top:4px;font-weight:600">${Math.round(mAgg.km).toLocaleString('sl')} / ${target.toLocaleString('sl')} km · ${pct}%</div>
+    </div></div>`;
 }
 function renderDanesHero(){
   const el=$('danesHero'); if(!el) return;
@@ -1842,7 +1835,7 @@ function renderDanesHero(){
         <button class="btn btn-ghost" onclick="switchTab('settings')">📱 ${LANG==='en'?'Send to phone':'Pošlji na telefon'}</button>
       </div>
     </div>
-    <div style="display:flex;flex-direction:column;min-width:0">${ready}${coach}</div>
+    <div style="display:flex;flex-direction:column;min-width:0">${ready}${heroMiniCards()}${coach}</div>
   </div>`;
 }
 function renderDash(){
@@ -1946,7 +1939,6 @@ function renderDash(){
   const stEl=$('dashStreak');
   if(stEl) stEl.innerHTML = stk>=2? `<span style="border:1px solid rgba(255,194,71,.4);background:rgba(255,194,71,.08);color:var(--yellow);font-size:11.5px;font-weight:800;letter-spacing:.06em;padding:4px 10px;white-space:nowrap">🔥 ${stk} ${LANG==='en'? '-DAY STREAK':'DNI ZAPORED'}</span>` : '';
   renderDashAlert();
-  renderDashBadges();
   renderCharts();
   renderRiderCard();
   renderCoachReport();
