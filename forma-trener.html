@@ -563,6 +563,22 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
 .ready{display:flex;gap:16px;align-items:center;padding:16px 18px;border:1px solid var(--border);background:var(--panel)}
 .ready-list{display:flex;flex-direction:column;gap:9px;flex:1}
 .coach1a{border:1px solid rgba(255,194,71,.4);background:linear-gradient(180deg,rgba(255,194,71,.09),var(--panel));padding:15px 17px;flex:1;display:flex;flex-direction:column;margin-top:13px}
+html,body{max-width:100%;overflow-x:hidden}
+@media(max-width:520px){
+  .main{padding:16px 12px 60px}
+  .wx{min-width:0;padding:7px 2px}.wx-d{font-size:9px}.wx-e{font-size:17px}
+  .stat{padding:11px 12px}.grid-stats{grid-template-columns:repeat(2,1fr)}
+  .ride-row,.rides-head{grid-template-columns:44px minmax(0,1.3fr) minmax(52px,.7fr) 56px 104px;gap:7px;padding:11px 10px}
+  .ride-acts{gap:3px}.icon-btn{padding:5px 7px;font-size:12px}
+  .today{padding:15px 14px}.chips{gap:5px}.chip-t{font-size:10.5px;padding:3px 8px}
+  .ex-grid{grid-template-columns:1fr}
+  .kal-cols,.hero-row,.grid-dash3,.grid-2,.dash-cols{grid-template-columns:1fr!important}
+  .card{padding:13px 14px}
+  h1{font-size:30px}
+  .seg{flex-wrap:wrap}
+  .btn{padding:9px 14px;font-size:13px}
+  input,select,textarea{max-width:100%}
+}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 </style>
 </head>
