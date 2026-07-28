@@ -547,6 +547,22 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
 .ex-card .nm small{display:block;font-weight:500;color:var(--muted);font-size:11px;margin-top:3px;line-height:1.4}
 .ex-card .rp{font-family:var(--bc);font-weight:800;color:var(--acc);font-size:20px;letter-spacing:.5px;white-space:nowrap;flex:none}
 @media(max-width:1050px){.kal-cols{grid-template-columns:1fr!important}}
+/* ===== smer 1a: Danes najprej ===== */
+.hero-row{display:grid;grid-template-columns:1.62fr 1fr;gap:13px;margin-bottom:14px}
+@media(max-width:1000px){.hero-row{grid-template-columns:1fr}}
+.today{border:1px solid var(--border2);background:linear-gradient(120deg,rgba(255,61,46,.13),var(--panel) 62%);padding:20px 22px;display:flex;flex-direction:column}
+.today-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.today-tag{font-size:10.5px;font-weight:800;letter-spacing:.12em;color:var(--dim)}
+.today-wx{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap}
+.today-title{font-family:var(--bc);font-size:46px;font-weight:900;line-height:1.02;margin:8px 0 0;text-transform:uppercase}
+@media(max-width:760px){.today-title{font-size:32px}}
+.chips{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap}
+.chip-t{border:1px solid var(--border2);font-size:11.5px;font-weight:700;color:var(--soft);padding:4px 10px;white-space:nowrap}
+.profile{display:flex;gap:2px;height:34px;margin-top:16px;align-items:flex-end}
+.profile-l{display:flex;gap:2px;margin-top:5px;font-size:9px;font-weight:800;letter-spacing:.06em;color:var(--dim)}
+.ready{display:flex;gap:16px;align-items:center;padding:16px 18px;border:1px solid var(--border);background:var(--panel)}
+.ready-list{display:flex;flex-direction:column;gap:9px;flex:1}
+.coach1a{border:1px solid rgba(255,194,71,.4);background:linear-gradient(180deg,rgba(255,194,71,.09),var(--panel));padding:15px 17px;flex:1;display:flex;flex-direction:column;margin-top:13px}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 </style>
 </head>
@@ -1763,23 +1779,44 @@ function renderDanesHero(){
                lbl: warm?(LANG==='en'?'WARM-UP':'OGREVANJE'):cool?(LANG==='en'?'COOL-DOWN':'OHLAJANJE'):(LANG==='en'?'MAIN':'GLAVNI DEL') };
     });
     const tot=segs.reduce((a,x)=>a+x.mins,0)||1;
-    strip=`<div style="display:flex;gap:3px;height:26px;margin-top:14px">${segs.map(x=>`<div style="flex:${x.mins};background:${x.c}"></div>`).join('')}</div>
-      <div style="display:flex;gap:3px;margin-top:5px">${segs.map(x=>`<div style="flex:${x.mins};font-size:9px;font-weight:800;letter-spacing:.06em;color:var(--dim);white-space:nowrap;overflow:hidden">${x.lbl} ${x.mins}'</div>`).join('')}</div>`;
+    strip=`<div class="profile">${segs.map(x=>`<div style="flex:${x.mins};background:${x.c};height:${x.c==='var(--acc)'?'100%':'62%'}"></div>`).join('')}</div>
+      <div class="profile-l">${segs.map(x=>`<div style="flex:${x.mins};white-space:nowrap;overflow:hidden">${x.lbl} ${x.mins}'</div>`).join('')}</div>`;
   }
-  el.innerHTML=`<div class="card mb" style="border-color:rgba(255,61,46,.35);background:linear-gradient(180deg,rgba(255,61,46,.06),var(--panel))">
-    <div class="spread" style="align-items:flex-start;gap:10px;flex-wrap:wrap">
-      <div style="font-size:10.5px;font-weight:800;letter-spacing:.12em;color:var(--dim)">${kick}</div>
-      <div style="font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap">${esc(wxTxt)}</div>
+  const prip=pripravljenost(), f=currentForm();
+  const pripCol = prip>=70?'var(--green)':prip>=45?'var(--yellow)':'var(--acc)';
+  const C=2*Math.PI*34, dash=(C*Math.min(1,prip/100)).toFixed(0);
+  const ready = `<div class="ready">
+      <svg viewBox="0 0 84 84" style="width:84px;height:84px;flex:none">
+        <circle cx="42" cy="42" r="34" fill="none" stroke="var(--border)" stroke-width="7"></circle>
+        <circle cx="42" cy="42" r="34" fill="none" stroke="${pripCol}" stroke-width="7" stroke-dasharray="${dash} ${C.toFixed(0)}" transform="rotate(-90 42 42)"></circle>
+        <text x="42" y="40" text-anchor="middle" font-family="Barlow Condensed,sans-serif" font-size="24" font-weight="800" fill="var(--text)">${prip}</text>
+        <text x="42" y="53" text-anchor="middle" font-size="7.5" font-weight="700" fill="var(--dim)">${LANG==='en'?'READINESS':'PRIPRAVLJ.'}</text>
+      </svg>
+      <div class="ready-list">
+        <div><div style="font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--dim)">${LANG==='en'?'FRESHNESS':'SVEŽINA'}</div>
+          <div style="font-family:var(--bc);font-size:24px;font-weight:800;color:${f?f.barva:'inherit'}">${f?(f.tsb>0?'+':'')+Math.round(f.tsb):'–'}</div>
+          <div style="font-size:11px;color:var(--muted)">${f?esc(f.opis.toLowerCase()):(LANG==='en'?'add activities':'dodaj aktivnosti')}</div></div>
+        <div><div style="font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--dim)">${LANG==='en'?'FITNESS (CTL)':'KONDICIJA (CTL)'}</div>
+          <div style="font-family:var(--bc);font-size:24px;font-weight:800">${f?Math.round(f.ctl):'–'}</div></div>
+      </div></div>`;
+  const coach = d.zakaj? `<div class="coach1a">
+      <div style="font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--yellow)">✨ ${LANG==='en'?'WHY TODAY LOOKS LIKE THIS':'ZATO JE DANES TAK TRENING'}</div>
+      <div style="font-size:12.5px;color:var(--soft);line-height:1.55;margin-top:7px;flex:1">${esc(d.zakaj)}</div>
+      <div style="font-size:10.5px;color:var(--dim);margin-top:9px;font-weight:700">${LANG==='en'?'Coach':'Trener'} · <span style="color:var(--acc2);cursor:pointer" onclick="switchTab('trener')">${LANG==='en'?'ask':'vprašaj'} →</span></div></div>` : '';
+
+  el.innerHTML=`<div class="hero-row">
+    <div class="today">
+      <div class="today-top"><div class="today-tag">${kick}</div><div class="today-wx">${esc(wxTxt)}</div></div>
+      <h2 class="today-title">${esc(d.naslov||d.tip)}</h2>
+      <div class="chips">${chips.map(c=>`<span class="chip-t">${esc(c)}</span>`).join('')}</div>
+      ${strip}
+      <div class="row mt no-print" style="flex-wrap:wrap;margin-top:auto;padding-top:16px">
+        <button class="btn btn-primary" onclick="openPlanDay('${iso}')">${done?'✓ '+(LANG==='en'?'Details':'Podrobnosti'):(LANG==='en'?'Workout details':'Podrobnosti treninga')} →</button>
+        ${rest?'':`<button class="btn btn-ghost" onclick="openAdjustDay('${iso}')">⏱ ${LANG==='en'?"I don't have that much time":'Nimam toliko časa'}</button>`}
+        <button class="btn btn-ghost" onclick="switchTab('settings')">📱 ${LANG==='en'?'Send to phone':'Pošlji na telefon'}</button>
+      </div>
     </div>
-    <div style="font-family:var(--bc);font-size:38px;font-weight:900;line-height:1.02;margin-top:4px;text-transform:uppercase">${esc(d.naslov||d.tip)}</div>
-    <div class="row" style="gap:6px;flex-wrap:wrap;margin-top:10px">${chips.map(c=>`<span style="border:1px solid var(--border2);color:var(--soft);font-size:11px;font-weight:700;letter-spacing:.05em;padding:5px 10px">${esc(c)}</span>`).join('')}</div>
-    ${strip}
-    ${d.zakaj?`<div style="margin-top:12px;background:rgba(77,163,255,.06);border:1px solid rgba(77,163,255,.25);padding:10px 13px;font-size:12.5px;color:var(--soft);line-height:1.55"><b style="color:var(--blue)">✨ ${LANG==='en'?'WHY TODAY LOOKS LIKE THIS':'ZAKAJ JE DANES TAK TRENING'}:</b> ${esc(d.zakaj)}</div>`:''}
-    <div class="row mt no-print" style="flex-wrap:wrap">
-      <button class="btn btn-primary" onclick="openPlanDay('${iso}')">${done?'✓ '+(LANG==='en'?'Details':'Podrobnosti'):(LANG==='en'?'Workout details':'Podrobnosti treninga')} →</button>
-      ${rest?'':`<button class="btn btn-ghost" onclick="openAdjustDay('${iso}')">⏱ ${LANG==='en'?"I don't have that much time":'Nimam toliko časa'}</button>`}
-      <button class="btn btn-ghost" onclick="switchTab('settings')">📱 ${LANG==='en'?'Send to phone':'Pošlji na telefon'}</button>
-    </div>
+    <div style="display:flex;flex-direction:column;min-width:0">${ready}${coach}</div>
   </div>`;
 }
 function renderDash(){
