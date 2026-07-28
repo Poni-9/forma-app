@@ -717,6 +717,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
           <button class="btn btn-ghost" id="btnMacro" onclick="generateMacro()">🎯 Plan do cilja</button>
           <button class="btn btn-ghost" onclick="openImportPlan()">📥 Uvozi svoj plan</button>
           <input id="planWish" placeholder="Želje za ta teden — npr. »v soboto imam 4 ure«, »sredo izpusti«" style="min-width:230px;flex:1">
+          <button class="btn btn-ghost" onclick="adaptPlanNow()" title="Pogleda včerajšnji trening in prilagodi preostale dni">🔄 Prilagodi po včerajšnjem</button>
           <button class="btn btn-ghost" onclick="planBrezAI()" title="Deterministična pravila — nič se ne pošlje nikamor">⚙️ Hitri plan (brez AI)</button>
         </div>
       </div>
@@ -799,6 +800,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
         <div>
           <h1 data-i18n="h1Prehrana">Prehrana</h1>
           <p id="kalSub">Današnji vnos, cilji in obroki — sinhronizirano s telefonom</p>
+          <p id="kalSyncStatus" style="font-size:11.5px;color:var(--green);margin-top:2px;min-height:14px"></p>
         </div>
         <div class="row">
           <span style="font-size:12px;color:var(--muted);border:1px solid var(--border2);padding:8px 13px">📱 Obrok slikaš v telefonski aplikaciji — tu se pojavi samodejno</span>
@@ -2898,6 +2900,105 @@ function fazaColor(faza){
   return i<0 ? null : FAZA_BARVE[i % FAZA_BARVE.length];
 }
 function shiftCal(d){ calOffset = d===0 ? 0 : calOffset+d; renderCal(); }
+/* ================================================================
+   SPROTNO PRILAGAJANJE PLANA — vsak dan pogleda včerajšnje odstopanje
+================================================================ */
+function planDeviation(iso, aiSafe){
+  const d = planDayFor(iso); if(!d) return null;
+  const rides = (aiSafe? aiRides() : state.rides).filter(r=>r.date===iso);
+  const doneMin = rides.reduce((a,r)=>a+(+r.time||0),0);
+  const doneTss = rides.reduce((a,r)=>a+(r.tss||0),0);
+  const planMin = +d.trajanje_min||0, planTss = +d.tss_ocena||0;
+  const rest = chipClass(d.tip)==='pocitek';
+  const ratio = planMin? doneMin/planMin : (doneMin? 2 : 1);
+  let kind='ok';
+  if(rest && doneMin>=45) kind='trained_on_rest';
+  else if(!rest && doneMin===0) kind='missed';
+  else if(!rest && ratio<0.65) kind='short';
+  else if(!rest && ratio>1.45) kind='over';
+  const fb = rides.map(r=>r.notes).filter(Boolean).join('; ');
+  return { iso, kind, ratio:+ratio.toFixed(2), planMin, doneMin, planTss, doneTss, tip:d.tip, naslov:d.naslov, feel:fb,
+           text:`${iso}: planirano ${d.tip} „${d.naslov}" ${planMin} min (TSS ${planTss}) → opravljeno ${doneMin} min (TSS ${Math.round(doneTss)})${fb?` · občutek: ${fb}`:''}` };
+}
+function futureDaysThisBlock(){
+  const t=todayIso(), out=[];
+  for(const p of state.plans) for(const d of (p.days||[])) if(d.datum>=t) out.push(d);
+  return out.sort((a,b)=>a.datum.localeCompare(b.datum)).slice(0,9);
+}
+function adaptWeekLocal(dev){          // brez AI (Strava-safe / brez povezave)
+  const days=futureDaysThisBlock(); if(!days.length) return 0;
+  let f=1, why='';
+  if(dev.kind==='missed'){ f=1.08; why='včeraj izpuščeno — obseg rahlo nazaj v plan'; }
+  else if(dev.kind==='short'){ f=1.05; why='včeraj krajše od plana — nadoknadimo postopno'; }
+  else if(dev.kind==='over'){ f=0.85; why='včeraj precej daljše od plana — naslednji dnevi lažji'; }
+  else if(dev.kind==='trained_on_rest'){ f=0.85; why='treniral si na dan počitka — vgrajujem regeneracijo'; }
+  else return 0;
+  const fm=currentForm(); if(fm && fm.tsb<-20) f=Math.min(f,0.85);
+  days.forEach((d,i)=>{ if(chipClass(d.tip)==='pocitek') return;
+    const k = i<3? f : 1+(f-1)*0.4;                       // najmočneje na prve dni
+    d.trajanje_min = Math.max(20, Math.round((+d.trajanje_min||0)*k/5)*5);
+    d.tss_ocena = Math.max(10, Math.round((+d.tss_ocena||0)*k));
+    d.zakaj = (d.zakaj? d.zakaj+' ' : '') + `(prilagojeno: ${why})`;
+  });
+  if(dev.kind==='over' || dev.kind==='trained_on_rest'){   // prvi prihodnji dan naj bo lažji
+    const d0=days.find(d=>chipClass(d.tip)!=='pocitek');
+    if(d0 && chipClass(d0.tip)!=='regeneracija'){ d0.tip='regeneracija'; d0.naslov='Regeneracija (prilagojeno po včerajšnjem)'; d0.trajanje_min=Math.min(d0.trajanje_min,60); d0.tss_ocena=Math.round(d0.tss_ocena*0.6); }
+  }
+  save(); renderAll();
+  return days.length;
+}
+async function adaptWeekAI(dev, auto){
+  const days=futureDaysThisBlock(); if(!days.length) return false;
+  const list=days.map(d=>`${d.datum} | ${d.tip} | ${d.naslov} | ${d.trajanje_min} min | TSS ${d.tss_ocena}`).join('\n');
+  const f=currentFormAI(), rp=planRealizacijaAI();
+  const r=await gemini([{text:`Si moj trener. VČERAJ je bilo odstopanje od plana — prilagodi PREOSTALE dneve tega bloka (samo te, ki so spodaj).
+
+ODSTOPANJE: ${dev.text}
+Vrsta: ${dev.kind==='missed'?'trening izpuščen':dev.kind==='short'?'bistveno krajše od plana':dev.kind==='over'?'bistveno daljše/težje od plana':dev.kind==='trained_on_rest'?'treniral na dan počitka':'manjše odstopanje'}
+${f?`FORMA: kondicija ${f.ctl}, svežina ${f.tsb}.`:''} ${rp?`Realizacija zadnjih 14 dni: ${rp.done}/${rp.planned}.`:''}
+${buildContext()}
+
+PREOSTALI DNEVI ZA PRILAGODITEV:
+${list}
+
+PRAVILA: obdrži skupno logiko tedna in ciljni obseg (~${state.settings.profile.ure||6} h/teden), a upoštevaj odstopanje: po pretiranem dnevu več regeneracije, po izpuščenem previdno nadoknadi (ne več kot +10 %), po krajšem dodaj manjkajoče v naslednje dni. Ne prestavljaj ključnega treninga na dan takoj po zelo težkem. Ohrani datume točno take, kot so zgoraj.
+Vrni SAMO JSON: {"opomba":"1 stavek, kaj si spremenil in zakaj","dnevi":[{"datum":"YYYY-MM-DD","tip":"...","naslov":"...","trajanje_min":number,"opis":"vrstice s koraki","tss_ocena":number,"vaje":"","prehrana":"","zakaj":"1 stavek"}]}${aiLangNote()}`}],{temp:.45});
+  if(!Array.isArray(r.dnevi)||!r.dnevi.length) return false;
+  upsertPlanDays(r.dnevi.map(d=>normDay(d,d.datum)), { summary:'🔄 Prilagojeno po včerajšnjem: '+(r.opomba||''), focus:'Sproti prilagojen plan' });
+  save(); renderAll();
+  const m=chatLoad(); m.push({r:'ai',t:'🔄 Plan sem prilagodil: '+(r.opomba||'')+'\n('+dev.text+')',ts:Date.now(),tag:'PLAN'}); chatSave(m);
+  try{ renderChat(); }catch(_){}
+  if(!auto) toast('Plan prilagojen po včerajšnjem treningu ✓','ok');
+  else toast('🔄 Plan sem sam prilagodil po včerajšnjem: '+(r.opomba||'').slice(0,90),'ok');
+  return true;
+}
+async function adaptPlanNow(auto){
+  const y=isoDate(addDays(new Date(),-1));
+  const devAll=planDeviation(y,false);
+  if(!devAll){ if(!auto) toast('Za včeraj ni plana — ni kaj prilagajati.','err'); return; }
+  if(devAll.kind==='ok'){ if(!auto) toast('Včeraj si plan lepo zadel — nič ne spreminjam. 👌','ok'); return; }
+  const devAI=planDeviation(y,true);
+  const aiOn=!!state.settings.geminiKey || !!(window.FORMASYNC&&FORMASYNC.uid&&FORMASYNC.uid());
+  let ok=false;
+  if(aiOn && devAI && devAI.kind!=='ok' && navigator.onLine){
+    try{ ok=await adaptWeekAI(devAI,auto); }catch(_){ }
+  }
+  if(!ok){
+    const n=adaptWeekLocal(devAll);
+    if(n) toast('🔄 Plan prilagojen po včerajšnjem (brez AI — pravila).','ok');
+    else if(!auto) toast('Ni prihodnjih dni za prilagoditev.','err');
+  }
+  try{ localStorage.setItem('forma_adapt', todayIso()); }catch(_){}
+}
+async function maybeAdaptPlan(){       // enkrat na dan samodejno
+  try{
+    if(localStorage.getItem('forma_adapt')===todayIso()) return;
+    if(!state.plans.length) return;
+    const y=isoDate(addDays(new Date(),-1));
+    if(!planDayFor(y)) return;
+    await adaptPlanNow(true);
+  }catch(_){}
+}
 function planDayFor(iso){
   for (const p of state.plans){ const d = p.days?.find(x=>x.datum===iso); if (d) return d; }
   return null;
@@ -5623,6 +5724,7 @@ function onbFinish(tab){
 })();
 setTimeout(()=>{ try{ stravaEasyStatus(); }catch(_){ } }, 6000);
 setTimeout(()=>{ try{ maybeAutoWeekly(); }catch(_){ } }, 9000);
+setTimeout(()=>{ try{ maybeAdaptPlan(); }catch(_){ } }, 12000);
 if (new URLSearchParams(location.search).get('demo')==='1' && !state.rides.length){
   try{ localStorage.setItem('forma_onb_done','1'); }catch(_){}
   setTimeout(()=>{ try{ demoLoad(); }catch(_){} }, 350);
@@ -5832,7 +5934,9 @@ setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) sy
     window.addEventListener('focus', pull);
   }
   function stop(){ if(fb.timer) clearInterval(fb.timer); fb.timer=null; }
-  function st(t){ const e=document.getElementById('gsyncStatus'); if(e) e.textContent=t; }
+  function st(t){ const e=document.getElementById('gsyncStatus'); if(e) e.textContent=t;
+    const k=document.getElementById('kalSyncStatus');
+    if(k && /kalorij/i.test(String(t))) { k.textContent=t; clearTimeout(window.__kalStT); window.__kalStT=setTimeout(()=>{ try{ k.textContent=''; }catch(_){ } }, 20000); } }
   function render(){
     const host=document.getElementById('tab-settings'); if(!host) return;
     let card=document.getElementById('gsyncCard');
