@@ -13,6 +13,8 @@ const {
   DEFAULT_MODEL = "gemini-flash-latest",
   ALLOWED_ORIGINS = "https://poni-9.github.io,http://localhost:8080,http://127.0.0.1:8080",
   FREE_CALLS_PER_DAY = "10",
+  STRIPE_SECRET_KEY = "",            // sk_live_... ali sk_test_... (Stripe → Developers → API keys)
+  STRIPE_WEBHOOK_SECRET = "",        // whsec_... (Stripe → Developers → Webhooks)
   STRAVA_CLIENT_ID = "",             // iz strava.com/settings/api
   STRAVA_CLIENT_SECRET = "",         // skrivnost — samo na strežniku
   APP_URL = "https://poni-9.github.io/forma-app/forma-trener.html",
@@ -22,6 +24,7 @@ const {
 admin.initializeApp();
 const db = admin.firestore();
 const app = express();
+app.use("/stripe/webhook", express.raw({ type: "*/*" }));
 app.use(express.json({ limit: "12mb" }));
 
 const origins = ALLOWED_ORIGINS.split(",").map(s => s.trim());
@@ -189,5 +192,48 @@ app.post("/strava/disconnect", async (req, res) => {
   res.json({ ok: true });
 });
 
-app.get("/health", (_, res) => res.json({ ok: true, model: DEFAULT_MODEL, strava: !!STRAVA_CLIENT_ID }));
+/* ---------------- Stripe: samodejna aktivacija PRO ---------------- */
+// Preverimo podpis brez knjižnice (Stripe shema: t=timestamp,v1=hmac_sha256(timestamp + "." + body))
+function stripeVerify(rawBody, sigHeader) {
+  if (!STRIPE_WEBHOOK_SECRET || !sigHeader) return false;
+  const parts = Object.fromEntries(String(sigHeader).split(",").map(kv => kv.split("=")));
+  if (!parts.t || !parts.v1) return false;
+  if (Math.abs(Date.now() / 1000 - Number(parts.t)) > 300) return false;           // star dogodek
+  const expected = crypto.createHmac("sha256", STRIPE_WEBHOOK_SECRET)
+    .update(parts.t + "." + rawBody.toString("utf8")).digest("hex");
+  try { return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(parts.v1)); } catch { return false; }
+}
+async function setPro(uid, on, extra = {}) {
+  if (!uid) return;
+  await db.collection("proUsers").doc(String(uid)).set(
+    { pro: !!on, t: Date.now(), ...extra }, { merge: true });
+}
+app.post("/stripe/webhook", async (req, res) => {
+  try {
+    if (!stripeVerify(req.body, req.headers["stripe-signature"])) return res.status(400).send("bad signature");
+    const ev = JSON.parse(req.body.toString("utf8"));
+    const o = ev.data && ev.data.object || {};
+    if (ev.type === "checkout.session.completed") {
+      const uid = o.client_reference_id || (o.metadata && o.metadata.uid);
+      await setPro(uid, true, { email: o.customer_email || o.customer_details?.email || "", customer: o.customer || "", sub: o.subscription || "" });
+      db.collection("payments").add({ uid: uid || null, amount: o.amount_total || 0, currency: o.currency || "eur", email: o.customer_details?.email || "", t: Date.now(), type: ev.type }).catch(()=>{});
+    } else if (ev.type === "customer.subscription.deleted" || (ev.type === "invoice.payment_failed" && o.attempt_count >= 3)) {
+      const cust = o.customer;
+      if (cust) {
+        const q = await db.collection("proUsers").where("customer", "==", cust).limit(5).get();
+        for (const d of q.docs) await setPro(d.id, false, { canceled: Date.now() });
+      }
+    }
+    res.json({ received: true });
+  } catch (e) { res.status(500).send("napaka"); }
+});
+// aplikacija po nakupu preveri stanje (brez čakanja na osvežitev)
+app.get("/stripe/status", async (req, res) => {
+  const u = await requireUser(req, res); if (!u) return;
+  try { const d = await db.collection("proUsers").doc(u.uid).get();
+        res.json({ pro: !!(d.exists && d.data().pro === true) }); }
+  catch { res.status(500).json({ error: "napaka" }); }
+});
+
+app.get("/health", (_, res) => res.json({ ok: true, model: DEFAULT_MODEL, strava: !!STRAVA_CLIENT_ID, stripe: !!STRIPE_WEBHOOK_SECRET }));
 app.listen(PORT, () => console.log("[peakform-server] live on :" + PORT));

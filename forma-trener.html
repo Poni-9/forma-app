@@ -1415,7 +1415,7 @@ function proThanks(){
   d.style.cssText='position:fixed;inset:0;background:rgba(4,10,18,.74);backdrop-filter:blur(4px);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px';
   d.innerHTML=`<div style="background:var(--card,#0d1826);border:1px solid rgba(255,255,255,.12);border-radius:16px;max-width:400px;padding:26px;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.5)">
     <div style="font-size:40px">⭐</div><div style="font-weight:800;font-size:18px;margin:8px 0">Hvala za nakup!</div>
-    <div style="font-size:13.5px;line-height:1.55;color:var(--soft,#c7d5e4)">Plačilo je prejeto. <b>PRO se aktivira najkasneje v 24 urah</b> (običajno v nekaj urah) — potem imaš neomejen AI.<br><br>Če ga rabiš takoj, piši na <a href="mailto:blaz.gregorc05@gmail.com" style="color:var(--acc2,#39d98a)">blaz.gregorc05@gmail.com</a>.</div>
+    <div style="font-size:13.5px;line-height:1.55;color:var(--soft,#c7d5e4)">Plačilo je prejeto — <b>PRO se aktivira samodejno v nekaj sekundah</b>. Če se znak ne pojavi v minuti, osveži stran ali piši na <a href="mailto:blaz.gregorc05@gmail.com" style="color:var(--acc2,#39d98a)">blaz.gregorc05@gmail.com</a>.</div>
     <button class="btn mt" onclick="document.getElementById('proTyBack').remove()">V redu</button></div>`;
   document.body.appendChild(d);
 }
@@ -5409,6 +5409,7 @@ async function renderSubCard(){
     el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-weight:700;font-size:14px">PEAKFORM PRO</div><div style="font-size:11.5px;color:var(--muted)">Neomejena AI brez ključa</div></div><span style="color:var(--green);font-weight:700;font-size:12px">AKTIVNO ✓</span></div>`;
   } else if(signed){
     el.innerHTML=`<div style="font-weight:700;font-size:14px">🚀 ZGODNJI DOSTOP</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">Neomejen AI — zastonj za prve uporabnike</div>
+    <div style="font-size:11.5px;color:var(--soft);margin-top:8px;line-height:1.5">PEAKFORM PRO (9,99 €/mes) <b>podpre razvoj</b> — dobiš znak podpornika, prednost pri novih funkcijah (Garmin push na uro, spanje/HRV) in <b>zaklenjeno ceno za vedno</b>.</div>
     ${stripeUrl()
       ? `<a class="btn btn-sm mt" href="${stripeUrl()}" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#08131f;font-weight:800;border:none">⭐ Nadgradi na PRO — 9,99 €/mes</a><div style="font-size:11px;color:var(--muted);margin-top:6px">Varno plačilo prek Stripe · prekineš kadarkoli</div>`
       : `<div style="font-size:11.5px;color:var(--muted);margin-top:8px">Ko pride uradni cenik, zgodnji uporabniki obdržijo ugodnosti.</div>`}`;
@@ -5577,7 +5578,11 @@ function onbFinish(tab){
   const q=new URLSearchParams(location.search);
   if(q.get('pro')==='ok'){
     history.replaceState({},'',location.pathname);
-    setTimeout(()=>{ try{ proThanks(); }catch(_){ toast('Hvala! PRO bo aktiviran najkasneje v 24h.','ok'); } }, 700);
+    setTimeout(()=>{ try{ proThanks(); }catch(_){ toast('Hvala za podporo! ⭐','ok'); } }, 700);
+    (async()=>{ for(let i=0;i<8;i++){ await new Promise(r=>setTimeout(r,2500));
+      try{ const tok=await FORMASYNC.idToken(); if(!tok) return;
+        const r=await fetch(AI_PROXY.replace(/\/api\/gemini$/,'')+'/stripe/status',{headers:{Authorization:'Bearer '+tok}});
+        const j=await r.json(); if(j.pro){ toast('⭐ PRO je aktiven — hvala za podporo!','ok'); renderSubCard(); return; } }catch(_){ } } })();
   }
   if(q.get('strava')==='ok'){
     history.replaceState({},'',location.pathname);
