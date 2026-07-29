@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PEAKFORM — mobilna (obroki, vadba, AI trener)</title>
+<title>FORMAI — mobilna (obroki, vadba, AI trener)</title>
 <meta name="theme-color" content="#111013">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23111013%22/><path d=%22M8 8h84L8 92z%22 fill=%22%23ff3d2e%22/></svg>">
 <link rel="manifest" href="manifest-mobile.json">
-<meta property="og:image" content="https://poni-9.github.io/forma-app/og.png"/>
+<meta property="og:image" content="https://formai.si/og.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -235,7 +235,7 @@ html,body{max-width:100%;overflow-x:hidden}
 .pw-fb .btn{width:100%;justify-content:flex-start;font-size:14px;padding:12px 16px}
 .pw-prog{font-size:12px;font-weight:700;color:var(--acc2);background:var(--accSoft);border:1px solid rgba(252,76,2,.25);padding:6px 12px;border-radius:9px;margin-top:2px}
 
-/* ================= PEAKFORM OVERRIDE ================= */
+/* ================= FORMAI OVERRIDE ================= */
 :root{
   --bg:#111013; --panel:#18161b; --panel2:#141317;
   --border:#26232a; --border2:#38333e;
@@ -308,7 +308,7 @@ input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px rgba(255,61,46,.14)
 
   <div class="top">
     <div class="logo"></div>
-    <div><h1>PEAKFORM</h1><small>obroki · vadba · AI trener</small></div>
+    <div><h1>FORMAI</h1><small>obroki · vadba · AI trener</small></div>
     <div class="right">
       <button class="btn btn-ghost btn-sm" id="btnInstallK" style="display:none" onclick="doInstallK()">📲 Namesti</button>
       <button class="btn btn-ghost btn-sm" id="btnSyncTop" onclick="forceSync()" title="Sinhroniziraj zdaj (pošlji + prejmi)">⟳</button>
@@ -495,7 +495,7 @@ input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px rgba(255,61,46,.14)
     <div class="hint" style="margin-bottom:10px">Enkratno: registriraj se brezplačno na <b>jsonbin.io</b> → API Keys → kopiraj <b>Master Key</b> in ga prilepi sem (ustvarim shrambo in ti dam kodo za drugo napravo). Na drugi napravi prilepi celotno kodo.</div>
     <div class="hint" id="syncStatus" style="margin-bottom:10px"></div>
     <div class="modal-foot"><button class="btn btn-primary" onclick="saveSettings()">Shrani</button></div>
-    <div class="hint" style="margin-top:10px;text-align:center"><a href="zasebnost.html" target="_blank" style="color:var(--acc2)">🔒 Zasebnost & pogoji</a> · <a href="mailto:blaz.gregorc05@gmail.com?subject=PEAKFORM%20podpora" style="color:var(--acc2)">📧 Podpora</a></div>
+    <div class="hint" style="margin-top:10px;text-align:center"><a href="zasebnost.html" target="_blank" style="color:var(--acc2)">🔒 Zasebnost & pogoji</a> · <a href="mailto:blaz.gregorc05@gmail.com?subject=FORMAI%20podpora" style="color:var(--acc2)">📧 Podpora</a></div>
   </div>
 </div>
 
@@ -938,7 +938,7 @@ function renderLink(){
   const pd = planToday();
   if (F){
     $('linkBanner').innerHTML = `<div class="link-banner ok">
-      <div class="lb-top"><span class="lb-dot"></span>Povezano z namizjem <b>PEAKFORM</b></div>
+      <div class="lb-top"><span class="lb-dot"></span>Povezano z namizjem <b>FORMAI</b></div>
       ${pd
         ? `<div class="lb-plan">${esc(pd.naslov||pd.tip)}</div>
            <div class="lb-nums"><span>🎯 cilj vnosa <b>${targetKcal()} kcal</b></span>${pd.kcal_poraba?`<span>🔥 poraba <b>~${pd.kcal_poraba} kcal</b></span>`:''}</div>`
@@ -947,7 +947,7 @@ function renderLink(){
   } else {
     const signed = !!(window.FORMASYNC && FORMASYNC.uid && FORMASYNC.uid());
     $('linkBanner').innerHTML = signed
-      ? `<div class="link-banner no">○ Namizje PEAKFORM ni zaznano — nastavi 🔄 sinhronizacijo ali cilj ročno v ⚙️ Nastavitvah.</div>`
+      ? `<div class="link-banner no">○ Namizje FORMAI ni zaznano — nastavi 🔄 sinhronizacijo ali cilj ročno v ⚙️ Nastavitvah.</div>`
       : '';   // neprijavljen: dovolj je prijavni banner, brez dvojnih opozoril
   }
 }
@@ -1000,7 +1000,7 @@ function renderVadba(){
 }
 
 /* ================================================================
-   DANES — hiter pregled (PEAKFORM)
+   DANES — hiter pregled (FORMAI)
 ================================================================ */
 function miniForm(){
   const rides=(F?.rides||[]);
@@ -1342,7 +1342,7 @@ function renderPlanTab(){
   renderWeatherK();
   $('planSyncLbl').innerHTML = db.settings.sync?.bin ? '<span class="sync-dot on"></span>sinhronizirano' : '<span class="sync-dot off"></span>samo ta naprava';
   if (!F?.plans?.length){
-    el.innerHTML = `<div class="empty"><span class="big">📅</span>Ni plana.<br>${db.settings.sync?.bin?'Klikni ⟳ Osveži, ali generiraj plan v namizni aplikaciji.':'Odpri namizje PEAKFORM na tej napravi ali nastavi 🔄 sinhronizacijo v ⚙️.'}</div>`;
+    el.innerHTML = `<div class="empty"><span class="big">📅</span>Ni plana.<br>${db.settings.sync?.bin?'Klikni ⟳ Osveži, ali generiraj plan v namizni aplikaciji.':'Odpri namizje FORMAI na tej napravi ali nastavi 🔄 sinhronizacijo v ⚙️.'}</div>`;
     return;
   }
   const from = isoDate(addDays(new Date(),-1)), to = isoDate(addDays(new Date(),7));
@@ -1944,7 +1944,7 @@ function openSettings(){ renderProfilK();
     ? `✅ Sinhronizacija aktivna. <b>Koda za drugo napravo</b> (kopiraj celo vrstico zgoraj): <code style="user-select:all">${sc.bin}|${sc.key.slice(0,6)}…</code>`
     : 'Sinhronizacija ni nastavljena — deluje samo na tej napravi.';
   $('setLink').innerHTML = F
-    ? `🔗 Namizje PEAKFORM zaznano — ključ, teža in dnevni cilj se samodejno prevzamejo iz njega.${F?.settings?.geminiKey?' (API ključ najden ✓)':' (na namizju ni ključa!)'}`
+    ? `🔗 Namizje FORMAI zaznano — ključ, teža in dnevni cilj se samodejno prevzamejo iz njega.${F?.settings?.geminiKey?' (API ključ najden ✓)':' (na namizju ni ključa!)'}`
     : `Namizje ni zaznano v tem brskalniku — vpiši ključ in cilj ročno.`;
   $('setBack').classList.add('open');
 }

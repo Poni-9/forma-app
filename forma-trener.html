@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PEAKFORM — AI trener za kolo, moč in prehrano</title>
+<title>FORMAI — AI trener za kolo, moč in prehrano</title>
 <meta name="theme-color" content="#111013">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23111013%22/><path d=%22M8 8h84L8 92z%22 fill=%22%23ff3d2e%22/></svg>">
 <link rel="manifest" href="manifest-app.json">
-<meta property="og:title" content="PEAKFORM — AI trener za kolo, tek, moč in prehrano"/>
-<meta property="og:image" content="https://poni-9.github.io/forma-app/og.png"/>
+<meta property="og:title" content="FORMAI — AI trener za kolo, tek, moč in prehrano"/>
+<meta property="og:image" content="https://formai.si/og.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -593,7 +593,7 @@ html,body{max-width:100%;overflow-x:hidden}
     <div class="topbar-left">
       <div class="logo" style="cursor:pointer" title="Na Pregled" onclick="switchTab('dash');window.scrollTo({top:0,behavior:'smooth'})">
         <div class="logo-mark"></div>
-        <div class="logo-name">PEAKFORM</div>
+        <div class="logo-name">FORMAI</div>
       </div>
       <nav class="nav">
         <div class="nav-item active" data-tab="dash" data-i18n="navPregled">Pregled</div>
@@ -1226,7 +1226,7 @@ html,body{max-width:100%;overflow-x:hidden}
   <div class="onb-wrap">
     <div class="onb-head">
       <div class="logo-mark" style="width:28px;height:28px"></div>
-      <div class="logo-name" style="font-size:20px">PEAKFORM</div>
+      <div class="logo-name" style="font-size:20px">FORMAI</div>
       <div style="margin-left:auto;font-size:12px;color:var(--dim)">Korak <span id="onbStep">1</span> od 5</div>
     </div>
     <div class="onb-prog"><i id="onbP1" class="on"></i><i id="onbP2"></i><i id="onbP3"></i><i id="onbP4"></i><i id="onbP5"></i></div>
@@ -1361,7 +1361,7 @@ try{
     if(top && _pp.aktPrefs[top[0]] && top[1]>=5) _pp.aktPrefs[top[0]]=2;
   }
 }catch(_){}
-// migracija nivojev na PEAKFORM (3 nivoji)
+// migracija nivojev na FORMAI (3 nivoji)
 { const _nm={ 'začetnik':'postani fit','zacetnik':'postani fit','rekreativni':'rekreativec+','resen rekreativec':'rekreativec+','tekmovalec':'treniraj kot pro' };
   const _n=state.settings?.profile?.nivo; if(_n && _nm[_n]) state.settings.profile.nivo=_nm[_n]; }
 for (const p of state.plans||[]) if (p.weekStart && !p.start) p.start = p.weekStart;  // migracija starih planov
@@ -1617,7 +1617,7 @@ function alertsCalc(){
 function renderPhoneCard(){
   const el=$('phoneCardSet'); if(!el) return;
   el.innerHTML=`<div class="card" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
-    <div style="background:#fff;padding:6px;flex-shrink:0"><img src="https://api.qrserver.com/v1/create-qr-code/?size=96x96&data=https%3A%2F%2Fponi-9.github.io%2Fforma-app%2Fkalorije.html" width="96" height="96" alt="QR"></div>
+    <div style="background:#fff;padding:6px;flex-shrink:0"><img src="https://api.qrserver.com/v1/create-qr-code/?size=96x96&data=https%3A%2F%2Fformai.si%2Fkalorije.html" width="96" height="96" alt="QR"></div>
     <div style="flex:1;min-width:200px">
       <h3 style="margin:0 0 6px">📲 Na telefon</h3>
       <div style="font-size:12px;color:var(--soft);line-height:1.6">Poskeniraj QR → prijava z istim Googlom → <b>Android:</b> Chrome ⋮ → Dodaj na začetni zaslon · <b>iPhone:</b> Safari ↑ Deli → Na začetni zaslon. Na telefonu slikaš obroke in te vodi skozi vadbo.</div>
@@ -4175,7 +4175,7 @@ function exportData(){
   const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `peakform-kopija-${todayIso()}.json`;
+  a.download = `formai-kopija-${todayIso()}.json`;
   a.click(); URL.revokeObjectURL(a.href);
 }
 $('importFile').addEventListener('change', e=>{
@@ -4542,8 +4542,8 @@ function renderWizard(){
   const bPrijava=`<button class="btn btn-primary btn-sm" onclick="FORMASYNC.signIn().then(()=>setTimeout(renderWizard,900))">🔵 Prijava</button>`;
   const bStrava= stSrv? `<button class="btn btn-primary btn-sm" onclick="stravaEasyConnect()">⭐ Poveži Stravo</button>`
                       : `<span style="font-size:11px;color:var(--yellow)">kmalu — do takrat 📈 Intervals</span>`;
-  const stepPrijava=chk(signed,`<b>Prijava v PEAKFORM z Google</b> — vožnje in plani se trajno shranijo na tvoj račun.`,bPrijava);
-  const stepStrava=chk(stOk,`<b>Poveži Stravo s PEAKFORM</b> — en klik; Strava te vpraša za dovoljenje in te vrne sem.${state.stravaEasy?.name?' <b style=\'color:var(--green)\'>('+esc(state.stravaEasy.name)+')</b>':''}`,bStrava);
+  const stepPrijava=chk(signed,`<b>Prijava v FORMAI z Google</b> — vožnje in plani se trajno shranijo na tvoj račun.`,bPrijava);
+  const stepStrava=chk(stOk,`<b>Poveži Stravo s FORMAI</b> — en klik; Strava te vpraša za dovoljenje in te vrne sem.${state.stravaEasy?.name?' <b style=\'color:var(--green)\'>('+esc(state.stravaEasy.name)+')</b>':''}`,bStrava);
   const stepDone=chk(nAuto>0,`<b>Uvoz voženj</b> — ${nAuto>0? nAuto+' aktivnosti uvoženih, naprej gre samodejno (vsake 3 min).':'zgodi se samodejno takoj po povezavi (prvič do leto nazaj).'}`,'');
   if(wizChoice==='garmin'){
     el.innerHTML=back
@@ -4578,7 +4578,7 @@ function renderWizard(){
   }
 }
 
-/* ---------- STRAVA NA EN KLIK (prek PEAKFORM strežnika — brez ključev) ---------- */
+/* ---------- STRAVA NA EN KLIK (prek FORMAI strežnika — brez ključev) ---------- */
 async function stravaEasyConnect(){
   try{
     const t = (window.FORMASYNC && FORMASYNC.idToken) ? await FORMASYNC.idToken() : null;
@@ -5091,7 +5091,7 @@ function trasaGpx(){
   try{
     const pts=decodePolyline(r.polyline);
     const nm=String(r.name||'Trasa').replace(/[<&>"]/g,'');
-    const gpx='<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="PEAKFORM" xmlns="http://www.topografix.com/GPX/1/1"><trk><name>'+nm+'</name><trkseg>'+pts.map(p=>'<trkpt lat="'+p[0].toFixed(6)+'" lon="'+p[1].toFixed(6)+'"></trkpt>').join('')+'</trkseg></trk></gpx>';
+    const gpx='<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="FORMAI" xmlns="http://www.topografix.com/GPX/1/1"><trk><name>'+nm+'</name><trkseg>'+pts.map(p=>'<trkpt lat="'+p[0].toFixed(6)+'" lon="'+p[1].toFixed(6)+'"></trkpt>').join('')+'</trkseg></trk></gpx>';
     const a=document.createElement('a');
     a.href=URL.createObjectURL(new Blob([gpx],{type:'application/gpx+xml'}));
     a.download=nm.replace(/[^\wčšžČŠŽ -]/g,'').slice(0,40)+'.gpx';
@@ -5555,10 +5555,10 @@ Vrni samo čisto besedilo.`}],{json:false,temp:.6});
 function porociloText(){
   const now=new Date(); const t=monthAgg(now.getFullYear(),now.getMonth());
   const p=state.settings.profile; const f=currentForm();
-  return `PEAKFORM — ${now.toLocaleDateString('sl-SI',{month:'long',year:'numeric'})}\n`+
+  return `FORMAI — ${now.toLocaleDateString('sl-SI',{month:'long',year:'numeric'})}\n`+
     `Treningi: ${t.n} (${t.moc}× moč) · ${(t.min/60).toFixed(1)} h · ${t.km.toFixed(0)} km · ${t.tss} TSS`+
     (f?`\nForma: kondicija ${Math.round(f.ctl)}, svežina ${f.tsb>0?'+':''}${f.tsb}`:'')+
-    (p.teza?`\nTeža: ${p.teza} kg${p.ciljTeza?` (cilj ${p.ciljTeza} kg)`:''}`:'')+'\n— PEAKFORM · poni-9.github.io/forma-app';
+    (p.teza?`\nTeža: ${p.teza} kg${p.ciljTeza?` (cilj ${p.ciljTeza} kg)`:''}`:'')+'\n— FORMAI · formai.si';
 }
 async function porociloCopy(){
   try{ await navigator.clipboard.writeText(porociloText()); toast('Povzetek kopiran — prilepi ga kamor koli. ⤴','ok'); }
@@ -5681,7 +5681,7 @@ async function chatSend(){
     parts.push({text:`Si moj osebni trener (kolo, moč, prehrana). Odgovori kratko (2-6 stavkov), konkretno, slovensko, prijateljsko. Če vprašanje ni povezano s treningom, zdravjem ali prehrano, prijazno usmeri nazaj.${hasImg?'\nUPORABNIK JE PRILOŽIL SLIKO — najprej jo natančno analiziraj (obrok? zaslon ure/aplikacije? oprema? drža?) in ugotovitve vključi v odgovor.':''}
 MOŽNOST UKREPANJA: če uporabnik IZRECNO želi, da mu spremeniš/prilagodiš tedenski PLAN (lažji teden, premik/menjava treningov, drugačen obseg …), ali da sestaviš TEDENSKI JEDILNIK, najprej na kratko odgovori, NATO pa v ZADNJI vrstici dodaj TOČNO ##AKCIJA{"tip":"plan","navodilo":"strnjena zahteva"} oziroma ##AKCIJA{"tip":"jedilnik","navodilo":"strnjena zahteva"} oziroma ##AKCIJA{"tip":"spanje","navodilo":"strnjena zahteva"} (če želi NAČRT SPANJA/regeneracije za teden). Če tega ni zahteval, vrstice NE dodajaj.
 KAJ IMA DOMA: če uporabnik NAŠTEJE ali POKAŽE (slika hladilnika/shrambe) svoje sestavine, mu predlagaj NAJBOLJŠO jed ZA ZDAJ glede na današnji trening, formo in preostale kalorije (kratek recept v 3-5 korakih + približne kalorije in beljakovine). Če se iz tega ne da sestaviti nič dobrega, napiši kratek 🛒 nakupovalni listek (5-8 stvari). Če pri tem želi JEDILNIK ZA CEL TEDEN iz teh sestavin, sproži ##AKCIJA jedilnik.
-Si tudi PODPORA za aplikacijo PEAKFORM — če uporabnik vpraša o njej, odgovori iz tega: prijava z Google (Nastavitve) vklopi AI in sinhronizacijo med napravami; AI je v zgodnjem dostopu NEOMEJEN in zastonj za vse prijavljene; povezava ur: Nastavitve → Povezave → čarovnik (Garmin: .FIT izvoz ali Intervals.icu, Strava: kmalu na en klik); uvoz aktivnosti: povleci .FIT/.GPX ali screenshot na zavihek Aktivnosti; telefon: QR koda v Nastavitvah odpre mobilno prehrano; varnostna kopija in izbris: Nastavitve → Podatki.
+Si tudi PODPORA za aplikacijo FORMAI — če uporabnik vpraša o njej, odgovori iz tega: prijava z Google (Nastavitve) vklopi AI in sinhronizacijo med napravami; AI je v zgodnjem dostopu NEOMEJEN in zastonj za vse prijavljene; povezava ur: Nastavitve → Povezave → čarovnik (Garmin: .FIT izvoz ali Intervals.icu, Strava: kmalu na en klik); uvoz aktivnosti: povleci .FIT/.GPX ali screenshot na zavihek Aktivnosti; telefon: QR koda v Nastavitvah odpre mobilno prehrano; varnostna kopija in izbris: Nastavitve → Podatki.
 
 ${buildContext()}
 
@@ -5791,10 +5791,10 @@ async function renderSubCard(){
   try{ signed=!!(window.FORMASYNC && await FORMASYNC.idToken()); }catch(_){}
   if(signed){ try{ pro=await FORMASYNC.isPro(); }catch(_){} }
   if(pro){
-    el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-weight:700;font-size:14px">PEAKFORM PRO</div><div style="font-size:11.5px;color:var(--muted)">Neomejena AI brez ključa</div></div><span style="color:var(--green);font-weight:700;font-size:12px">AKTIVNO ✓</span></div>`;
+    el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div style="font-weight:700;font-size:14px">FORMAI PRO</div><div style="font-size:11.5px;color:var(--muted)">Neomejena AI brez ključa</div></div><span style="color:var(--green);font-weight:700;font-size:12px">AKTIVNO ✓</span></div>`;
   } else if(signed){
     el.innerHTML=`<div style="font-weight:700;font-size:14px">🚀 ZGODNJI DOSTOP</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">Neomejen AI — zastonj za prve uporabnike</div>
-    <div style="font-size:11.5px;color:var(--soft);margin-top:8px;line-height:1.5">PEAKFORM PRO (9,99 €/mes) <b>podpre razvoj</b> — dobiš znak podpornika, prednost pri novih funkcijah (Garmin push na uro, spanje/HRV) in <b>zaklenjeno ceno za vedno</b>.</div>
+    <div style="font-size:11.5px;color:var(--soft);margin-top:8px;line-height:1.5">FORMAI PRO (9,99 €/mes) <b>podpre razvoj</b> — dobiš znak podpornika, prednost pri novih funkcijah (Garmin push na uro, spanje/HRV) in <b>zaklenjeno ceno za vedno</b>.</div>
     ${stripeUrl()
       ? `<a class="btn btn-sm mt" href="${stripeUrl()}" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#111013;font-weight:800;border:none">⭐ Nadgradi na PRO — 9,99 €/mes</a><div style="font-size:11px;color:var(--muted);margin-top:6px">Varno plačilo prek Stripe · prekineš kadarkoli</div>`
       : `<div style="font-size:11.5px;color:var(--muted);margin-top:8px">Ko pride uradni cenik, zgodnji uporabniki obdržijo ugodnosti.</div>`}`;
@@ -5874,7 +5874,7 @@ function onbRender(){
     b.innerHTML=`<div class="onb-title">Še na telefon<span class="hl">.</span></div>
     <div class="onb-sub">Na telefonu slikaš obroke in te vodi skozi vadbo. Z istim Google računom je vse samodejno usklajeno.</div>
     <div style="max-width:640px;margin:34px auto 0;display:flex;gap:24px;align-items:center;flex-wrap:wrap;justify-content:center">
-      <div style="background:#fff;padding:10px;flex-shrink:0"><img src="https://api.qrserver.com/v1/create-qr-code/?size=170x170&data=https%3A%2F%2Fponi-9.github.io%2Fforma-app%2Fkalorije.html" width="170" height="170" alt="QR"></div>
+      <div style="background:#fff;padding:10px;flex-shrink:0"><img src="https://api.qrserver.com/v1/create-qr-code/?size=170x170&data=https%3A%2F%2Fformai.si%2Fkalorije.html" width="170" height="170" alt="QR"></div>
       <div style="flex:1;min-width:260px;text-align:left">
         <div style="font-weight:700;margin-bottom:8px">1️⃣ S telefonom poskeniraj QR kodo (kamera)</div>
         <div style="font-weight:700;margin-bottom:8px">2️⃣ Prijavi se z istim Google računom (⚙️ Nastavitve → 🔵)</div>
@@ -5955,7 +5955,7 @@ function onbFinish(tab){
   fillSettings(); renderAll();
   $('onbBack').classList.remove('open');
   if(tab) switchTab(tab);
-  toast('Dobrodošel v PEAKFORM! Generiraj svoj prvi plan. 🚀','ok');
+  toast('Dobrodošel v FORMAI! Generiraj svoj prvi plan. 🚀','ok');
 }
 (function(){
   try{ const n0=state.rides.length; const nr=dedupeRides(state.rides);
@@ -6081,7 +6081,7 @@ setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) sy
     try{ errs=JSON.parse(localStorage.getItem('forma_errlog')||'[]'); }catch(_){}
     try{ ai=JSON.parse(localStorage.getItem('forma_ailog')||'[]').length; }catch(_){}
     const body='Opiši težavo tukaj:\n\n\n--- diagnostika (pusti) ---\n'+navigator.userAgent+'\nAI klicev: '+ai+'\nZadnje napake:\n'+errs.map(e=>e.t+' '+e.m).join('\n');
-    location.href='mailto:blaz.gregorc05@gmail.com?subject='+encodeURIComponent('PEAKFORM — podpora')+'&body='+encodeURIComponent(body.slice(0,1800));
+    location.href='mailto:blaz.gregorc05@gmail.com?subject='+encodeURIComponent('FORMAI — podpora')+'&body='+encodeURIComponent(body.slice(0,1800));
   }
   function render(){
     const host=document.getElementById('tab-settings'); if(!host) return;
@@ -6097,7 +6097,7 @@ setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) sy
       '<div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px">'+
       '<button class="btn btn-ghost btn-sm" onclick="FORMASUPPORT.mail()">📧 Prijavi težavo</button>'+
       '<a class="btn btn-ghost btn-sm" href="zasebnost.html" target="_blank">🔒 Zasebnost & pogoji</a></div>'+
-      '<p class="hint" style="margin-top:8px">PEAKFORM daje trenerske in prehranske usmeritve — ni medicinski nasvet.</p>';
+      '<p class="hint" style="margin-top:8px">FORMAI daje trenerske in prehranske usmeritve — ni medicinski nasvet.</p>';
   }
   window.FORMASUPPORT={ mail:supportMail, render };
   if(document.readyState!=='loading') render(); else document.addEventListener('DOMContentLoaded', render);
