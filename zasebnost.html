@@ -40,8 +40,16 @@
   <ul>
     <li><b>Privzeto lokalno:</b> vsi podatki so shranjeni v tvojem brskalniku (localStorage) na tvoji napravi.</li>
     <li><b>Sinhronizacija (če jo vklopiš):</b> podatki se shranijo v tvoj račun v Google Firebase (strežniki v EU/EEA po Googlovih pogojih) oz. jsonbin.io, da so dostopni na vseh tvojih napravah.</li>
-    <li><b>AI analiza:</b> besedila in slike, ki jih pošlješ v analizo, obdela Google Gemini API. Vsebina se uporabi samo za odgovor tebi.</li>
+    <li><b>AI analiza:</b> besedila in slike, ki jih pošlješ v analizo, obdela <b>Google Gemini API</b> kot pogodbeni podobdelovalec. Uporabljamo <b>plačljivo raven</b>, pri kateri Google vsebine <b>ne uporablja za učenje svojih modelov</b>. Vsebina se uporabi samo za odgovor tebi in je vidna samo tebi. Klici tečejo prek našega strežnika (Google Cloud Run, europe-west1); ključ ni nikoli izpostavljen v brskalniku.</li>
     <li>Podatkov <b>ne prodajamo</b> in jih ne delimo s tretjimi za oglaševanje.</li>
+  </ul>
+
+  <h2>Povezane storitve (Garmin, Strava)</h2>
+  <p>Če sam povežeš zunanjo storitev, uvozimo <b>samo</b> tisto, kar je potrebno za trening, in samo dokler je povezava vklopljena.</p>
+  <ul>
+    <li><b>Garmin Connect:</b> ob povezavi uvozimo tvoje opravljene aktivnosti (čas, razdalja, višinska razlika, srčni utrip, moč) in, če to sam odobriš, mere počitka (mirovni utrip, HRV, spanec). Podatke uporabimo izključno za prikaz tvojega napredka, izračun obremenitve in prilagoditev tvojega načrta treninga. Garminovih podatkov <b>ne prodajamo</b>, ne delimo s tretjimi in ne uporabljamo za oglaševanje ali profiliranje. Povezavo lahko kadar koli prekineš v Nastavitvah ali v Garmin Connectu; ob prekinitvi izbrišemo shranjene žetone, uvožene aktivnosti pa lahko izbrišeš skupaj s svojimi podatki.</li>
+    <li><b>Strava:</b> enak obseg in enaka pravila. Aktivnosti, uvožene s Strave, se <b>ne pošiljajo v AI obdelavo</b> — zanje uporabljamo lokalni izračun v tvoji napravi.</li>
+    <li><b>Dostopni žetoni</b> zunanjih storitev so shranjeni samo na našem strežniku in niso vidni v brskalniku.</li>
   </ul>
 
   <h2>Tvoje pravice (GDPR)</h2>
@@ -60,7 +68,8 @@
   </ul>
 
   <h2>Kontakt</h2>
-  <p>Vprašanja, izvoz ali izbris podatkov: <a href="mailto:blaz.gregorc05@gmail.com?subject=FORMAI%20zasebnost">pišite nam</a>.</p>
+  <p>Upravljavec podatkov: <b>Blaž Gregorc</b>, Slovenija.</p>
+  <p>Vprašanja, izvoz ali izbris podatkov: <a href="mailto:blaz.gregorc@formai.si?subject=FORMAI%20zasebnost">blaz.gregorc@formai.si</a>.</p>
 </div>
 </body>
 </html>
