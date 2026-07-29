@@ -1,6 +1,6 @@
 {
-  "name": "PEAKFORM — mobilna",
-  "short_name": "PEAKFORM",
+  "name": "FORMAI — mobilna",
+  "short_name": "FORMAI",
   "description": "Obroki, vadba in AI trener v žepu.",
   "start_url": "./kalorije.html",
   "scope": "./",
