@@ -1010,11 +1010,33 @@ html,body{max-width:100%;overflow-x:hidden}
             <div id="subCard"></div>
           </div>
           <div class="card">
-            <h3>💾 Podatki</h3>
+            <h3>💾 Tvoji podatki</h3>
+            <p class="med-note" style="margin-bottom:10px">Podatki so tvoji. Kadar koli jih izvoziš ali izbrišeš — brez pojasnjevanja.</p>
             <div class="row">
-              <button class="btn btn-ghost" onclick="exportData()">Izvozi varnostno kopijo</button>
-              <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">Uvozi kopijo</button>
+              <button class="btn btn-ghost" onclick="exportData()">⬇️ Izvozi vse svoje podatke</button>
+              <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">⬆️ Uvozi kopijo</button>
               <input type="file" id="importFile" accept=".json" style="display:none">
+            </div>
+            <p class="med-note" style="margin-top:10px"><a href="zasebnost.html">Politika zasebnosti</a> · <a href="pogoji.html">Pogoji uporabe</a> · <a href="mailto:blaz.gregorc@formai.si">blaz.gregorc@formai.si</a></p>
+          </div>
+          <div class="card">
+            <h3>🗑️ Izbris računa</h3>
+            <p class="med-note" style="margin-bottom:10px">Izbrisano je izbrisano — vrniti se ne da. Priporočam, da si prej izvoziš podatke.</p>
+            <button class="btn btn-ghost" onclick="odpriIzbrisRacuna()">Želim izbrisati račun in vse podatke</button>
+            <div id="delAccBox" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+              <p style="margin-bottom:8px"><b>Kaj se izbriše takoj:</b></p>
+              <ul style="margin:0 0 12px 18px;color:var(--muted);font-size:13.5px;line-height:1.7">
+                <li>tvoj profil, aktivnosti, plani, treningi moči in prehranski dnevnik — na tej napravi in v oblaku</li>
+                <li>povezava s Stravo in shranjeni dostopni žetoni</li>
+                <li>tvoj prijavni račun pri FORMAI</li>
+              </ul>
+              <p style="margin-bottom:12px;color:var(--muted);font-size:13.5px;line-height:1.7"><b>Kaj ostane:</b> anonimni števci porabe AI, ki jih lahko izbrišem samo jaz. Piši na <a href="mailto:blaz.gregorc@formai.si">blaz.gregorc@formai.si</a> in jih izbrišem v 30 dneh, kot piše v politiki zasebnosti.</p>
+              <label class="fld"><span>Za potrditev vpiši <b>IZBRIŠI</b></span><input id="delAccWord" placeholder="IZBRIŠI" autocomplete="off"></label>
+              <div class="row" style="margin-top:10px">
+                <button class="btn" id="btnDelAcc" style="background:var(--acc);color:#fff;border-color:var(--acc)" onclick="izbrisiRacun()">Dokončno izbriši</button>
+                <button class="btn btn-ghost" onclick="odpriIzbrisRacuna()">Prekliči</button>
+              </div>
+              <div id="delAccOut" class="med-note" style="margin-top:12px"></div>
             </div>
           </div>
         </div>
@@ -4203,22 +4225,90 @@ function fillSettings(){
   if($('gKey')) $('gKey').value=state.settings.geminiKey||''; if($('gModel')) $('gModel').value=state.settings.geminiModel||'gemini-flash-latest';
   renderZones(); renderStrava(); renderIcu(); renderSetExtras(); renderPhoneCard();
 }
+/* ================================================================
+   IZVOZ IN IZBRIS RAČUNA — pravica po GDPR, ne funkcija za lepoto
+================================================================ */
 function exportData(){
-  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+  let racun = null;
+  try{ const u = firebase.auth().currentUser; if(u) racun = { email:u.email, uid:u.uid, ustvarjen:(u.metadata&&u.metadata.creationTime)||null }; }catch(_){}
+  const paket = {
+    _o: 'FORMAI — izvoz vseh tvojih podatkov',
+    _datum: new Date().toISOString(),
+    _pojasnilo: 'To je vse, kar FORMAI hrani o tebi na tej napravi in v tvojem računu. Datoteko lahko uvoziš nazaj v Nastavitvah.',
+    racun,
+    trener: state,
+    prehrana: kalData()
+  };
+  const blob = new Blob([JSON.stringify(paket,null,2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `formai-kopija-${todayIso()}.json`;
+  a.download = `formai-izvoz-${todayIso()}.json`;
   a.click(); URL.revokeObjectURL(a.href);
+  toast('Izvoz prenesen — profil, aktivnosti, plani in prehrana.','ok');
 }
 $('importFile').addEventListener('change', e=>{
   const f = e.target.files[0]; if (!f) return;
   const rd = new FileReader();
   rd.onload = () => {
-    try{ state = Object.assign(defaultState(), JSON.parse(rd.result)); save(); fillSettings(); renderAll(); toast('Podatki uvoženi.','ok'); }
+    try{
+      const raw = JSON.parse(rd.result);
+      const st = (raw && raw.trener) ? raw.trener : raw;          // nov in star format
+      state = Object.assign(defaultState(), st);
+      if (raw && raw.prehrana){ try{ localStorage.setItem('kalorije_v1', JSON.stringify(raw.prehrana)); }catch(_){} }
+      save(); fillSettings(); renderAll(); toast('Podatki uvoženi.','ok');
+    }
     catch(_){ toast('Neveljavna datoteka.','err'); }
   };
   rd.readAsText(f);
 });
+function odpriIzbrisRacuna(){
+  const el = $('delAccBox'); if(!el) return;
+  const odprt = el.style.display !== 'none';
+  el.style.display = odprt ? 'none' : 'block';
+  if (!odprt){ const w=$('delAccWord'); if(w){ w.value=''; w.focus(); } const o=$('delAccOut'); if(o) o.textContent=''; }
+}
+async function izbrisiRacun(){
+  const w = (($('delAccWord')||{}).value||'').trim().toUpperCase();
+  if (w !== 'IZBRIŠI'){ toast('Za potrditev vpiši IZBRIŠI.','err'); return; }
+  const b = $('btnDelAcc'); const out = $('delAccOut');
+  try{ busy(b, true, 'Brišem…'); }catch(_){}
+  const nar = [];
+  let u = null;
+  try{ u = firebase.auth().currentUser; }catch(_){}
+  // 1) Strava: preklic dovoljenja in izbris žetonov na strežniku
+  try{
+    const t = u ? await u.getIdToken() : null;
+    if (t && typeof AI_PROXY!=='undefined' && AI_PROXY){
+      const r = await fetch(AI_PROXY+'/strava/disconnect', { method:'POST', headers:{ 'Authorization':'Bearer '+t } });
+      if (r.ok) nar.push('Strava povezava preklicana, žetoni izbrisani');
+    }
+  }catch(_){}
+  // 2) sinhronizirani podatki v oblaku
+  try{
+    if (u && firebase.firestore){ await firebase.firestore().collection('formaSync').doc(u.uid).delete(); nar.push('sinhronizirani podatki izbrisani'); }
+  }catch(_){}
+  // 3) vse na tej napravi
+  try{
+    localStorage.removeItem('kalorije_v1');
+    Object.keys(localStorage).filter(k=>/^(forma|kalorije)/i.test(k)).forEach(k=>localStorage.removeItem(k));
+    nar.push('podatki na tej napravi izbrisani');
+  }catch(_){}
+  // 4) sam prijavni račun
+  let opozorilo = '';
+  if (u){
+    try{ await u.delete(); nar.push('prijavni račun izbrisan'); }
+    catch(e){
+      try{ await firebase.auth().signOut(); }catch(_){}
+      opozorilo = 'Prijavnega računa nisem mogel izbrisati (Google zahteva svežo prijavo). Podatki so izbrisani in odjavljen si. Prijavi se znova in ponovi izbris, ali mi piši na blaz.gregorc@formai.si.';
+    }
+  }
+  if (out){
+    out.innerHTML = '<b>Izbrisano:</b><br>· ' + nar.join('<br>· ')
+      + (opozorilo ? '<br><br><b>Pozor:</b> ' + opozorilo : '')
+      + '<br><br>Ostanejo še anonimni števci porabe AI — piši na <a href="mailto:blaz.gregorc@formai.si">blaz.gregorc@formai.si</a> in jih izbrišem v 30 dneh.';
+  }
+  setTimeout(()=>{ try{ location.reload(); }catch(_){} }, opozorilo ? 9000 : 5000);
+}
 
 /* ================================================================
    GPX UVOZ (izvoz zna vsaka naprava/aplikacija)
