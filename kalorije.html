@@ -301,6 +301,7 @@ input:focus,select:focus{box-shadow:none!important}
 input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px rgba(255,61,46,.14)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .kcal-note{margin-top:6px;font-size:12.5px;line-height:1.5;color:var(--yellow);font-weight:600}
 </style>
 </head>
 <body>
@@ -559,11 +560,52 @@ function planToday(){
   for (const p of F.plans){ const d=(p.days||[]).find(x=>x.datum===todayIso()); if(d) return d; }
   return null;
 }
+/* ================================================================
+   PREHRANSKE VAROVALKE — ne mehčaj jih brez zdravnika
+   Namen: nobena pot skozi aplikacijo ne sme prikazati dnevnega cilja,
+   ki bi bil za športnika premajhen. Poziv AI-ju tega ne more popraviti,
+   ker številko dobi kot dejstvo — zato je meja tukaj, v izračunu.
+================================================================ */
+const MAX_DEFICIT = 750;    // kcal/dan (~0,7 kg/teden je zgornja meja za športnika)
+const MAX_ADJ_DOL = -400;   // največ toliko manj ob krajšem treningu od predpisanega
+const MIN_ABS_M   = 1500;   // absolutni dnevni minimum, moški
+const MIN_ABS_Z   = 1200;   // absolutni dnevni minimum, ženske
+function jeMladoleten(){ const a=F?.settings?.profile?.starost; return typeof a==='number' && a>0 && a<18; }
+function minAbsKcal(){ return (F?.settings?.profile?.spol==='ženska') ? MIN_ABS_Z : MIN_ABS_M; }
+/* najnižji dovoljeni vnos danes: nikoli pod bazalno porabo, nikoli pod
+   absolutnim minimumom, na dan s treningom še + polovica porabe treninga */
+function minKcalDanes(){
+  const trening = Math.max(0, actualBurnToday());
+  return Math.round(Math.max(basalKcal(), minAbsKcal(), basalKcal() + trening*0.5));
+}
+/* kadar je cilj prehiter, to povemo na glas namesto tihega znižanja */
+function ciljPrehiter(){
+  const p=F?.settings?.profile;
+  if (jeMladoleten() || !p?.ciljDatum || !p?.ciljTeza || !p?.teza) return null;
+  const dni=Math.max(1,Math.round((parseIso(p.ciljDatum)-new Date())/864e5));
+  const kg=p.teza-p.ciljTeza; if(kg<=0) return null;
+  if (Math.round(kg*7700/dni) <= MAX_DEFICIT) return null;
+  return { kgTeden: Math.round(kg/(dni/7)*10)/10,
+           tedni: Math.ceil(kg*7700/MAX_DEFICIT/7),
+           trenutniTedni: Math.max(1, Math.round(dni/7)) };
+}
+/* pravila, ki gredo v VSAK prehranski poziv */
+const PRAVILA_PREHRANE = `
+VAROVALKE (nadrejene vsemu ostalemu v tem pozivu):
+- Nikoli ne spodbujaj nižjega vnosa in nikoli ne predlagaj manj hrane, kot je navedeni cilj. Če se uporabnik sam nagiba v deficit, ga usmeri k vzdrževanju.
+- Ob znakih utrujenosti, slabe regeneracije, težkega treninga ali vnosa pod ciljem: PRVO in izrecno predlagaj VEČ hrane, ne manj.
+- Prepovedano je vnos vezati na TSB, svežino, »dovoljeni deficit«, obliko telesa ali težo kot merilo vrednosti. Napredek meri forma, moč in vzdržljivost.
+- Prepovedano je predlagati preskakovanje obrokov, post, »nadoknaditi jutri« ali prenašanje kalorij med dnevi.
+- Če uporabnik želi hujšati hitreje od 0,5 kg na teden, tega ne načrtuj: povej, da je prehitro, in ga napoti k zdravniku ali nutricionistu.
+- Če je uporabnik mlajši od 18 let, ne načrtuj izgube teže v nobeni obliki — samo vzdrževanje in rast forme.
+`;
+
 function goalDeficit(){
+  if (jeMladoleten()) return 0;                    // pod 18 let: samo vzdrževanje, brez deficita
   const p=F?.settings?.profile; if(!p?.ciljDatum||!p?.ciljTeza||!p?.teza) return 400;
   const dni=Math.max(1,Math.round((parseIso(p.ciljDatum)-new Date())/864e5));
   const kg=p.teza-p.ciljTeza; if(kg<=0) return 300;
-  return Math.min(1000, Math.round(kg*7700/dni));
+  return Math.min(MAX_DEFICIT, Math.round(kg*7700/dni));
 }
 /* --- dejanska poraba iz aktivnosti (Strava/Intervals/moč) --- */
 function rideKcal(r){
@@ -614,8 +656,9 @@ function trainAdjust(){
 }
 const bonusKcal = () => Math.max(0, trainAdjust());   // (nazaj-združljivost)
 function targetKcal(){
-  const adj = Math.max(-800, Math.min(1200, trainAdjust()));
-  return Math.max(basalKcal()-100, baseTargetKcal() + adj);   // nikoli pod ~bazalno porabo
+  const dol = jeMladoleten() ? 0 : MAX_ADJ_DOL;   // pod 18 let vnosa ne znižujemo
+  const adj = Math.max(dol, Math.min(1200, trainAdjust()));
+  return Math.max(minKcalDanes(), baseTargetKcal() + adj);    // varovalka: nikoli pod minKcalDanes()
 }
 function burnKcal(){
   const act = actualBurnToday();
@@ -669,6 +712,7 @@ Ostane danes do cilja: ~${leftK} kcal in ~${leftP} g beljakovin (dnevni cilj ${t
 Hrana, ki jo OBIČAJNO je (uporabi PREDNOSTNO te — ima jih doma in mu teknejo), povprečje na porcijo:
 ${hist.length?hist.map(h=>`- ${h.jed} (~${h.kcal} kcal, ${h.b} g belj.; ${h.krat}×)`).join('\n'):'(še ni dovolj zgodovine — predlagaj preprosto zdravo slovensko hrano z veliko beljakovin)'}
 Predlagaj 2–3 KONKRETNE možnosti za TA obrok iz teh (ali zelo podobnih) živil. Vsaka naj se čim bolj približa ostanku kcal in doda čim več beljakovin. Kratko in praktično.
+${PRAVILA_PREHRANE}
 Vrni SAMO JSON: {"obrok":"${meal}","predlogi":[{"jed":"kratek opis obroka","kcal":number,"beljakovine_g":number,"zakaj":"1 kratek razlog"}]}`}]);
     lastSug={obrok:r.obrok||meal, predlogi:(r.predlogi||[]).slice(0,3), leftK, leftP};
     renderMealSug();
@@ -876,9 +920,13 @@ function renderHero(){
   if (left<0) $('stLeft').textContent = `${-left} čez!`;
   const adj = trainAdjust();
   $('stTarget').textContent = target+' kcal';
+  const mlad = jeMladoleten(), hitro = ciljPrehiter(), naMeji = target <= minKcalDanes();
   $('stTargetSrc').innerHTML = (db.settings.kcalManual ? 'ročno nastavljen' : pd?.kcal_vnos ? 'iz plana ✓' : 'ocena (teža − deficit)')
     + (adj>0 ? ` · <b style="color:var(--acc2)">+${adj} (pokuril več) 🚴</b>`
-     : adj<0 ? ` · <b style="color:var(--orange)">${adj} (krajši trening — ostani v deficitu)</b>` : '');
+     : adj<0 ? ` · <b style="color:var(--orange)">${adj} (krajši trening)</b>` : '')
+    + (mlad ? `<div class="kcal-note">Mlajšim od 18 let FORMAI načrtuje vzdrževanje in rast forme, ne izgube teže — telo je še v rasti.</div>` : '')
+    + (hitro ? `<div class="kcal-note">Tvoj cilj pomeni <b>${hitro.kgTeden} kg na teden</b>, kar je za športnika prehitro. Načrtujem varnejše tempo — za ta cilj predlagam <b>${hitro.tedni} tednov</b> namesto ${hitro.trenutniTedni}.</div>` : '')
+    + (naMeji && !mlad ? `<div class="kcal-note">Cilj je na spodnji varni meji (${minKcalDanes()} kcal) — nižje ne gremo, tudi če bi izračun tako pokazal.</div>` : '');
   $('stBurn').textContent = '~'+burn.v+' kcal';
   $('stBurnSrc').textContent = burn.src;
   $('stProt').textContent = `${prot} / ${pt} g`;
@@ -1196,7 +1244,8 @@ async function chatSendK(){
   const btn=$('btnChatK'); btn.disabled=true; btn.textContent='…';
   try{
     const hist=chatLoadK().slice(-8).map(m=>(m.r==='me'?'KOLESAR: ':'TRENER: ')+m.t).join('\n');
-    const r=await gemini([{text:`Si moj osebni trener (kolo, moč, prehrana). Odgovori kratko (2-5 stavkov), konkretno, slovensko, prijateljsko.\n\n${chatCtxK()}\n\nPOGOVOR:\n${hist}\n\nOdgovori na zadnje sporočilo. Vrni SAMO JSON: {"odgovor":"..."}`}]);
+    const r=await gemini([{text:`Si moj osebni trener (kolo, moč, prehrana). Odgovori kratko (2-5 stavkov), konkretno, slovensko, prijateljsko.\n\n${chatCtxK()}\n\nPOGOVOR:\n${hist}\n\n${PRAVILA_PREHRANE}
+Odgovori na zadnje sporočilo. Vrni SAMO JSON: {"odgovor":"..."}`}]);
     const t=(r&&r.odgovor)? String(r.odgovor) : 'Hmm, poskusi še enkrat.';
     const m2=chatLoadK(); m2.push({r:'ai',t:t.trim(),ts:Date.now()}); chatSaveK(m2); renderChatK();
   }catch(e){ toast(e.message,'err'); }
