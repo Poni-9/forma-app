@@ -1457,7 +1457,7 @@ function proThanks(){
   d.style.cssText='position:fixed;inset:0;background:rgba(4,10,18,.74);backdrop-filter:blur(4px);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px';
   d.innerHTML=`<div style="background:var(--panel,#18161b);border:1px solid var(--border2,#38333e);border-radius:0;max-width:400px;padding:26px;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.5)">
     <div style="font-size:40px">⭐</div><div style="font-weight:800;font-size:18px;margin:8px 0">Hvala za nakup!</div>
-    <div style="font-size:13.5px;line-height:1.55;color:var(--soft,#c9c3ce)">Plačilo je prejeto — <b>PRO se aktivira samodejno v nekaj sekundah</b>. Če se znak ne pojavi v minuti, osveži stran ali piši na <a href="mailto:blaz.gregorc05@gmail.com" style="color:var(--acc2,#ff6a5e)">blaz.gregorc05@gmail.com</a>.</div>
+    <div style="font-size:13.5px;line-height:1.55;color:var(--soft,#c9c3ce)">Plačilo je prejeto — <b>PRO se aktivira samodejno v nekaj sekundah</b>. Če se znak ne pojavi v minuti, osveži stran ali piši na <a href="mailto:blaz.gregorc@formai.si" style="color:var(--acc2,#ff6a5e)">blaz.gregorc@formai.si</a>.</div>
     <button class="btn mt" onclick="document.getElementById('proTyBack').remove()">V redu</button></div>`;
   document.body.appendChild(d);
 }
@@ -6081,7 +6081,7 @@ setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) sy
     try{ errs=JSON.parse(localStorage.getItem('forma_errlog')||'[]'); }catch(_){}
     try{ ai=JSON.parse(localStorage.getItem('forma_ailog')||'[]').length; }catch(_){}
     const body='Opiši težavo tukaj:\n\n\n--- diagnostika (pusti) ---\n'+navigator.userAgent+'\nAI klicev: '+ai+'\nZadnje napake:\n'+errs.map(e=>e.t+' '+e.m).join('\n');
-    location.href='mailto:blaz.gregorc05@gmail.com?subject='+encodeURIComponent('FORMAI — podpora')+'&body='+encodeURIComponent(body.slice(0,1800));
+    location.href='mailto:blaz.gregorc@formai.si?subject='+encodeURIComponent('FORMAI — podpora')+'&body='+encodeURIComponent(body.slice(0,1800));
   }
   function render(){
     const host=document.getElementById('tab-settings'); if(!host) return;
