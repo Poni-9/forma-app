@@ -2975,13 +2975,40 @@ function renderZones(){
 ================================================================ */
 function macroPhaseFor(wsIso){ return state.macro?.weeks?.find(w=>w.zacetek===wsIso) || null; }
 
+/* ================================================================
+   PREHRANSKE VAROVALKE — ne mehčaj jih brez zdravnika
+================================================================ */
+const MAX_DEFICIT = 750;   // kcal/dan (~0,7 kg/teden je zgornja meja za športnika)
+function jeMladoleten(){ const a=state.settings.profile?.starost; return typeof a==='number' && a>0 && a<18; }
+/* kadar je cilj prehiter, to povemo na glas namesto tihega znižanja */
+function ciljPrehiter(){
+  const p = state.settings.profile;
+  if (jeMladoleten() || !p.ciljDatum || !p.ciljTeza || !p.teza) return null;
+  const dni = Math.max(1, Math.round((parseIso(p.ciljDatum) - new Date())/864e5));
+  const kg = p.teza - p.ciljTeza;
+  if (kg <= 0 || Math.round(kg*7700/dni) <= MAX_DEFICIT) return null;
+  return { kgTeden: Math.round(kg/(dni/7)*10)/10,
+           tedni: Math.ceil(kg*7700/MAX_DEFICIT/7),
+           trenutniTedni: Math.max(1, Math.round(dni/7)) };
+}
+/* pravila, ki gredo v VSAK prehranski poziv */
+const PRAVILA_PREHRANE = `
+VAROVALKE (nadrejene vsemu ostalemu v tem pozivu):
+- Nikoli ne spodbujaj nižjega vnosa in nikoli ne predlagaj manj hrane, kot je navedeni cilj. Če se uporabnik sam nagiba v deficit, ga usmeri k vzdrževanju.
+- Ob znakih utrujenosti, slabe regeneracije, težkega treninga ali vnosa pod ciljem: PRVO in izrecno predlagaj VEČ hrane, ne manj.
+- Prepovedano je vnos vezati na TSB, svežino, »dovoljeni deficit«, obliko telesa ali težo kot merilo vrednosti. Napredek meri forma, moč in vzdržljivost.
+- Prepovedano je predlagati preskakovanje obrokov, post, »nadoknaditi jutri« ali prenašanje kalorij med dnevi.
+- Če uporabnik želi hujšati hitreje od 0,5 kg na teden, tega ne načrtuj: povej, da je prehitro, in ga napoti k zdravniku ali nutricionistu.
+- Če je uporabnik mlajši od 18 let, ne načrtuj izgube teže v nobeni obliki — samo vzdrževanje in rast forme.
+`;
 function goalDeficit(){
   const p = state.settings.profile;
+  if (jeMladoleten()) return null;                 // pod 18 let: samo vzdrževanje, brez deficita
   if (!p.ciljDatum || !p.ciljTeza || !p.teza) return null;
   const dni = Math.max(1, Math.round((parseIso(p.ciljDatum) - new Date())/864e5));
   const kg = p.teza - p.ciljTeza;
   if (kg <= 0) return null;
-  return { dni, kg, deficit: Math.min(1100, Math.round(kg*7700/dni)) };
+  return { dni, kg, deficit: Math.min(MAX_DEFICIT, Math.round(kg*7700/dni)) };
 }
 /* --- telesni izračuni (Mifflin-St Jeor) --- */
 function bmr(){                                   // bazalna poraba (kcal/dan)
@@ -5027,6 +5054,7 @@ async function receptiAI(){
   const btn=$('btnRecAI'); busy(btn,true,'…');
   try{
     const r=await gemini([{text:`Predlagaj 2 KONKRETNA obroka za danes glede na moj kontekst (preostale kalorije in beljakovine). Kratko!
+${PRAVILA_PREHRANE}
 ${buildContext()}${aiLangNote()}
 Vrni SAMO JSON: {"r1":{"ime":"...","info":"kcal · B g · min priprave"},"r2":{"ime":"...","info":"..."}}`}]);
     const b=$('recBox');
@@ -5628,6 +5656,7 @@ async function mealsTodayAI(){
     const day0=planDayFor(todayIso());
     const t0=tdee()||2200; const cilj=wantsLean()? Math.round(Math.max((bmr()||1600)+200,t0-300)):t0;
     const r=await gemini([{text:`Si športni nutricionist. Za DANES sestavi 4 obroke (ZAJTRK, KOSILO, MALICA, VEČERJA) — za VSAK obrok TOČNO 3 različne recepte na izbiro. Preprosta slovenska živila, pripravljivo doma.
+${PRAVILA_PREHRANE}
 ${buildContext()}
 DANAŠNJI TRENING: ${day0? day0.tip+' — '+day0.naslov+' ('+(day0.trajanje_min||0)+' min)':'ni plana'}. Skupni cilj vnosa: ~${cilj} kcal (razdeli smiselno po obrokih).
 Vrni SAMO JSON: {"slots":[{"slot":"ZAJTRK","timing":"kdaj glede na trening","target":"makro poudarek danes","opts":[{"emoji":"🥣","ime":"...","sestavine":"kratko s količinami","kcal":n,"b":n,"oh":n,"m":n,"min":n,"zakaj":"1 stavek, zakaj ta jed danes","koraki":["1. korak","2. korak","3. korak"]}]}],"nakup":["kar verjetno manjka, max 8 stvari"]}`}],{temp:.5});
