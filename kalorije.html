@@ -301,6 +301,9 @@ input:focus,select:focus{box-shadow:none!important}
 input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px rgba(255,61,46,.14)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .med-note{margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:12.5px;line-height:1.55;color:var(--muted)}
+  .med-note b{color:var(--text)}
+  .lnk{background:none;border:0;padding:0;color:var(--acc2);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline}
   .kcal-note{margin-top:6px;font-size:12.5px;line-height:1.5;color:var(--yellow);font-weight:600}
 </style>
 </head>
@@ -345,6 +348,7 @@ input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px rgba(255,61,46,.14)
         <div class="hstat"><div class="k">Beljakovine</div><div class="v" id="stProt">–</div><div class="pbar"><div id="protBar" style="width:0%"></div></div><div class="t" id="stProtT"></div></div>
       </div>
     </div>
+    <div class="med-note">⚕️ To so trenerske in prehranske <b>usmeritve, ne zdravniški nasvet</b>. Ocene kalorij so približki. Pred večjimi spremembami prehrane ali ob zdravstvenih težavah se posvetuj z zdravnikom. <a href="zasebnost.html">Več</a></div>
   </div>
 
   <!-- ===== DODAJ S SLIKO ===== -->
@@ -570,6 +574,16 @@ const MAX_DEFICIT = 750;    // kcal/dan (~0,7 kg/teden je zgornja meja za šport
 const MAX_ADJ_DOL = -400;   // največ toliko manj ob krajšem treningu od predpisanega
 const MIN_ABS_M   = 1500;   // absolutni dnevni minimum, moški
 const MIN_ABS_Z   = 1200;   // absolutni dnevni minimum, ženske
+/* Ali imamo dovolj podatkov za pošten izračun?
+   Slaba ocena, ki izgleda kot podatek, je nevarnejša od praznega polja —
+   zato raje ne pokažemo številke in prosimo za dopolnitev profila. */
+function profilPopoln(){
+  const p = F?.settings?.profile;
+  return !!(p && p.teza && p.visina && p.starost && p.spol);
+}
+function ciljZnan(){
+  return !!(db.settings.kcalManual || planToday()?.kcal_vnos || profilPopoln());
+}
 function jeMladoleten(){ const a=F?.settings?.profile?.starost; return typeof a==='number' && a>0 && a<18; }
 function minAbsKcal(){ return (F?.settings?.profile?.spol==='ženska') ? MIN_ABS_Z : MIN_ABS_M; }
 /* najnižji dovoljeni vnos danes: nikoli pod bazalno porabo, nikoli pod
@@ -907,19 +921,29 @@ function renderHero(){
   $('todayLbl').textContent = `${DNEVI[(new Date().getDay()+6)%7]} ${new Date().getDate()}. ${MESECI[new Date().getMonth()]}`;
   $('planLbl').textContent = pd ? `plan: ${pd.naslov||pd.tip}` : '';
 
-  const r=74, C=2*Math.PI*r, frac=Math.min(1.25, eaten/Math.max(1,target));
+  const znan = ciljZnan();
+  const r=74, C=2*Math.PI*r, frac=znan? Math.min(1.25, eaten/Math.max(1,target)) : 0;
   const ring=$('ringP');
   ring.setAttribute('stroke-dasharray', C);
-  ring.setAttribute('stroke-dashoffset', C*(1-Math.min(1,frac)));
-  ring.setAttribute('stroke', eaten>target ? 'var(--red)' : eaten>target*.85 ? 'var(--yellow)' : '#fc4c02');
+  ring.setAttribute('stroke-dashoffset', znan ? C*(1-Math.min(1,frac)) : C);
+  ring.setAttribute('stroke', !znan ? 'var(--border2)' : eaten>target ? 'var(--red)' : eaten>target*.85 ? 'var(--yellow)' : '#fc4c02');
   $('ringKcal').textContent = eaten;
-  $('ringSub').textContent = `/ ${target} kcal`;
+  $('ringSub').textContent = znan ? `/ ${target} kcal` : 'kcal danes';
 
-  $('stLeft').textContent = (left>=0?left:0) + ' kcal';
-  $('stLeft').style.color = left<0 ? 'var(--red)' : left<200 ? 'var(--yellow)' : 'var(--acc2)';
-  if (left<0) $('stLeft').textContent = `${-left} čez!`;
+  $('stLeft').textContent = znan ? ((left>=0?left:0) + ' kcal') : '–';
+  $('stLeft').style.color = !znan ? 'var(--muted)' : left<0 ? 'var(--red)' : left<200 ? 'var(--yellow)' : 'var(--acc2)';
+  if (znan && left<0) $('stLeft').textContent = `${-left} čez!`;
   const adj = trainAdjust();
-  $('stTarget').textContent = target+' kcal';
+  $('stTarget').textContent = znan ? (target+' kcal') : '–';
+  if (!znan){
+    $('stTargetSrc').innerHTML = `<div class="kcal-note">Za izračun cilja potrebujem <b>težo, višino, starost in spol</b>. Dopolni profil v namizni aplikaciji na formai.si ali si <button class="lnk" onclick="openSettings()">nastavi cilj ročno</button>. Do takrat ne ugibam — slaba ocena je slabša od praznega polja.</div>`;
+    $('stBurn').textContent = '~'+burn.v+' kcal'; $('stBurnSrc').textContent = burn.src;
+    $('stProt').textContent = `${prot} / ${pt} g`;
+    $('protBar').style.width = Math.min(100, prot/pt*100)+'%';
+    $('protBar').style.background = prot>=pt ? 'var(--acc)' : 'var(--blue)';
+    $('stProtT').textContent = prot>=pt ? 'cilj dosežen 💪' : `še ${pt-prot} g (skuta, jajca, jogurt)`;
+    return;
+  }
   const mlad = jeMladoleten(), hitro = ciljPrehiter(), naMeji = target <= minKcalDanes();
   $('stTargetSrc').innerHTML = (db.settings.kcalManual ? 'ročno nastavljen' : pd?.kcal_vnos ? 'iz plana ✓' : 'ocena (teža − deficit)')
     + (adj>0 ? ` · <b style="color:var(--acc2)">+${adj} (pokuril več) 🚴</b>`
@@ -940,7 +964,9 @@ function renderLog(){
   const dd = parseIso(iso);
   $('logDayLbl').textContent = (today?'Danes, ':'')+`${DNEVI[(dd.getDay()+6)%7].slice(0,3)} ${dd.getDate()}. ${MESECI[dd.getMonth()]}`;
   const target = today ? targetKcal() : (d.target||targetKcal());
-  $('logSum').textContent = `Σ ${sumK(d.entries)} / ${target} kcal · ${sumB(d.entries)} g beljakovin`;
+  $('logSum').textContent = ciljZnan()
+    ? `Σ ${sumK(d.entries)} / ${target} kcal · ${sumB(d.entries)} g beljakovin`
+    : `Σ ${sumK(d.entries)} kcal · ${sumB(d.entries)} g beljakovin`;
 
   const eaten = sumK(d.entries);
   let html='';
@@ -969,13 +995,13 @@ function renderHist(){
   Chart.defaults.color='#8b9bab'; Chart.defaults.font.family='Inter, sans-serif';
   const days=[]; for(let i=13;i>=0;i--) days.push(isoDate(addDays(new Date(),-i)));
   const vals = days.map(d=> db.days[d] ? sumK(db.days[d].entries) : 0);
-  const tgt = targetKcal();
+  const tgt = ciljZnan() ? targetKcal() : null;
   if (histChart) histChart.destroy();
   histChart = new Chart($('histChart'), { type:'bar',
     data:{ labels:days.map(d=>{const x=parseIso(d);return x.getDate()+'.'+(x.getMonth()+1)+'.'}),
       datasets:[
-        {label:'kcal', data:vals, backgroundColor:vals.map(v=> v===0?'rgba(139,155,171,.15)': v>tgt?'rgba(255,92,92,.75)':'rgba(252,76,2,.75)'), borderRadius:5, maxBarThickness:26},
-        {label:'cilj', data:days.map(()=>tgt), type:'line', borderColor:'#ffc247', borderDash:[6,4], pointRadius:0, borderWidth:1.6}
+        {label:'kcal', data:vals, backgroundColor:vals.map(v=> v===0?'rgba(139,155,171,.15)': (tgt&&v>tgt)?'rgba(255,92,92,.75)':'rgba(252,76,2,.75)'), borderRadius:5, maxBarThickness:26},
+        ...(tgt?[{label:'cilj', data:days.map(()=>tgt), type:'line', borderColor:'#ffc247', borderDash:[6,4], pointRadius:0, borderWidth:1.6}]:[])
       ]},
     options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
       scales:{ x:{grid:{display:false}}, y:{grid:{color:'rgba(45,61,80,.35)'}} } }
@@ -989,7 +1015,7 @@ function renderLink(){
       <div class="lb-top"><span class="lb-dot"></span>Povezano z namizjem <b>FORMAI</b></div>
       ${pd
         ? `<div class="lb-plan">${esc(pd.naslov||pd.tip)}</div>
-           <div class="lb-nums"><span>🎯 cilj vnosa <b>${targetKcal()} kcal</b></span>${pd.kcal_poraba?`<span>🔥 poraba <b>~${pd.kcal_poraba} kcal</b></span>`:''}</div>`
+           <div class="lb-nums">${ciljZnan()?`<span>🎯 cilj vnosa <b>${targetKcal()} kcal</b></span>`:`<span>🎯 cilj vnosa <b>–</b> (dopolni profil)</span>`}${pd.kcal_poraba?`<span>🔥 poraba <b>~${pd.kcal_poraba} kcal</b></span>`:''}</div>`
         : `<div class="lb-plan" style="color:var(--muted);font-weight:600">Za danes ni plana — cilj izračunan iz profila.</div>`}
     </div>`;
   } else {
