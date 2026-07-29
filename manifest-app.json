@@ -1,6 +1,6 @@
 {
-  "name": "PEAKFORM — AI trener",
-  "short_name": "PEAKFORM",
+  "name": "FORMAI — AI trener",
+  "short_name": "FORMAI",
   "description": "AI trener za kolo, tek, moč in prehrano.",
   "start_url": "./forma-trener.html",
   "scope": "./",
