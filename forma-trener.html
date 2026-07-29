@@ -583,6 +583,18 @@ html,body{max-width:100%;overflow-x:hidden}
   input,select,textarea{max-width:100%}
 }
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .lnk-quiet{background:none;border:0;padding:0;color:var(--dim);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:3px;transition:color .16s}
+  .lnk-quiet:hover{color:var(--acc)}
+  .lnk{background:none;border:0;padding:0;color:var(--acc2);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline}
+  .da-lead{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:16px}
+  .da-sec{border-top:1px solid var(--border);padding-top:12px;margin-bottom:12px}
+  .da-h{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+  .da-ul{margin:0 0 0 18px;color:var(--muted);font-size:13.5px;line-height:1.7}
+  .da-p{color:var(--muted);font-size:13.5px;line-height:1.7;margin:0}
+  .da-out{margin-top:12px;font-size:13px;line-height:1.6;color:var(--muted)}
+  .da-out:empty{display:none}
+  .btn-danger{background:var(--acc);color:#fff;border-color:var(--acc)}
+  .btn-danger:disabled{background:transparent;color:var(--dim);border-color:var(--border);cursor:not-allowed}
   .med-note{font-size:12.5px;line-height:1.55;color:var(--dim);font-weight:600;margin-top:6px}
   .med-note b{color:var(--muted)}
 </style>
@@ -1018,27 +1030,9 @@ html,body{max-width:100%;overflow-x:hidden}
               <input type="file" id="importFile" accept=".json" style="display:none">
             </div>
             <p class="med-note" style="margin-top:10px"><a href="zasebnost.html">Politika zasebnosti</a> · <a href="pogoji.html">Pogoji uporabe</a> · <a href="mailto:blaz.gregorc@formai.si">blaz.gregorc@formai.si</a></p>
+            <p style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)"><button class="lnk-quiet" onclick="odpriIzbrisRacuna()">Izbriši račun in vse podatke</button></p>
           </div>
-          <div class="card">
-            <h3>🗑️ Izbris računa</h3>
-            <p class="med-note" style="margin-bottom:10px">Izbrisano je izbrisano — vrniti se ne da. Priporočam, da si prej izvoziš podatke.</p>
-            <button class="btn btn-ghost" onclick="odpriIzbrisRacuna()">Želim izbrisati račun in vse podatke</button>
-            <div id="delAccBox" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
-              <p style="margin-bottom:8px"><b>Kaj se izbriše takoj:</b></p>
-              <ul style="margin:0 0 12px 18px;color:var(--muted);font-size:13.5px;line-height:1.7">
-                <li>tvoj profil, aktivnosti, plani, treningi moči in prehranski dnevnik — na tej napravi in v oblaku</li>
-                <li>povezava s Stravo in shranjeni dostopni žetoni</li>
-                <li>tvoj prijavni račun pri FORMAI</li>
-              </ul>
-              <p style="margin-bottom:12px;color:var(--muted);font-size:13.5px;line-height:1.7"><b>Kaj ostane:</b> anonimni števci porabe AI, ki jih lahko izbrišem samo jaz. Piši na <a href="mailto:blaz.gregorc@formai.si">blaz.gregorc@formai.si</a> in jih izbrišem v 30 dneh, kot piše v politiki zasebnosti.</p>
-              <label class="fld"><span>Za potrditev vpiši <b>IZBRIŠI</b></span><input id="delAccWord" placeholder="IZBRIŠI" autocomplete="off"></label>
-              <div class="row" style="margin-top:10px">
-                <button class="btn" id="btnDelAcc" style="background:var(--acc);color:#fff;border-color:var(--acc)" onclick="izbrisiRacun()">Dokončno izbriši</button>
-                <button class="btn btn-ghost" onclick="odpriIzbrisRacuna()">Prekliči</button>
-              </div>
-              <div id="delAccOut" class="med-note" style="margin-top:12px"></div>
-            </div>
-          </div>
+
         </div>
       </div>
     </section>
@@ -1100,6 +1094,32 @@ html,body{max-width:100%;overflow-x:hidden}
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal('mealModalBack')">Prekliči</button>
       <button class="btn btn-primary" onclick="mealSave()">Shrani</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======= MODAL: IZBRIS RAČUNA ======= -->
+<div class="modal-back" id="delAccModalBack">
+  <div class="modal" style="max-width:540px">
+    <h2>Izbriši račun<span class="x" onclick="closeModal('delAccModalBack')">✕</span></h2>
+    <p class="da-lead">Tega ni mogoče razveljaviti. Preden nadaljuješ, si <button class="lnk" onclick="exportData()">prenesi svoje podatke</button> — pozneje jih ne bo več.</p>
+    <div class="da-sec">
+      <div class="da-h">Izbriše se takoj</div>
+      <ul class="da-ul">
+        <li>profil, aktivnosti, plani, treningi moči in prehranski dnevnik — na tej napravi in v oblaku</li>
+        <li>povezava s Stravo in shranjeni dostopni žetoni</li>
+        <li>tvoj prijavni račun pri FORMAI</li>
+      </ul>
+    </div>
+    <div class="da-sec">
+      <div class="da-h">Ostane še</div>
+      <p class="da-p">Anonimni števci porabe AI, ki jih lahko izbrišem samo jaz. Piši na <a href="mailto:blaz.gregorc@formai.si">blaz.gregorc@formai.si</a> in jih izbrišem v 30 dneh, kot piše v <a href="zasebnost.html">politiki zasebnosti</a>.</p>
+    </div>
+    <label class="fld" style="margin-top:6px"><span>Vpiši <b>IZBRIŠI</b> za potrditev</span><input id="delAccWord" placeholder="IZBRIŠI" autocomplete="off" spellcheck="false" oninput="preveriIzbrisBesedo()"></label>
+    <div id="delAccOut" class="da-out"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('delAccModalBack')">Prekliči</button>
+      <button class="btn btn-danger" id="btnDelAcc" onclick="izbrisiRacun()" disabled>Dokončno izbriši</button>
     </div>
   </div>
 </div>
@@ -4262,10 +4282,17 @@ $('importFile').addEventListener('change', e=>{
   rd.readAsText(f);
 });
 function odpriIzbrisRacuna(){
-  const el = $('delAccBox'); if(!el) return;
-  const odprt = el.style.display !== 'none';
-  el.style.display = odprt ? 'none' : 'block';
-  if (!odprt){ const w=$('delAccWord'); if(w){ w.value=''; w.focus(); } const o=$('delAccOut'); if(o) o.textContent=''; }
+  const w=$('delAccWord'); if(w) w.value='';
+  const o=$('delAccOut'); if(o) o.innerHTML='';
+  const b=$('btnDelAcc'); if(b){ b.disabled=true; b.textContent='Dokončno izbriši'; }
+  const m=$('delAccModalBack'); if(!m) return;
+  m.classList.add('open');
+  setTimeout(()=>{ try{ w && w.focus(); }catch(_){} }, 120);
+}
+/* gumb ostane onemogočen, dokler beseda ni točna — brez ugibanja s klikom */
+function preveriIzbrisBesedo(){
+  const w = (($('delAccWord')||{}).value||'').trim().toUpperCase();
+  const b = $('btnDelAcc'); if(b) b.disabled = (w !== 'IZBRIŠI');
 }
 async function izbrisiRacun(){
   const w = (($('delAccWord')||{}).value||'').trim().toUpperCase();
