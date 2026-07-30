@@ -400,7 +400,7 @@ canvas{max-width:100%}
 .feel-dots button.on{border-color:#fff}
 .path-card .pct{font-family:var(--bc);font-weight:800;font-size:19px;color:var(--acc2)}
 .path-bar{height:6px;background:var(--border);margin-top:9px}
-.path-bar i{display:block;height:100%;background:linear-gradient(90deg,#a34038,var(--acc))}
+.path-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--sigd),var(--acc))}
 .path-marks{display:flex;justify-content:space-between;font-size:10px;color:var(--dim);margin-top:6px;font-weight:700;letter-spacing:.02em}
 
 /* ---------- Poročila / klepet ---------- */
@@ -596,7 +596,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
 .mini-row{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:13px}
 .mini-c{border:1px solid var(--border);background:var(--panel);padding:13px 15px;min-width:0}
 @media(max-width:520px){.mini-row{grid-template-columns:1fr}}
-.coach1a{border:1px solid rgba(255,194,71,.4);background:linear-gradient(180deg,rgba(255,194,71,.09),var(--panel));padding:15px 17px;flex:1;display:flex;flex-direction:column;margin-top:13px}
+.coach1a{border:1px solid rgba(237,187,0,.4);background:linear-gradient(180deg,rgba(237,187,0,.09),var(--panel));padding:15px 17px;flex:1;display:flex;flex-direction:column;margin-top:13px}
 html,body{max-width:100%;overflow-x:hidden}
 @media(max-width:520px){
   .main{padding:16px 12px 60px}
@@ -978,7 +978,7 @@ input.f::placeholder { color: var(--dim2); }
             <h3 data-i18n="weeklySum">Tedenski povzetek</h3>
             <div id="weeklySumBox"></div>
           </div>
-          <div class="card" style="border-color:rgba(255,194,71,.35)">
+          <div class="card" style="border-color:rgba(237,187,0,.35)">
             <h3 style="color:var(--yellow)">⚠ <span data-i18n="warnings">Opozorila</span></h3>
             <div id="warnBox"></div>
           </div>
@@ -1251,7 +1251,7 @@ input.f::placeholder { color: var(--dim2); }
                 <li>Odpre se Strava — potrdi dostop. Preusmerilo te bo na "localhost" (stran se ne odpre — to je v redu!). Iz naslovne vrstice skopiraj cel naslov (ali samo kodo za <code>code=</code>) in jo prilepi nazaj sem.</li>
               </ol>
             </details>
-            <div style="color:var(--warn,#e8b34b);font-size:11.5px;margin-top:6px">⚠️ Ta napredna pot pošilja zahtevke prek javnega CORS posrednika — če je le mogoče, uporabi ⭐ povezavo na en klik (žetoni ostanejo na strežniku).</div>
+            <div style="color:var(--warn,#edbb00);font-size:11.5px;margin-top:6px">⚠️ Ta napredna pot pošilja zahtevke prek javnega CORS posrednika — če je le mogoče, uporabi ⭐ povezavo na en klik (žetoni ostanejo na strežniku).</div>
             <div class="frm-grid mt">
               <label class="fld"><span>Client ID</span><input id="sCid"></label>
               <label class="fld"><span>Client Secret</span><input type="password" id="sSec"></label>
@@ -1274,7 +1274,7 @@ input.f::placeholder { color: var(--dim2); }
           <div class="card mt">
             <h3>📈 Intervals.icu <span class="sub">brezplačno — najboljša pot brez Strava naročnine</span></h3>
             <div id="icuStatus"></div>
-            <div class="analysis-box" style="margin:10px 0;border-color:rgba(255,194,71,.35)">
+            <div class="analysis-box" style="margin:10px 0;border-color:rgba(237,187,0,.35)">
               ⚠️ <b>Najpogostejša napaka:</b> Intervals.icu je samo posrednik — vožnje vanj prihajajo s tvoje ure/naprave.
               Če je tvoj Intervals račun nov (prazen), najprej opravi <b>2. korak</b>, sicer ni česa uvoziti.
             </div>
@@ -1773,7 +1773,7 @@ function renderDashAlert(){
     return;
   }
   const a=alertsCalc();
-  el.innerHTML = a.length? `<div style="margin-bottom:12px;border:1px solid rgba(255,194,71,.35);background:linear-gradient(90deg,rgba(255,194,71,.09),transparent);padding:11px 15px;font-size:12.5px;color:var(--soft);display:flex;gap:10px;align-items:center"><span style="color:var(--yellow);font-weight:800;letter-spacing:.08em;font-size:10.5px;border:1px solid rgba(255,194,71,.4);padding:2px 7px;white-space:nowrap">${t('opozorilo')}</span><span>${esc(a[0])}</span></div>` : '';
+  el.innerHTML = a.length? `<div style="margin-bottom:12px;border:1px solid rgba(237,187,0,.35);background:linear-gradient(90deg,rgba(237,187,0,.09),transparent);padding:11px 15px;font-size:12.5px;color:var(--soft);display:flex;gap:10px;align-items:center"><span style="color:var(--yellow);font-weight:800;letter-spacing:.08em;font-size:10.5px;border:1px solid rgba(237,187,0,.4);padding:2px 7px;white-space:nowrap">${t('opozorilo')}</span><span>${esc(a[0])}</span></div>` : '';
 }
 const STAT_INFO = {
   prip:[['Pripravljenost (0–100)','Koliko "goriva" imaš danes. Izračunam jo iz svežine (razmerje med treningom in počitkom), bolečin v mišicah in tega, kako redno slediš planu.\n\n70+ → odličen dan za težak trening.\n45–69 → normalen trening po planu.\npod 45 → telo rabi počitek; lahek dan ali prosto.\n\nDvigneš jo s spanjem, počitkom po težkih dneh in rednim ritmom.'],
@@ -1839,15 +1839,15 @@ function renderForma90(){
   el.innerHTML=`<div class="spread" style="flex-wrap:wrap;gap:8px;margin-bottom:8px">
     <span></span>
     <div style="display:flex;gap:14px;font-size:10.5px;font-weight:700;color:var(--muted)">
-      <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:3px;background:#4da3ff"></span>${LANG==='en'?'FITNESS':'KONDICIJA'}</span>
-      <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:3px;background:#ffc247"></span>${LANG==='en'?'FATIGUE':'UTRUJENOST'}</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:3px;background:#62c5ee"></span>${LANG==='en'?'FITNESS':'KONDICIJA'}</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:3px;background:#edbb00"></span>${LANG==='en'?'FATIGUE':'UTRUJENOST'}</span>
       <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:3px;background:repeating-linear-gradient(90deg,#5fd67a 0 4px,transparent 4px 7px)"></span>${LANG==='en'?'FRESHNESS':'SVEŽINA'}</span>
     </div></div>
   <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;min-height:230px;display:block">
     ${gridV.map(v=>`<line x1="${x0}" y1="${Y(v).toFixed(1)}" x2="${W-10}" y2="${Y(v).toFixed(1)}" stroke="${Math.abs(v)<0.5?'#38333e':'#26232a'}" stroke-width="${Math.abs(v)<0.5?1.5:1}"></line><text x="${x0-6}" y="${(Y(v)+4).toFixed(1)}" text-anchor="end" font-size="10" fill="#6f6876" font-weight="600">${Math.round(v)}</text>`).join('')}
     <polygon points="${fill}" fill="rgba(77,163,255,.12)"></polygon>
-    <polyline points="${line('atl')}" fill="none" stroke="#ffc247" stroke-width="1.8" opacity=".9"></polyline>
-    <polyline points="${line('ctl')}" fill="none" stroke="#4da3ff" stroke-width="2.4"></polyline>
+    <polyline points="${line('atl')}" fill="none" stroke="#edbb00" stroke-width="1.8" opacity=".9"></polyline>
+    <polyline points="${line('ctl')}" fill="none" stroke="#62c5ee" stroke-width="2.4"></polyline>
     <polyline points="${line('tsb')}" fill="none" stroke="#5fd67a" stroke-width="1.8" stroke-dasharray="4 3"></polyline>
     ${[0,Math.floor(s.length/3),Math.floor(2*s.length/3),s.length-1].map(i=>`<text x="${X(i).toFixed(1)}" y="${H-1}" text-anchor="${i===0?'start':i===s.length-1?'end':'middle'}" font-size="9.5" fill="#6f6876" font-weight="600">${lab(i)}</text>`).join('')}
   </svg>
@@ -1922,7 +1922,7 @@ function renderDanesHero(){
       if(!mins) mins = Math.max(10,Math.round((d.trajanje_min||60)/L.length));
       const hard=/interval|glavni|klanec|tempo|prag|z4|z3|c4|c3|močno|hitro/i.test(line);
       const warm=/ogrev/i.test(line), cool=/zaključ|ohlaj|sprošč/i.test(line);
-      return { mins, c: hard?'var(--acc)': (warm||cool)?'#4da3ff':'#4a4452',
+      return { mins, c: hard?'var(--acc)': (warm||cool)?'#38a6cf':'#3a464e',
                lbl: warm?(LANG==='en'?'WARM-UP':'OGREVANJE'):cool?(LANG==='en'?'COOL-DOWN':'OHLAJANJE'):(LANG==='en'?'MAIN':'GLAVNI DEL') };
     });
     let tot=segs.reduce((a,x)=>a+x.mins,0)||1;
@@ -2072,7 +2072,7 @@ function renderDash(){
 
   const stk=streakDays();
   const stEl=$('dashStreak');
-  if(stEl) stEl.innerHTML = stk>=2? `<span style="border:1px solid rgba(255,194,71,.4);background:rgba(255,194,71,.08);color:var(--yellow);font-size:11.5px;font-weight:800;letter-spacing:.06em;padding:4px 10px;white-space:nowrap">🔥 ${stk} ${LANG==='en'? '-DAY STREAK':'DNI ZAPORED'}</span>` : '';
+  if(stEl) stEl.innerHTML = stk>=2? `<span style="border:1px solid rgba(237,187,0,.4);background:rgba(237,187,0,.08);color:var(--yellow);font-size:11.5px;font-weight:800;letter-spacing:.06em;padding:4px 10px;white-space:nowrap">🔥 ${stk} ${LANG==='en'? '-DAY STREAK':'DNI ZAPORED'}</span>` : '';
   renderDashAlert();
   renderCharts();
   renderRiderCard();
@@ -2081,7 +2081,7 @@ function renderDash(){
 function renderDashWeekPlan(){
   const el=$('dashWeekPlan'); if(!el) return;
   const ws=weekStart(new Date()); const today=todayIso();
-  const stripes={intervali:'var(--acc)',vzdrzljivost:'var(--blue)',tempo:'var(--yellow)',regeneracija:'var(--green)',moc:'var(--purple)',pohod:'#5cd6d6',tek:'#ff8a2a',pocitek:'var(--border2)',gray:'var(--border2)'};
+  const stripes={intervali:'var(--acc)',vzdrzljivost:'var(--blue)',tempo:'var(--yellow)',regeneracija:'var(--green)',moc:'var(--purple)',pohod:'#5cd6d6',tek:'#ff458e',pocitek:'var(--border2)',gray:'var(--border2)'};
   const rows=[];
   let any=false;
   for(let i=0;i<7;i++){
@@ -3958,7 +3958,7 @@ async function openRideDetail(id){
       L.tileLayer('https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', { maxZoom:19 }).addTo(rdMap);
       const pl = L.polyline(pts, { color:'#62c5ee', weight:3.5 }).addTo(rdMap);
       L.circleMarker(pts[0], {radius:5,color:'#5fd67a',fillColor:'#5fd67a',fillOpacity:1}).addTo(rdMap);
-      L.circleMarker(pts[pts.length-1], {radius:5,color:'#ff5c5c',fillColor:'#ff5c5c',fillOpacity:1}).addTo(rdMap);
+      L.circleMarker(pts[pts.length-1], {radius:5,color:'#ff458e',fillColor:'#ff458e',fillOpacity:1}).addTo(rdMap);
       rdMap.fitBounds(pl.getBounds(), { padding:[20,20] });
     }catch(e){ console.warn('Zemljevid:', e); }
   }
@@ -5240,13 +5240,13 @@ function renderKalorije(){
     : `<div class="hint" style="margin-top:8px">AI sestavi zajtrk, kosilo, malico in večerjo — vsak s 3 recepti na izbiro, usklajeno z današnjim treningom, cilji in kalorijami.</div>`}
   </div>`;
   const mw=state.mealWeek;
-  const mealWeekCard = (mw && Array.isArray(mw.dnevi) && mw.dnevi.length)? `<div class="card mt" style="border-color:rgba(255,194,71,.3)">
+  const mealWeekCard = (mw && Array.isArray(mw.dnevi) && mw.dnevi.length)? `<div class="card mt" style="border-color:rgba(237,187,0,.3)">
     <h3>🍽 Tedenski jedilnik <span class="sub">pripravil AI trener (${mw.made||''}) — za spremembe mu samo povej v klepetu</span></h3>
     ${mw.dnevi.map(d=>`<div style="border:1px solid var(--border);background:var(--bg);padding:9px 12px;margin-bottom:5px;font-size:12.5px;line-height:1.55">
       <b style="color:var(--acc2)">${d.datum}</b> <span style="color:var(--dim)">~${d.kcal||'?'} kcal</span>${d.op?` <span style="color:var(--muted)">· ${esc(d.op)}</span>`:''}<br>
       🌅 ${esc(d.zajtrk||'')} &nbsp;·&nbsp; 🍲 ${esc(d.kosilo||'')} &nbsp;·&nbsp; 🌙 ${esc(d.vecerja||'')}${d.prigrizek?` &nbsp;·&nbsp; 🥜 ${esc(d.prigrizek)}`:''}
     </div>`).join('')}
-    ${(mw.nakup&&mw.nakup.length)?`<div style="border:1px dashed rgba(255,194,71,.5);background:rgba(255,194,71,.06);padding:9px 12px;margin-top:6px;font-size:12.5px">🛒 <b>Nakupovalni listek:</b> ${mw.nakup.map(esc).join(' · ')}</div>`:''}
+    ${(mw.nakup&&mw.nakup.length)?`<div style="border:1px dashed rgba(237,187,0,.5);background:rgba(237,187,0,.06);padding:9px 12px;margin-top:6px;font-size:12.5px">🛒 <b>Nakupovalni listek:</b> ${mw.nakup.map(esc).join(' · ')}</div>`:''}
     <div class="row mt no-print"><button class="btn btn-ghost btn-sm" onclick="mealWeekAI()">↻ Nov jedilnik</button><button class="btn btn-ghost btn-sm" onclick="state.mealWeek=null;save();renderAll()">✕ Odstrani</button></div>
   </div>` : '';
   // postavitev po dizajnu: makri čez celo širino → levo obroki, desno fueling + telo → spodaj plani jedi
@@ -5603,22 +5603,22 @@ function renderAnalitika(){
       <line x1="${xD.toFixed(1)}" y1="10" x2="${xD.toFixed(1)}" y2="172" stroke="#6f6876" stroke-width="1" stroke-dasharray="2 4"></line>
       <text x="${(xD-4).toFixed(1)}" y="180" text-anchor="end" font-size="8.5" fill="#6f6876" font-weight="700">${EN?'TODAY':'DANES'} ◂ ${EN?'done':'opravljeno'}</text>
       <text x="${(xD+4).toFixed(1)}" y="180" font-size="8.5" fill="#6f6876">▸ ${EN?'forecast if you follow the plan':'napoved, če slediš planu'}</text>
-      ${p.ciljDatum?`<line x1="${W-12}" y1="10" x2="${W-12}" y2="172" stroke="#ffc247" stroke-width="1.5" stroke-dasharray="4 4"></line>`:''}
-      <polyline points="${line(hist,'ctl',0)}" fill="none" stroke="#4da3ff" stroke-width="2.5" stroke-linejoin="round"></polyline>
-      <polyline points="${line(fut,'ctl',nH)}" fill="none" stroke="#4da3ff" stroke-width="2" stroke-dasharray="3 4"></polyline>
+      ${p.ciljDatum?`<line x1="${W-12}" y1="10" x2="${W-12}" y2="172" stroke="#edbb00" stroke-width="1.5" stroke-dasharray="4 4"></line>`:''}
+      <polyline points="${line(hist,'ctl',0)}" fill="none" stroke="#62c5ee" stroke-width="2.5" stroke-linejoin="round"></polyline>
+      <polyline points="${line(fut,'ctl',nH)}" fill="none" stroke="#62c5ee" stroke-width="2" stroke-dasharray="3 4"></polyline>
       <polyline points="${line(hist,'tsb',0)}" fill="none" stroke="#5fd67a" stroke-width="2" stroke-linejoin="round"></polyline>
       <polyline points="${line(fut,'tsb',nH)}" fill="none" stroke="#5fd67a" stroke-width="2" stroke-dasharray="3 4"></polyline>
-      ${fut.length?`<circle cx="${X(tot-1).toFixed(1)}" cy="${Y(fut[fut.length-1].ctl).toFixed(1)}" r="3.5" fill="#4da3ff"></circle>
+      ${fut.length?`<circle cx="${X(tot-1).toFixed(1)}" cy="${Y(fut[fut.length-1].ctl).toFixed(1)}" r="3.5" fill="#62c5ee"></circle>
       <circle cx="${X(tot-1).toFixed(1)}" cy="${Y(endTsb).toFixed(1)}" r="3.5" fill="#5fd67a"></circle>`:''}
     </svg>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--border);border:1px solid var(--border);margin-top:10px">
-      <div style="background:var(--bg);padding:9px 12px"><div style="font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--dim)">${EN?'FITNESS ON GOAL DAY':'KONDICIJA '+(p.ciljDatum?('NA '+p.ciljDatum.slice(8,10)+'.'+p.ciljDatum.slice(5,7)+'.'):('ČEZ '+nF+' DNI'))}</div><div style="font-family:var(--bc);font-size:24px;font-weight:800;color:#4da3ff">${endCtl}</div></div>
+      <div style="background:var(--bg);padding:9px 12px"><div style="font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--dim)">${EN?'FITNESS ON GOAL DAY':'KONDICIJA '+(p.ciljDatum?('NA '+p.ciljDatum.slice(8,10)+'.'+p.ciljDatum.slice(5,7)+'.'):('ČEZ '+nF+' DNI'))}</div><div style="font-family:var(--bc);font-size:24px;font-weight:800;color:#62c5ee">${endCtl}</div></div>
       <div style="background:var(--bg);padding:9px 12px"><div style="font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--dim)">${EN?'FRESHNESS':'SVEŽINA'} ${EN?'':'TAKRAT'}</div><div style="font-family:var(--bc);font-size:24px;font-weight:800;color:${endTsb>=10&&endTsb<=25?'var(--green)':endTsb<-10?'var(--red)':'var(--yellow)'}">${endTsb>0?'+':''}${endTsb}</div></div>
     </div>
     <div style="font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5">💪 <b style="color:#62c5ee">${EN?'Fitness':'Kondicija'} ${endCtl}</b> = ${EN?'engine size — the higher, the more training you absorb.':'velikost motorja — višja ko je, več treninga preneseš in močnejši si.'} &nbsp;🔋 <b style="color:#ff458e">${EN?'Freshness':'Svežina'}</b> = ${EN?'how rested you are: above 0 fresh, below 0 tired.':'spočitost: nad 0 si spočit, pod 0 utrujen.'}</div>
     <div style="font-size:12.5px;color:var(--soft);margin-top:6px;line-height:1.5">${verdikt}${adher<1?` <span style="color:var(--dim)">(${EN?'at your ~'+rpF.pct+' % plan adherence':'ob tvoji ~'+rpF.pct+' % realizaciji plana'})</span>`:''}</div>
     <div style="display:flex;gap:14px;font-size:10.5px;font-weight:700;color:var(--muted);margin-top:6px;flex-wrap:wrap">
-      <span><span style="display:inline-block;width:14px;height:3px;background:#4da3ff"></span> ${EN?'FITNESS':'KONDICIJA'}</span>
+      <span><span style="display:inline-block;width:14px;height:3px;background:#62c5ee"></span> ${EN?'FITNESS':'KONDICIJA'}</span>
       <span><span style="display:inline-block;width:14px;height:3px;background:#5fd67a"></span> ${EN?'FRESHNESS':'SVEŽINA'}</span>
       <span style="color:var(--dim)">--- ${EN?'forecast':'napoved'}</span>
     </div>`;
@@ -6084,7 +6084,7 @@ function onbRender(){
     <div class="onb-sub">Izberi vse, kar velja — celoten sistem (plani, moč, prehrana, kartice) se prilagodi tem odgovorom.</div>
     <div style="max-width:620px;margin:26px auto 0;display:flex;flex-direction:column;gap:16px">
       <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Katere aktivnosti — in katere imaš najraje?</div>
-        <div class="row" style="gap:8px">${[['kolo','🚴 Kolo'],['tek','🏃 Tek'],['pohod','🥾 Pohodi'],['moc','💪 Moč']].map(([v,n])=>{const pf=onb.prefs[v]||0;return `<div class="onb-chip ${pf?'on':''}" style="${pf===2?'border-color:#ffc247;':''}" onclick="onbAkt('${v}')">${pf===2?'❤️ ':''}${n}</div>`;}).join('')}</div>
+        <div class="row" style="gap:8px">${[['kolo','🚴 Kolo'],['tek','🏃 Tek'],['pohod','🥾 Pohodi'],['moc','💪 Moč']].map(([v,n])=>{const pf=onb.prefs[v]||0;return `<div class="onb-chip ${pf?'on':''}" style="${pf===2?'border-color:#edbb00;':''}" onclick="onbAkt('${v}')">${pf===2?'❤️ ':''}${n}</div>`;}).join('')}</div>
         <div class="hint" style="margin:6px 0 0">Klik: izbrano → <b>❤️ najljubše</b> → izklop. Najljubši športi prevladujejo v planu. Nimaš kolesa? Ga pač ne izbereš.</div></div>
       <div><div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);margin-bottom:6px;text-transform:uppercase">Kaj želiš doseči? <span style="text-transform:none;letter-spacing:0;font-weight:600;color:var(--muted)">(izberi vse, kar velja)</span></div>
         <div class="row" style="gap:8px;flex-wrap:wrap">${goalOptions(Object.keys(onb.prefs)).map(k=>`<div class="onb-chip ${(onb.cilji||[]).includes(k)?'on':''}" onclick="onbCilj('${k}')">${GOAL_INFO[k]}</div>`).join('')}</div></div>
