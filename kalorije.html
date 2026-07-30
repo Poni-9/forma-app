@@ -293,7 +293,7 @@ input:focus,select:focus{box-shadow:none!important}
 .dn-cta:hover{background:var(--sig)}
 .dn-card{border:1px solid var(--border);background:var(--panel);padding:13px 15px;margin-top:12px}
 .dn-lbl{font-size:9.5px;font-weight:800;letter-spacing:.12em;color:var(--acc2);text-transform:uppercase}
-.dn-txt{font-size:13px;color:#c9c3ce;line-height:1.5;margin-top:5px}
+.dn-txt{font-size:13px;color:#c3ccd4;line-height:1.5;margin-top:5px}
 /* klepet */
 .chat-box{display:flex;flex-direction:column;gap:9px;margin-top:12px;overflow-y:auto}
 .chat-msg{max-width:85%;padding:9px 12px;font-size:13px;line-height:1.5;white-space:pre-wrap}
@@ -484,9 +484,9 @@ input.f::placeholder{color:var(--dim2)}
       <h3>AI trener <span class="sub">pozna tvoj plan, formo in prehrano</span></h3>
       <div class="chat-box" id="chatBoxK" style="flex:1"></div>
       <div style="display:flex;gap:6px;overflow-x:auto;padding:10px 0 0">
-        <div style="border:1px solid var(--border2);padding:7px 11px;font-size:11.5px;color:#c9c3ce;white-space:nowrap;cursor:pointer" onclick="chatAskK('Kaj naj jem pred dolgo turo?')">Kaj jem pred dolgo?</div>
-        <div style="border:1px solid var(--border2);padding:7px 11px;font-size:11.5px;color:#c9c3ce;white-space:nowrap;cursor:pointer" onclick="chatAskK('Zakaj je jutrišnji trening tak?')">Zakaj jutri tak trening?</div>
-        <div style="border:1px solid var(--border2);padding:7px 11px;font-size:11.5px;color:#c9c3ce;white-space:nowrap;cursor:pointer" onclick="chatAskK('Lahko soboto zamenjam z nedeljo?')">Zamenjaj sob/ned</div>
+        <div style="border:1px solid var(--border2);padding:7px 11px;font-size:11.5px;color:#c3ccd4;white-space:nowrap;cursor:pointer" onclick="chatAskK('Kaj naj jem pred dolgo turo?')">Kaj jem pred dolgo?</div>
+        <div style="border:1px solid var(--border2);padding:7px 11px;font-size:11.5px;color:#c3ccd4;white-space:nowrap;cursor:pointer" onclick="chatAskK('Zakaj je jutrišnji trening tak?')">Zakaj jutri tak trening?</div>
+        <div style="border:1px solid var(--border2);padding:7px 11px;font-size:11.5px;color:#c3ccd4;white-space:nowrap;cursor:pointer" onclick="chatAskK('Lahko soboto zamenjam z nedeljo?')">Zamenjaj sob/ned</div>
       </div>
       <div class="chat-input">
         <input id="chatInpK" placeholder="Vprašaj karkoli …" onkeydown="if(event.key==='Enter')chatSendK()">
@@ -1220,7 +1220,7 @@ function renderDanes(){
       <text x="60" y="55" fill="var(--text)" font-size="26" font-weight="800" text-anchor="middle" font-family="IBM Plex Mono,monospace">${rem.toLocaleString('sl')}</text>
       <text x="60" y="72" fill="var(--dim)" font-size="9.5" font-weight="700" text-anchor="middle" font-family="IBM Plex Sans,sans-serif">${eaten>target?'ČEZ CILJ':'ŠE LAHKO POJEŠ'}</text>
     </svg>`; })() : `<div style="width:112px;height:112px;display:grid;place-items:center;border:1px solid var(--border);color:var(--dim);font-size:11px;text-align:center">nastavi cilj<br>v ⚙️</div>`;
-  const bar=(k,v,tgt,c)=>`<div><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:var(--dim)"><span>${k}</span><span style="color:#c9c3ce">${v}</span></div><div style="height:4px;background:var(--border);margin-top:3px"><div style="width:${tgt?Math.min(100,Math.round((parseFloat(v)||0)/tgt*100)):0}%;height:100%;background:${c}"></div></div></div>`;
+  const bar=(k,v,tgt,c)=>`<div><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:var(--dim)"><span>${k}</span><span style="color:#c3ccd4">${v}</span></div><div style="height:4px;background:var(--border);margin-top:3px"><div style="width:${tgt?Math.min(100,Math.round((parseFloat(v)||0)/tgt*100)):0}%;height:100%;background:${c}"></div></div></div>`;
   const signed = !!(window.FORMASYNC && FORMASYNC.uid && FORMASYNC.uid());
   const signBanner = signed ? '' : `<div style="border:1px solid var(--acc);background:rgba(98,197,238,.07);padding:12px 14px;margin-bottom:12px">
     <div style="font-weight:700;font-size:13.5px">🔵 Prijavi se z Googlom</div>
@@ -1246,7 +1246,7 @@ function renderDanes(){
       ${pd?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${pd.trajanje_min?pd.trajanje_min+' min':''}${pd.kcal_poraba?' · ~'+pd.kcal_poraba+' kcal':''}</div>`:''}
       <div style="display:flex;gap:8px;margin-top:10px">
         ${cta}
-        <div style="flex:1"><button class="dn-cta" style="margin:0;padding:12px;background:transparent;border:1px solid var(--border2);color:#c9c3ce;font-size:13.5px" onclick="$('adaptBack').classList.add('open')">⏱ Nimam časa</button></div>
+        <div style="flex:1"><button class="dn-cta" style="margin:0;padding:12px;background:transparent;border:1px solid var(--border2);color:#c3ccd4;font-size:13.5px" onclick="$('adaptBack').classList.add('open')">⏱ Nimam časa</button></div>
       </div>
     </div>
     <div class="dn-card">
