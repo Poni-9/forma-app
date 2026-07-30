@@ -10,28 +10,58 @@
 <meta property="og:title" content="FORMAI — AI trener za kolo, tek, moč in prehrano"/>
 <meta property="og:image" content="https://formai.si/og.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 :root{
-  --bg:#111013; --bg2:#0c0b0e; --panel:#18161b; --panel2:#141317;
-  --border:#26232a; --border2:#38333e; --borderH:#5e5668;
-  --text:#f2efe9; --soft:#c9c3ce; --muted:#9a939f; --dim:#8a8290; --dim2:#6f6876;
-  --acc:#ff3d2e; --accH:#ff5546; --acc2:#ff6a5e; --accSoft:rgba(255,61,46,.12);
-  --green:#5fd67a; --greenSoft:rgba(95,214,122,.12);
-  --red:#ff5c5c; --redSoft:rgba(255,92,92,.12);
-  --yellow:#ffc247; --yellowSoft:rgba(255,194,71,.12);
-  --blue:#4da3ff; --blueSoft:rgba(77,163,255,.12);
-  --purple:#b48cff; --purpleSoft:rgba(180,140,255,.12);
+  /* ==========================================================
+     FORMAI — oblikovni sistem, prepisan iz mockupa (29. 7. 2026).
+     Vrednosti so izluščene iz izrisanega mockupa, ne ocenjene.
+     Imeni iz mockupa (--ink, --line, --sig) in stara imena
+     (--text, --border, --acc) kažeta na iste barve, da deluje
+     obstoječi CSS in hkrati nova razreda .k / .n / .p / .b.
+     ========================================================== */
+  --bg:#0b0e11;        --bg2:#080b0d;
+  --panel:#12171b;     --panel2:#171d22;   --panel3:#0d1216;
+  --line:#232b32;      --line2:#1a2126;
+  --ink:#e9eef2;       --dim:#939da6;      --dim2:#606a72;
+  --sig:#62c5ee;       --sigd:#38a6cf;     --sig2:#ff458e;
+  --onSig:#04161d;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+
+  /* stara imena → iste barve */
+  --border:var(--line); --border2:var(--line2); --borderH:#333d45;
+  --text:var(--ink);    --soft:#c3ccd4;      --muted:var(--dim);
+  --acc:var(--sig);     --accH:#9ddcf7;      --acc2:var(--sigd);
+  --accSoft:rgba(98,197,238,.14);
+  --green:#5fd67a;  --greenSoft:rgba(95,214,122,.13);
+  --red:var(--sig2);   --redSoft:rgba(255,69,142,.13);
+  --yellow:#edbb00; --yellowSoft:rgba(237,187,0,.13);
+  --blue:var(--sig);   --blueSoft:rgba(98,197,238,.13);
+  --purple:#b48cff; --purpleSoft:rgba(180,140,255,.13);
   --radius:0px;
-  --bc:'Barlow Condensed',sans-serif;
+  --bc:var(--mono);
 }
+/* ===== razredi, prepisani iz mockupa, znak za znak ===== */
+.k{font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.17em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
+.n{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap}
+.p{background:var(--panel);border:1px solid var(--line)}
+.b{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.11em;text-transform:uppercase;white-space:nowrap;padding:10px 16px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer}
+.b:hover{background:#1e252b;border-color:#333d45}
+.b.sig{background:var(--sigd);border-color:var(--sigd);color:var(--onSig)}
+.b.sig:hover{background:var(--sig);border-color:var(--sig)}
+.b.g{background:transparent;border-color:transparent;color:var(--sig);padding:10px 4px}
+.b.g:hover{background:transparent;color:#9ddcf7}
+.b.dz{border-color:rgba(255,69,142,.4);color:var(--sig2);background:transparent}
+.b.dz:hover{background:rgba(255,69,142,.09);border-color:var(--sig2)}
+
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
-  font-family:'Barlow',system-ui,-apple-system,sans-serif;
+  font-family:var(--sans);
   background:var(--bg);
   color:var(--text); font-size:15px; line-height:1.55;
 }
@@ -53,25 +83,25 @@ body{
   width:30px;height:30px;flex-shrink:0;
   background:linear-gradient(135deg,var(--acc) 50%,var(--border) 50%);
 }
-.logo-name{font-family:var(--bc);font-weight:900;font-size:22px;letter-spacing:.08em;line-height:1}
+.logo-name{font-family:var(--sans);font-weight:700;font-size:23px;letter-spacing:-.024em;line-height:1}
 .logo-name small{display:none}
-.nav{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--bc);font-weight:600;font-size:15px;letter-spacing:.06em}
+.nav{display:flex;gap:26px;flex-wrap:wrap;font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.15em}
 .nav-item{
   display:flex;align-items:center;gap:6px;padding:16px 1px 14px;
   color:var(--muted);cursor:pointer;user-select:none;text-transform:uppercase;
   border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s;
 }
 .nav-item:hover{color:var(--text)}
-.nav-item.active{color:var(--acc);border-bottom-color:var(--acc)}
+.nav-item.active{color:var(--ink);border-bottom-color:var(--sig)}
 .nav-item .ic{display:none}
 .topbar-right{display:flex;gap:10px;align-items:center;padding:10px 0}
 .cta-today{
-  background:var(--acc);color:#fff;font-family:var(--bc);font-weight:700;font-size:14.5px;
+  background:var(--sigd);color:var(--onSig);font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.11em;
   letter-spacing:.06em;padding:8px 15px;white-space:nowrap;cursor:pointer;border:none;text-transform:uppercase;
 }
 .cta-today:hover{background:var(--accH)}
 .avatar{
-  width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#ff8a2a);
+  width:30px;height:30px;border-radius:50%;background:var(--sigd);
   display:grid;place-items:center;font-family:var(--bc);font-weight:800;font-size:13px;color:#fff;flex-shrink:0;
 }
 .tb-form{font-size:11px;font-weight:600;color:var(--muted);border:1px solid var(--border2);padding:4px 9px;border-radius:0;white-space:nowrap}
@@ -83,11 +113,11 @@ body{
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
 .page-head{margin-bottom:18px}
-.page-head h1{font-family:var(--bc);font-size:34px;font-weight:800;letter-spacing:.01em;line-height:1;text-transform:uppercase}
+.page-head h1{font-family:var(--sans);font-size:33px;font-weight:600;letter-spacing:-.022em;line-height:1.12;text-transform:none}
 .page-head h1 .hl{color:var(--acc)}
 .page-head p{color:var(--muted);margin-top:5px;font-size:13px}
 .head-row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.head-date{font-family:var(--bc);font-size:14px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.head-date{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.16em;color:var(--dim);text-transform:uppercase}
 
 /* ---------- Kartice / mreže ---------- */
 .card{
@@ -98,16 +128,16 @@ body{
   font-family:var(--bc);font-size:14.5px;font-weight:700;letter-spacing:.08em;color:var(--muted);
   text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;
 }
-.card h3 .sub{font-family:'Barlow',sans-serif;font-weight:600;color:var(--dim);font-size:11px;margin-left:auto;letter-spacing:.02em;text-transform:none}
+.card h3 .sub{font-family:var(--sans);font-weight:600;color:var(--dim);font-size:11px;margin-left:auto;letter-spacing:.02em;text-transform:none}
 .grid-stats{
   display:grid;grid-template-columns:repeat(6,1fr);gap:2px;margin-bottom:14px;
   background:var(--border);border:1px solid var(--border);
 }
 @media(max-width:1050px){.grid-stats{grid-template-columns:repeat(3,1fr)}}
 .stat{padding:13px 15px;background:var(--panel);border:none!important;border-radius:0}
-.stat .k{font-size:9.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--dim)}
-.stat .v{font-family:var(--bc);font-size:29px;font-weight:800;letter-spacing:0;margin-top:2px;line-height:1.15}
-.stat .v small{font-size:14px;font-weight:600;color:var(--dim);font-family:var(--bc)}
+.stat .k{font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.17em;text-transform:uppercase;color:var(--dim)}
+.stat .v{font-family:var(--mono);font-size:30px;font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin-top:5px;line-height:1.1;color:var(--sig)}
+.stat .v small{font-size:13px;font-weight:400;color:var(--dim2);font-family:var(--mono);letter-spacing:0}
 .stat .t{font-size:11px;margin-top:3px;color:var(--muted)}
 .stat .bar{height:3px;background:var(--border);margin-top:7px}
 .stat .bar i{display:block;height:100%;background:var(--green)}
@@ -119,17 +149,19 @@ body{
 
 /* ---------- Gumbi / vnosi ---------- */
 .btn{
-  display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:0;
-  font-family:var(--bc);font-size:14.5px;font-weight:700;letter-spacing:.06em;cursor:pointer;
-  border:1px solid transparent;transition:all .15s;user-select:none;white-space:nowrap;text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:0;
+  font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.11em;cursor:pointer;
+  border:1px solid var(--line);background:var(--panel2);color:var(--ink);
+  transition:all .15s;user-select:none;white-space:nowrap;text-transform:uppercase;
 }
-.btn-primary{background:var(--acc);color:#fff}
-.btn-primary:hover{background:var(--accH)}
-.btn-ghost{background:transparent;color:var(--soft);border-color:var(--border2)}
-.btn-ghost:hover{border-color:var(--borderH);color:var(--text)}
-.btn-danger{background:transparent;color:var(--red);border-color:rgba(255,92,92,.35)}
-.btn-danger:hover{border-color:rgba(255,92,92,.7)}
-.btn-sm{padding:6px 11px;font-size:13px}
+.btn:hover{background:#1e252b;border-color:#333d45}
+.btn-primary{background:var(--sigd);color:var(--onSig);border-color:var(--sigd)}
+.btn-primary:hover{background:var(--sig);border-color:var(--sig)}
+.btn-ghost{background:var(--panel2);color:var(--ink);border-color:var(--line)}
+.btn-ghost:hover{background:#1e252b;border-color:#333d45;color:var(--ink)}
+.btn-danger{background:transparent;color:var(--sig2);border-color:rgba(255,69,142,.4)}
+.btn-danger:hover{background:rgba(255,69,142,.09);border-color:var(--sig2)}
+.btn-sm{padding:7px 11px;font-size:10px;letter-spacing:.1em}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .btn .spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite;display:inline-block}
 @keyframes rot{to{transform:rotate(360deg)}}
@@ -138,7 +170,7 @@ label.fld{display:block;margin-bottom:13px}
 label.fld span{display:block;font-size:11px;font-weight:800;color:var(--dim);margin-bottom:6px;letter-spacing:.1em;text-transform:uppercase}
 input,select,textarea{
   width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:0;
-  color:var(--text);padding:9.5px 12px;font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;outline:none;
+  color:var(--ink);padding:10px 12px;font-family:var(--sans);font-size:13.5px;font-weight:400;outline:none;
   transition:border-color .15s;
 }
 input:focus,select:focus,textarea:focus{border-color:var(--acc)}
@@ -147,7 +179,7 @@ textarea{resize:vertical;min-height:70px}
 .hint{font-size:12px;color:var(--dim);margin-top:-7px;margin-bottom:12px}
 
 /* ---------- Značke ---------- */
-.chip{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:0;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border:1px solid transparent}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:0;font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.13em;text-transform:uppercase;border:1px solid transparent}
 .chip.intervali{background:var(--accSoft);color:var(--acc2)}
 .chip.vzdržljivost,.chip.vzdrzljivost{background:var(--blueSoft);color:var(--blue)}
 .chip.tempo{background:var(--yellowSoft);color:var(--yellow)}
@@ -155,7 +187,7 @@ textarea{resize:vertical;min-height:70px}
 .chip.počitek,.chip.pocitek{background:rgba(154,147,159,.12);color:var(--muted)}
 .chip.moč,.chip.moc{background:var(--purpleSoft);color:var(--purple)}
 .chip.pohod{background:rgba(92,214,214,.12);color:#5cd6d6}
-.chip.tek{background:rgba(255,138,42,.12);color:#ff8a2a}
+.chip.tek{background:rgba(237,187,0,.13);color:var(--yellow)}
 .dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:middle}
 .dot.easy{background:var(--blue)}
 .dot.med{background:var(--yellow)}
@@ -244,7 +276,7 @@ textarea{resize:vertical;min-height:70px}
   font-size:13px;color:var(--soft);line-height:1.5;
 }
 .plan-summary b{color:var(--acc2)}
-.dr-edit{background:none;border:1px solid var(--border2);color:var(--muted);font-family:'Barlow',sans-serif;font-size:10.5px;font-weight:700;padding:3px 9px;cursor:pointer;margin-left:8px;letter-spacing:.04em}
+.dr-edit{background:none;border:1px solid var(--border2);color:var(--muted);font-family:var(--sans);font-size:10.5px;font-weight:700;padding:3px 9px;cursor:pointer;margin-left:8px;letter-spacing:.04em}
 .dr-edit:hover{border-color:var(--acc);color:var(--acc2)}
 .dash-cols{display:grid;grid-template-columns:250px minmax(0,1fr);gap:14px;align-items:start}
 .dash-main{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.85fr);gap:14px;align-items:start}
@@ -255,7 +287,7 @@ textarea{resize:vertical;min-height:70px}
 /* ---------- Današnji trening ---------- */
 .today-setup{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;align-items:end}
 .seg{display:flex;background:var(--bg);border:1px solid var(--border2);border-radius:0;padding:3px;gap:3px}
-.seg button{flex:1;border:none;background:transparent;color:var(--muted);font-family:'Barlow',sans-serif;font-weight:700;font-size:13px;padding:7px 4px;border-radius:0;cursor:pointer;transition:all .15s}
+.seg button{flex:1;border:none;background:transparent;color:var(--dim);font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.11em;text-transform:uppercase;padding:8px 4px;border-radius:0;cursor:pointer;transition:all .15s}
 .seg button.on{background:var(--acc);color:#fff}
 .workout-box{margin-top:20px}
 .wo-part{display:flex;gap:14px;padding:13px 0;border-bottom:1px solid var(--border)}
@@ -471,16 +503,15 @@ body{
 }
 .card:hover{border-color:#332f38}
 .stat{transition:background .18s}
-.stat:hover{background:#1b191f}
+.stat:hover{background:var(--panel2)}
 .btn-primary,.cta-today{
-  background:linear-gradient(135deg,#ff4a32,#e42f1f);
-  box-shadow:0 6px 20px -8px rgba(255,61,46,.55), inset 0 1px 0 rgba(255,255,255,.16);
-  transition:transform .15s, box-shadow .15s, filter .15s;
+  background:var(--sigd);border-color:var(--sigd);color:var(--onSig);
+  box-shadow:none;transition:background .15s,border-color .15s;
 }
-.btn-primary:hover,.cta-today:hover{filter:brightness(1.07);transform:translateY(-1px)}
-.btn-primary:active,.cta-today:active{transform:translateY(0);filter:brightness(.98)}
+.btn-primary:hover,.cta-today:hover{background:var(--sig);border-color:var(--sig)}
+.btn-primary:active,.cta-today:active{background:var(--sigd)}
 .btn-ghost{transition:border-color .15s,color .15s,transform .15s,background .15s}
-.btn-ghost:hover{transform:translateY(-1px);background:rgba(255,255,255,.025)}
+.btn-ghost:hover{background:#1e252b;border-color:#333d45}
 input,select,textarea{transition:border-color .15s, box-shadow .15s}
 input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-shadow:0 0 0 3px rgba(255,61,46,.15)}
 .modal-back{background:rgba(8,7,10,.68);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
@@ -496,8 +527,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
 ::-webkit-scrollbar{width:9px;height:9px}
 ::-webkit-scrollbar-thumb{background:#2b2830;border:2px solid var(--bg)}
 ::-webkit-scrollbar-thumb:hover{background:#3a3641}
-.page-head h1{background:linear-gradient(180deg,#f2efe9 60%,#c9c3ce);-webkit-background-clip:text;background-clip:text;color:transparent}
-.page-head h1 .hl{background:linear-gradient(135deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.page-head h1{color:var(--ink)}
+.page-head h1 .hl{color:var(--sig)}
 .dropzone{transition:border-color .15s,background .15s}
 .dropzone:hover{border-color:var(--acc);background:rgba(255,61,46,.05)}
 .path-bar i{box-shadow:0 0 14px rgba(255,61,46,.4)}
@@ -554,7 +585,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
 .today-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .today-tag{font-size:10.5px;font-weight:800;letter-spacing:.12em;color:var(--dim)}
 .today-wx{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap}
-.today-title{font-family:var(--bc);font-size:46px;font-weight:900;line-height:1.02;margin:8px 0 0;text-transform:uppercase}
+.today-title{font-family:var(--sans);font-size:33px;font-weight:600;letter-spacing:-.022em;line-height:1.12;margin:8px 0 0;text-transform:none}
 @media(max-width:760px){.today-title{font-size:32px}}
 .chips{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap}
 .chip-t{border:1px solid var(--border2);font-size:11.5px;font-weight:700;color:var(--soft);padding:4px 10px;white-space:nowrap}
@@ -1805,7 +1836,7 @@ function renderDanesHero(){
   if(!d){
     el.innerHTML=`<div class="card mb" style="border-color:rgba(255,61,46,.35);background:linear-gradient(180deg,rgba(255,61,46,.06),var(--panel))">
       <div style="font-size:10.5px;font-weight:800;letter-spacing:.12em;color:var(--dim)">${kick}</div>
-      <div style="font-family:var(--bc);font-size:34px;font-weight:900;line-height:1.02;margin-top:6px">${LANG==='en'?'NO PLAN FOR TODAY':'ZA DANES NI PLANA'}</div>
+      <div style="font-family:var(--sans);font-size:33px;font-weight:600;letter-spacing:-.022em;line-height:1.12;margin-top:6px">${LANG==='en'?'NO PLAN FOR TODAY':'ZA DANES NI PLANA'}</div>
       <div style="font-size:13px;color:var(--muted);margin-top:6px">${LANG==='en'?'Generate a week and the coach will guide you daily.':'Generiraj teden in trener te bo vodil vsak dan.'}</div>
       <div class="row mt"><button class="btn btn-primary" onclick="switchTab('plan');setTimeout(()=>generatePlan(),200)">✨ ${LANG==='en'?'Create weekly plan':'Ustvari tedenski plan'} →</button></div></div>`;
     return;
@@ -1855,7 +1886,7 @@ function renderDanesHero(){
       <svg viewBox="0 0 84 84" style="width:84px;height:84px;flex:none">
         <circle cx="42" cy="42" r="34" fill="none" stroke="var(--border)" stroke-width="7"></circle>
         <circle cx="42" cy="42" r="34" fill="none" stroke="${pripCol}" stroke-width="7" stroke-dasharray="${dash} ${C.toFixed(0)}" transform="rotate(-90 42 42)"></circle>
-        <text x="42" y="40" text-anchor="middle" font-family="Barlow Condensed,sans-serif" font-size="24" font-weight="800" fill="var(--text)">${prip}</text>
+        <text x="42" y="40" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="24" font-weight="800" fill="var(--text)">${prip}</text>
         <text x="42" y="53" text-anchor="middle" font-size="7.5" font-weight="700" fill="var(--dim)">${LANG==='en'?'READINESS':'PRIPRAVLJ.'}</text>
       </svg>
       <div class="ready-list">
@@ -1913,7 +1944,7 @@ function renderDash(){
   ];
   const demoBtn = (!state.rides.length && !state.demo) ? `<div class="onb" style="color:var(--acc2)" onclick="demoLoad()">🎬 Ali pa najprej naloži DEMO podatke in razišči aplikacijo</div>` : (state.demo? `<div class="onb" onclick="demoClear()">🧹 Odstrani demo podatke</div>`:'');
   $('onboardCard').innerHTML = (steps.every(s=>s.ok) ? '' :
-    `<div class="card mb" style="border-color:rgba(252,76,2,.35)"><h3>🚀 Začni tukaj <span class="sub">${steps.filter(s=>s.ok).length}/${steps.length}</span></h3>` +
+    `<div class="card mb" style="border-color:rgba(98,197,238,.32)"><h3>🚀 Začni tukaj <span class="sub">${steps.filter(s=>s.ok).length}/${steps.length}</span></h3>` +
     steps.map(s=>`<div class="onb ${s.ok?'ok':''}" onclick="switchTab('${s.tab}')">${s.ok?'✅':'⬜'} ${s.t}</div>`).join('') + demoBtn + `</div>`) || (state.demo? `<div class="card mb">${demoBtn}</div>`:'');
 
   const ws = weekStart(new Date()), weIso = isoDate(addDays(ws,6)), wsIso = isoDate(ws);
@@ -2137,8 +2168,8 @@ Vrni SAMO čisto besedilo, brez naslova.${aiLangNote()}`}], {json:false, temp:.6
 function renderCharts(){
   if (typeof Chart === 'undefined') return;
   Chart.defaults.color = '#9a939f';
-  Chart.defaults.borderColor = 'rgba(56,51,62,.5)';
-  Chart.defaults.font.family = 'Barlow, sans-serif';
+  Chart.defaults.borderColor = 'rgba(35,43,50,.6)';
+  Chart.defaults.font.family = 'IBM Plex Sans, sans-serif';
 
   const s = formSeries().slice(-90);
   if (chartFormObj) { try{ chartFormObj.destroy(); }catch(_){} chartFormObj=null; }
@@ -2146,9 +2177,9 @@ function renderCharts(){
     type:'line',
     data:{ labels:s.map(x=>{const d=parseIso(x.date);return `${d.getDate()}.${d.getMonth()+1}.`}),
       datasets:[
-        {label:'Kondicija', data:s.map(x=>x.ctl), borderColor:'#4da3ff', backgroundColor:'rgba(77,163,255,.12)', fill:true, tension:.35, pointRadius:0, borderWidth:2},
-        {label:'Utrujenost', data:s.map(x=>x.atl), borderColor:'#ffc247', tension:.35, pointRadius:0, borderWidth:2},
-        {label:'Svežina', data:s.map(x=>x.tsb), borderColor:'#5fd67a', tension:.35, pointRadius:0, borderWidth:2, borderDash:[5,4]}
+        {label:'Kondicija', data:s.map(x=>x.ctl), borderColor:'#62c5ee', backgroundColor:'rgba(98,197,238,.10)', fill:true, tension:.35, pointRadius:0, borderWidth:2},
+        {label:'Utrujenost', data:s.map(x=>x.atl), borderColor:'#939da6', tension:.35, pointRadius:0, borderWidth:2},
+        {label:'Svežina', data:s.map(x=>x.tsb), borderColor:'#ff458e', tension:.35, pointRadius:0, borderWidth:2, borderDash:[5,4]}
       ]},
     options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
       plugins:{legend:{labels:{boxWidth:10,boxHeight:10,usePointStyle:true}}},
@@ -3175,7 +3206,7 @@ Vrni SAMO JSON:
    KOLEDAR
 ================================================================ */
 let calOffset = 0;
-const FAZA_BARVE = ['#4da3ff','#b48cff','#ffc247','#ff3d2e','#5fd67a','#ff5c5c','#5cd6d6'];
+const FAZA_BARVE = ['#62c5ee','#b48cff','#edbb00','#ff458e','#5fd67a','#38a6cf','#939da6'];
 function fazaColor(faza){
   if (!state.macro?.weeks) return null;
   const fs = [...new Set(state.macro.weeks.map(w=>w.faza))];
@@ -3868,7 +3899,7 @@ async function openRideDetail(id){
       const pts = decodePolyline(r.polyline);
       rdMap = L.map('rdMap', { attributionControl:false });
       L.tileLayer('https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', { maxZoom:19 }).addTo(rdMap);
-      const pl = L.polyline(pts, { color:'#ff3d2e', weight:3.5 }).addTo(rdMap);
+      const pl = L.polyline(pts, { color:'#62c5ee', weight:3.5 }).addTo(rdMap);
       L.circleMarker(pts[0], {radius:5,color:'#5fd67a',fillColor:'#5fd67a',fillOpacity:1}).addTo(rdMap);
       L.circleMarker(pts[pts.length-1], {radius:5,color:'#ff5c5c',fillColor:'#ff5c5c',fillOpacity:1}).addTo(rdMap);
       rdMap.fitBounds(pl.getBounds(), { padding:[20,20] });
@@ -3892,11 +3923,11 @@ function renderRideStreams(r){
                  (s.v ?'<div class="rd-chart"><canvas id="rdV"></canvas></div>' :'');
   if (typeof Chart === 'undefined') return;
   if (s.hr) rdCharts.push(new Chart($('rdHr'), { type:'line',
-    data:{ labels:x, datasets:[{ label:'Utrip', data:s.hr, borderColor:'#ff5c5c', backgroundColor:'rgba(255,92,92,.1)', fill:true, pointRadius:0, borderWidth:1.6, tension:.3 }]},
+    data:{ labels:x, datasets:[{ label:'Utrip', data:s.hr, borderColor:'#ff458e', backgroundColor:'rgba(255,69,142,.10)', fill:true, pointRadius:0, borderWidth:1.6, tension:.3 }]},
     options: rdChOpt(xl,'utrip/min') }));
   if (s.v){
     const o = rdChOpt(xl,'km/h');
-    const ds = [{ label:'Hitrost', data:s.v, borderColor:'#4da3ff', pointRadius:0, borderWidth:1.6, tension:.3, yAxisID:'y' }];
+    const ds = [{ label:'Hitrost', data:s.v, borderColor:'#62c5ee', pointRadius:0, borderWidth:1.6, tension:.3, yAxisID:'y' }];
     if (s.alt){ ds.push({ label:'Višina', data:s.alt, borderColor:'transparent', backgroundColor:'rgba(139,155,171,.16)', fill:true, pointRadius:0, yAxisID:'y2' }); o.scales.y2 = { position:'right', display:false }; }
     rdCharts.push(new Chart($('rdV'), { type:'line', data:{ labels:x, datasets:ds }, options:o }));
   }
@@ -5231,7 +5262,7 @@ function renderTrasa(d){
     const pts=decodePolyline(r.polyline);
     trasaMap=L.map('trasaMapBox',{attributionControl:false});
     L.tileLayer('https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',{maxZoom:19}).addTo(trasaMap);
-    const pl=L.polyline(pts,{color:'#ff3d2e',weight:3.5}).addTo(trasaMap);
+    const pl=L.polyline(pts,{color:'#62c5ee',weight:3.5}).addTo(trasaMap);
     L.circleMarker(pts[0],{radius:5,color:'#5fd67a',fillColor:'#5fd67a',fillOpacity:1}).addTo(trasaMap);
     trasaMap.fitBounds(pl.getBounds(),{padding:[16,16]});
   }catch(_){ } },80);
@@ -5445,7 +5476,7 @@ function syncPush(){
 /* ================================================================
    ANALITIKA — cone, napoved forme, rekordi
 ================================================================ */
-const ZONE_COLORS=['#8b959d','#4da3ff','#5fd67a','#ffc247','#ff8a2a','#ff3d2e','#b48cff'];
+const ZONE_COLORS=['#606a72','#38a6cf','#62c5ee','#5fd67a','#edbb00','#ff458e','#b48cff'];
 function renderAnalitika(){
   const zEl=$('anaZones'); if(!zEl) return;
   const p=state.settings.profile;
@@ -5527,7 +5558,7 @@ function renderAnalitika(){
       <div style="background:var(--bg);padding:9px 12px"><div style="font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--dim)">${EN?'FITNESS ON GOAL DAY':'KONDICIJA '+(p.ciljDatum?('NA '+p.ciljDatum.slice(8,10)+'.'+p.ciljDatum.slice(5,7)+'.'):('ČEZ '+nF+' DNI'))}</div><div style="font-family:var(--bc);font-size:24px;font-weight:800;color:#4da3ff">${endCtl}</div></div>
       <div style="background:var(--bg);padding:9px 12px"><div style="font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--dim)">${EN?'FRESHNESS':'SVEŽINA'} ${EN?'':'TAKRAT'}</div><div style="font-family:var(--bc);font-size:24px;font-weight:800;color:${endTsb>=10&&endTsb<=25?'var(--green)':endTsb<-10?'var(--red)':'var(--yellow)'}">${endTsb>0?'+':''}${endTsb}</div></div>
     </div>
-    <div style="font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5">💪 <b style="color:#4da3ff">${EN?'Fitness':'Kondicija'} ${endCtl}</b> = ${EN?'engine size — the higher, the more training you absorb.':'velikost motorja — višja ko je, več treninga preneseš in močnejši si.'} &nbsp;🔋 <b style="color:#5fd67a">${EN?'Freshness':'Svežina'}</b> = ${EN?'how rested you are: above 0 fresh, below 0 tired.':'spočitost: nad 0 si spočit, pod 0 utrujen.'}</div>
+    <div style="font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5">💪 <b style="color:#62c5ee">${EN?'Fitness':'Kondicija'} ${endCtl}</b> = ${EN?'engine size — the higher, the more training you absorb.':'velikost motorja — višja ko je, več treninga preneseš in močnejši si.'} &nbsp;🔋 <b style="color:#ff458e">${EN?'Freshness':'Svežina'}</b> = ${EN?'how rested you are: above 0 fresh, below 0 tired.':'spočitost: nad 0 si spočit, pod 0 utrujen.'}</div>
     <div style="font-size:12.5px;color:var(--soft);margin-top:6px;line-height:1.5">${verdikt}${adher<1?` <span style="color:var(--dim)">(${EN?'at your ~'+rpF.pct+' % plan adherence':'ob tvoji ~'+rpF.pct+' % realizaciji plana'})</span>`:''}</div>
     <div style="display:flex;gap:14px;font-size:10.5px;font-weight:700;color:var(--muted);margin-top:6px;flex-wrap:wrap">
       <span><span style="display:inline-block;width:14px;height:3px;background:#4da3ff"></span> ${EN?'FITNESS':'KONDICIJA'}</span>
