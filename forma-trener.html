@@ -685,36 +685,69 @@ input.f::placeholder { color: var(--dim2); }
 @media (max-width: 1000px) {
   .g3 { grid-template-columns: minmax(0px, 1fr) !important; }
 }
+
+/* ==== Pregled: glava in zavihki po mockupu ==== */
+.tabnav .nav-item{ padding:14px 0; border-bottom:none; margin-bottom:0; gap:0;
+  font-family:var(--mono); font-size:11px; font-weight:500; letter-spacing:.15em;
+  text-transform:uppercase; color:var(--dim); display:block; position:relative; }
+.tabnav .nav-item:hover{ color:var(--ink); }
+.tabnav .nav-item.active{ color:var(--ink); border-bottom-color:transparent; }
+.tabnav .nav-item.active::after{ content:''; position:absolute; left:0; right:0; bottom:-1px;
+  height:2px; background:var(--sig); box-shadow:none; }
+@media (max-width:900px){
+  .tabnav{ gap:20px !important; flex-wrap:nowrap !important; overflow-x:auto; overflow-y:hidden;
+           scrollbar-width:none; -ms-overflow-style:none; }
+  .tabnav::-webkit-scrollbar{ display:none; }
+  .tabnav .nav-item{ flex:0 0 auto; margin-left:0 !important; }
+  .no-print > div{ padding:0 16px !important; }
+  .no-print .n[id^="pgKpi"]{ font-size:16px !important; }
+}
+@media (max-width:560px){
+  .no-print > div > div:first-child{ gap:12px !important; padding:12px 0 10px !important; }
+}
 </style>
 </head>
 <body>
 <div class="app">
 
   <!-- ======= ZGORNJA VRSTICA ======= -->
-  <header class="topbar">
-    <div class="topbar-left">
-      <div class="logo" style="cursor:pointer" title="Na Pregled" onclick="switchTab('dash');window.scrollTo({top:0,behavior:'smooth'})">
-        <div class="logo-mark"></div>
-        <div class="logo-name">FORMAI</div>
+  <header class="no-print" style="background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20">
+    <div style="max-width:1320px;margin:0 auto;padding:0 34px">
+      <div style="display:flex;align-items:center;gap:18px;padding:14px 0 13px;flex-wrap:wrap">
+        <svg viewBox="0 0 146 40" aria-label="FORMAI" style="height:32px;width:auto;display:block;cursor:pointer" onclick="switchTab('dash');window.scrollTo({top:0,behavior:'smooth'})">
+          <rect x="0" y="0" width="40" height="40" fill="#62c5ee"></rect>
+          <path d="M5.5 26.5h5.6l3.2-8.8 3.4 14.2 3.6-18 3.2 10.4 2.8-4.6h3.9" fill="none" stroke="#0b0e11" stroke-width="2.8" stroke-linejoin="miter"></path>
+          <text x="52" y="29" font-family="IBM Plex Sans, sans-serif" font-size="25" font-weight="700" letter-spacing="-0.6" fill="#e9eef2">FORMAI</text>
+        </svg>
+        <div style="padding-left:18px;border-left:1px solid var(--line)">
+          <div class="k" data-i18n="hdProfil">Profil</div>
+          <div class="n" id="pgProfil" style="font-size:11.5px">—</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;margin-left:auto;flex-wrap:wrap">
+          <div style="display:flex;border:1px solid var(--line)">
+            <div style="padding:6px 14px;border-right:1px solid var(--line);cursor:pointer" onclick="statInfo('prip')"><div class="k" data-i18n="kpiPrip">Priprav.</div><div class="n" id="pgKpiPrip" style="font-size:18px;color:var(--sig)">–</div></div>
+            <div style="padding:6px 14px;border-right:1px solid var(--line);cursor:pointer" onclick="statInfo('tsb')"><div class="k" data-i18n="kpiSvez">Svežina</div><div class="n" id="pgKpiSvez" style="font-size:18px">–</div></div>
+            <div style="padding:6px 14px;border-right:1px solid var(--line);cursor:pointer" onclick="statInfo('ctl')"><div class="k" data-i18n="kpiKond">Kondicija</div><div class="n" id="pgKpiKond" style="font-size:18px">–</div></div>
+            <div style="padding:6px 14px"><div class="k" data-i18n="kpiTeden">Ta teden</div><div class="n" id="pgKpiTeden" style="font-size:18px">–</div></div>
+          </div>
+          <button class="b" style="padding:8px 12px" id="langBtn" onclick="toggleLang()">SL → EN</button>
+          <button class="b hd-install" style="padding:8px 12px;display:none" id="btnInstall" onclick="doInstall()"><span data-i18n="install">Namesti</span></button>
+          <div id="avatarInit" title="Profil" style="width:32px;height:32px;background:var(--sigd);color:#04161d;display:grid;place-items:center;font-family:var(--mono);font-size:13px;font-weight:600;cursor:pointer" onclick="switchTab('settings')">?</div>
+        </div>
       </div>
-      <nav class="nav">
-        <div class="nav-item active" data-tab="dash" data-i18n="navPregled">Pregled</div>
-        <div class="nav-item" data-tab="plan" data-i18n="navPlan">Plan</div>
-        <div class="nav-item" data-tab="kalorije" data-i18n="navPrehrana">Prehrana</div>
-        <div class="nav-item" data-tab="forma" data-i18n="navMoc">Moč</div>
-        <div class="nav-item" data-tab="trener" data-i18n="navTrener">Trener</div>
-        <div class="nav-item" data-tab="rides" data-i18n="navAktivnosti">Aktivnosti</div>
-        <div class="nav-item" data-tab="analitika" data-i18n="navAnalitika">Analitika</div>
-        <div class="nav-item" data-tab="porocila" data-i18n="navPorocila">Poročila</div>
-        <div class="nav-item" data-tab="settings" data-i18n="navNastavitve">Nastavitve</div>
-      </nav>
     </div>
-    <div class="topbar-right">
-      <div class="tb-form" style="cursor:pointer;user-select:none" id="langBtn" onclick="toggleLang()">SL → EN</div>
-      <div class="tb-form" title="Svežina (TSB)"><span data-i18n="forma">Forma</span> <b id="sbFormVal">–</b><span id="sbFormDesc" style="display:none"></span></div>
-      <button class="btn btn-ghost btn-sm" id="btnInstall" style="display:none" onclick="doInstall()">📲 <span data-i18n="install">Namesti</span></button>
-      <button class="cta-today" onclick="switchTab('plan')"><span data-i18n="todayBtn">Današnji trening</span> →</button>
-      <div class="avatar" id="avatarInit" title="Profil" style="cursor:pointer" onclick="switchTab('settings')">?</div>
+    <div style="max-width:1320px;margin:0 auto;padding:0 34px;border-top:1px solid var(--line2)">
+      <nav class="tabnav nav" style="display:flex;gap:30px;align-items:center;flex-wrap:wrap">
+        <a class="nav-item active" data-tab="dash" href="#" aria-current="page" data-i18n="navPregled" onclick="return false">Danes</a>
+        <a class="nav-item" data-tab="plan" href="#" aria-current="false" data-i18n="navPlan" onclick="return false">Trening</a>
+        <a class="nav-item" data-tab="kalorije" href="#" aria-current="false" data-i18n="navPrehrana" onclick="return false">Prehrana</a>
+        <a class="nav-item" data-tab="forma" href="#" aria-current="false" data-i18n="navMoc" onclick="return false">Moč</a>
+        <a class="nav-item" data-tab="trener" href="#" aria-current="false" data-i18n="navTrener" onclick="return false">Trener</a>
+        <a class="nav-item" data-tab="rides" href="#" aria-current="false" data-i18n="navAktivnosti" onclick="return false">Aktivnosti</a>
+        <a class="nav-item" data-tab="analitika" href="#" aria-current="false" data-i18n="navAnalitika" onclick="return false">Analiza</a>
+        <a class="nav-item" data-tab="porocila" href="#" aria-current="false" data-i18n="navPorocila" onclick="return false">Poročila</a>
+        <a class="nav-item" data-tab="settings" href="#" aria-current="false" data-i18n="navNastavitve" style="margin-left:auto" onclick="return false">Nastavitve</a>
+      </nav>
     </div>
   </header>
 
@@ -722,7 +755,120 @@ input.f::placeholder { color: var(--dim2); }
   <main class="main">
 
     <!-- ===== PREGLED ===== -->
-    <section class="tab active" id="tab-dash">
+    <section class="tab active" id="tab-dash" style="padding:0 0 8px">
+      <div style="animation:.18s ease 0s 1 normal none running fu;display:flex;flex-direction:column;gap:18px">
+
+        <div id="pgOnboard"></div>
+        <div id="pgAlert"></div>
+
+        <div class="g2" style="display:grid;grid-template-columns:minmax(0px,1.58fr) minmax(0px,1fr);gap:18px;align-items:start">
+
+          <div style="display:flex;flex-direction:column;gap:18px;min-width:0">
+            <div class="p">
+              <div style="display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--line);background:var(--panel2)">
+                <span class="k" id="pgDatum" style="color:var(--sig)">Danes</span>
+                <span class="n" id="pgVreme" style="font-size:10.5px;color:var(--dim);margin-left:auto"></span>
+              </div>
+              <div style="padding:20px 18px 18px">
+                <div style="display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap">
+                  <div style="flex:1 1 0%;min-width:250px">
+                    <h1 id="pgNaslov" style="font-size:33px;font-weight:600;line-height:1.05">—</h1>
+                    <div id="pgOpis" style="font-size:13.5px;color:var(--dim);margin-top:8px;max-width:42em"></div>
+                  </div>
+                  <div id="pgMetrike" style="display:flex;border:1px solid var(--line)"></div>
+                </div>
+
+                <div id="pgObremBox" style="margin-top:20px;border:1px solid var(--line);background:#0d1216;padding:13px 14px 10px;display:none">
+                  <div style="display:flex;justify-content:space-between;align-items:baseline">
+                    <span class="k" data-i18n="pgObrem">Profil obremenitve</span><span class="n" id="pgObremCone" style="font-size:9.5px;color:var(--dim2)"></span>
+                  </div>
+                  <div id="pgObremBari" style="display:flex;align-items:flex-end;gap:2px;height:54px;margin-top:9px;border-bottom:1px solid var(--line)"></div>
+                  <div id="pgObremLbl" style="display:flex;margin-top:6px"></div>
+                </div>
+
+                <div id="pgGumbi" style="display:flex;flex-wrap:wrap;gap:9px;margin-top:16px;align-items:center"></div>
+
+                <div id="pgTrenerBox" style="margin-top:16px;padding:11px 13px;border-left:2px solid var(--sig2);background:#0d1216;display:none">
+                  <div id="pgTrener" style="font-size:13px;color:var(--ink)"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:18px;min-width:0">
+            <div class="p">
+              <div style="display:flex;align-items:center;padding:10px 18px;border-bottom:1px solid var(--line)">
+                <span class="k" data-i18n="pgPrip">Pripravljenost</span>
+                <span class="k" id="pgStreak" style="margin-left:auto;color:var(--sig2)"></span>
+              </div>
+              <div style="padding:14px 18px 16px">
+                <div style="display:flex;align-items:flex-end;gap:8px">
+                  <div class="n" id="pgPrip" style="font-size:52px;line-height:.95;color:var(--sig)">–</div>
+                  <div class="k" style="padding-bottom:9px">/ 100</div>
+                </div>
+                <div style="height:4px;background:#1b2227;margin-top:10px;display:flex;gap:1px">
+                  <div id="pgPripBar" style="width:0%;height:100%;background:var(--sig)"></div>
+                </div>
+                <div id="pgPripTxt" style="font-size:13px;color:var(--dim);margin-top:9px"></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line2)">
+                  <div><div class="k" data-i18n="pgSpanec">Spanec</div><div class="n" id="pgSpanec" style="font-size:19px">—</div></div>
+                  <div><div class="k" data-i18n="pgRhr">Utrip v mirovanju</div><div class="n" id="pgRhr" style="font-size:19px">—</div></div>
+                  <div style="cursor:pointer" onclick="statInfo('atl')"><div class="k">Utrujenost (ATL)</div><div class="n" id="pgAtl" style="font-size:19px">—</div></div>
+                  <div style="cursor:pointer" onclick="statInfo('ctl')"><div class="k">Kondicija (CTL)</div><div class="n" id="pgCtl" style="font-size:19px">—</div></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="p">
+              <div style="display:flex;align-items:center;padding:10px 18px;border-bottom:1px solid var(--line)">
+                <span class="k" data-i18n="pgKalorije">Kalorije danes</span>
+                <a href="#" class="k" style="color:var(--sig);margin-left:auto" onclick="switchTab('kalorije');return false"><span data-i18n="navPrehrana">Prehrana</span> →</a>
+              </div>
+              <div style="padding:14px 18px 16px">
+                <div class="n" id="pgKcal" style="font-size:30px">—</div>
+                <div style="height:4px;background:#1b2227;margin-top:9px"><div id="pgKcalBar" style="width:0%;height:100%;background:var(--sig)"></div></div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px">
+                  <div><div class="k" data-i18n="pgBelj">Belj.</div><div class="n" id="pgBelj" style="font-size:16px">—</div></div>
+                  <div><div class="k" data-i18n="pgOh">Ogl. hidr.</div><div class="n" id="pgOh" style="font-size:16px">—</div></div>
+                  <div><div class="k" data-i18n="pgMasc">Maščobe</div><div class="n" id="pgMasc" style="font-size:16px">—</div></div>
+                </div>
+                <div class="k" id="pgKcalNota" style="margin-top:12px;color:var(--dim)"></div>
+                <div class="k" style="margin-top:8px;color:var(--dim2);white-space:normal;line-height:1.5;letter-spacing:.06em">⚕ <span data-i18n="medNote">Ocena, ne zdravniški nasvet.</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="g2" style="display:grid;grid-template-columns:minmax(0px,1.58fr) minmax(0px,1fr);gap:18px;align-items:stretch">
+          <div class="p">
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--line)">
+              <span class="k" id="pgTedenNaslov">Ta teden</span>
+              <span class="k" id="pgTedenSub" style="margin-left:auto;color:var(--dim)"></span>
+            </div>
+            <div style="padding:14px 18px 16px">
+              <div id="pgTedenStat" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px"></div>
+              <div id="pgTedenBari" style="display:flex;gap:5px;margin-top:16px;align-items:flex-end"></div>
+            </div>
+          </div>
+          <div class="p">
+            <div style="display:flex;align-items:center;padding:10px 18px;border-bottom:1px solid var(--line)">
+              <span class="k" data-i18n="pgForma90">Forma · 90 dni</span>
+              <span class="k" id="pgFormaHead" style="margin-left:auto;color:var(--dim)"></span>
+            </div>
+            <div style="padding:14px 18px 12px">
+              <div id="pgFormaWrap"></div>
+              <div id="pgFormaMeseci" style="display:flex;justify-content:space-between;margin-top:4px"></div>
+              <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap">
+                <span class="k"><span style="display:inline-block;width:12px;height:2px;background:var(--sig);vertical-align:3px;margin-right:5px"></span>Kondicija</span>
+                <span class="k"><span style="display:inline-block;width:12px;height:2px;background:#4a555e;vertical-align:3px;margin-right:5px"></span>Utrujenost</span>
+                <span class="k"><span style="display:inline-block;width:12px;height:2px;background:var(--sig2);vertical-align:3px;margin-right:5px"></span>Svežina</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div id="dashLegacy" aria-hidden="true" style="position:absolute;left:-99999px;top:0;width:1200px;height:800px;overflow:hidden;pointer-events:none"><div>
       <div class="page-head head-row">
         <div>
           <div class="row" style="gap:12px;align-items:center">
@@ -761,8 +907,10 @@ input.f::placeholder { color: var(--dim2); }
         </div>
       </div>
 
-    </section>
+    </div>
     <!-- ===== AKTIVNOSTI ===== -->
+    </div>
+    </section>
     <section class="tab" id="tab-rides">
       <div class="page-head head-row">
         <div>
@@ -1675,7 +1823,7 @@ document.querySelectorAll('.nav-item').forEach(el=>{
 function switchTab(name){
   if(name==='__wiz'){ try{ openConnectWizard(); }catch(_){} return; }
   if(!document.getElementById('tab-'+name)) name='dash';
-  document.querySelectorAll('.nav-item').forEach(e=>e.classList.toggle('active', e.dataset.tab===name));
+  document.querySelectorAll('.nav-item').forEach(e=>{const on=e.dataset.tab===name; e.classList.toggle('active', on); e.setAttribute('aria-current', on?'page':'false');});
   document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('active', e.id==='tab-'+name));
   if (name==='plan'){ renderWeather(); if(planView==='week') setTimeout(()=>{ document.querySelector('.day-row.today,.day-card.today')?.scrollIntoView({behavior:'smooth',block:'center'}); },200); }
   if (name==='kalorije') renderKalorije();
@@ -1700,10 +1848,10 @@ let chartFormObj = null, chartWeeklyObj = null;
 
 function renderSidebar(){
   const f = currentForm();
-  if (!f){ $('sbFormVal').textContent='–'; $('sbFormDesc').textContent='Dodaj vožnje za izračun'; return; }
-  $('sbFormVal').textContent = (f.tsb>0?'+':'') + f.tsb;
-  $('sbFormVal').style.color = f.barva;
-  $('sbFormDesc').textContent = f.opis;
+  const v = $('sbFormVal'), d = $('sbFormDesc');
+  if (!f){ if(v) v.textContent='–'; if(d) d.textContent='Dodaj vožnje za izračun'; return; }
+  if(v){ v.textContent = (f.tsb>0?'+':'') + f.tsb; v.style.color = f.barva; }
+  if(d) d.textContent = f.opis;
 }
 
 function streakDays(){
@@ -1973,6 +2121,263 @@ function renderDanesHero(){
     <div style="display:flex;flex-direction:column;min-width:0">${ready}${heroMiniCards()}${coach}</div>
   </div>`;
 }
+/* ================================================================
+   PREGLED — postavitev dobesedno iz mockupa formainamizje.html
+   Vsi podatki so pravi; ko podatka ni, piše — in ne izmišljena vrednost.
+================================================================ */
+function pgHM(min){ if(min==null||isNaN(min)) return '—'; const h=Math.floor(min/60), m=Math.round(min%60); return h+':'+String(m).padStart(2,'0'); }
+function pgNum(v){ return (v==null||isNaN(v))? '—' : Number(v).toLocaleString('sl'); }
+function pgCell(k, val, sub, pct){
+  return `<div><div class="k">${k}</div><div class="n" style="font-size:23px">${val}${sub?` <span style="font-size:11px;color:var(--dim)">${sub}</span>`:''}</div>`
+    + (pct==null?'':`<div style="height:3px;background:#1b2227;margin-top:6px"><div style="width:${Math.max(0,Math.min(100,pct))}%;height:100%;background:var(--sig)"></div></div>`)
+    + `</div>`;
+}
+function risiPregled(){
+  if(!document.getElementById('pgNaslov')) return;
+  const sl = LANG!=='en';
+  const p = state.settings.profile || {};
+  const iso = todayIso(), now = new Date();
+  const f = currentForm(), prip = pripravljenost();
+  const ti = tedenInfo();
+  const wk = weekAgg(0);
+
+  /* ---- glava ---- */
+  const nivo = (p.nivo||'').toUpperCase();
+  const tedenTxt = ti && ti.tot ? ` · ${sl?'TEDEN':'WEEK'} ${ti.n}/${ti.tot}` : '';
+  const ime = (p.ime||'').trim().toUpperCase();
+  const set = (id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
+  const setH = (id,v)=>{ const e=document.getElementById(id); if(e) e.innerHTML=v; };
+  set('pgProfil', [ime||null, nivo||null].filter(Boolean).join(' · ') + tedenTxt || '—');
+  set('pgKpiPrip', prip);
+  set('pgKpiSvez', f? (f.tsb>0?'+':'')+Math.round(f.tsb) : '–');
+  set('pgKpiKond', f? Math.round(f.ctl) : '–');
+  set('pgKpiTeden', pgHM(wk.min||0));
+  const av=document.getElementById('avatarInit'); if(av) av.textContent = (ime[0]||'?');
+
+  /* ---- 1. plošča: današnji trening ---- */
+  const d = planDayFor(iso);
+  const dan = (sl?DNEVI:DNEVI)[(now.getDay()+6)%7];
+  const MES_POLN=['januar','februar','marec','april','maj','junij','julij','avgust','september','oktober','november','december'];
+  set('pgDatum', `${sl?'DANES':'TODAY'} · ${dan} ${now.getDate()}. ${sl?MES_POLN[now.getMonth()]:MESECI[now.getMonth()]}`);
+  let wx='';
+  try{ const w=weatherByDate(iso); if(w){ const wi=weatherInfo(w.code)||{};
+    wx = [ w.pop!=null? (w.pop>=60?(sl?'DEŽ':'RAIN'):w.pop>=30?(sl?'MOŽEN DEŽ':'RAIN POSSIBLE'):(sl?'SUHO':'DRY'))+' '+w.pop+' %' : null,
+           w.tmax!=null? Math.round(w.tmax)+' °C' : null ].filter(Boolean).join(' · ');
+  } }catch(_){}
+  set('pgVreme', wx);
+
+  const metr=document.getElementById('pgMetrike'), obrem=document.getElementById('pgObremBox');
+  const gumbi=document.getElementById('pgGumbi');
+  if(!d){
+    set('pgNaslov', sl?'Za danes ni plana':'No plan for today');
+    set('pgOpis', sl?'Generiraj teden in trener te vodi vsak dan.':'Generate a week and the coach guides you daily.');
+    if(metr) metr.innerHTML=''; if(obrem) obrem.style.display='none';
+    if(gumbi) gumbi.innerHTML = `<button class="b sig" onclick="switchTab('plan');setTimeout(()=>generatePlan(),200)">${sl?'Ustvari tedenski plan':'Create weekly plan'} →</button>`;
+  } else {
+    const cls = chipClass(d.tip,d), rest = cls==='pocitek';
+    set('pgNaslov', d.naslov || d.tip || (sl?'Trening':'Workout'));
+    (function(){
+      const vr=(d.opis||'').split('\n').map(x=>x.trim()).filter(Boolean);
+      const glavna = vr.find(x=>!/^(ogrev|warm|zaključ|ohlaj|cool|raztez|stretch)/i.test(x));
+      set('pgOpis', d.zakaj || d.namen || glavna || vr[0] || '');
+    })();
+    const kcal = d.tss_ocena? Math.round(d.tss_ocena*11) : (d.trajanje_min? Math.round(d.trajanje_min*9) : null);
+    const moc = (p.ftp && ['intervali','tempo'].includes(cls))? `${Math.round(p.ftp*0.85)}–${Math.round(p.ftp*1.05)} W` : null;
+    const cells = [
+      rest? null : [sl?'Čas':'Time', (d.trajanje_min||0)+'′'],
+      moc? [sl?'Moč':'Power', moc] : null,
+      d.tss_ocena? ['TSS', String(d.tss_ocena)] : null,
+      kcal? ['Kcal', String(kcal)] : null
+    ].filter(Boolean);
+    if(metr) metr.innerHTML = cells.map(([k,v],i)=>
+      `<div style="padding:7px 13px${i<cells.length-1?';border-right:1px solid var(--line)':''}"><div class="k">${k}</div><div class="n" style="font-size:16px">${v}</div></div>`).join('');
+
+    /* profil obremenitve — iz vrstic opisa, ista logika kot doslej */
+    const L=(d.opis||'').split('\n').filter(x=>x.trim());
+    let segs=null;
+    if(!rest && L.length>=2){
+      segs = L.map(line=>{
+        const rep2=line.match(/(\d+)\s*[×x]\s*(\d+)\s*(min|minut)/i), one=line.match(/(\d+)\s*(min|minut)/i);
+        let mins = rep2? (+rep2[1]*+rep2[2]) : (one? +one[1] : null);
+        if(rep2){ const pav=line.match(/vmes[^.]*?(\d+)\s*(min|minut)/i); if(pav) mins += (+rep2[1]-1)*(+pav[1]); }
+        if(!mins) mins = Math.max(10, Math.round((d.trajanje_min||60)/L.length));
+        const hard=/interval|glavni|klanec|tempo|prag|z4|z3|c4|c3|močno|hitro/i.test(line);
+        const warm=/ogrev/i.test(line), cool=/zaključ|ohlaj|sprošč/i.test(line);
+        const pav = rep2? (line.match(/vmes[^.]*?(\d+)\s*(min|minut)/i)||[])[1] : null;
+        return { mins, hard, warm, cool,
+                 rep: rep2? +rep2[1] : null, repMin: rep2? +rep2[2] : null, pavza: pav? +pav : null,
+                 lbl: warm?(sl?'Ogrevanje':'Warm-up'):cool?(sl?'Ohlajanje':'Cool-down')
+                      :(rep2? `${sl?'Glavni del':'Main'} ${rep2[1]} × ${rep2[2]}′` : (sl?'Glavni del':'Main')) };
+      });
+      let tot=segs.reduce((a,x)=>a+x.mins,0)||1; const target=+d.trajanje_min||tot;
+      if(Math.abs(tot-target)>4){
+        let i2=segs.findIndex(x=>x.hard); if(i2<0) i2=0;
+        segs[i2].mins=Math.max(5, segs[i2].mins+(target-tot));
+      }
+    }
+    if(obrem){
+      if(segs && segs.length>=2){
+        obrem.style.display='';
+        const bloki=[];
+        segs.forEach(x=>{
+          if(x.hard && x.rep && x.rep>1){
+            for(let r=0;r<x.rep;r++){
+              bloki.push({flex:x.repMin, h:'100%', bg:'var(--sig)'});
+              if(r<x.rep-1 && x.pavza) bloki.push({flex:x.pavza, h:'30%', bg:'#17323d'});
+            }
+          } else {
+            bloki.push({flex:x.mins, h: x.hard?'100%':(x.warm||x.cool)?'44%':'62%',
+                        bg: x.hard?'var(--sig)':(x.warm||x.cool)?'#1e4d61':'#17323d'});
+          }
+        });
+        document.getElementById('pgObremBari').innerHTML =
+          bloki.map(bk=>`<div style="flex:${bk.flex};height:${bk.h};background:${bk.bg}"></div>`).join('');
+        document.getElementById('pgObremLbl').innerHTML = segs.map((x,i)=>
+          `<div class="k" style="flex:${x.mins}${x.hard?';color:var(--sig)':''}${i===segs.length-1?';text-align:right':''};overflow:hidden">${x.lbl}${x.rep?(x.pavza?` · ${sl?'vmes':'rec'} ${x.pavza}′`:''):` ${x.mins}′`}</div>`).join('');
+        const cone = segs.filter(x=>x.hard).length? 'C2 → C4 → C2' : 'C1 → C2';
+        set('pgObremCone', cone);
+      } else obrem.style.display='none';
+    }
+    const done = d.done || state.rides.some(r=>r.date===iso);
+    if(gumbi) gumbi.innerHTML =
+      `<button class="b sig" onclick="openPlanDay('${iso}')">${sl?'Podrobnosti treninga':'Workout details'} →</button>`
+      + (done? `<span class="k" style="color:var(--green);padding-left:6px">✓ ${sl?'Opravljeno':'Done'}</span>`
+             : `<button class="b" onclick="markDayDone('${iso}')">${sl?'Označi opravljeno':'Mark done'}</button>`
+               + `<button class="b" onclick="switchTab('trener');setTimeout(()=>{const i=document.getElementById('chatIn'); if(i){i.value='${sl?'Nimam toliko časa — skrajšaj današnji trening':'I do not have that much time — shorten today'}';i.focus();}},250)">${sl?'Nimam toliko časa':'Not enough time'}</button>`);
+  }
+
+  /* trenerjeva opomba */
+  const tb=document.getElementById('pgTrenerBox');
+  if(tb){
+    let txt=''; try{ const cc=coachCache(); if(cc && cc.date===iso && cc.text) txt=cc.text; }catch(_){}
+    if(txt){ tb.style.display='';
+      setH('pgTrener', `<span class="k" style="color:var(--sig2)">${sl?'Trener ·':'Coach ·'}</span> ${esc(String(txt).split('\n')[0]).slice(0,240)} <a href="#" onclick="switchTab('trener');return false">${sl?'Vprašaj':'Ask'} →</a>`);
+    } else tb.style.display='none';
+  }
+
+  /* ---- 2. plošča: pripravljenost ---- */
+  set('pgPrip', prip);
+  const pb=document.getElementById('pgPripBar'); if(pb) pb.style.width = prip+'%';
+  set('pgPripTxt', prip>=70? (sl?'Odlična — dan za močan trening.':'Excellent — a day for a hard session.')
+                 : prip>=45? (sl?'Solidna — drži se plana.':'Solid — stick to the plan.')
+                           : (sl?'Nizka — danes raje lažje.':'Low — go easy today.'));
+  const stk=streakDays();
+  set('pgStreak', stk>=2? `${stk} ${sl?'dni zaporedno':'day streak'}` : '');
+  set('pgSpanec', '—');
+  set('pgRhr', p.restHr? String(p.restHr) : '—');
+  set('pgAtl', f? String(Math.round(f.atl)) : '—');
+  set('pgCtl', f? String(Math.round(f.ctl)) : '—');
+
+  /* ---- 3. plošča: kalorije ---- */
+  (function(){
+    let eaten=null, cilj=null, mak={p:0,c:0,f:0,has:false}, zadnji=null, poraba=null;
+    try{
+      const kal=kalData();
+      const dnevi = kal?.days || kal?.dnevi || {};
+      const dan = dnevi[iso] || (Array.isArray(kal?.entries)? {entries:kal.entries.filter(e=>e.date===iso)} : null);
+      const en = dan?.entries || dan?.obroki || [];
+      if(en.length){
+        eaten = Math.round(en.reduce((a,e)=>a+(+(e.kcal??e.k??e.kalorije)||0),0));
+        mak = kalMacros(en);
+        const t = en.map(e=>e.time||e.cas||e.ura).filter(Boolean).sort().pop(); if(t) zadnji=t;
+      }
+      const d0=planDayFor(iso), t0=(typeof tdee==='function')? tdee() : null;
+      cilj = d0?.kcal_vnos || (t0? Math.round(t0 - ((typeof wantsLean==='function'&&wantsLean())? (typeof goalDeficit==='function'? goalDeficit():0) : 0)) : null);
+      poraba = t0? Math.round(t0) : null;
+    }catch(_){}
+    const profilPopoln = !!(p.teza && p.visina && p.starost && p.spol);
+    if(!profilPopoln) cilj=null;
+    setH('pgKcal', eaten==null && cilj==null ? `<span style="font-size:15px;color:var(--dim)">${sl?'Dopolni profil, da izračunam':'Complete your profile to calculate'}</span>`
+       : `${pgNum(eaten??0)} <span style="font-size:13px;color:var(--dim)">/ ${cilj? pgNum(cilj)+' kcal' : (sl?'cilj ni znan':'goal unknown')}</span>`);
+    const kb=document.getElementById('pgKcalBar');
+    if(kb) kb.style.width = (eaten!=null && cilj)? Math.max(0,Math.min(100,Math.round(eaten/cilj*100)))+'%' : '0%';
+    set('pgBelj', mak.has? mak.p+' g' : '—');
+    set('pgOh',   mak.has? mak.c+' g' : '—');
+    set('pgMasc', mak.has? mak.f+' g' : '—');
+    const bits=[];
+    if(eaten!=null && cilj) bits.push(`${sl?'ostane':'left'} ${pgNum(Math.max(0,cilj-eaten))} kcal`);
+    if(poraba) bits.push(`${sl?'poraba':'burn'} ~${pgNum(poraba)} kcal`);
+    if(zadnji) bits.push(`${sl?'zadnji obrok':'last meal'} ${zadnji}`);
+    set('pgKcalNota', bits.join(' · '));
+  })();
+
+  /* ---- 4. plošča: ta teden ---- */
+  (function(){
+    const ws=weekStart(new Date()), we=addDays(ws,6);
+    const dd=x=>String(x.getDate()).padStart(2,'0')+'. '+String(x.getMonth()+1).padStart(2,'0')+'.';
+    set('pgTedenNaslov', `${sl?'Ta teden':'This week'} · ${dd(ws)} – ${dd(we)}`);
+    const ciljMin=(p.ure||0)*60;
+    let planiranih=0, opravljenih=0;
+    for(let i=0;i<7;i++){ const it=isoDate(addDays(ws,i)); const pd=planDayFor(it);
+      if(pd && chipClass(pd.tip,pd)!=='pocitek'){ planiranih++; if(pd.done||state.rides.some(r=>r.date===it)) opravljenih++; } }
+    set('pgTedenSub', `${pgHM(wk.min)}${ciljMin?` ${sl?'od':'of'} ${pgHM(ciljMin)}`:''} h · ${opravljenih} ${sl?'od':'of'} ${planiranih}`);
+    const ciljTss = Math.round(state.rides.length? (formSeries().slice(-1)[0]?.ctl||0)*7 : 0);
+    document.getElementById('pgTedenStat').innerHTML =
+      pgCell(sl?'Opravljeno':'Done', pgHM(wk.min), 'h', ciljMin? wk.min/ciljMin*100 : null)
+    + pgCell(sl?'Razdalja':'Distance', pgNum(Math.round(wk.km)), 'km', null)
+    + pgCell(sl?'Višinci':'Elevation', pgNum(Math.round(state.rides.filter(r=>r.date>=isoDate(ws)&&r.date<=isoDate(we)).reduce((a,r)=>a+(+r.elev||0),0))), 'm', null)
+    + pgCell('TSS', pgNum(Math.round(wk.tss)), ciljTss? '/ '+pgNum(ciljTss) : null, ciljTss? wk.tss/ciljTss*100 : null);
+
+    let maxMin=1;
+    const dnevi=[];
+    for(let i=0;i<7;i++){
+      const it=isoDate(addDays(ws,i)), pd=planDayFor(it);
+      const rides=state.rides.filter(r=>r.date===it);
+      const opr=rides.reduce((a,r)=>a+(+r.time||0),0);
+      const plan=(pd && chipClass(pd.tip,pd)!=='pocitek')? (+pd.trajanje_min||0) : 0;
+      const min=opr||plan; if(min>maxMin) maxMin=min;
+      dnevi.push({it,min,opr,plan,danes:it===iso,ime:(sl?['Pon','Tor','Sre','Čet','Pet','Sob','Ned']:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'])[i]});
+    }
+    document.getElementById('pgTedenBari').innerHTML = dnevi.map(x=>{
+      const h = x.min? Math.max(6, Math.round(x.min/maxMin*100)) : 0;
+      const stil = x.opr? 'background:var(--sig)' : 'background:rgba(98,197,238,.18);border:1px dashed var(--sig)';
+      const bar = x.min? `<div style="width:100%;height:${h}%;${stil}"></div>`
+                       : `<div style="width:100%;height:4px;background:#2a333a"></div>`;
+      return `<div style="flex:1 1 0%"><div style="height:58px;display:flex;align-items:flex-end">${bar}</div>`
+        + `<div style="height:1px;background:${x.danes?'var(--sig)':'var(--line)'}"></div>`
+        + `<div class="k" style="margin-top:6px;text-align:center${x.danes?';color:var(--sig)':''}">${x.ime} ${x.min? x.min+'′':'—'}</div></div>`;
+    }).join('');
+  })();
+
+  /* ---- 5. plošča: forma 90 dni ---- */
+  (function(){
+    const wrap=document.getElementById('pgFormaWrap'); if(!wrap) return;
+    const s90=formSeries().slice(-90);
+    set('pgFormaHead', f? `CTL ${Math.round(f.ctl)} · ATL ${Math.round(f.atl)} · TSB ${f.tsb>0?'+':''}${Math.round(f.tsb)}` : '');
+    if(s90.length<14){
+      wrap.innerHTML = `<div class="m" style="padding:22px 0">${sl?'Dodaj aktivnosti — graf se izriše, ko je vsaj 14 dni podatkov.':'Add activities — the chart appears once there are 14 days of data.'}</div>`;
+      document.getElementById('pgFormaMeseci').innerHTML=''; return;
+    }
+    const W=320,H=120;
+    const vals=[...s90.map(x=>x.ctl),...s90.map(x=>x.atl),...s90.map(x=>x.tsb)];
+    const mx=Math.max(...vals)*1.1, mn=Math.min(...vals,0)*1.1;
+    const X=i=>(W*i/(s90.length-1)).toFixed(1);
+    const Y=v=>(H-8-(H-16)*((v-mn)/((mx-mn)||1))).toFixed(1);
+    const line=(k)=>s90.map((x,i)=>`${X(i)},${Y(x[k])}`).join(' ');
+    wrap.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:112px;display:block">
+      <line x1="0" y1="30" x2="${W}" y2="30" stroke="#1b2227" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+      <line x1="0" y1="60" x2="${W}" y2="60" stroke="#1b2227" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+      <line x1="0" y1="90" x2="${W}" y2="90" stroke="#1b2227" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+      <polyline points="${line('atl')}" fill="none" stroke="#4a555e" stroke-width="1.4" vector-effect="non-scaling-stroke"></polyline>
+      <polyline points="${line('tsb')}" fill="none" stroke="var(--sig2)" stroke-width="1.2" vector-effect="non-scaling-stroke"></polyline>
+      <polyline points="${line('ctl')}" fill="none" stroke="var(--sig)" stroke-width="2.2" vector-effect="non-scaling-stroke"></polyline>
+    </svg>`;
+    const idx=[0, Math.floor(s90.length/3), Math.floor(s90.length*2/3), s90.length-1];
+    document.getElementById('pgFormaMeseci').innerHTML = idx.map((i,n)=>{
+      const m=MESECI[parseIso(s90[i].date).getMonth()];
+      return `<span class="k"${n===3?' style="color:var(--sig)"':''}>${n===3?(sl?'Danes':'Today'):m}</span>`;
+    }).join('');
+  })();
+
+  /* onboarding in opozorila prenesemo iz obstoječih vozlišč */
+  try{
+    const o=document.getElementById('onboardCard'), a=document.getElementById('dashAlert');
+    const po=document.getElementById('pgOnboard'), pa=document.getElementById('pgAlert');
+    if(po && o) po.innerHTML=o.innerHTML;
+    if(pa && a) pa.innerHTML=a.innerHTML;
+  }catch(_){}
+}
+
 function renderDash(){
   const p = state.settings.profile;
   const ti = tedenInfo();
@@ -2077,6 +2482,7 @@ function renderDash(){
   renderCharts();
   renderRiderCard();
   renderCoachReport();
+  try{ risiPregled(); }catch(e){ console.warn("risiPregled", e); }
 }
 function renderDashWeekPlan(){
   const el=$('dashWeekPlan'); if(!el) return;
@@ -6259,7 +6665,7 @@ function demoClear(){
 /* ================================================================
    ZAGON
 ================================================================ */
-function renderAll(){ renderSidebar(); renderDash(); renderRides(); renderPlan(); renderCal(); renderTodayBox(); renderForma(); renderPorocila(); renderAnalitika(); renderTrener(); applyLang(); }
+function renderAll(){ try{ renderSidebar(); }catch(e){ console.warn('renderSidebar',e); } try{ renderDash(); }catch(e){ console.warn('renderDash',e); } try{ risiPregled(); }catch(e){ console.warn('risiPregled',e); } renderRides(); renderPlan(); renderCal(); renderTodayBox(); renderForma(); renderPorocila(); renderAnalitika(); renderTrener(); applyLang(); }
 fillSettings();
 renderAll();
 getWeather().then(()=>{ renderWeather(); renderPlan(); });   // vreme ob zagonu → osveži trak in dnevne oznake
