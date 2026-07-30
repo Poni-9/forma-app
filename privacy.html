@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>FORMAI — Privacy Policy</title>
+<meta name="description" content="FORMAI privacy policy — what data is processed, where it is stored, how connected services such as Garmin Connect and Strava are handled, and your rights under the GDPR."/>
+<link rel="alternate" hreflang="sl" href="https://formai.si/zasebnost.html"/>
+<link rel="alternate" hreflang="en" href="https://formai.si/privacy.html"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+  /* ==== FORMAI oblikovni sistem — dobesedno iz mockupa (29. 7. 2026) ==== */
+  --bench:#0b0e11; --bg:#0b0e11; --bg2:#080b0d;
+  --panel:#12171b; --panel2:#171d22; --panel3:#0d1216;
+  --line:#232b32; --line2:#1a2126;
+  --ink:#e9eef2; --dim:#939da6; --dim2:#606a72;
+  --sig:#62c5ee; --sigd:#38a6cf; --sig2:#ff458e; --onSig:#04161d;
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  /* stara imena → iste barve */
+  --border:var(--line); --border2:var(--line2); --borderH:#333d45;
+  --text:var(--ink); --soft:#c3ccd4; --muted:var(--dim);
+  --acc:var(--sig); --accH:#9ddcf7; --acc2:var(--sigd); --accSoft:rgba(98,197,238,.14);
+  --orange:var(--sigd); --green:#5fd67a; --greenSoft:rgba(95,214,122,.13);
+  --red:var(--sig2); --redSoft:rgba(255,69,142,.13);
+  --yellow:#edbb00; --yellowSoft:rgba(237,187,0,.13);
+  --blue:var(--sig); --blueSoft:rgba(98,197,238,.13);
+  --purple:#b48cff; --purpleSoft:rgba(180,140,255,.13);
+  --radius:0px; --bc:var(--mono);
+  font-family:var(--sans);
+}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);line-height:1.65;font-size:15.5px}
+  .wrap{max-width:760px;margin:0 auto;padding:40px 22px 60px}
+  h1{font-size:30px;letter-spacing:-.02em;margin-bottom:6px}
+  .sub{color:var(--muted);margin-bottom:30px}
+  h2{font-size:19px;margin:30px 0 10px;color:var(--acc2)}
+  p,li{color:var(--muted);margin-bottom:10px}
+  li{margin-left:20px}
+  b{color:var(--text)}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin:18px 0}
+  a{color:var(--acc2)}
+  .back{display:inline-block;margin-bottom:20px;color:var(--acc2);text-decoration:none;font-weight:700}
+
+/* ===== gradniki, dobesedno iz mockupa formainamizje.html ===== */
+h1,h2,h3,h4{font-family:var(--sans);letter-spacing:-.022em}
+a{color:var(--sig);text-decoration:none}
+a:hover{color:#9ddcf7}
+.tabnav a{position:relative;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);padding:14px 0;display:block}
+.tabnav a:hover{color:var(--ink)}
+.tabnav a[aria-current="page"]{color:var(--ink)}
+.tabnav a[aria-current="page"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--sig)}
+.k{font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.17em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
+.m{font-size:12.5px;line-height:1.6;color:var(--dim)}
+.m b{color:var(--ink);font-weight:600}
+.kv{display:flex;align-items:baseline;gap:10px}
+.kv>:first-child{flex:1 1 0%;min-width:0}
+.kv>:last-child{flex:0 0 auto;white-space:nowrap}
+.n{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap}
+.p{background:var(--panel);border:1px solid var(--line)}
+.b{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.11em;text-transform:uppercase;white-space:nowrap;padding:10px 16px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.b:hover{background:#1e252b;border-color:#333d45}
+.b.sig{background:var(--sigd);border-color:var(--sigd);color:var(--onSig)}
+.b.sig:hover{background:var(--sig);border-color:var(--sig)}
+.b.g{background:transparent;border-color:transparent;color:var(--sig);padding:10px 4px}
+.b.g:hover{background:transparent;color:#9ddcf7}
+.b.dz{border-color:rgba(255,69,142,.4);color:var(--sig2);background:transparent}
+.b.dz:hover{background:rgba(255,69,142,.09);border-color:var(--sig2)}
+.sg button{font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:8px 15px;background:var(--panel);border:1px solid var(--line);border-left:none;color:var(--dim);cursor:pointer}
+.sg button:first-child{border-left:1px solid var(--line)}
+.sg button:hover{color:var(--ink);background:var(--panel2)}
+.sg button[data-on="1"]{background:var(--sigd);border-color:var(--sigd);color:var(--onSig)}
+input.f,textarea.f{width:100%;font-family:var(--sans);font-size:13.5px;padding:10px 12px;background:var(--panel3);border:1px solid var(--line);color:var(--ink);outline:none}
+input.f:focus,textarea.f:focus{border-color:var(--sig)}
+input.f::placeholder{color:var(--dim2)}
+.rw{display:grid;align-items:center;column-gap:16px;border-bottom:1px solid var(--line2)}
+.rw:hover{background:var(--panel2)}
+.tg{font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid}
+:focus-visible{outline:2px solid var(--sig);outline-offset:2px}
+::selection{background:rgba(98,197,238,.3)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#242c33}
+::-webkit-scrollbar-track{background:var(--bench)}
+@keyframes fu{0%{opacity:0;transform:translateY(5px)}100%{opacity:1;transform:none}}
+@media(max-width:1180px){.g2{grid-template-columns:minmax(0,1fr)!important}}
+@media(max-width:1100px){.hd-install{display:none}}
+@media(max-width:1000px){.g3{grid-template-columns:minmax(0,1fr)!important}}
+@media(max-width:860px){.sc{overflow-x:auto}.sc .rw{min-width:680px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="zasebnost.html">Slovensko →</a>
+  <h1>Privacy Policy</h1>
+  <p class="sub">FORMAI (desktop and mobile) · in force since 24 July 2026 · <a href="zasebnost.html">Slovenian original</a></p>
+
+  <div class="card"><b>⚕️ Important:</b> FORMAI provides <b>coaching and nutrition guidance, not medical advice</b>. Calorie and training-load figures are estimates. Before making significant changes to your training or diet — and always in case of illness, injury or a health condition — consult a doctor.</div>
+
+  <p class="sub" style="margin-bottom:22px">This is an English translation of the Slovenian privacy policy published at <a href="zasebnost.html">formai.si/zasebnost.html</a>. In case of any discrepancy, the Slovenian version prevails.</p>
+
+  <h2>What data we process</h2>
+  <ul>
+    <li><b>Profile:</b> name, age, sex, height, weight, heart rate, FTP, goals.</li>
+    <li><b>Activities:</b> rides and workouts (distance, duration, elevation, heart rate, power) — entered manually, imported, or read from screenshots.</li>
+    <li><b>Nutrition:</b> meal entries and photographs of food that you submit for analysis.</li>
+  </ul>
+
+  <h2>Where your data is held</h2>
+  <ul>
+    <li><b>Locally by default:</b> all data is stored in your browser (localStorage) on your own device.</li>
+    <li><b>Synchronisation (if you turn it on):</b> data is stored in your account in Google Firebase (servers in the EU/EEA under Google's terms) or jsonbin.io, so it is available across your devices.</li>
+    <li><b>AI analysis:</b> text and images you submit for analysis are processed by the <b>Google Gemini API</b> as a contractual sub-processor. We use the <b>paid tier</b>, under which Google <b>does not use the content to train its models</b>. Content is used only to produce the response returned to you and is visible only to you. Requests run through our own server (Google Cloud Run, europe-west1); the API key is never exposed in the browser.</li>
+    <li>We <b>do not sell</b> your data and do not share it with third parties for advertising.</li>
+  </ul>
+
+  <h2>Connected services (Garmin, Strava)</h2>
+  <p>If you connect an external service yourself, we import <b>only</b> what the training features need, and only for as long as the connection is enabled.</p>
+  <ul>
+    <li><b>Garmin Connect:</b> on connection we import your completed activities (duration, distance, elevation gain, heart rate, power) and, if you separately approve it, recovery measures (resting heart rate, HRV, sleep). We use this data exclusively to display your progress, compute training load, and adapt your training plan. Garmin data is <b>never sold</b>, never shared with third parties, and never used for advertising or profiling. You can disconnect at any time in Settings or in Garmin Connect; on disconnection we delete the stored tokens, and imported activities can be deleted together with the rest of your data.</li>
+    <li><b>Strava:</b> same scope and same rules. Activities imported from Strava are <b>not sent for AI processing</b> — for those we use local computation on your device.</li>
+    <li><b>Access tokens</b> for external services are stored only on our server and are never visible in the browser.</li>
+  </ul>
+
+  <h2>Your rights (GDPR)</h2>
+  <ul>
+    <li><b>Export:</b> Settings → "Export backup" downloads all of your data at any time.</li>
+    <li><b>Deletion:</b> clear your browser data and/or write to us to delete synchronised data — we delete it within 30 days.</li>
+    <li><b>Access and correction:</b> all of your data is visible and editable directly in the app.</li>
+  </ul>
+
+  <h2>Terms of use</h2>
+  <ul>
+    <li>You use the application at your own responsibility; AI output is informational in nature.</li>
+    <li>Free use includes a limited number of AI actions per day; the Pro subscription removes the daily limit.</li>
+    <li>You may cancel a subscription at any time; it remains valid until the end of the paid period.</li>
+    <li>We may update or change the service; we will notify you in the app about material changes.</li>
+  </ul>
+  <p>The full terms of use are available in <a href="terms.html">English</a> and in <a href="pogoji.html">Slovenian</a>.</p>
+
+  <h2>Contact</h2>
+  <p>Data controller: <b>Blaž Gregorc</b>, Slovenia.</p>
+  <p>Questions, data export or deletion: <a href="mailto:blaz.gregorc@formai.si">blaz.gregorc@formai.si</a>.</p>
+
+  <p style="margin-top:30px"><a href="terms.html">Terms of use</a> · <a href="zasebnost.html">Slovenščina</a> · <a href="forma-trener.html">Back to the app</a></p>
+</div>
+</body>
+</html>
