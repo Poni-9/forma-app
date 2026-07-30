@@ -8,18 +8,38 @@
 <meta property="og:title" content="FORMAI — tvoja najboljša forma. Brez ugibanja."/>
 <meta property="og:description" content="AI trener za kolo, tek, moč in prehrano. Plan, ki se uči od tebe."/>
 <meta property="og:image" content="https://formai.si/og.png"/>
-<meta name="theme-color" content="#111013"/>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23111013%22/><path d=%22M8 8h84L8 92z%22 fill=%22%23ff3d2e%22/></svg>"/>
+<meta name="theme-color" content="#0b0e11"/>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230b0e11%22/><path d=%22M8 8h84L8 92z%22 fill=%22%2362c5ee%22/></svg>"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+
 <style>
-  :root{--bg:#111013;--bg2:#0e0d10;--panel:#18161b;--border:#26232a;--border2:#38333e;--borderH:#5e5668;
-    --text:#f2efe9;--soft:#c9c3ce;--muted:#9a939f;--dim:#6f6876;--acc:#ff3d2e;--accH:#ff5546;--acc2:#ff6a5e;
-    --green:#5fd67a;--bc:'Barlow Condensed',sans-serif}
+  :root{
+  /* ==== FORMAI oblikovni sistem — dobesedno iz mockupa (29. 7. 2026) ==== */
+  --bench:#0b0e11; --bg:#0b0e11; --bg2:#080b0d;
+  --panel:#12171b; --panel2:#171d22; --panel3:#0d1216;
+  --line:#232b32; --line2:#1a2126;
+  --ink:#e9eef2; --dim:#939da6; --dim2:#606a72;
+  --sig:#62c5ee; --sigd:#38a6cf; --sig2:#ff458e; --onSig:#04161d;
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  /* stara imena → iste barve */
+  --border:var(--line); --border2:var(--line2); --borderH:#333d45;
+  --text:var(--ink); --soft:#c3ccd4; --muted:var(--dim);
+  --acc:var(--sig); --accH:#9ddcf7; --acc2:var(--sigd); --accSoft:rgba(98,197,238,.14);
+  --orange:var(--sigd); --green:#5fd67a; --greenSoft:rgba(95,214,122,.13);
+  --red:var(--sig2); --redSoft:rgba(255,69,142,.13);
+  --yellow:#edbb00; --yellowSoft:rgba(237,187,0,.13);
+  --blue:var(--sig); --blueSoft:rgba(98,197,238,.13);
+  --purple:#b48cff; --purpleSoft:rgba(180,140,255,.13);
+  --radius:0px; --bc:var(--mono);
+  font-family:var(--sans);
+}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{margin:0;font-family:'Barlow',sans-serif;color:var(--text);line-height:1.55;
+  body{margin:0;font-family:var(--sans);color:var(--text);line-height:1.55;
     background:
-      radial-gradient(1200px 560px at 85% -10%, rgba(255,61,46,.07), transparent 62%),
+      radial-gradient(1200px 560px at 85% -10%, rgba(98,197,238,.07), transparent 62%),
       radial-gradient(900px 520px at -10% 108%, rgba(77,163,255,.045), transparent 60%),
       var(--bg);}
   a{color:var(--acc2);text-decoration:none}
@@ -78,11 +98,11 @@
   .prices{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:32px auto 0;max-width:780px}
   @media(max-width:700px){.prices{grid-template-columns:1fr}}
   .price{border:1px solid var(--border);background:var(--panel);padding:28px;display:flex;flex-direction:column;position:relative}
-  .price.pro{border-color:var(--acc);background:linear-gradient(180deg,rgba(255,61,46,.09),var(--panel))}
+  .price.pro{border-color:var(--acc);background:linear-gradient(180deg,rgba(98,197,238,.09),var(--panel))}
   .price .badge{position:absolute;top:-11px;left:28px;background:var(--acc);color:#fff;font-size:10.5px;font-weight:800;letter-spacing:.1em;padding:4px 10px;text-transform:uppercase}
   .price .nm{font-family:var(--bc);font-weight:800;font-size:20px;letter-spacing:.06em}
   .price .amt{font-family:var(--bc);font-size:44px;font-weight:900;margin-top:8px}
-  .price .amt small{font-size:15px;color:var(--dim);font-weight:600;font-family:'Barlow',sans-serif}
+  .price .amt small{font-size:15px;color:var(--dim);font-weight:600;font-family:var(--sans)}
   .price ul{list-style:none;display:flex;flex-direction:column;gap:9px;font-size:13.5px;color:var(--soft);margin-top:18px;flex:1;padding:0}
   .price li.off{color:var(--dim)}
   .price .cta{margin-top:22px;text-align:center}
@@ -97,18 +117,18 @@
 
 /* ============ PREMIUM POLISH ============ */
 .topnav{background:rgba(17,16,19,.8);backdrop-filter:blur(16px) saturate(1.2);-webkit-backdrop-filter:blur(16px) saturate(1.2);border-bottom:1px solid rgba(56,51,62,.7);box-shadow:0 10px 30px -20px rgba(0,0,0,.8)}
-.logo i{box-shadow:0 4px 16px -4px rgba(255,61,46,.5)}
+.logo i{box-shadow:0 4px 16px -4px rgba(98,197,238,.5)}
 h1{background:linear-gradient(180deg,#ffffff 55%,#d9d4e0);-webkit-background-clip:text;background-clip:text;color:transparent}
 @media(max-width:600px){.navlinks a:nth-child(-n+3){display:none}}
 h1 .d{background:linear-gradient(135deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
 h2 .d{color:var(--acc)}
 .btn{transition:transform .15s, box-shadow .15s, filter .15s, border-color .15s, color .15s}
-.btn:not(.ghost){background:linear-gradient(135deg,#ff4a32,#e42f1f);box-shadow:0 8px 24px -10px rgba(255,61,46,.55), inset 0 1px 0 rgba(255,255,255,.16)}
+.btn:not(.ghost){background:var(--sigd);box-shadow:0 8px 24px -10px rgba(98,197,238,.55), inset 0 1px 0 rgba(255,255,255,.16)}
 .btn:not(.ghost):hover{filter:brightness(1.07);transform:translateY(-1px)}
 .btn.ghost:hover{transform:translateY(-1px)}
 .hero{position:relative}
-.hero::before{content:'';position:absolute;right:-8%;top:0;width:560px;height:420px;background:radial-gradient(closest-side, rgba(255,61,46,.13), transparent 70%);pointer-events:none;filter:blur(6px)}
-.mock{position:relative;background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0) 40%), var(--panel);box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 34px 80px -34px rgba(0,0,0,.9), 0 0 0 1px rgba(255,61,46,.06)}
+.hero::before{content:'';position:absolute;right:-8%;top:0;width:560px;height:420px;background:radial-gradient(closest-side, rgba(98,197,238,.13), transparent 70%);pointer-events:none;filter:blur(6px)}
+.mock{position:relative;background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0) 40%), var(--panel);box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 34px 80px -34px rgba(0,0,0,.9), 0 0 0 1px rgba(98,197,238,.06)}
 .bars i{transform-origin:bottom;animation:barUp .8s cubic-bezier(.2,.9,.3,1) backwards}
 .bars i:nth-child(2){animation-delay:.05s}.bars i:nth-child(3){animation-delay:.1s}.bars i:nth-child(4){animation-delay:.15s}
 .bars i:nth-child(5){animation-delay:.2s}.bars i:nth-child(6){animation-delay:.25s}.bars i:nth-child(7){animation-delay:.3s}
@@ -119,9 +139,9 @@ h2 .d{color:var(--acc)}
 .fcard .n{background:linear-gradient(135deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
 .price{background:linear-gradient(180deg, rgba(255,255,255,.014), rgba(255,255,255,0) 45%), var(--panel);box-shadow:inset 0 1px 0 rgba(255,255,255,.03), 0 14px 34px -28px rgba(0,0,0,.9);transition:transform .2s, border-color .2s}
 .price:hover{transform:translateY(-3px)}
-.price.pro{box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 24px 60px -28px rgba(255,61,46,.35)}
-.price .badge{box-shadow:0 6px 16px -6px rgba(255,61,46,.6)}
-input:focus{outline:none;border-color:var(--acc)!important;box-shadow:0 0 0 3px rgba(255,61,46,.15)}
+.price.pro{box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 24px 60px -28px rgba(98,197,238,.35)}
+.price .badge{box-shadow:0 6px 16px -6px rgba(98,197,238,.6)}
+input:focus{outline:none;border-color:var(--acc)!important;box-shadow:0 0 0 3px rgba(98,197,238,.15)}
 ::-webkit-scrollbar{width:9px}
 ::-webkit-scrollbar-thumb{background:#2b2830;border:2px solid var(--bg)}
 .rv{opacity:0;transform:translateY(16px);transition:opacity .55s ease, transform .55s ease}
@@ -133,6 +153,51 @@ html{scroll-behavior:smooth}
 .navlinks a:not(.btn)::after{content:'';position:absolute;left:0;bottom:-6px;height:2px;width:0;background:var(--acc);transition:width .22s}
 .navlinks a:not(.btn):hover::after{width:100%}
 .ms .v{font-variant-numeric:tabular-nums}
+
+/* ===== gradniki, dobesedno iz mockupa formainamizje.html ===== */
+h1,h2,h3,h4{font-family:var(--sans);letter-spacing:-.022em}
+a{color:var(--sig);text-decoration:none}
+a:hover{color:#9ddcf7}
+.tabnav a{position:relative;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);padding:14px 0;display:block}
+.tabnav a:hover{color:var(--ink)}
+.tabnav a[aria-current="page"]{color:var(--ink)}
+.tabnav a[aria-current="page"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--sig)}
+.k{font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.17em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
+.m{font-size:12.5px;line-height:1.6;color:var(--dim)}
+.m b{color:var(--ink);font-weight:600}
+.kv{display:flex;align-items:baseline;gap:10px}
+.kv>:first-child{flex:1 1 0%;min-width:0}
+.kv>:last-child{flex:0 0 auto;white-space:nowrap}
+.n{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap}
+.p{background:var(--panel);border:1px solid var(--line)}
+.b{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.11em;text-transform:uppercase;white-space:nowrap;padding:10px 16px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.b:hover{background:#1e252b;border-color:#333d45}
+.b.sig{background:var(--sigd);border-color:var(--sigd);color:var(--onSig)}
+.b.sig:hover{background:var(--sig);border-color:var(--sig)}
+.b.g{background:transparent;border-color:transparent;color:var(--sig);padding:10px 4px}
+.b.g:hover{background:transparent;color:#9ddcf7}
+.b.dz{border-color:rgba(255,69,142,.4);color:var(--sig2);background:transparent}
+.b.dz:hover{background:rgba(255,69,142,.09);border-color:var(--sig2)}
+.sg button{font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:8px 15px;background:var(--panel);border:1px solid var(--line);border-left:none;color:var(--dim);cursor:pointer}
+.sg button:first-child{border-left:1px solid var(--line)}
+.sg button:hover{color:var(--ink);background:var(--panel2)}
+.sg button[data-on="1"]{background:var(--sigd);border-color:var(--sigd);color:var(--onSig)}
+input.f,textarea.f{width:100%;font-family:var(--sans);font-size:13.5px;padding:10px 12px;background:var(--panel3);border:1px solid var(--line);color:var(--ink);outline:none}
+input.f:focus,textarea.f:focus{border-color:var(--sig)}
+input.f::placeholder{color:var(--dim2)}
+.rw{display:grid;align-items:center;column-gap:16px;border-bottom:1px solid var(--line2)}
+.rw:hover{background:var(--panel2)}
+.tg{font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid}
+:focus-visible{outline:2px solid var(--sig);outline-offset:2px}
+::selection{background:rgba(98,197,238,.3)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#242c33}
+::-webkit-scrollbar-track{background:var(--bench)}
+@keyframes fu{0%{opacity:0;transform:translateY(5px)}100%{opacity:1;transform:none}}
+@media(max-width:1180px){.g2{grid-template-columns:minmax(0,1fr)!important}}
+@media(max-width:1100px){.hd-install{display:none}}
+@media(max-width:1000px){.g3{grid-template-columns:minmax(0,1fr)!important}}
+@media(max-width:860px){.sc{overflow-x:auto}.sc .rw{min-width:680px}}
 </style>
 </head>
 <body>
@@ -167,7 +232,7 @@ html{scroll-behavior:smooth}
         <i style="background:#4a4452;height:46%"></i><i style="background:#4a4452;height:60%"></i>
         <i style="background:#5e5668;height:55%"></i><i style="background:#5e5668;height:70%"></i>
         <i style="background:#a34038;height:64%"></i><i style="background:#cc3f31;height:76%"></i>
-        <i style="background:#ff3d2e;height:88%"></i>
+        <i style="background:var(--sig);height:88%"></i>
       </div>
       <div class="mock-stats">
         <div class="ms"><div class="k">FTP</div><div class="v">+6 W</div></div>
@@ -257,7 +322,7 @@ html{scroll-behavior:smooth}
     <h2>Bodi zraven od začetka<span class="d">.</span></h2>
     <div class="lead">Vpiši e-mail — obvestim te o novostih in ugodnostih za prve uporabnike.</div>
     <form action="https://formsubmit.co/blaz.gregorc@formai.si" method="POST" style="display:flex;gap:10px;justify-content:center;margin-top:22px;flex-wrap:wrap">
-      <input type="email" name="email" required placeholder="tvoj@email.si" style="background:var(--panel);border:1px solid var(--border2);color:var(--text);padding:12px 16px;font-family:'Barlow',sans-serif;font-size:14px;min-width:260px;outline:none">
+      <input type="email" name="email" required placeholder="tvoj@email.si" style="background:var(--panel);border:1px solid var(--border2);color:var(--text);padding:12px 16px;font-family:var(--sans);font-size:14px;min-width:260px;outline:none">
       <input type="hidden" name="_subject" value="FORMAI — novi interesent">
       <input type="text" name="_honey" style="display:none">
       <input type="hidden" name="_captcha" value="false">
