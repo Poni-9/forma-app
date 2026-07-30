@@ -81,7 +81,7 @@ body{
 .logo{display:flex;align-items:center;gap:10px;padding:14px 0;flex-shrink:0}
 .logo-mark{
   width:30px;height:30px;flex-shrink:0;
-  background:linear-gradient(135deg,var(--acc) 50%,var(--border) 50%);
+  background:var(--sigd) 50%);
 }
 .logo-name{font-family:var(--sans);font-weight:700;font-size:23px;letter-spacing:-.024em;line-height:1}
 .logo-name small{display:none}
@@ -252,7 +252,7 @@ textarea{resize:vertical;min-height:70px}
 .week-list{display:flex;flex-direction:column;gap:9px}
 .day-row{background:var(--panel);border:1px solid var(--border);border-radius:0;padding:13px 17px;transition:border-color .15s}
 .day-row:hover{border-color:var(--border2)}
-.day-row.today{border-color:var(--acc);background:linear-gradient(90deg,rgba(255,61,46,.05),var(--panel))}
+.day-row.today{border-color:var(--acc);background:linear-gradient(90deg,rgba(98,197,238,.05),var(--panel))}
 .day-row.done{opacity:.72}
 .dr-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .dr-day{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);min-width:76px}
@@ -271,8 +271,8 @@ textarea{resize:vertical;min-height:70px}
 .dr-kcal{margin-top:7px;font-size:12px;color:var(--yellow);font-weight:700}
 .dr-sport{font-size:10.5px;font-weight:900;letter-spacing:.05em;background:rgba(255,255,255,.04);border:1px solid var(--border2);padding:2px 9px;border-radius:0;white-space:nowrap}
 .plan-summary{
-  background:linear-gradient(90deg,rgba(255,61,46,.1),transparent);
-  border:1px solid rgba(255,61,46,.3);border-radius:0;padding:13px 17px;margin-bottom:10px;
+  background:linear-gradient(90deg,rgba(98,197,238,.1),transparent);
+  border:1px solid rgba(98,197,238,.3);border-radius:0;padding:13px 17px;margin-bottom:10px;
   font-size:13px;color:var(--soft);line-height:1.5;
 }
 .plan-summary b{color:var(--acc2)}
@@ -306,7 +306,7 @@ textarea{resize:vertical;min-height:70px}
 .conn-status.no{background:rgba(154,147,159,.07);color:var(--muted);border:1px solid var(--border)}
 .lvl-card{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--border);padding:11px 13px;cursor:pointer;transition:border-color .15s;margin-bottom:8px}
 .lvl-card:hover{border-color:var(--border2)}
-.lvl-card.on{border-color:var(--acc);background:rgba(255,61,46,.07)}
+.lvl-card.on{border-color:var(--acc);background:rgba(98,197,238,.07)}
 .lvl-card .ln{font-weight:700;font-size:13.5px}
 .lvl-card .ld{font-size:11px;color:var(--dim)}
 .lvl-card.on .ld{color:var(--muted)}
@@ -407,7 +407,7 @@ canvas{max-width:100%}
 .chat-box{display:flex;flex-direction:column;gap:9px;margin-top:12px;max-height:420px;overflow-y:auto}
 .chat-msg{max-width:85%;padding:9px 12px;font-size:12.5px;line-height:1.5;white-space:pre-wrap}
 .chat-msg.ai{align-self:flex-start;background:var(--border)}
-.chat-msg.me{align-self:flex-end;background:rgba(255,61,46,.15);border:1px solid rgba(255,61,46,.3)}
+.chat-msg.me{align-self:flex-end;background:rgba(98,197,238,.15);border:1px solid rgba(98,197,238,.3)}
 .chat-msg .cm{display:block;font-size:9.5px;color:var(--dim);margin-top:3px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
 .chat-input{display:flex;gap:8px;margin-top:12px}
 .chat-input input{flex:1}
@@ -428,7 +428,7 @@ canvas{max-width:100%}
 @media(max-width:760px){.onb-levels{grid-template-columns:1fr}}
 .onb-lvl{border:1px solid var(--border);background:var(--panel);padding:24px 22px;cursor:pointer;display:flex;flex-direction:column;min-height:250px;transition:border-color .15s}
 .onb-lvl:hover{border-color:var(--acc)}
-.onb-lvl.on{border-color:var(--acc);background:rgba(255,61,46,.07)}
+.onb-lvl.on{border-color:var(--acc);background:rgba(98,197,238,.07)}
 .onb-lvl .oi{font-size:30px}
 .onb-lvl .on1{font-family:var(--bc);font-weight:800;font-size:24px;letter-spacing:.03em;margin-top:14px;text-transform:uppercase}
 .onb-lvl .od{font-size:13px;color:var(--muted);line-height:1.55;margin-top:8px;flex:1}
@@ -436,7 +436,7 @@ canvas{max-width:100%}
 .onb-lvl.on .ot{color:var(--acc2)}
 .onb-chip{border:1px solid var(--border2);padding:9px 15px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s}
 .onb-chip:hover{border-color:var(--borderH)}
-.onb-chip.on{border-color:var(--acc);background:rgba(255,61,46,.1);color:var(--text)}
+.onb-chip.on{border-color:var(--acc);background:rgba(98,197,238,.1);color:var(--text)}
 .onb-foot{display:flex;justify-content:space-between;margin-top:44px}
 
 /* ---------- Tisk (Poročila → PDF) ---------- */
@@ -477,7 +477,7 @@ canvas{max-width:100%}
 /* ============ PREMIUM POLISH ============ */
 body{
   background:
-    radial-gradient(1100px 520px at 88% -12%, rgba(255,61,46,.055), transparent 62%),
+    radial-gradient(1100px 520px at 88% -12%, rgba(98,197,238,.055), transparent 62%),
     radial-gradient(900px 480px at -12% 108%, rgba(77,163,255,.035), transparent 60%),
     var(--bg);
 }
@@ -488,13 +488,13 @@ body{
   border-bottom:1px solid var(--border);
   box-shadow:0 1px 0 rgba(255,255,255,.03), 0 12px 32px -18px rgba(0,0,0,.8);
 }
-.logo-mark{box-shadow:0 4px 16px -4px rgba(255,61,46,.5)}
+.logo-mark{box-shadow:0 4px 16px -4px rgba(98,197,238,.5)}
 .nav-item{position:relative}
 .nav-item.active{border-bottom-color:transparent}
 .nav-item.active::after{
   content:'';position:absolute;left:0;right:0;bottom:0;height:2px;
   background:linear-gradient(90deg,var(--acc),var(--acc2));
-  box-shadow:0 0 12px rgba(255,61,46,.55);
+  box-shadow:0 0 12px rgba(98,197,238,.55);
 }
 .card{
   background:linear-gradient(180deg, rgba(255,255,255,.016), rgba(255,255,255,0) 42%) , var(--panel);
@@ -513,16 +513,16 @@ body{
 .btn-ghost{transition:border-color .15s,color .15s,transform .15s,background .15s}
 .btn-ghost:hover{background:#1e252b;border-color:#333d45}
 input,select,textarea{transition:border-color .15s, box-shadow .15s}
-input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-shadow:0 0 0 3px rgba(255,61,46,.15)}
+input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-shadow:0 0 0 3px rgba(98,197,238,.15)}
 .modal-back{background:rgba(8,7,10,.68);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .modal{box-shadow:0 30px 80px -20px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.04);border-color:var(--border2)}
 .onb-back{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .onb-chip{transition:border-color .15s,color .15s,background .15s,transform .12s}
 .onb-chip:hover{border-color:var(--borderH);transform:translateY(-1px)}
-.onb-chip.on{background:var(--accSoft);border-color:var(--acc);color:var(--text);box-shadow:inset 0 0 0 1px rgba(255,61,46,.22)}
+.onb-chip.on{background:var(--accSoft);border-color:var(--acc);color:var(--text);box-shadow:inset 0 0 0 1px rgba(98,197,238,.22)}
 .day-row{transition:border-color .18s, box-shadow .18s}
 .day-row:hover{border-color:var(--border2);box-shadow:0 12px 28px -20px rgba(0,0,0,.85)}
-.week-list .day-row.today{box-shadow:0 0 0 1px rgba(255,61,46,.32), 0 16px 38px -24px rgba(255,61,46,.4)}
+.week-list .day-row.today{box-shadow:0 0 0 1px rgba(98,197,238,.32), 0 16px 38px -24px rgba(98,197,238,.4)}
 .toast{box-shadow:0 14px 40px -12px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.05)}
 ::-webkit-scrollbar{width:9px;height:9px}
 ::-webkit-scrollbar-thumb{background:#2b2830;border:2px solid var(--bg)}
@@ -530,8 +530,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
 .page-head h1{color:var(--ink)}
 .page-head h1 .hl{color:var(--sig)}
 .dropzone{transition:border-color .15s,background .15s}
-.dropzone:hover{border-color:var(--acc);background:rgba(255,61,46,.05)}
-.path-bar i{box-shadow:0 0 14px rgba(255,61,46,.4)}
+.dropzone:hover{border-color:var(--acc);background:rgba(98,197,238,.05)}
+.path-bar i{box-shadow:0 0 14px rgba(98,197,238,.4)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
 /* ===== ZRAK — manj stisnjeno ===== */
@@ -581,7 +581,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc)!important;box-sh
 /* ===== smer 1a: Danes najprej ===== */
 .hero-row{display:grid;grid-template-columns:1.62fr 1fr;gap:13px;margin-bottom:14px}
 @media(max-width:1000px){.hero-row{grid-template-columns:1fr}}
-.today{border:1px solid var(--border2);background:linear-gradient(120deg,rgba(255,61,46,.13),var(--panel) 62%);padding:20px 22px;display:flex;flex-direction:column}
+.today{border:1px solid var(--border2);background:linear-gradient(120deg,rgba(98,197,238,.13),var(--panel) 62%);padding:20px 22px;display:flex;flex-direction:column}
 .today-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .today-tag{font-size:10.5px;font-weight:800;letter-spacing:.12em;color:var(--dim)}
 .today-wx{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap}
@@ -628,6 +628,63 @@ html,body{max-width:100%;overflow-x:hidden}
   .btn-danger:disabled{background:transparent;color:var(--dim);border-color:var(--border);cursor:not-allowed}
   .med-note{font-size:12.5px;line-height:1.55;color:var(--dim);font-weight:600;margin-top:6px}
   .med-note b{color:var(--muted)}
+
+/* ===== 45 pravil, dobesedno iz mockupa formainamizje.html ===== */
+h1, h2, h3, h4 { font-family: var(--sans); letter-spacing: -0.022em; margin: 0px; }
+a { color: var(--sig); text-decoration: none; }
+a:hover { color: rgb(157, 220, 247); }
+.tabnav a { position: relative; font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--dim); padding: 14px 0px; display: block; }
+.tabnav a:hover { color: var(--ink); }
+.tabnav a[aria-current="page"] { color: var(--ink); }
+.tabnav a[aria-current="page"]::after { content: ""; position: absolute; left: 0px; right: 0px; bottom: -1px; height: 2px; background: var(--sig); }
+.k { font-family: var(--mono); font-size: 9.5px; font-weight: 500; letter-spacing: 0.17em; text-transform: uppercase; color: var(--dim); white-space: nowrap; }
+.m { font-size: 12.5px; line-height: 1.6; color: var(--dim); }
+.kv { display: flex; align-items: baseline; gap: 10px; }
+.kv > :first-child { flex: 1 1 0%; min-width: 0px; }
+.kv > :last-child { flex: 0 0 auto; white-space: nowrap; }
+.m b { color: var(--ink); font-weight: 600; }
+.n { font-family: var(--mono); font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; white-space: nowrap; }
+.p { background: var(--panel); border: 1px solid var(--line); }
+.b { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.11em; text-transform: uppercase; white-space: nowrap; padding: 10px 16px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.b:hover { background: rgb(30, 37, 43); border-color: rgb(51, 61, 69); }
+.b.sig { background: var(--sigd); border-color: var(--sigd); color: rgb(4, 22, 29); }
+.b.sig:hover { background: var(--sig); border-color: var(--sig); }
+.b.g { background: transparent; border-color: transparent; color: var(--sig); padding: 10px 4px; }
+.b.g:hover { background: transparent; color: rgb(157, 220, 247); }
+.b.dz { border-color: rgba(255, 69, 142, 0.4); color: var(--sig2); background: transparent; }
+.b.dz:hover { background: rgba(255, 69, 142, 0.09); border-color: var(--sig2); }
+.sg button { font-family: var(--mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; padding: 8px 15px; background: var(--panel); border: 1px solid var(--line); border-left: none; color: var(--dim); cursor: pointer; }
+.sg button:first-child { border-left: 1px solid var(--line); }
+.sg button:hover { color: var(--ink); background: var(--panel2); }
+.sg button[data-on="1"] { background: var(--sigd); border-color: var(--sigd); color: rgb(4, 22, 29); }
+input.f, textarea.f { width: 100%; font-family: var(--sans); font-size: 13.5px; padding: 10px 12px; background: rgb(13, 18, 22); border: 1px solid var(--line); color: var(--ink); outline: none; }
+input.f:focus, textarea.f:focus { border-color: var(--sig); }
+input.f::placeholder { color: var(--dim2); }
+.rw { display: grid; align-items: center; column-gap: 16px; border-bottom: 1px solid var(--line2); }
+.rw:hover { background: var(--panel2); }
+.tg { font-family: var(--mono); font-size: 9.5px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border: 1px solid; }
+:focus-visible { outline: 2px solid var(--sig); outline-offset: 2px; }
+::selection { background: rgba(98, 197, 238, 0.3); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: rgb(36, 44, 51); }
+::-webkit-scrollbar-track { background: var(--bench); }
+@keyframes fu { 
+  0% { opacity: 0; transform: translateY(5px); }
+  100% { opacity: 1; transform: none; }
+}
+@media (max-width: 1180px) {
+  .g2 { grid-template-columns: minmax(0px, 1fr) !important; }
+}
+@media (max-width: 1100px) {
+  .hd-install { display: none; }
+}
+@media (max-width: 860px) {
+  .sc { overflow-x: auto; }
+  .sc .rw { min-width: 680px; }
+}
+@media (max-width: 1000px) {
+  .g3 { grid-template-columns: minmax(0px, 1fr) !important; }
+}
 </style>
 </head>
 <body>
@@ -1535,7 +1592,7 @@ function proThanks(){
   d.style.cssText='position:fixed;inset:0;background:rgba(4,10,18,.74);backdrop-filter:blur(4px);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px';
   d.innerHTML=`<div style="background:var(--panel,#18161b);border:1px solid var(--border2,#38333e);border-radius:0;max-width:400px;padding:26px;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.5)">
     <div style="font-size:40px">⭐</div><div style="font-weight:800;font-size:18px;margin:8px 0">Hvala za nakup!</div>
-    <div style="font-size:13.5px;line-height:1.55;color:var(--soft,#c9c3ce)">Plačilo je prejeto — <b>PRO se aktivira samodejno v nekaj sekundah</b>. Če se znak ne pojavi v minuti, osveži stran ali piši na <a href="mailto:blaz.gregorc@formai.si" style="color:var(--acc2,#ff6a5e)">blaz.gregorc@formai.si</a>.</div>
+    <div style="font-size:13.5px;line-height:1.55;color:var(--soft,#c9c3ce)">Plačilo je prejeto — <b>PRO se aktivira samodejno v nekaj sekundah</b>. Če se znak ne pojavi v minuti, osveži stran ali piši na <a href="mailto:blaz.gregorc@formai.si" style="color:var(--acc2,var(--sig))">blaz.gregorc@formai.si</a>.</div>
     <button class="btn mt" onclick="document.getElementById('proTyBack').remove()">V redu</button></div>`;
   document.body.appendChild(d);
 }
@@ -1818,7 +1875,7 @@ function heroMiniCards(){
           <div style="font-size:10.5px;color:var(--acc2);margin-top:2px;font-weight:600">${LANG==='en'?'estimate from rides →':'oceni iz voženj →'}</div>
         </div></div></div>`;
   return `<div class="mini-row">${ftpCard}
-    <div class="mini-c" style="border-color:rgba(255,61,46,.35);background:linear-gradient(135deg,rgba(255,61,46,.1),var(--panel))">
+    <div class="mini-c" style="border-color:rgba(98,197,238,.35);background:linear-gradient(135deg,rgba(98,197,238,.1),var(--panel))">
       <div style="font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--acc2)">${t('challenge')}</div>
       <div style="font-weight:700;font-size:12.5px;margin-top:3px">${target.toLocaleString('sl')} km</div>
       <div style="height:3px;background:var(--border);margin-top:7px"><i style="display:block;height:100%;width:${pct}%;background:var(--acc)"></i></div>
@@ -1834,7 +1891,7 @@ function renderDanesHero(){
   try{ const w=weatherByDate(iso); if(w){ const wi=weatherInfo(w.code)||{};
         wxTxt=`${wi.e||''} ${w.tmax!=null?Math.round(w.tmax)+'°':''}${w.pop!=null?' · '+(w.pop>=60?(LANG==='en'?'RAIN':'DEŽ'):w.pop>=30?(LANG==='en'?'RAIN POSSIBLE':'MOŽEN DEŽ'):(LANG==='en'?'DRY':'SUHO')):''}`; } }catch(_){}
   if(!d){
-    el.innerHTML=`<div class="card mb" style="border-color:rgba(255,61,46,.35);background:linear-gradient(180deg,rgba(255,61,46,.06),var(--panel))">
+    el.innerHTML=`<div class="card mb" style="border-color:rgba(98,197,238,.35);background:linear-gradient(180deg,rgba(98,197,238,.06),var(--panel))">
       <div style="font-size:10.5px;font-weight:800;letter-spacing:.12em;color:var(--dim)">${kick}</div>
       <div style="font-family:var(--sans);font-size:33px;font-weight:600;letter-spacing:-.022em;line-height:1.12;margin-top:6px">${LANG==='en'?'NO PLAN FOR TODAY':'ZA DANES NI PLANA'}</div>
       <div style="font-size:13px;color:var(--muted);margin-top:6px">${LANG==='en'?'Generate a week and the coach will guide you daily.':'Generiraj teden in trener te bo vodil vsak dan.'}</div>
@@ -2039,7 +2096,7 @@ function renderDashWeekPlan(){
     const lbl = (iso<=today && mainAct)
       ? `${sportEmoji(mainAct.sport)||'🚴 '}${mainAct.name}${dayActs.some(r=>r.sport==='moc'&&r!==mainAct)?' + moč':''}`
       : d? (d.naslov||d.tip) : '—';
-    rows.push(`<div onclick="openPlanDay('${iso}')" title="${d?esc('Plan: '+(d.naslov||d.tip))+' — klik za podrobnosti':'klik odpre plan'}" style="display:flex;gap:9px;align-items:center;font-size:12px;cursor:pointer;${isToday?'background:rgba(255,61,46,.08);margin:0 -8px;padding:4px 8px;border:1px solid rgba(255,61,46,.3)':'padding:4px 0'}">
+    rows.push(`<div onclick="openPlanDay('${iso}')" title="${d?esc('Plan: '+(d.naslov||d.tip))+' — klik za podrobnosti':'klik odpre plan'}" style="display:flex;gap:9px;align-items:center;font-size:12px;cursor:pointer;${isToday?'background:rgba(98,197,238,.08);margin:0 -8px;padding:4px 8px;border:1px solid rgba(98,197,238,.3)':'padding:4px 0'}">
       <span style="width:3px;height:15px;background:${stripe};flex:none"></span>
       <span style="color:var(--dim);width:30px;font-weight:700;flex:none">${DNEVI[i].slice(0,3).toUpperCase()}</span>
       <span style="font-weight:${isToday?'700':'600'};color:${isToday?'var(--text)':'inherit'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">${esc(lbl)}</span>
@@ -2061,7 +2118,7 @@ function renderWeeklySide(){
   el.innerHTML = weeks.map(w=>`
     <div style="margin-bottom:11px">
       <div style="display:flex;justify-content:space-between;font-size:10.5px;font-weight:700;color:${w.cur?'var(--acc2)':'var(--dim)'}"><span>${w.lbl}${w.cur?(LANG==='en'?' · this week':' · ta teden'):''}</span><span>${w.h} h${w.km?` · ${w.km} km`:''}</span></div>
-      <div style="height:7px;background:var(--border);margin-top:4px"><i style="display:block;height:100%;width:${Math.max(2,Math.round(w.h/mx*100))}%;background:${w.cur?'var(--acc)':'rgba(255,61,46,.4)'}"></i></div>
+      <div style="height:7px;background:var(--border);margin-top:4px"><i style="display:block;height:100%;width:${Math.max(2,Math.round(w.h/mx*100))}%;background:${w.cur?'var(--acc)':'rgba(98,197,238,.4)'}"></i></div>
     </div>`).join('');
 }
 
@@ -2089,7 +2146,7 @@ function renderCoachReport(){
   const box=$('coachReport'); if(!box) return;
   const cc=coachCache();
   if(cc.date===todayIso() && cc.txt){
-    box.innerHTML=`<div class="card" style="border-color:rgba(255,61,46,.3)">
+    box.innerHTML=`<div class="card" style="border-color:rgba(98,197,238,.3)">
       <div class="spread"><h3 style="margin:0">🤖 AI trener <span class="sub">danes</span></h3><span style="font-size:10px;color:var(--dim);font-weight:700">SAMODEJNO</span></div>
       <div style="font-size:12.5px;color:var(--soft);line-height:1.65;margin-top:8px">${nl2br(cc.txt)}</div>
       <button class="btn btn-ghost btn-sm mt no-print" id="btnCoachAI" onclick="coachReportAI()">↻ Osveži poročilo</button></div>`;
@@ -2110,7 +2167,7 @@ function renderCoachReport(){
   else if (kmD!=null && kmD>=15) { mood='🔥'; msg=`Ta teden si na ${Math.round(t.km)} km — ${kmD}% več kot prejšnji. Lepa rast, samo pazi da dodaš tudi počitek.`; }
   else if (kmD!=null && kmD<=-30) { mood='🌱'; msg=`Ta teden je mirnejši (${Math.round(t.km)} km). Če je bil namen počitek — super. Če ne, te jutri čaka dober dan za vožnjo.`; }
   else { mood='👍'; msg=`Ta teden: ${Math.round(t.km)} km v ${fmtDur(t.min)}. ${trendTxt}`; }
-  box.innerHTML = `<div class="card" style="border-color:rgba(255,61,46,.35)">
+  box.innerHTML = `<div class="card" style="border-color:rgba(98,197,238,.35)">
     <h3 style="margin-bottom:8px">${mood} AI trener <span class="sub">${new Date().toLocaleDateString('sl-SI',{weekday:'long'})}</span></h3>
     <div style="font-size:12.5px;color:var(--soft);line-height:1.55">${esc(msg)}</div>
     <div style="font-size:11px;color:var(--dim);margin-top:8px;font-weight:600">
@@ -2435,7 +2492,7 @@ function renderPlan(){
       const dn=d.done || state.rides.some(r=>r.date===d.datum);
       const sl2=sportLabel(d.tip);
       const wd=weatherByDate(d.datum); const wi=wd?weatherInfo(wd.code):null;
-      return `<div onclick="document.getElementById('day-${d.datum}')?.scrollIntoView({behavior:'smooth',block:'start'})" style="cursor:pointer;border:1px solid ${isT?'var(--acc)':'var(--border)'};background:${isT?'rgba(255,61,46,.07)':'var(--panel)'};padding:9px 10px;min-width:0">
+      return `<div onclick="document.getElementById('day-${d.datum}')?.scrollIntoView({behavior:'smooth',block:'start'})" style="cursor:pointer;border:1px solid ${isT?'var(--acc)':'var(--border)'};background:${isT?'rgba(98,197,238,.07)':'var(--panel)'};padding:9px 10px;min-width:0">
         <div style="display:flex;justify-content:space-between;font-size:9.5px;font-weight:800;letter-spacing:.06em;color:${isT?'var(--acc2)':'var(--dim)'}"><span>${DNEVI[(dd.getDay()+6)%7].slice(0,3).toUpperCase()} ${dd.getDate()}.</span><span>${dn?'<span style="color:var(--green)">✓</span>':(wi?wi.e:'')}</span></div>
         <div style="font-size:11.5px;font-weight:700;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${sl2.i} ${esc(d.naslov||d.tip)}</div>
         <div style="font-size:10px;color:var(--muted);margin-top:2px">${chipClass(d.tip,d)==='pocitek'?'počitek':fmtDur(d.trajanje_min)+(d.tss_ocena?' · ~'+d.tss_ocena+' TSS':'')}</div>
@@ -5059,7 +5116,7 @@ function renderKalorije(){
     cell('Beljakovine', mac.p, 'g', prot, 'var(--green)')}${
     cell('Ogljikovi h.', mac.c, 'g', ohT, 'var(--blue)')}${
     cell('Maščobe', mac.f, 'g', fatT, 'var(--yellow)')}</div>`;
-  const emptyCta = entries.length? '' : `<div class="card" style="border-color:rgba(255,61,46,.3)">
+  const emptyCta = entries.length? '' : `<div class="card" style="border-color:rgba(98,197,238,.3)">
     <h3>Danes še ni vnosov <span class="sub">dodaj v 5 sekundah</span></h3>
     <div class="row mt" style="flex-wrap:wrap">
       <button class="btn btn-primary btn-sm" onclick="kalManualAdd()">+ Ročni vnos</button>
@@ -5116,7 +5173,7 @@ function renderKalorije(){
       const carbs = dur>=150? '60–90 g OH/h' : dur>=90? '40–60 g OH/h' : '30–40 g OH/h';
       const dd=parseIso(iso);
       const when = i===0? (LANG==='en'?'TODAY':'DANES') : i===1? (LANG==='en'?'TOMORROW':'JUTRI') : DNEVI[(dd.getDay()+6)%7].slice(0,3).toUpperCase();
-      fuel=`<div class="card" style="border-color:rgba(255,61,46,.3)">
+      fuel=`<div class="card" style="border-color:rgba(98,197,238,.3)">
         <h3 style="color:var(--acc2)">${t('fueling')} · ${when} — ${esc(d.naslov||d.tip)}</h3>
         <div style="display:flex;flex-direction:column;gap:7px;font-size:12px;color:var(--soft);line-height:1.45">
           <div style="display:flex;gap:8px"><span style="color:var(--dim);font-weight:800;width:44px;flex-shrink:0">${LANG==='en'?'PRE':'PRED'}</span><span>${LANG==='en'?'90 min out: 60 g carbs (oats + banana)':'90 min prej: 60 g OH (ovseni kosmiči + banana)'}</span></div>
@@ -5978,7 +6035,7 @@ async function renderSubCard(){
     el.innerHTML=`<div style="font-weight:700;font-size:14px">🚀 ZGODNJI DOSTOP</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">Neomejen AI — zastonj za prve uporabnike</div>
     <div style="font-size:11.5px;color:var(--soft);margin-top:8px;line-height:1.5">FORMAI PRO (9,99 €/mes) <b>podpre razvoj</b> — dobiš znak podpornika, prednost pri novih funkcijah (Garmin push na uro, spanje/HRV) in <b>zaklenjeno ceno za vedno</b>.</div>
     ${stripeUrl()
-      ? `<a class="btn btn-sm mt" href="${stripeUrl()}" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#111013;font-weight:800;border:none">⭐ Nadgradi na PRO — 9,99 €/mes</a><div style="font-size:11px;color:var(--muted);margin-top:6px">Varno plačilo prek Stripe · prekineš kadarkoli</div>`
+      ? `<a class="btn btn-sm mt" href="${stripeUrl()}" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;background:var(--sigd));color:#111013;font-weight:800;border:none">⭐ Nadgradi na PRO — 9,99 €/mes</a><div style="font-size:11px;color:var(--muted);margin-top:6px">Varno plačilo prek Stripe · prekineš kadarkoli</div>`
       : `<div style="font-size:11.5px;color:var(--muted);margin-top:8px">Ko pride uradni cenik, zgodnji uporabniki obdržijo ugodnosti.</div>`}`;
   } else {
     el.innerHTML=`<div style="font-size:12.5px;color:var(--muted)">Prijavi se z Googlom (🔵 zgoraj) — AI se takoj vklopi, v zgodnjem dostopu neomejeno in zastonj.</div>`;
