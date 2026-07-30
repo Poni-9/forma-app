@@ -385,7 +385,7 @@ canvas{max-width:100%}
 .rd-stat .b{font-size:9px;color:var(--dim);text-transform:uppercase;font-weight:700;letter-spacing:.08em;margin-top:2px}
 #rdMap{height:265px;border-radius:0;margin-bottom:12px;border:1px solid var(--border2);background:var(--bg)}
 .rd-chart{position:relative;height:150px;margin-bottom:10px}
-.leaflet-container{background:#111013}
+.leaflet-container{background:#0b0e11}
 .opis-line{padding:3px 0 3px 9px;border-left:2px solid var(--border2);margin:4px 0;line-height:1.45}
 .opis-line:hover{border-left-color:var(--acc)}
 
@@ -1590,9 +1590,9 @@ function closeModal(id){ $(id).classList.remove('open'); }
 function proThanks(){
   const d=document.createElement('div'); d.id='proTyBack';
   d.style.cssText='position:fixed;inset:0;background:rgba(4,10,18,.74);backdrop-filter:blur(4px);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px';
-  d.innerHTML=`<div style="background:var(--panel,#18161b);border:1px solid var(--border2,#38333e);border-radius:0;max-width:400px;padding:26px;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.5)">
+  d.innerHTML=`<div style="background:var(--panel,#12171b);border:1px solid var(--border2,#1a2126);border-radius:0;max-width:400px;padding:26px;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.5)">
     <div style="font-size:40px">⭐</div><div style="font-weight:800;font-size:18px;margin:8px 0">Hvala za nakup!</div>
-    <div style="font-size:13.5px;line-height:1.55;color:var(--soft,#c9c3ce)">Plačilo je prejeto — <b>PRO se aktivira samodejno v nekaj sekundah</b>. Če se znak ne pojavi v minuti, osveži stran ali piši na <a href="mailto:blaz.gregorc@formai.si" style="color:var(--acc2,var(--sig))">blaz.gregorc@formai.si</a>.</div>
+    <div style="font-size:13.5px;line-height:1.55;color:var(--soft,#c3ccd4)">Plačilo je prejeto — <b>PRO se aktivira samodejno v nekaj sekundah</b>. Če se znak ne pojavi v minuti, osveži stran ali piši na <a href="mailto:blaz.gregorc@formai.si" style="color:var(--acc2,var(--sig))">blaz.gregorc@formai.si</a>.</div>
     <button class="btn mt" onclick="document.getElementById('proTyBack').remove()">V redu</button></div>`;
   document.body.appendChild(d);
 }
@@ -1844,12 +1844,12 @@ function renderForma90(){
       <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:3px;background:repeating-linear-gradient(90deg,#5fd67a 0 4px,transparent 4px 7px)"></span>${LANG==='en'?'FRESHNESS':'SVEŽINA'}</span>
     </div></div>
   <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;min-height:230px;display:block">
-    ${gridV.map(v=>`<line x1="${x0}" y1="${Y(v).toFixed(1)}" x2="${W-10}" y2="${Y(v).toFixed(1)}" stroke="${Math.abs(v)<0.5?'#38333e':'#26232a'}" stroke-width="${Math.abs(v)<0.5?1.5:1}"></line><text x="${x0-6}" y="${(Y(v)+4).toFixed(1)}" text-anchor="end" font-size="10" fill="#6f6876" font-weight="600">${Math.round(v)}</text>`).join('')}
+    ${gridV.map(v=>`<line x1="${x0}" y1="${Y(v).toFixed(1)}" x2="${W-10}" y2="${Y(v).toFixed(1)}" stroke="${Math.abs(v)<0.5?'#1a2126':'#232b32'}" stroke-width="${Math.abs(v)<0.5?1.5:1}"></line><text x="${x0-6}" y="${(Y(v)+4).toFixed(1)}" text-anchor="end" font-size="10" fill="#606a72" font-weight="600">${Math.round(v)}</text>`).join('')}
     <polygon points="${fill}" fill="rgba(77,163,255,.12)"></polygon>
     <polyline points="${line('atl')}" fill="none" stroke="#edbb00" stroke-width="1.8" opacity=".9"></polyline>
     <polyline points="${line('ctl')}" fill="none" stroke="#62c5ee" stroke-width="2.4"></polyline>
     <polyline points="${line('tsb')}" fill="none" stroke="#5fd67a" stroke-width="1.8" stroke-dasharray="4 3"></polyline>
-    ${[0,Math.floor(s.length/3),Math.floor(2*s.length/3),s.length-1].map(i=>`<text x="${X(i).toFixed(1)}" y="${H-1}" text-anchor="${i===0?'start':i===s.length-1?'end':'middle'}" font-size="9.5" fill="#6f6876" font-weight="600">${lab(i)}</text>`).join('')}
+    ${[0,Math.floor(s.length/3),Math.floor(2*s.length/3),s.length-1].map(i=>`<text x="${X(i).toFixed(1)}" y="${H-1}" text-anchor="${i===0?'start':i===s.length-1?'end':'middle'}" font-size="9.5" fill="#606a72" font-weight="600">${lab(i)}</text>`).join('')}
   </svg>
 `;
 }
@@ -2224,7 +2224,7 @@ Vrni SAMO čisto besedilo, brez naslova.${aiLangNote()}`}], {json:false, temp:.6
 
 function renderCharts(){
   if (typeof Chart === 'undefined') return;
-  Chart.defaults.color = '#9a939f';
+  Chart.defaults.color = '#939da6';
   Chart.defaults.borderColor = 'rgba(35,43,50,.6)';
   Chart.defaults.font.family = 'IBM Plex Sans, sans-serif';
 
@@ -5428,7 +5428,7 @@ function renderSyncF(){
   const el = $('syncStatus2'); if (!el) return;
   const c = state.sync;
   el.innerHTML = c?.bin
-    ? `✅ Aktivna. <b>Koda za telefon:</b> <code style="user-select:all;background:#111013;padding:2px 7px;border-radius:0">${c.bin}|${c.key}</code>`
+    ? `✅ Aktivna. <b>Koda za telefon:</b> <code style="user-select:all;background:#0b0e11;padding:2px 7px;border-radius:0">${c.bin}|${c.key}</code>`
     : 'Ni nastavljena — plan živi samo na tem računalniku.';
   if (c?.bin && $('sSyncF') && !$('sSyncF').value) $('sSyncF').value = c.bin+'|'+c.key;
 }
@@ -5598,11 +5598,11 @@ function renderAnalitika(){
     fEl.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
       <rect x="${x0}" y="${yB1.toFixed(1)}" width="${W-10-x0}" height="${Math.max(2,yB2-yB1).toFixed(1)}" fill="rgba(95,214,122,.10)"></rect>
       <text x="${W-14}" y="${(yB1+11).toFixed(1)}" text-anchor="end" font-size="8.5" fill="#5fd67a" opacity=".8" font-weight="700">${EN?'IDEAL RACE WINDOW +10…+25':'IDEALNO OKNO ZA CILJ +10…+25'}</text>
-      <line x1="${x0}" y1="${Y(0).toFixed(1)}" x2="${W-10}" y2="${Y(0).toFixed(1)}" stroke="#38333e" stroke-width="1.5"></line>
-      <text x="${x0-4}" y="${(Y(0)+3).toFixed(1)}" text-anchor="end" font-size="8.5" fill="#6f6876">0</text>
-      <line x1="${xD.toFixed(1)}" y1="10" x2="${xD.toFixed(1)}" y2="172" stroke="#6f6876" stroke-width="1" stroke-dasharray="2 4"></line>
-      <text x="${(xD-4).toFixed(1)}" y="180" text-anchor="end" font-size="8.5" fill="#6f6876" font-weight="700">${EN?'TODAY':'DANES'} ◂ ${EN?'done':'opravljeno'}</text>
-      <text x="${(xD+4).toFixed(1)}" y="180" font-size="8.5" fill="#6f6876">▸ ${EN?'forecast if you follow the plan':'napoved, če slediš planu'}</text>
+      <line x1="${x0}" y1="${Y(0).toFixed(1)}" x2="${W-10}" y2="${Y(0).toFixed(1)}" stroke="#1a2126" stroke-width="1.5"></line>
+      <text x="${x0-4}" y="${(Y(0)+3).toFixed(1)}" text-anchor="end" font-size="8.5" fill="#606a72">0</text>
+      <line x1="${xD.toFixed(1)}" y1="10" x2="${xD.toFixed(1)}" y2="172" stroke="#606a72" stroke-width="1" stroke-dasharray="2 4"></line>
+      <text x="${(xD-4).toFixed(1)}" y="180" text-anchor="end" font-size="8.5" fill="#606a72" font-weight="700">${EN?'TODAY':'DANES'} ◂ ${EN?'done':'opravljeno'}</text>
+      <text x="${(xD+4).toFixed(1)}" y="180" font-size="8.5" fill="#606a72">▸ ${EN?'forecast if you follow the plan':'napoved, če slediš planu'}</text>
       ${p.ciljDatum?`<line x1="${W-12}" y1="10" x2="${W-12}" y2="172" stroke="#edbb00" stroke-width="1.5" stroke-dasharray="4 4"></line>`:''}
       <polyline points="${line(hist,'ctl',0)}" fill="none" stroke="#62c5ee" stroke-width="2.5" stroke-linejoin="round"></polyline>
       <polyline points="${line(fut,'ctl',nH)}" fill="none" stroke="#62c5ee" stroke-width="2" stroke-dasharray="3 4"></polyline>
@@ -6035,7 +6035,7 @@ async function renderSubCard(){
     el.innerHTML=`<div style="font-weight:700;font-size:14px">🚀 ZGODNJI DOSTOP</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">Neomejen AI — zastonj za prve uporabnike</div>
     <div style="font-size:11.5px;color:var(--soft);margin-top:8px;line-height:1.5">FORMAI PRO (9,99 €/mes) <b>podpre razvoj</b> — dobiš znak podpornika, prednost pri novih funkcijah (Garmin push na uro, spanje/HRV) in <b>zaklenjeno ceno za vedno</b>.</div>
     ${stripeUrl()
-      ? `<a class="btn btn-sm mt" href="${stripeUrl()}" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;background:var(--sigd));color:#111013;font-weight:800;border:none">⭐ Nadgradi na PRO — 9,99 €/mes</a><div style="font-size:11px;color:var(--muted);margin-top:6px">Varno plačilo prek Stripe · prekineš kadarkoli</div>`
+      ? `<a class="btn btn-sm mt" href="${stripeUrl()}" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;background:var(--sigd));color:#0b0e11;font-weight:800;border:none">⭐ Nadgradi na PRO — 9,99 €/mes</a><div style="font-size:11px;color:var(--muted);margin-top:6px">Varno plačilo prek Stripe · prekineš kadarkoli</div>`
       : `<div style="font-size:11.5px;color:var(--muted);margin-top:8px">Ko pride uradni cenik, zgodnji uporabniki obdržijo ugodnosti.</div>`}`;
   } else {
     el.innerHTML=`<div style="font-size:12.5px;color:var(--muted)">Prijavi se z Googlom (🔵 zgoraj) — AI se takoj vklopi, v zgodnjem dostopu neomejeno in zastonj.</div>`;
