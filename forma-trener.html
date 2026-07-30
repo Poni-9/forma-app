@@ -2374,8 +2374,49 @@ function risiPregled(){
     const o=document.getElementById('onboardCard'), a=document.getElementById('dashAlert');
     const po=document.getElementById('pgOnboard'), pa=document.getElementById('pgAlert');
     if(po && o) po.innerHTML=o.innerHTML;
-    if(pa && a) pa.innerHTML=a.innerHTML;
+    if(pa) pa.innerHTML = opozoriloSlepote() + ((a && a.innerHTML) || '');
   }catch(_){}
+}
+
+/* ================================================================
+   Opozorilo, kadar AI vidi bistveno manj aktivnosti kot zaslon.
+   Strava po svojih pravilih ne sme v AI; če je večina aktivnosti
+   od tam, AI računa formo iz drobca in svetuje napačno.
+================================================================ */
+function opozoriloSlepote(){
+  try{
+    const sl = LANG!=='en';
+    const vseh = state.rides.length;
+    if(vseh < 5) return '';
+    const vidi = aiRides().length;
+    if(vidi >= vseh*0.6) return '';                    // AI vidi dovolj — brez opozorila
+    const fVsi = currentForm(), fAI = (typeof currentFormAI==='function') ? currentFormAI() : null;
+    const ctlVsi = fVsi? Math.round(fVsi.ctl) : null;
+    const ctlAI  = fAI ? Math.round(fAI.ctl)  : null;
+    const razlika = (ctlVsi!=null && ctlAI!=null && ctlVsi-ctlAI >= 8);
+    const icuOn = !!(state.icu && state.icu.key);
+    return `<div class="p" style="border-color:rgba(237,187,0,.45);background:#0d1216;padding:12px 16px;margin-bottom:2px">
+      <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+        <span class="k" style="color:var(--yellow)">${sl?'AI ne vidi vseh tvojih aktivnosti':'The AI cannot see all your activities'}</span>
+        <span class="n" style="font-size:11px;color:var(--dim)">${vidi} / ${vseh}</span>
+      </div>
+      <div class="m" style="margin-top:7px">
+        ${sl
+          ? `Strava po svojih pravilih ne dovoli pošiljanja uvoženih aktivnosti v AI, zato jih trener ne upošteva.
+             ${razlika? `Na zaslonu je kondicija <b>${ctlVsi}</b>, trener pa računa z <b>${ctlAI}</b> — njegovi predlogi obsega in kalorij bodo zato prenizki.` : ''}`
+          : `Strava's terms do not allow imported activities to be sent to AI, so the coach does not use them.
+             ${razlika? `The screen shows fitness <b>${ctlVsi}</b> while the coach works with <b>${ctlAI}</b> — its volume and calorie suggestions will be too low.` : ''}`}
+      </div>
+      <div class="m" style="margin-top:6px;color:var(--dim2)">
+        ${sl
+          ? (icuOn ? 'Intervals.icu je povezan — poženi sinhronizacijo, da se prenese vsa zgodovina.'
+                   : 'Rešitev: poveži <b>intervals.icu</b> v Nastavitvah. Tvoje vožnje pridejo tja iz Garmina in jih trener sme uporabiti.')
+          : (icuOn ? 'Intervals.icu is connected — run a sync to pull the full history.'
+                   : 'Fix: connect <b>intervals.icu</b> in Settings. Your rides arrive there from Garmin and the coach may use them.')}
+      </div>
+      <div style="margin-top:10px"><button class="b" onclick="switchTab('settings');setTimeout(()=>{const e=document.getElementById('icuKey')||document.getElementById('setIcu'); if(e) e.scrollIntoView({block:'center'});},350)">${sl?'Odpri nastavitve':'Open settings'} →</button></div>
+    </div>`;
+  }catch(e){ console.warn('opozoriloSlepote', e); return ''; }
 }
 
 function renderDash(){
