@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>FORMAI — Terms of Use</title>
+<meta name="description" content="FORMAI terms of use."/>
+<link rel="alternate" hreflang="sl" href="https://formai.si/pogoji.html"/>
+<link rel="alternate" hreflang="en" href="https://formai.si/terms.html"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+  /* ==== FORMAI oblikovni sistem — dobesedno iz mockupa (29. 7. 2026) ==== */
+  --bench:#0b0e11; --bg:#0b0e11; --bg2:#080b0d;
+  --panel:#12171b; --panel2:#171d22; --panel3:#0d1216;
+  --line:#232b32; --line2:#1a2126;
+  --ink:#e9eef2; --dim:#939da6; --dim2:#606a72;
+  --sig:#62c5ee; --sigd:#38a6cf; --sig2:#ff458e; --onSig:#04161d;
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  /* stara imena → iste barve */
+  --border:var(--line); --border2:var(--line2); --borderH:#333d45;
+  --text:var(--ink); --soft:#c3ccd4; --muted:var(--dim);
+  --acc:var(--sig); --accH:#9ddcf7; --acc2:var(--sigd); --accSoft:rgba(98,197,238,.14);
+  --orange:var(--sigd); --green:#5fd67a; --greenSoft:rgba(95,214,122,.13);
+  --red:var(--sig2); --redSoft:rgba(255,69,142,.13);
+  --yellow:#edbb00; --yellowSoft:rgba(237,187,0,.13);
+  --blue:var(--sig); --blueSoft:rgba(98,197,238,.13);
+  --purple:#b48cff; --purpleSoft:rgba(180,140,255,.13);
+  --radius:0px; --bc:var(--mono);
+  font-family:var(--sans);
+}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);line-height:1.65;font-size:15.5px}
+  .wrap{max-width:760px;margin:0 auto;padding:40px 22px 60px}
+  h1{font-size:30px;letter-spacing:-.02em;margin-bottom:6px}
+  .sub{color:var(--muted);margin-bottom:30px}
+  h2{font-size:19px;margin:30px 0 10px;color:var(--acc2)}
+  p,li{color:var(--muted);margin-bottom:10px}
+  li{margin-left:20px}
+  b{color:var(--text)}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin:18px 0}
+  a{color:var(--acc2)}
+  .back{display:inline-block;margin-bottom:20px;color:var(--acc2);text-decoration:none;font-weight:700}
+
+/* ===== gradniki, dobesedno iz mockupa formainamizje.html ===== */
+h1,h2,h3,h4{font-family:var(--sans);letter-spacing:-.022em}
+a{color:var(--sig);text-decoration:none}
+a:hover{color:#9ddcf7}
+.tabnav a{position:relative;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);padding:14px 0;display:block}
+.tabnav a:hover{color:var(--ink)}
+.tabnav a[aria-current="page"]{color:var(--ink)}
+.tabnav a[aria-current="page"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--sig)}
+.k{font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.17em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
+.m{font-size:12.5px;line-height:1.6;color:var(--dim)}
+.m b{color:var(--ink);font-weight:600}
+.kv{display:flex;align-items:baseline;gap:10px}
+.kv>:first-child{flex:1 1 0%;min-width:0}
+.kv>:last-child{flex:0 0 auto;white-space:nowrap}
+.n{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap}
+.p{background:var(--panel);border:1px solid var(--line)}
+.b{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.11em;text-transform:uppercase;white-space:nowrap;padding:10px 16px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.b:hover{background:#1e252b;border-color:#333d45}
+.b.sig{background:var(--sigd);border-color:var(--sigd);color:var(--onSig)}
+.b.sig:hover{background:var(--sig);border-color:var(--sig)}
+.b.g{background:transparent;border-color:transparent;color:var(--sig);padding:10px 4px}
+.b.g:hover{background:transparent;color:#9ddcf7}
+.b.dz{border-color:rgba(255,69,142,.4);color:var(--sig2);background:transparent}
+.b.dz:hover{background:rgba(255,69,142,.09);border-color:var(--sig2)}
+.sg button{font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:8px 15px;background:var(--panel);border:1px solid var(--line);border-left:none;color:var(--dim);cursor:pointer}
+.sg button:first-child{border-left:1px solid var(--line)}
+.sg button:hover{color:var(--ink);background:var(--panel2)}
+.sg button[data-on="1"]{background:var(--sigd);border-color:var(--sigd);color:var(--onSig)}
+input.f,textarea.f{width:100%;font-family:var(--sans);font-size:13.5px;padding:10px 12px;background:var(--panel3);border:1px solid var(--line);color:var(--ink);outline:none}
+input.f:focus,textarea.f:focus{border-color:var(--sig)}
+input.f::placeholder{color:var(--dim2)}
+.rw{display:grid;align-items:center;column-gap:16px;border-bottom:1px solid var(--line2)}
+.rw:hover{background:var(--panel2)}
+.tg{font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid}
+:focus-visible{outline:2px solid var(--sig);outline-offset:2px}
+::selection{background:rgba(98,197,238,.3)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#242c33}
+::-webkit-scrollbar-track{background:var(--bench)}
+@keyframes fu{0%{opacity:0;transform:translateY(5px)}100%{opacity:1;transform:none}}
+@media(max-width:1180px){.g2{grid-template-columns:minmax(0,1fr)!important}}
+@media(max-width:1100px){.hd-install{display:none}}
+@media(max-width:1000px){.g3{grid-template-columns:minmax(0,1fr)!important}}
+@media(max-width:860px){.sc{overflow-x:auto}.sc .rw{min-width:680px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="pogoji.html">Slovensko →</a>
+  <h1>Terms of Use</h1>
+  <p class="sub">FORMAI · in force since 29 July 2026 · <a href="pogoji.html">Slovenian original</a></p>
+
+  <div class="card"><b>⚕️ First, the most important thing:</b> FORMAI provides <b>coaching and nutrition guidance, not medical advice</b>. Calorie, load and expenditure figures are estimates computed from the data you enter yourself. Before making significant changes to your training or diet — and always in case of a health condition, illness, injury or pregnancy — consult a doctor.</div>
+
+  <p class="sub" style="margin-bottom:22px">This is an English translation of the Slovenian terms published at <a href="pogoji.html">formai.si/pogoji.html</a>. In case of any discrepancy, the Slovenian version prevails.</p>
+
+  <h2>1. Who operates the service</h2>
+  <p>FORMAI is operated by <b>Blaž Gregorc</b>, Slovenia, as a natural person. Contact: <a href="mailto:blaz.gregorc@formai.si">blaz.gregorc@formai.si</a>. The service is available at <a href="https://formai.si">formai.si</a>.</p>
+
+  <h2>2. What the service is</h2>
+  <p>FORMAI is an assistant for planning training and nutrition. From your profile, activities and goals it composes a weekly plan, tracks what you complete, and suggests meals. Part of the content is generated by artificial intelligence.</p>
+  <ul>
+    <li><b>It is not a medical device</b> and is not intended for the diagnosis, treatment or prevention of disease.</li>
+    <li><b>It is not a substitute</b> for a doctor, physiotherapist, dietitian or personal trainer.</li>
+    <li>Content generated by AI may be <b>wrong or incomplete</b>. Judge it with your own sense and listen to your body.</li>
+  </ul>
+
+  <h2>3. Age</h2>
+  <p>The service is intended for people <b>aged 15 or over</b>. For anyone under 18, FORMAI does not plan weight loss — it plans maintenance and building fitness, because the body is still growing. Weight loss at that age belongs under medical supervision, not in an app.</p>
+
+  <h2>4. Your account and your data</h2>
+  <ul>
+    <li>You sign in with a Google account for synchronisation. You are responsible for access to your own account.</li>
+    <li>The data you enter remains <b>yours</b>. You can export it at any time in Settings.</li>
+    <li>You can delete your account and data at any time in Settings, or by writing to our address.</li>
+    <li>Enter truthful data about yourself. Wrong weight, height or age means wrong calculations.</li>
+  </ul>
+  <p>How we handle data is described in the <a href="privacy.html">privacy policy</a>.</p>
+
+  <h2>5. What is not allowed</h2>
+  <ul>
+    <li>Using the service for unlawful purposes or to the detriment of others.</li>
+    <li>Attempting to gain access to other people's accounts or to server keys.</li>
+    <li>Automated harvesting of content at a scale that burdens the service.</li>
+    <li>Presenting FORMAI content as medical, dietary or therapeutic advice.</li>
+  </ul>
+
+  <h2>6. Free use and PRO</h2>
+  <ul>
+    <li>Free use includes a <b>limited number of AI actions per day</b>.</li>
+    <li>The PRO subscription removes the daily limit. Price and scope are stated in the app at the point of purchase.</li>
+    <li>You may cancel the subscription at any time; it remains valid until the end of the paid period. There is no refund for a period already served, except where the law requires one.</li>
+    <li>If payments are not yet active, the whole service is free, and that is not a promise that it will stay that way.</li>
+  </ul>
+
+  <h2>7. Connected services</h2>
+  <p>If you connect Strava, Garmin Connect or a similar service, their terms apply as well. You can disconnect at any time. Under their rules, data imported from Strava is <b>not sent for AI processing</b>.</p>
+
+  <h2>8. Content and copyright</h2>
+  <p>The code, design and texts of FORMAI are the copyrighted work of the operator. Content you create or enter (activities, meals, notes) remains yours. For the service to function, you grant us only permission to process it and display it back to you.</p>
+
+  <h2>9. Availability and changes</h2>
+  <p>The service is a personal project under development. It works "as is", without a warranty of uninterrupted operation. Features may be added, changed or removed; we will notify you in the app about material changes.</p>
+
+  <h2>10. Limitation of liability</h2>
+  <p>You use the service at your own responsibility. To the fullest extent permitted by law, the operator is not liable for indirect damage, loss of data or lost profit. <b>Nothing in these terms limits liability for intent, gross negligence, or for damage to health and life</b>, where mandatory law so provides.</p>
+
+  <h2>11. Termination</h2>
+  <p>You may stop using the service and delete your account at any time. We may limit or terminate access if you use the service contrary to these terms or to the detriment of other users.</p>
+
+  <h2>12. Changes to the terms</h2>
+  <p>We may update these terms. Each version carries the date of entry into force stated above. For material changes we will notify you in the app; continued use means you accept them.</p>
+
+  <h2>13. Governing law and jurisdiction</h2>
+  <p>The law of the Republic of Slovenia and the mandatory EU consumer protection rules apply. Slovenian courts have jurisdiction over disputes. As a consumer you may also use the EU online dispute resolution platform.</p>
+
+  <h2>14. Contact</h2>
+  <p>Blaž Gregorc, Slovenia — <a href="mailto:blaz.gregorc@formai.si">blaz.gregorc@formai.si</a></p>
+
+  <p style="margin-top:30px"><a href="privacy.html">Privacy policy</a> · <a href="pogoji.html">Slovenščina</a> · <a href="forma-trener.html">Back to the app</a></p>
+</div>
+</body>
+</html>
