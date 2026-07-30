@@ -4,27 +4,40 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FORMAI — mobilna (obroki, vadba, AI trener)</title>
-<meta name="theme-color" content="#111013">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23111013%22/><path d=%22M8 8h84L8 92z%22 fill=%22%23ff3d2e%22/></svg>">
+<meta name="theme-color" content="#0b0e11">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230b0e11%22/><path d=%22M8 8h84L8 92z%22 fill=%22%2362c5ee%22/></svg>">
 <link rel="manifest" href="manifest-mobile.json">
 <meta property="og:image" content="https://formai.si/og.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root{
-  --bg:#0a0e13; --panel:#141b24; --panel2:#1a2330;
-  --border:#22303f; --border2:#2d3d50;
-  --text:#e8eef4; --muted:#8b9bab; --dim:#5c6b7a;
-  --acc:#fc4c02; --acc2:#ff7a3d; --accSoft:rgba(252,76,2,.12);
-  --orange:#fc4c02; --red:#ff5c5c; --redSoft:rgba(255,92,92,.12);
-  --yellow:#ffc247; --blue:#4da3ff;
+  /* ==== FORMAI oblikovni sistem — dobesedno iz mockupa (29. 7. 2026) ==== */
+  --bench:#0b0e11; --bg:#0b0e11; --bg2:#080b0d;
+  --panel:#12171b; --panel2:#171d22; --panel3:#0d1216;
+  --line:#232b32; --line2:#1a2126;
+  --ink:#e9eef2; --dim:#939da6; --dim2:#606a72;
+  --sig:#62c5ee; --sigd:#38a6cf; --sig2:#ff458e; --onSig:#04161d;
+  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  /* stara imena → iste barve */
+  --border:var(--line); --border2:var(--line2); --borderH:#333d45;
+  --text:var(--ink); --soft:#c3ccd4; --muted:var(--dim);
+  --acc:var(--sig); --accH:#9ddcf7; --acc2:var(--sigd); --accSoft:rgba(98,197,238,.14);
+  --orange:var(--sigd); --green:#5fd67a; --greenSoft:rgba(95,214,122,.13);
+  --red:var(--sig2); --redSoft:rgba(255,69,142,.13);
+  --yellow:#edbb00; --yellowSoft:rgba(237,187,0,.13);
+  --blue:var(--sig); --blueSoft:rgba(98,197,238,.13);
+  --purple:#b48cff; --purpleSoft:rgba(180,140,255,.13);
+  --radius:0px; --bc:var(--mono);
+  font-family:var(--sans);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{
   font-family:'Inter',system-ui,sans-serif;color:var(--text);font-size:15px;line-height:1.55;
   background:
-    radial-gradient(1000px 500px at 85% -10%, rgba(252,76,2,.08), transparent 60%),
+    radial-gradient(1000px 500px at 85% -10%, rgba(98,197,238,.08), transparent 60%),
     radial-gradient(800px 400px at -10% 110%, rgba(77,163,255,.05), transparent 60%),
     var(--bg);
   min-height:100vh;
@@ -33,7 +46,7 @@ body{
 ::-webkit-scrollbar{width:10px}::-webkit-scrollbar-thumb{background:#26364a;border-radius:8px}
 .wrap{max-width:900px;margin:0 auto;padding:26px 18px 80px}
 .top{display:flex;align-items:center;gap:12px;margin-bottom:20px}
-.logo{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,var(--acc),#d63e00);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 18px rgba(252,76,2,.35)}
+.logo{width:44px;height:44px;border-radius:13px;background:var(--sigd);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 18px rgba(98,197,238,.35)}
 .top h1{font-size:20px;font-weight:900;letter-spacing:-.02em}
 .top small{display:block;font-size:12px;color:var(--muted);font-weight:500}
 .top .right{margin-left:auto;display:flex;gap:8px}
@@ -41,7 +54,7 @@ body{
 .card h3{font-size:13.5px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .card h3 .sub{font-weight:500;color:var(--dim);font-size:11.5px;margin-left:auto}
 .btn{display:inline-flex;align-items:center;gap:7px;padding:10px 16px;border-radius:10px;font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;border:1px solid transparent;transition:all .15s;white-space:nowrap}
-.btn-primary{background:linear-gradient(135deg,var(--acc),#d63e00);color:#ffffff;box-shadow:0 3px 14px rgba(252,76,2,.3)}
+.btn-primary{background:var(--sigd);color:#ffffff;box-shadow:0 3px 14px rgba(98,197,238,.3)}
 .btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
 .btn-ghost{background:var(--panel2);color:var(--text);border-color:var(--border2)}
 .btn-ghost:hover{border-color:#3d5065}
@@ -51,18 +64,18 @@ body{
 .sping{width:13px;height:13px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite;display:inline-block}
 @keyframes rot{to{transform:rotate(360deg)}}
 input,select{width:100%;background:#0e1520;border:1px solid var(--border2);border-radius:9px;color:var(--text);padding:9px 12px;font-family:inherit;font-size:14px;outline:none}
-input:focus,select:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(252,76,2,.15)}
+input:focus,select:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(98,197,238,.15)}
 label.fld{display:block;margin-bottom:12px}
 label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:4px}
 .hint{font-size:12px;color:var(--dim)}
 
 /* povezava s FORMA */
 .link-banner{display:block;padding:12px 15px;border-radius:12px;font-size:13px;font-weight:600;line-height:1.5;margin-bottom:14px;border:1px solid}
-.link-banner.ok{background:var(--accSoft);border-color:rgba(252,76,2,.3)}
+.link-banner.ok{background:var(--accSoft);border-color:rgba(98,197,238,.3)}
 .link-banner.no{background:rgba(139,155,171,.07);color:var(--muted);border-color:var(--border)}
 .lb-top{display:flex;align-items:center;gap:8px;color:var(--acc2);font-size:12.5px}
 .lb-top b{color:var(--acc2)}
-.lb-dot{width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px rgba(252,76,2,.8);flex-shrink:0}
+.lb-dot{width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px rgba(98,197,238,.8);flex-shrink:0}
 .lb-plan{color:var(--text);font-weight:800;font-size:14.5px;margin-top:5px;line-height:1.35}
 .lb-nums{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:5px;color:var(--muted);font-weight:600;font-size:12.5px}
 .lb-nums b{color:var(--text)}
@@ -162,11 +175,11 @@ html,body{max-width:100%;overflow-x:hidden}
 .pd-sport{font-size:10.5px;font-weight:900;background:rgba(255,255,255,.06);border:1px solid var(--border2);padding:2px 9px;border-radius:7px;white-space:nowrap}
 .pd-title{font-weight:800;font-size:14px;flex:1;min-width:120px}
 .pd-title2{font-weight:800;font-size:15px;margin-top:7px;line-height:1.3}
-.pd-time{display:inline-block;margin-top:7px;font-size:12.5px;font-weight:800;color:var(--acc2);background:var(--accSoft);border:1px solid rgba(252,76,2,.25);padding:3px 10px;border-radius:8px}
+.pd-time{display:inline-block;margin-top:7px;font-size:12.5px;font-weight:800;color:var(--acc2);background:var(--accSoft);border:1px solid rgba(98,197,238,.25);padding:3px 10px;border-radius:8px}
 .pd-wx{font-size:11px;font-weight:800;background:rgba(255,255,255,.05);border:1px solid var(--border2);padding:2px 8px;border-radius:7px;white-space:nowrap}
 .pd-wx.warn{color:var(--blue);border-color:rgba(77,163,255,.5);background:rgba(77,163,255,.1)}
 .pd-wxwarn{font-size:12px;font-weight:600;color:var(--blue);background:rgba(77,163,255,.08);border:1px solid rgba(77,163,255,.3);border-radius:8px;padding:6px 10px;margin-top:8px}
-.pday.today .pd-time{color:var(--orange);background:rgba(252,76,2,.1);border-color:rgba(252,76,2,.3)}
+.pday.today .pd-time{color:var(--orange);background:rgba(98,197,238,.1);border-color:rgba(98,197,238,.3)}
 .pd-meta{font-size:11.5px;color:var(--dim);font-weight:700;white-space:nowrap;margin-left:auto}
 .pd-meta .okk{color:var(--acc2)}
 .opis-line{padding:2px 0 2px 9px;border-left:2px solid var(--border2);margin:4px 0;line-height:1.45;font-size:13px;color:#cfd8e0}
@@ -182,19 +195,19 @@ html,body{max-width:100%;overflow-x:hidden}
 .wx-t{font-size:13px;font-weight:800}
 .wx-p{font-size:9.5px;color:var(--blue);font-weight:700}
 .sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px}
-.sync-dot.on{background:var(--acc);box-shadow:0 0 7px rgba(252,76,2,.7)}
+.sync-dot.on{background:var(--acc);box-shadow:0 0 7px rgba(98,197,238,.7)}
 .sync-dot.off{background:var(--dim)}
 
 /* ---------- vodeni trening (player) ---------- */
 .play{position:fixed;inset:0;z-index:150;display:none;flex-direction:column;
   padding:14px 18px calc(16px + env(safe-area-inset-bottom));
-  background:radial-gradient(800px 500px at 50% -10%, rgba(252,76,2,.14), transparent 60%), #070b10}
+  background:radial-gradient(800px 500px at 50% -10%, rgba(98,197,238,.14), transparent 60%), #070b10}
 .play.open{display:flex}
 .play-top{display:flex;align-items:center;gap:12px;flex-shrink:0}
 .play-prog{flex:1;display:flex;gap:4px}
 .play-prog span{flex:1;height:4px;border-radius:99px;background:#1d2836;transition:background .3s}
 .play-prog span.d{background:var(--acc)}
-.play-prog span.a{background:var(--acc2);box-shadow:0 0 8px rgba(252,76,2,.8);animation:pwpulse 1.2s infinite}
+.play-prog span.a{background:var(--acc2);box-shadow:0 0 8px rgba(98,197,238,.8);animation:pwpulse 1.2s infinite}
 .play-x{width:36px;height:36px;border-radius:10px;border:1px solid var(--border2);background:var(--panel2);color:var(--muted);font-size:15px;cursor:pointer;flex-shrink:0}
 .pw-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:9px;animation:pwfade .35s ease}
 @keyframes pwfade{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
@@ -233,28 +246,28 @@ html,body{max-width:100%;overflow-x:hidden}
 .pw-stat span{font-size:11px;color:var(--muted);font-weight:700}
 .pw-fb{display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px;margin-top:10px}
 .pw-fb .btn{width:100%;justify-content:flex-start;font-size:14px;padding:12px 16px}
-.pw-prog{font-size:12px;font-weight:700;color:var(--acc2);background:var(--accSoft);border:1px solid rgba(252,76,2,.25);padding:6px 12px;border-radius:9px;margin-top:2px}
+.pw-prog{font-size:12px;font-weight:700;color:var(--acc2);background:var(--accSoft);border:1px solid rgba(98,197,238,.25);padding:6px 12px;border-radius:9px;margin-top:2px}
 
 /* ================= FORMAI OVERRIDE ================= */
 :root{
-  --bg:#111013; --panel:#18161b; --panel2:#141317;
-  --border:#26232a; --border2:#38333e;
-  --text:#f2efe9; --muted:#9a939f; --dim:#6f6876;
-  --acc:#ff3d2e; --acc2:#ff6a5e; --accSoft:rgba(255,61,46,.12);
-  --orange:#ff3d2e; --bc:'Barlow Condensed',sans-serif;
+  --bg:#0b0e11; --panel:#12171b; --panel2:#171d22;
+  --border:#232b32; --border2:#1a2126;
+  --text:#e9eef2; --muted:#939da6; --dim:#606a72;
+  --acc:var(--sig); --acc2:var(--sigd); --accSoft:rgba(98,197,238,.14);
+  --orange:var(--sigd); --bc:var(--mono);
 }
-body{font-family:'Barlow',system-ui,sans-serif;background:var(--bg)}
+body{font-family:var(--sans),system-ui,sans-serif;background:var(--bg)}
 .card,.btn,.btn-sm,input,select,.dz,.q-item,.modal,.link-banner,.hstat,.pday,.toast,.pd-time,.pd-sport,.pd-wx,.pd-wxwarn,.wx,.entry .noimg,.entry img,.q-item img,.pw-li,.pw-next,.pw-stat,.pw-cta,.pw-prog,.play-x,.entry .del{border-radius:0!important}
 .pbar,.pbar div,.play-prog span{border-radius:0!important}
-.logo{border-radius:0!important;background:linear-gradient(135deg,var(--acc) 50%,var(--border) 50%)!important;box-shadow:none!important;width:32px;height:32px;font-size:0}
+.logo{border-radius:0!important;background:var(--sigd) 50%)!important;box-shadow:none!important;width:32px;height:32px;font-size:0}
 .top h1{font-family:var(--bc);font-weight:900;font-size:22px;letter-spacing:.08em}
 .card{background:var(--panel)}
 .card h3{font-family:var(--bc);font-size:14.5px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
 .btn{font-family:var(--bc);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
 .btn-primary{background:var(--acc)!important;box-shadow:none!important}
-.btn-primary:hover{background:#ff5546!important;transform:none!important;filter:none!important}
+.btn-primary:hover{background:var(--sig)!important;transform:none!important;filter:none!important}
 .btn-ghost{background:transparent}
-input,select{background:var(--bg);font-family:'Barlow',sans-serif;font-weight:600}
+input,select{background:var(--bg);font-family:var(--sans);font-weight:600}
 input:focus,select:focus{box-shadow:none!important}
 .hstat{background:var(--panel)}
 .hstat .k{font-size:9.5px;letter-spacing:.13em;color:var(--dim)}
@@ -264,7 +277,7 @@ input:focus,select:focus{box-shadow:none!important}
 .tabbar{background:rgba(17,16,19,.95);border-top:1px solid var(--border)}
 .tabbar button{font-family:var(--bc);font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
 .tabbar button.on{color:var(--acc)}
-.pday.today{box-shadow:none;background:linear-gradient(90deg,rgba(255,61,46,.05),var(--panel))}
+.pday.today{box-shadow:none;background:linear-gradient(90deg,rgba(98,197,238,.05),var(--panel))}
 .pw-reps,.pw-time b,.pw-title{font-family:var(--bc)}
 .pw-reps{font-size:64px;font-weight:900;color:var(--acc)}
 .modal h2{font-family:var(--bc);font-weight:800;letter-spacing:.04em;text-transform:uppercase;font-size:19px}
@@ -277,7 +290,7 @@ input:focus,select:focus{box-shadow:none!important}
 .dn-stat .k{font-size:9px;font-weight:700;letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
 .dn-stat .v{font-family:var(--bc);font-size:24px;font-weight:800}
 .dn-cta{display:block;width:100%;background:var(--acc);color:#fff;text-align:center;font-family:var(--bc);font-weight:800;font-size:18px;letter-spacing:.08em;padding:16px;margin-top:14px;border:none;cursor:pointer;text-transform:uppercase}
-.dn-cta:hover{background:#ff5546}
+.dn-cta:hover{background:var(--sig)}
 .dn-card{border:1px solid var(--border);background:var(--panel);padding:13px 15px;margin-top:12px}
 .dn-lbl{font-size:9.5px;font-weight:800;letter-spacing:.12em;color:var(--acc2);text-transform:uppercase}
 .dn-txt{font-size:13px;color:#c9c3ce;line-height:1.5;margin-top:5px}
@@ -285,26 +298,71 @@ input:focus,select:focus{box-shadow:none!important}
 .chat-box{display:flex;flex-direction:column;gap:9px;margin-top:12px;overflow-y:auto}
 .chat-msg{max-width:85%;padding:9px 12px;font-size:13px;line-height:1.5;white-space:pre-wrap}
 .chat-msg.ai{align-self:flex-start;background:var(--border)}
-.chat-msg.me{align-self:flex-end;background:rgba(255,61,46,.15);border:1px solid rgba(255,61,46,.3)}
+.chat-msg.me{align-self:flex-end;background:rgba(98,197,238,.15);border:1px solid rgba(98,197,238,.3)}
 .chat-msg .cm{display:block;font-size:9.5px;color:var(--dim);margin-top:3px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
 .chat-input{display:flex;gap:8px;margin-top:12px}
 .chat-input input{flex:1}
 
 /* ===== PREMIUM POLISH ===== */
 .card{box-shadow:inset 0 1px 0 rgba(255,255,255,.03), 0 10px 24px -20px rgba(0,0,0,.8)}
-.btn-primary{box-shadow:0 6px 18px -8px rgba(255,61,46,.5), inset 0 1px 0 rgba(255,255,255,.14)}
+.btn-primary{box-shadow:0 6px 18px -8px rgba(98,197,238,.5), inset 0 1px 0 rgba(255,255,255,.14)}
 .btn-primary:active{transform:scale(.98)}
-.dn-cta{background:linear-gradient(135deg,#ff4a32,#e42f1f);box-shadow:0 8px 24px -10px rgba(255,61,46,.55);transition:filter .15s,transform .12s}
+.dn-cta{background:linear-gradient(135deg,var(--sigd),var(--sigd));box-shadow:0 8px 24px -10px rgba(98,197,238,.55);transition:filter .15s,transform .12s}
 .dn-cta:active{transform:scale(.99);filter:brightness(.97)}
 .tabbar{backdrop-filter:blur(14px) saturate(1.1);-webkit-backdrop-filter:blur(14px) saturate(1.1);box-shadow:0 -10px 30px -18px rgba(0,0,0,.9)}
 .dn-card{background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(255,255,255,0) 45%), var(--panel)}
-input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px rgba(255,61,46,.14)}
+input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px rgba(98,197,238,.14)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
   .med-note{margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:12.5px;line-height:1.55;color:var(--muted)}
   .med-note b{color:var(--text)}
   .lnk{background:none;border:0;padding:0;color:var(--acc2);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline}
   .kcal-note{margin-top:6px;font-size:12.5px;line-height:1.5;color:var(--yellow);font-weight:600}
+
+/* ===== gradniki, dobesedno iz mockupa formainamizje.html ===== */
+h1,h2,h3,h4{font-family:var(--sans);letter-spacing:-.022em}
+a{color:var(--sig);text-decoration:none}
+a:hover{color:#9ddcf7}
+.tabnav a{position:relative;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);padding:14px 0;display:block}
+.tabnav a:hover{color:var(--ink)}
+.tabnav a[aria-current="page"]{color:var(--ink)}
+.tabnav a[aria-current="page"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--sig)}
+.k{font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.17em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
+.m{font-size:12.5px;line-height:1.6;color:var(--dim)}
+.m b{color:var(--ink);font-weight:600}
+.kv{display:flex;align-items:baseline;gap:10px}
+.kv>:first-child{flex:1 1 0%;min-width:0}
+.kv>:last-child{flex:0 0 auto;white-space:nowrap}
+.n{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap}
+.p{background:var(--panel);border:1px solid var(--line)}
+.b{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.11em;text-transform:uppercase;white-space:nowrap;padding:10px 16px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.b:hover{background:#1e252b;border-color:#333d45}
+.b.sig{background:var(--sigd);border-color:var(--sigd);color:var(--onSig)}
+.b.sig:hover{background:var(--sig);border-color:var(--sig)}
+.b.g{background:transparent;border-color:transparent;color:var(--sig);padding:10px 4px}
+.b.g:hover{background:transparent;color:#9ddcf7}
+.b.dz{border-color:rgba(255,69,142,.4);color:var(--sig2);background:transparent}
+.b.dz:hover{background:rgba(255,69,142,.09);border-color:var(--sig2)}
+.sg button{font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:8px 15px;background:var(--panel);border:1px solid var(--line);border-left:none;color:var(--dim);cursor:pointer}
+.sg button:first-child{border-left:1px solid var(--line)}
+.sg button:hover{color:var(--ink);background:var(--panel2)}
+.sg button[data-on="1"]{background:var(--sigd);border-color:var(--sigd);color:var(--onSig)}
+input.f,textarea.f{width:100%;font-family:var(--sans);font-size:13.5px;padding:10px 12px;background:var(--panel3);border:1px solid var(--line);color:var(--ink);outline:none}
+input.f:focus,textarea.f:focus{border-color:var(--sig)}
+input.f::placeholder{color:var(--dim2)}
+.rw{display:grid;align-items:center;column-gap:16px;border-bottom:1px solid var(--line2)}
+.rw:hover{background:var(--panel2)}
+.tg{font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid}
+:focus-visible{outline:2px solid var(--sig);outline-offset:2px}
+::selection{background:rgba(98,197,238,.3)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#242c33}
+::-webkit-scrollbar-track{background:var(--bench)}
+@keyframes fu{0%{opacity:0;transform:translateY(5px)}100%{opacity:1;transform:none}}
+@media(max-width:1180px){.g2{grid-template-columns:minmax(0,1fr)!important}}
+@media(max-width:1100px){.hd-install{display:none}}
+@media(max-width:1000px){.g3{grid-template-columns:minmax(0,1fr)!important}}
+@media(max-width:860px){.sc{overflow-x:auto}.sc .rw{min-width:680px}}
 </style>
 </head>
 <body>
@@ -334,7 +392,7 @@ input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px rgba(255,61,46,.14)
       <div class="ring-wrap">
         <svg width="170" height="170" viewBox="0 0 170 170">
           <circle class="ring-c" cx="85" cy="85" r="74"></circle>
-          <circle class="ring-p" id="ringP" cx="85" cy="85" r="74" stroke="#fc4c02"></circle>
+          <circle class="ring-p" id="ringP" cx="85" cy="85" r="74" stroke="var(--sigd)"></circle>
         </svg>
         <div class="ring-txt">
           <div class="big" id="ringKcal">0</div>
@@ -926,7 +984,7 @@ function renderHero(){
   const ring=$('ringP');
   ring.setAttribute('stroke-dasharray', C);
   ring.setAttribute('stroke-dashoffset', znan ? C*(1-Math.min(1,frac)) : C);
-  ring.setAttribute('stroke', !znan ? 'var(--border2)' : eaten>target ? 'var(--red)' : eaten>target*.85 ? 'var(--yellow)' : '#fc4c02');
+  ring.setAttribute('stroke', !znan ? 'var(--border2)' : eaten>target ? 'var(--red)' : eaten>target*.85 ? 'var(--yellow)' : 'var(--sigd)');
   $('ringKcal').textContent = eaten;
   $('ringSub').textContent = znan ? `/ ${target} kcal` : 'kcal danes';
 
@@ -1000,7 +1058,7 @@ function renderHist(){
   histChart = new Chart($('histChart'), { type:'bar',
     data:{ labels:days.map(d=>{const x=parseIso(d);return x.getDate()+'.'+(x.getMonth()+1)+'.'}),
       datasets:[
-        {label:'kcal', data:vals, backgroundColor:vals.map(v=> v===0?'rgba(139,155,171,.15)': (tgt&&v>tgt)?'rgba(255,92,92,.75)':'rgba(252,76,2,.75)'), borderRadius:5, maxBarThickness:26},
+        {label:'kcal', data:vals, backgroundColor:vals.map(v=> v===0?'rgba(139,155,171,.15)': (tgt&&v>tgt)?'rgba(255,92,92,.75)':'rgba(98,197,238,.75)'), borderRadius:5, maxBarThickness:26},
         ...(tgt?[{label:'cilj', data:days.map(()=>tgt), type:'line', borderColor:'#ffc247', borderDash:[6,4], pointRadius:0, borderWidth:1.6}]:[])
       ]},
     options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
@@ -1064,7 +1122,7 @@ function renderVadba(){
     <div class="dn-card">
       <div class="dn-lbl" style="color:var(--dim)">BOLEČINA DANES?</div>
       <div style="display:flex;gap:6px;margin-top:8px">
-        ${[[0,'💪 Nič'],[1,'🙂 Malo'],[2,'😖 Precej'],[3,'🥵 Zelo']].map(([v,n])=>`<div style="flex:1;border:1px solid ${sor===v?'var(--acc)':'var(--border)'};background:${sor===v?'rgba(255,61,46,.1)':'transparent'};text-align:center;padding:7px 2px;font-size:11px;font-weight:600;color:${sor===v?'var(--text)':'var(--muted)'};cursor:pointer" onclick="dnSore(${v})">${n}</div>`).join('')}
+        ${[[0,'💪 Nič'],[1,'🙂 Malo'],[2,'😖 Precej'],[3,'🥵 Zelo']].map(([v,n])=>`<div style="flex:1;border:1px solid ${sor===v?'var(--acc)':'var(--border)'};background:${sor===v?'rgba(98,197,238,.1)':'transparent'};text-align:center;padding:7px 2px;font-size:11px;font-weight:600;color:${sor===v?'var(--text)':'var(--muted)'};cursor:pointer" onclick="dnSore(${v})">${n}</div>`).join('')}
       </div>
     </div>
     ${zadnje.length?`<div class="dn-card"><div class="dn-lbl" style="color:var(--dim)">ZADNJI TRENINGI</div>
@@ -1159,12 +1217,12 @@ function renderDanes(){
     <svg viewBox="0 0 120 120" style="width:112px;height:112px;flex-shrink:0">
       <circle cx="60" cy="60" r="52" fill="none" stroke="var(--border)" stroke-width="9"></circle>
       <circle cx="60" cy="60" r="52" fill="none" stroke="${eaten>target?'#ffc247':'var(--acc)'}" stroke-width="9" stroke-dasharray="${(C*p).toFixed(0)} ${C.toFixed(0)}" transform="rotate(-90 60 60)"></circle>
-      <text x="60" y="55" fill="var(--text)" font-size="26" font-weight="800" text-anchor="middle" font-family="Barlow Condensed,sans-serif">${rem.toLocaleString('sl')}</text>
-      <text x="60" y="72" fill="var(--dim)" font-size="9.5" font-weight="700" text-anchor="middle" font-family="Barlow,sans-serif">${eaten>target?'ČEZ CILJ':'ŠE LAHKO POJEŠ'}</text>
+      <text x="60" y="55" fill="var(--text)" font-size="26" font-weight="800" text-anchor="middle" font-family="IBM Plex Mono,monospace">${rem.toLocaleString('sl')}</text>
+      <text x="60" y="72" fill="var(--dim)" font-size="9.5" font-weight="700" text-anchor="middle" font-family="IBM Plex Sans,sans-serif">${eaten>target?'ČEZ CILJ':'ŠE LAHKO POJEŠ'}</text>
     </svg>`; })() : `<div style="width:112px;height:112px;display:grid;place-items:center;border:1px solid var(--border);color:var(--dim);font-size:11px;text-align:center">nastavi cilj<br>v ⚙️</div>`;
   const bar=(k,v,tgt,c)=>`<div><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:var(--dim)"><span>${k}</span><span style="color:#c9c3ce">${v}</span></div><div style="height:4px;background:var(--border);margin-top:3px"><div style="width:${tgt?Math.min(100,Math.round((parseFloat(v)||0)/tgt*100)):0}%;height:100%;background:${c}"></div></div></div>`;
   const signed = !!(window.FORMASYNC && FORMASYNC.uid && FORMASYNC.uid());
-  const signBanner = signed ? '' : `<div style="border:1px solid var(--acc);background:rgba(255,61,46,.07);padding:12px 14px;margin-bottom:12px">
+  const signBanner = signed ? '' : `<div style="border:1px solid var(--acc);background:rgba(98,197,238,.07);padding:12px 14px;margin-bottom:12px">
     <div style="font-weight:700;font-size:13.5px">🔵 Prijavi se z Googlom</div>
     <div style="font-size:11.5px;color:var(--muted);margin-top:2px">Tvoj račun: sinhronizacija z namizjem + AI brez nastavljanja. Vsak ima svojega.</div>
     <button class="dn-cta" style="margin-top:10px;padding:10px;font-size:14px" onclick="FORMASYNC&&FORMASYNC.signIn().then(()=>setTimeout(renderDanes,900))">Prijava z Google →</button>
@@ -1182,7 +1240,7 @@ function renderDanes(){
         ${bar('PORABA', '~'+(burn&&burn.v?burn.v.toLocaleString('sl'):'–')+' kcal', null, '#4da3ff')}
       </div>
     </div>
-    <div style="border:1px solid rgba(255,61,46,.35);background:linear-gradient(180deg,rgba(255,61,46,.08),var(--panel));padding:12px 14px;margin-top:14px">
+    <div style="border:1px solid rgba(98,197,238,.35);background:linear-gradient(180deg,rgba(98,197,238,.08),var(--panel));padding:12px 14px;margin-top:14px">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div style="font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--acc2)">DANES · ${esc((pd?.tip||'PROSTO').toUpperCase())}</div><div id="dnWx" style="font-size:10.5px;color:var(--muted);font-weight:700"></div></div>
       <div style="font-family:var(--bc);font-weight:800;font-size:21px;margin-top:4px">${sportIco} ${esc(naslov)}</div>
       ${pd?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${pd.trajanje_min?pd.trajanje_min+' min':''}${pd.kcal_poraba?' · ~'+pd.kcal_poraba+' kcal':''}</div>`:''}
@@ -1194,7 +1252,7 @@ function renderDanes(){
     <div class="dn-card">
       <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:9.5px;font-weight:800;letter-spacing:.08em;color:var(--dim)">BOLEČINA DANES? <span style="color:var(--dim);font-weight:600">— vadba se prilagodi</span></div></div>
       <div style="display:flex;gap:6px;margin-top:8px">
-        ${[[0,'💪 Nič'],[1,'🙂 Malo'],[2,'😖 Precej'],[3,'🥵 Zelo']].map(([v,n])=>`<div style="flex:1;border:1px solid ${sor===v?'var(--acc)':'var(--border)'};background:${sor===v?'rgba(255,61,46,.1)':'transparent'};text-align:center;padding:7px 2px;font-size:11px;font-weight:${sor===v?'700':'600'};color:${sor===v?'var(--text)':'var(--muted)'};cursor:pointer" onclick="dnSore(${v})">${n}</div>`).join('')}
+        ${[[0,'💪 Nič'],[1,'🙂 Malo'],[2,'😖 Precej'],[3,'🥵 Zelo']].map(([v,n])=>`<div style="flex:1;border:1px solid ${sor===v?'var(--acc)':'var(--border)'};background:${sor===v?'rgba(98,197,238,.1)':'transparent'};text-align:center;padding:7px 2px;font-size:11px;font-weight:${sor===v?'700':'600'};color:${sor===v?'var(--text)':'var(--muted)'};cursor:pointer" onclick="dnSore(${v})">${n}</div>`).join('')}
       </div>
     </div>
     <div style="display:flex;gap:8px;margin-top:10px">
@@ -2006,7 +2064,7 @@ function renderProfilK(){
   const p=F?.settings?.profile||{};
   el.innerHTML=`
     <div style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin-bottom:6px">Tvoji športi <span style="font-weight:600">(plan gradi samo iz teh)</span></div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap">${[['kolo','🚴 Kolo'],['tek','🏃 Tek'],['pohod','🥾 Pohodi'],['moc','🤸 Moč']].map(([v,n])=>{const pf=aktPrefsK()[v]||0;return `<div style="border:1px solid ${pf===2?'#ffc247':pf?'var(--acc)':'var(--border2)'};background:${pf?'rgba(255,61,46,.1)':'transparent'};padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer" onclick="toggleAktK('${v}')">${pf===2?'❤️ ':''}${n}</div>`;}).join('')}</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">${[['kolo','🚴 Kolo'],['tek','🏃 Tek'],['pohod','🥾 Pohodi'],['moc','🤸 Moč']].map(([v,n])=>{const pf=aktPrefsK()[v]||0;return `<div style="border:1px solid ${pf===2?'#ffc247':pf?'var(--acc)':'var(--border2)'};background:${pf?'rgba(98,197,238,.1)':'transparent'};padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer" onclick="toggleAktK('${v}')">${pf===2?'❤️ ':''}${n}</div>`;}).join('')}</div>
     <div class="hint" style="margin-top:5px">Klik: izbrano → ❤️ najljubše → izklop. ❤️ prevladujejo v planu.</div>
     <label class="fld" style="margin-top:12px"><span>🩹 Omejitve / poškodbe <span style="color:var(--dim)">(AI jih upošteva pri vajah)</span></span><input id="sOmejitve" placeholder="npr. boleče koleno, spodnji hrbet…" value="${esc(p.omejitve||'')}"></label>`;
 }
@@ -2152,9 +2210,9 @@ renderWeatherK(true);   // preveri vreme ob zagonu
     const host=document.getElementById('gsyncHostK'); if(!host) return;
     const signed=!!fb.uid, cfg=getCfg();
     if(signed){
-      host.innerHTML='<div class="hint" style="margin-bottom:12px;padding:10px;border:1px solid rgba(252,76,2,.35);border-radius:10px"><b style="color:var(--acc2)">🔵 Google sinhronizacija</b> — '+((fb.auth.currentUser&&fb.auth.currentUser.email)||'prijavljen')+'<div id="gsyncStatusK" style="margin:5px 0"></div><button class="btn btn-ghost btn-sm" onclick="FORMASYNC.push()">⟳ Sinhroniziraj</button> <button class="btn btn-ghost btn-sm" onclick="FORMASYNC.signOut()">Odjava</button></div>';
+      host.innerHTML='<div class="hint" style="margin-bottom:12px;padding:10px;border:1px solid rgba(98,197,238,.35);border-radius:10px"><b style="color:var(--acc2)">🔵 Google sinhronizacija</b> — '+((fb.auth.currentUser&&fb.auth.currentUser.email)||'prijavljen')+'<div id="gsyncStatusK" style="margin:5px 0"></div><button class="btn btn-ghost btn-sm" onclick="FORMASYNC.push()">⟳ Sinhroniziraj</button> <button class="btn btn-ghost btn-sm" onclick="FORMASYNC.signOut()">Odjava</button></div>';
     } else if(cfg){
-      host.innerHTML='<div class="hint" style="margin-bottom:12px;padding:10px;border:1px solid rgba(252,76,2,.35);border-radius:10px"><b style="color:var(--acc2)">🔵 Google sinhronizacija</b> — prijavi se in vse (kalorije + trening) se samodejno sinhronizira z računalnikom, brez ročnih ključev.<div id="gsyncStatusK" style="margin:5px 0"></div><button class="btn btn-primary btn-sm" onclick="FORMASYNC.signIn()">🔵 Prijava z Google</button></div>';
+      host.innerHTML='<div class="hint" style="margin-bottom:12px;padding:10px;border:1px solid rgba(98,197,238,.35);border-radius:10px"><b style="color:var(--acc2)">🔵 Google sinhronizacija</b> — prijavi se in vse (kalorije + trening) se samodejno sinhronizira z računalnikom, brez ročnih ključev.<div id="gsyncStatusK" style="margin:5px 0"></div><button class="btn btn-primary btn-sm" onclick="FORMASYNC.signIn()">🔵 Prijava z Google</button></div>';
     } else {
       host.innerHTML='<div class="hint" style="margin-bottom:12px;padding:10px;border:1px solid var(--border2);border-radius:10px"><b style="color:var(--acc2)">🔵 Google sinhronizacija</b> (enkratna nastavitev) — prilepi firebaseConfig JSON:<textarea id="gsyncCfgK" style="width:100%;min-height:64px;margin:6px 0" placeholder=\'{"apiKey":"...","authDomain":"...","projectId":"...","appId":"..."}\'></textarea><button class="btn btn-primary btn-sm" onclick="FORMASYNC.saveCfg()">Shrani config</button></div>';
     }
