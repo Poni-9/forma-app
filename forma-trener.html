@@ -2505,7 +2505,7 @@ function risiPregled(){
     + (ime ? (sl?'Živjo, ':'Hi, ')+esc(ime) : (sl?'Danes':'Today')) + '</div></div>'
     + '<div class="fx-av" title="Profil" onclick="switchTab(\'settings\')">'+esc(ini)+'</div></div>');
 
-  H.push('<div id="fxOnboard"></div><div id="fxAlert"></div>');
+
 
   /* --- tedenski trak --- */
   var ws = weekStart(now), dni = [];
@@ -2682,6 +2682,7 @@ function risiPregled(){
     + '<div class="fx-col">'+W+S+'<div class="fx-duo">'+T1+T2+'</div>'+C+G+'</div>'
     + '<div class="fx-col">'+KAL+TW+'</div>'
     + '</div>');
+  H.push('<div id="fxAlert"></div><div id="fxOnboard"></div>');
 
   host.innerHTML = H.join('');
 
