@@ -826,6 +826,43 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc);outline:none}
 .day-card,.day-row{border-color:var(--line)}
 .dropzone{border-style:dashed;border-color:var(--line)}
 
+/* ---- profesionalna doslednost ---- */
+.fx-day{padding:8px 0 7px;border-radius:14px}
+.fx-day .dn{font-size:9.5px;letter-spacing:.07em}
+.fx-day .dd{font-size:14.5px;margin-top:1px}
+.fx-day .dt{margin-top:5px;height:5px}
+.fx-day .dt i{width:4.5px;height:4.5px}
+.fx-week{gap:5px}
+.fx-clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.fx-clamp.odprt{-webkit-line-clamp:unset;overflow:visible}
+.fx-vec{margin-top:7px;background:none;border:0;padding:0;color:var(--acc);font:inherit;
+  font-size:12.5px;font-weight:700;cursor:pointer}
+.fx-vec:hover{text-decoration:underline}
+.fx-note .ic{width:32px;height:32px}
+.fx-note p{font-size:13.5px;line-height:1.6}
+.fx-c{padding:18px 20px}
+.fx-cols{gap:14px}
+.fx-col{gap:14px}
+.fx{gap:18px}
+.fx-head{margin-bottom:2px}
+.fx-mac .t{font-size:12.5px}
+.fx-li{padding:8px 0}
+.fx-li b{font-size:13.5px;font-weight:700}
+.fx-sess .fx-meta{font-size:13px}
+@media(max-width:640px){ .fx-c{padding:16px} }
+
+.fx-done-btn{
+  display:flex;align-items:center;justify-content:center;gap:9px;width:100%;margin-top:12px;
+  padding:12px 18px;border-radius:var(--r-full);border:1px solid var(--line);
+  background:transparent;color:var(--dim);font:inherit;font-size:13.5px;font-weight:700;cursor:pointer;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.fx-done-btn:hover{background:var(--panel2);color:var(--ink);border-color:var(--borderH)}
+.fx-done-btn:hover .fx-check.off{border-color:var(--acc)}
+.fx-done-btn:active{transform:scale(.985)}
+.fx-ring .mid small{font-size:9.5px;letter-spacing:.01em;display:block;margin-top:2px;white-space:nowrap}
+.fx-day.today .dt i{opacity:.65}
+
 /* ---- Plan: kartice kot v prototipu ---- */
 #weekGrid.week-list{display:flex;flex-direction:column;gap:10px}
 .day-row{
@@ -2429,7 +2466,12 @@ function fxDone(iso, day){
   if(day && day.done) return true;
   try{ return state.rides.some(function(r){ return r.date===iso; }); }catch(_){ return false; }
 }
-function fxNum(n){ try{ return Number(n).toLocaleString('sl-SI'); }catch(_){ return String(n); } }
+function fxNum(n){
+  var v = Math.round(+n||0), neg = v<0; v = Math.abs(v);
+  var s = String(v), out = '';
+  for (var i=0;i<s.length;i++){ if(i>0 && (s.length-i)%3===0) out += '\u202F'; out += s[i]; }
+  return (neg?'\u2212':'') + out;
+}
 function fxDur(m){
   m = Math.round(+m||0); if(!m) return '';
   var h=Math.floor(m/60), r=m%60;
@@ -2470,20 +2512,22 @@ function fxRing(pct, size, sw, sredina){
 function fxSpark(vals, w, h){
   if(!vals || vals.length<2) return '<div style="height:'+h+'px"></div>';
   var mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals), sp=(mx-mn)||1;
+  var pd=3, iw=w-pd*2, ih=h-pd*2;
   var pts=vals.map(function(v,i){
-    var x=2+(i/(vals.length-1))*(w-4), y=h-3-((v-mn)/sp)*(h-8);
-    return x.toFixed(1)+' '+y.toFixed(1);
+    return (pd+(i/(vals.length-1))*iw).toFixed(2)+' '+(pd+ih-((v-mn)/sp)*ih).toFixed(2);
   });
   var line='M'+pts.join(' L');
-  var area=line+' L'+(w-2)+' '+h+' L2 '+h+' Z';
+  var area=line+' L'+(w-pd).toFixed(2)+' '+h+' L'+pd+' '+h+' Z';
   var last=pts[pts.length-1].split(' ');
-  return '<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" preserveAspectRatio="none" aria-hidden="true">'
-    +'<defs><linearGradient id="fxg" x1="0" y1="0" x2="0" y2="1">'
-    +'<stop offset="0" stop-color="var(--acc)" stop-opacity=".32"/><stop offset="1" stop-color="var(--acc)" stop-opacity="0"/></linearGradient></defs>'
-    +'<path d="'+area+'" fill="url(#fxg)"/>'
+  var uid='sp'+Math.floor(vals.length*97+Math.abs(mx-mn)*13)%9973;
+  return '<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" preserveAspectRatio="none" aria-hidden="true" style="display:block;overflow:visible">'
+    +'<defs><linearGradient id="'+uid+'" x1="0" y1="0" x2="0" y2="1">'
+    +'<stop offset="0" stop-color="var(--acc)" stop-opacity=".30"/><stop offset="1" stop-color="var(--acc)" stop-opacity="0"/></linearGradient></defs>'
+    +'<path d="'+area+'" fill="url(#'+uid+')"/>'
     +'<path d="'+line+'" fill="none" stroke="var(--acc)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>'
-    +'<circle cx="'+last[0]+'" cy="'+last[1]+'" r="2.6" fill="var(--acc)"/></svg>';
+    +'<circle cx="'+last[0]+'" cy="'+last[1]+'" r="2.8" fill="var(--acc)" vector-effect="non-scaling-stroke"/></svg>';
 }
+
 
 /* ══════════ GLAVNI IZRIS ZASLONA DANES ══════════ */
 function risiPregled(){
@@ -2523,7 +2567,7 @@ function risiPregled(){
     + (faza ? '<span class="fx-chip">'+esc(faza)+'</span>' : '') + '</div><div class="fx-week">';
   dni.forEach(function(x,i){
     var cls = x.danes ? 'fx-day today' : (x.prej ? 'fx-day past' : 'fx-day');
-    var pika = x.plan ? '<i style="background:'+(x.danes?'rgba(15,18,22,.55)':x.sp.c)+'"></i>' : '';
+    var pika = x.plan ? '<i style="background:'+(x.danes?'var(--onSig)':x.sp.c)+'"></i>' : '';
     W += '<div class="'+cls+'" onclick="openPlanDay(\''+x.iso+'\')"><div class="dn">'+kratice[i]+'</div>'
        + '<div class="dd">'+x.d.getDate()+'</div><div class="dt">'+pika+'</div></div>';
   });
@@ -2542,12 +2586,13 @@ function risiPregled(){
     S = '<div class="fx-c fx-sess">'
       + '<div class="bar" style="background:'+sp.c+'"></div>'
       + '<div class="fx-btw"><div class="fx-kind" style="color:'+sp.c+'">'+esc(sp.n)+' · '+(sl?'danes':'today')+'</div>'
-      + (done ? '<div class="fx-check" title="'+(sl?'Opravljeno':'Done')+'">✓</div>' : '<span class="fx-chip">'+esc(day.tip||'')+'</span>')+'</div>'
+      + (done ? '<div class="fx-check" title="'+(sl?'Opravljeno':'Done')+'">✓</div>'
+              : (String(day.tip||'').toLowerCase()===sp.n.toLowerCase() ? '' : '<span class="fx-chip">'+esc(day.tip||'')+'</span>'))+'</div>'
       + '<div class="fx-ttl">'+esc(day.naslov||'Trening')+'</div>'
       + (prvi ? '<div class="fx-desc">'+esc(prvi)+'</div>' : '')
       + (meta ? '<div class="fx-meta">'+meta+'</div>' : '')
       + '<div class="fx-more" onclick="openPlanDay(\''+iso+'\')"><span>'+(sl?'Poglej cel trening':'See full session')+'</span><span style="margin-left:auto;font-size:16px">›</span></div>'
-      + (done ? '' : '<button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="markDayDone(\''+iso+'\')">'+(sl?'Označi kot opravljeno':'Mark as done')+'</button>')
+      + (done ? '' : '<button class="fx-done-btn" onclick="markDayDone(\''+iso+'\')"><span class="fx-check off" style="width:19px;height:19px;font-size:11px;border-width:2px">✓</span>'+(sl?'Označi kot opravljeno':'Mark as done')+'</button>')
       + '</div>';
   } else {
     S = '<div class="fx-c" style="padding:0"><div class="fx-empty">'
@@ -2584,9 +2629,13 @@ function risiPregled(){
   var trener = '';
   try{ var cc=coachCache(); if(cc && cc.date===iso && (cc.txt||cc.text)) trener = String(cc.txt||cc.text); }catch(_){}
   if(!trener && day && day.zakaj) trener = day.zakaj;
-  var C = trener ? ('<div class="fx-c t fx-note">'
+  var dolgo = trener.length > 210;
+  var C = trener ? ('<div class="fx-c fx-note">'
     + '<div class="ic">'+fxIco('trener',16,'var(--acc)',1.9)+'</div>'
-    + '<div><b>'+(sl?'Trener pravi':'Coach says')+'</b><p>'+esc(trener).replace(/\n/g,'<br>')+'</p></div></div>') : '';
+    + '<div style="min-width:0"><b>'+(sl?'Trener pravi':'Coach says')+'</b>'
+    + '<p class="fx-clamp'+(dolgo?'':' odprt')+'">'+esc(trener).replace(/\n/g,'<br>')+'</p>'
+    + (dolgo? '<button class="fx-vec" onclick="this.previousElementSibling.classList.toggle(\'odprt\');this.textContent=this.previousElementSibling.classList.contains(\'odprt\')?\''+(sl?'Manj':'Less')+'\':\''+(sl?'Preberi vse':'Read all')+'\'">'+(sl?'Preberi vse':'Read all')+'</button>':'')
+    + '</div></div>') : '';
 
   /* --- desni stolpec: makro palice --- */
   var M = '';
@@ -2656,30 +2705,53 @@ function risiPregled(){
   if(serija.length>4){
     var zad = serija.slice(-90);
     var ctl = zad.map(function(x){return x.ctl;}), atl = zad.map(function(x){return x.atl;});
-    var vsi2 = ctl.concat(atl), mn=Math.min.apply(null,vsi2), mx=Math.max.apply(null,vsi2), sp2=(mx-mn)||1;
-    var W2=520, H2=120;
-    function pot(a){ return 'M'+a.map(function(v,i){
-      return (4+(i/(a.length-1))*(W2-8)).toFixed(1)+' '+(H2-6-((v-mn)/sp2)*(H2-14)).toFixed(1); }).join(' L'); }
+    var vsi2 = ctl.concat(atl);
+    var mn0=Math.min.apply(null,vsi2), mx0=Math.max.apply(null,vsi2);
+    /* zaokroži os na lepe vrednosti, da ima graf smiselno merilo */
+    var korak = Math.max(10, Math.ceil((mx0-mn0)/3/10)*10);
+    var mn = Math.max(0, Math.floor(mn0/korak)*korak);
+    var mx = Math.ceil(mx0/korak)*korak; if(mx===mn) mx = mn+korak;
+    var W2=560, H2=132, L=34, R=6, TT=8, BB=20;
+    var iw=W2-L-R, ih=H2-TT-BB;
+    function X(i,n){ return (L + (n<2?iw:(i/(n-1))*iw)); }
+    function Y(v){ return (TT + ih - ((v-mn)/(mx-mn))*ih); }
+    function pot(a){ return 'M'+a.map(function(v,i){ return X(i,a.length).toFixed(2)+' '+Y(v).toFixed(2); }).join(' L'); }
     var lc=pot(ctl), la=pot(atl);
+    /* vodoravne črte in oznake osi */
+    var mreza='', oznake='';
+    for(var g=0; g<=3; g++){
+      var vv = mn + (mx-mn)*g/3, yy = Y(vv);
+      mreza += '<line x1="'+L+'" y1="'+yy.toFixed(1)+'" x2="'+(W2-R)+'" y2="'+yy.toFixed(1)+'"/>';
+      oznake += '<text x="'+(L-8)+'" y="'+(yy+3.5).toFixed(1)+'" text-anchor="end" font-size="9.5" fill="var(--dim2)" font-weight="700">'+Math.round(vv)+'</text>';
+    }
+    /* datumske oznake: prvi, sredina, zadnji */
+    var kratkiM = sl? MESECI : ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+    function dLbl(k){ try{ var d=parseIso(zad[k].date); return d.getDate()+'. '+kratkiM[d.getMonth()]; }catch(_){ return ''; } }
+    var osX = [[0,'start'],[Math.floor((zad.length-1)/2),'middle'],[zad.length-1,'end']].map(function(o){
+      return '<text x="'+X(o[0],zad.length).toFixed(1)+'" y="'+(H2-6)+'" text-anchor="'+o[1]+'" font-size="9.5" fill="var(--dim2)" font-weight="700">'+dLbl(o[0])+'</text>';
+    }).join('');
+    var zX = X(zad.length-1, zad.length).toFixed(2), zY = Y(ctl[ctl.length-1]).toFixed(2);
     G = '<div class="fx-c">'
-      + '<div class="fx-btw" style="margin-bottom:8px"><h4 class="fx-h4">'+(sl?'Forma · 90 dni':'Form · 90 days')+'</h4>'
-      + '<div style="font-size:12px;color:var(--dim2);font-weight:700">CTL '+Math.round(f?f.ctl:0)+' · ATL '+Math.round(f?f.atl:0)+' · TSB '+(tsb>0?'+':'')+tsb+'</div></div>'
-      + '<svg viewBox="0 0 '+W2+' '+H2+'" width="100%" height="'+H2+'" preserveAspectRatio="none" aria-hidden="true">'
-      + '<defs><linearGradient id="fxg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--acc)" stop-opacity=".26"/><stop offset="1" stop-color="var(--acc)" stop-opacity="0"/></linearGradient></defs>'
-      + '<g stroke="var(--line)" stroke-width="1"><line x1="0" y1="30" x2="'+W2+'" y2="30"/><line x1="0" y1="60" x2="'+W2+'" y2="60"/><line x1="0" y1="90" x2="'+W2+'" y2="90"/></g>'
-      + '<path d="'+lc+' L'+(W2-4)+' '+H2+' L4 '+H2+' Z" fill="url(#fxg2)"/>'
-      + '<path d="'+la+'" fill="none" stroke="var(--dim)" stroke-width="2" stroke-dasharray="5 5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>'
-      + '<path d="'+lc+'" fill="none" stroke="var(--acc)" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>'
+      + '<div class="fx-btw" style="margin-bottom:12px"><h4 class="fx-h4">'+(sl?'Forma · 90 dni':'Form · 90 days')+'</h4>'
+      + '<div style="font-size:12px;color:var(--dim2);font-weight:700;font-variant-numeric:tabular-nums">CTL '+Math.round(f?f.ctl:0)+' · ATL '+Math.round(f?f.atl:0)+' · TSB '+(tsb>0?'+':'')+tsb+'</div></div>'
+      + '<svg viewBox="0 0 '+W2+' '+H2+'" width="100%" height="'+H2+'" preserveAspectRatio="none" aria-hidden="true" style="display:block">'
+      + '<defs><linearGradient id="fxg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--acc)" stop-opacity=".24"/><stop offset="1" stop-color="var(--acc)" stop-opacity="0"/></linearGradient></defs>'
+      + '<g stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke">'+mreza+'</g>'
+      + oznake + osX
+      + '<path d="'+lc+' L'+(W2-R)+' '+(TT+ih)+' L'+L+' '+(TT+ih)+' Z" fill="url(#fxg2)"/>'
+      + '<path d="'+la+'" fill="none" stroke="var(--dim)" stroke-width="1.8" stroke-dasharray="4 4" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>'
+      + '<path d="'+lc+'" fill="none" stroke="var(--acc)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>'
+      + '<circle cx="'+zX+'" cy="'+zY+'" r="3" fill="var(--acc)" vector-effect="non-scaling-stroke"/>'
       + '</svg>'
-      + '<div class="fx-row" style="gap:16px;margin-top:8px;font-size:11px;font-weight:700;color:var(--dim2)">'
-      + '<span class="fx-row" style="gap:6px"><span class="fx-dot" style="background:var(--acc)"></span>'+(sl?'Kondicija (CTL)':'Fitness')+'</span>'
+      + '<div class="fx-row" style="gap:18px;margin-top:10px;font-size:11px;font-weight:700;color:var(--dim2)">'
+      + '<span class="fx-row" style="gap:6px"><span style="width:14px;height:2px;background:var(--acc);border-radius:2px;display:inline-block"></span>'+(sl?'Kondicija (CTL)':'Fitness')+'</span>'
       + '<span class="fx-row" style="gap:6px"><span style="width:14px;height:0;border-top:2px dashed var(--dim);display:inline-block"></span>'+(sl?'Utrujenost (ATL)':'Fatigue')+'</span>'
       + '</div></div>';
   }
 
   /* --- sestavi --- */
   H.push('<div class="fx-cols">'
-    + '<div class="fx-col">'+W+S+'<div class="fx-duo">'+T1+T2+'</div>'+C+G+'</div>'
+    + '<div class="fx-col">'+W+S+C+G+'</div>'
     + '<div class="fx-col">'+KAL+TW+'</div>'
     + '</div>');
   H.push('<div id="fxAlert"></div><div id="fxOnboard"></div>');
