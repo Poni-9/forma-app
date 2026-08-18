@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FORMAI — mobilna (obroki, vadba, AI trener)</title>
 <meta name="theme-color" content="#0F1216">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230b0e11%22/><path d=%22M8 8h84L8 92z%22 fill=%22%2362c5ee%22/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2224%22 fill=%22%230F1216%22/><path d=%22M22 68c10-2 16-14 22-18s12 6 18 2 12-16 16-22%22 stroke=%22%23A3E635%22 stroke-width=%229%22 fill=%22none%22 stroke-linecap=%22round%22/></svg>">
 <link rel="manifest" href="manifest-mobile.json">
 <meta property="og:image" content="https://formai.si/og.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1240,8 +1240,8 @@ function renderDanes(){
     <svg viewBox="0 0 120 120" style="width:112px;height:112px;flex-shrink:0">
       <circle cx="60" cy="60" r="52" fill="none" stroke="var(--border)" stroke-width="9"></circle>
       <circle cx="60" cy="60" r="52" fill="none" stroke="${eaten>target?'#edbb00':'var(--acc)'}" stroke-width="9" stroke-dasharray="${(C*p).toFixed(0)} ${C.toFixed(0)}" transform="rotate(-90 60 60)"></circle>
-      <text x="60" y="55" fill="var(--text)" font-size="26" font-weight="800" text-anchor="middle" font-family="IBM Plex Mono,monospace">${rem.toLocaleString('sl')}</text>
-      <text x="60" y="72" fill="var(--dim)" font-size="9.5" font-weight="700" text-anchor="middle" font-family="IBM Plex Sans,sans-serif">${eaten>target?'ČEZ CILJ':'ŠE LAHKO POJEŠ'}</text>
+      <text x="60" y="55" fill="var(--text)" font-size="26" font-weight="800" text-anchor="middle" font-family="Manrope,system-ui,sans-serif">${rem.toLocaleString('sl')}</text>
+      <text x="60" y="72" fill="var(--dim)" font-size="9.5" font-weight="700" text-anchor="middle" font-family="Manrope,system-ui,sans-serif">${eaten>target?'ČEZ CILJ':'ŠE LAHKO POJEŠ'}</text>
     </svg>`; })() : `<div style="width:112px;height:112px;display:grid;place-items:center;border:1px solid var(--border);color:var(--dim);font-size:11px;text-align:center">nastavi cilj<br>v ⚙️</div>`;
   const bar=(k,v,tgt,c)=>`<div><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:var(--dim)"><span>${k}</span><span style="color:#c3ccd4">${v}</span></div><div style="height:4px;background:var(--border);margin-top:3px"><div style="width:${tgt?Math.min(100,Math.round((parseFloat(v)||0)/tgt*100)):0}%;height:100%;background:${c}"></div></div></div>`;
   const signed = !!(window.FORMASYNC && FORMASYNC.uid && FORMASYNC.uid());
