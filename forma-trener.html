@@ -826,6 +826,50 @@ input:focus,select:focus,textarea:focus{border-color:var(--acc);outline:none}
 .day-card,.day-row{border-color:var(--line)}
 .dropzone{border-style:dashed;border-color:var(--line)}
 
+/* ---- Plan: kartice kot v prototipu ---- */
+#weekGrid.week-list{display:flex;flex-direction:column;gap:10px}
+.day-row{
+  position:relative;background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--r-l);padding:15px 16px 15px 22px;overflow:hidden;
+}
+.day-row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:0 4px 4px 0;background:var(--t-kolo)}
+.day-row:has(.chip.moc)::before,.day-row:has(.chip.moč)::before{background:var(--t-moc)}
+.day-row:has(.chip.tek)::before,.day-row:has(.chip.pohod)::before{background:var(--t-tek)}
+.day-row:has(.chip.pocitek)::before,.day-row:has(.chip.počitek)::before{background:var(--t-poc)}
+.day-row.today{border-color:var(--acc)}
+.day-row.done{opacity:.82}
+.day-row .dr-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.day-row .dr-day{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--dim2)}
+.day-row.today .dr-day{color:var(--acc)}
+.day-row .dr-title{font-size:16px;font-weight:800;letter-spacing:-.02em;flex:1 1 100%;order:9}
+.day-row .dr-meta{font-size:12.5px;color:var(--dim);font-weight:600;margin-left:auto}
+.day-row .dr-meta .okk{color:var(--acc);font-weight:800;margin-left:8px}
+.day-row .dr-edit{border-radius:var(--r-full);font-size:12px;font-weight:700;padding:6px 12px;
+  background:var(--panel2);border:0;color:var(--dim);cursor:pointer}
+.day-row .dr-edit:hover{background:var(--line);color:var(--ink)}
+.day-row .dr-body{margin-top:12px;padding-top:11px;border-top:1px solid var(--line)}
+.day-row .dr-col{background:transparent;border:0;padding:0}
+.day-row .dr-lbl{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--dim2);margin-bottom:5px}
+.plan-summary{border-radius:var(--r-m);background:var(--panel);border:1px solid var(--line);padding:13px 15px;font-size:13.5px}
+.fx-prog{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-m);padding:14px 15px;margin-bottom:12px}
+.fx-prog .t{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.fx-prog b{font-size:13.5px}
+.fx-prog .v{font-size:13.5px;font-weight:800;color:var(--acc);font-variant-numeric:tabular-nums}
+.fx-prog .bar{height:7px;border-radius:var(--r-full);background:var(--panel2);overflow:hidden}
+.fx-prog .bar i{display:block;height:100%;border-radius:var(--r-full);background:var(--acc)}
+.fx-prog .s{font-size:12px;color:var(--dim2);margin-top:8px;font-weight:600}
+
+/* ---- glava: kot v prototipu ---- */
+.hd-forma{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:var(--r-full);
+  background:var(--panel2);cursor:pointer;white-space:nowrap}
+.hd-forma:hover{background:var(--line)}
+.hd-forma .k{color:var(--dim2)}
+.hd-forma .n{font-size:14px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.hd-cta{white-space:nowrap}
+/* avatar je v glavi na namizju, v zaslonu na telefonu — nikoli oboje */
+@media(min-width:901px){ .fx-head .fx-av{display:none} }
+@media(max-width:900px){ #avatarInit{display:none} .hd-cta{display:none} }
+
 /* ---- glava: mehko ---- */
 .hd-wrap{max-width:1320px;margin:0 auto;padding:0 26px}
 .kpis{display:flex;background:var(--panel2);border-radius:var(--r-m);overflow:hidden}
@@ -908,6 +952,12 @@ header .b:hover{background:var(--line);color:var(--ink)}
   .topbar{padding:0 16px}
 }
 
+@media(max-width:900px){
+  header.no-print{display:none}
+  body{padding-top:0}
+  .fx{padding-top:8px}
+}
+
 /* ══════════ LISTIČ ZA NAMESTITEV NA ZASLON ══════════ */
 .pwa-back{display:none;position:fixed;inset:0;z-index:95;background:rgba(7,9,12,.64);backdrop-filter:blur(2px)}
 .pwa-back.open{display:block}
@@ -924,6 +974,107 @@ header .b:hover{background:var(--line);color:var(--ink)}
 .pwa-n{width:24px;height:24px;border-radius:var(--r-full);background:var(--panel2);color:var(--dim);
   display:grid;place-items:center;font-size:12px;font-weight:800;flex:none}
 
+
+/* ══════════════════════════════════════════════════════════════
+   FX — zaslon Danes, zgrajen po prototipu (18. 8. 2026)
+   Samostojen nabor razredov, da se ne meša s starim CSS.
+   ══════════════════════════════════════════════════════════════ */
+.fx{display:flex;flex-direction:column;gap:16px;max-width:1240px;margin:0 auto;padding:0 4px}
+.fx *{box-sizing:border-box}
+.fx-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.fx-head .hi{font-size:13px;color:var(--dim2);font-weight:600}
+.fx-head .nm{font-size:24px;font-weight:800;letter-spacing:-.025em;line-height:1.15}
+.fx-av{width:40px;height:40px;border-radius:var(--r-full);background:var(--panel2);display:grid;place-items:center;
+  font-weight:800;color:var(--dim);font-size:14px;flex:none;cursor:pointer}
+.fx-av:hover{background:var(--line);color:var(--ink)}
+
+.fx-cols{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
+.fx-col{display:flex;flex-direction:column;gap:14px;min-width:0}
+@media(min-width:1000px){ .fx-cols{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)} }
+
+.fx-c{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-l);padding:18px}
+.fx-c.t{padding:14px;border-radius:var(--r-m)}
+.fx-row{display:flex;align-items:center;gap:10px}
+.fx-btw{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fx-lbl{font-size:12px;font-weight:700;color:var(--dim2);letter-spacing:.02em}
+.fx-h4{font-size:12px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin:0}
+.fx-chip{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:var(--r-full);
+  background:var(--panel2);color:var(--dim);font-size:11.5px;font-weight:700;white-space:nowrap}
+.fx-chip.on{background:var(--accSoft);color:var(--acc)}
+.fx-dot{width:8px;height:8px;border-radius:var(--r-full);flex:none;display:inline-block}
+
+/* tedenski trak */
+.fx-week{display:flex;gap:6px}
+.fx-day{flex:1;min-width:0;border-radius:var(--r-m);padding:9px 0 8px;text-align:center;background:var(--panel);
+  border:1px solid transparent;cursor:pointer;transition:background .15s}
+.fx-day:hover{background:var(--panel2)}
+.fx-day .dn{font-size:10px;font-weight:700;color:var(--dim2);text-transform:uppercase;letter-spacing:.06em}
+.fx-day .dd{font-size:15px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums}
+.fx-day .dt{display:flex;gap:3px;justify-content:center;margin-top:6px;height:6px}
+.fx-day .dt i{width:5px;height:5px;border-radius:var(--r-full);display:block}
+.fx-day.today{background:var(--acc);border-color:var(--acc)}
+.fx-day.today:hover{background:var(--accH)}
+.fx-day.today .dn,.fx-day.today .dd{color:var(--onSig)}
+.fx-day.past{opacity:.55}
+
+/* kartica treninga */
+.fx-sess{position:relative;overflow:hidden;padding-left:22px}
+.fx-sess .bar{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:0 4px 4px 0}
+.fx-kind{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.fx-ttl{font-size:21px;font-weight:800;letter-spacing:-.025em;margin-top:4px;line-height:1.15}
+.fx-desc{font-size:13.5px;color:var(--dim);margin-top:7px;line-height:1.55}
+.fx-meta{display:flex;gap:8px;margin-top:12px;font-size:13px;color:var(--dim);font-weight:600;flex-wrap:wrap}
+.fx-meta i{color:var(--dim2);font-style:normal}
+.fx-more{display:flex;align-items:center;margin-top:13px;padding-top:11px;border-top:1px solid var(--line);
+  color:var(--dim2);font-size:13px;font-weight:600;cursor:pointer}
+.fx-more:hover{color:var(--ink)}
+.fx-check{width:26px;height:26px;border-radius:var(--r-full);flex:none;display:grid;place-items:center;
+  background:var(--acc);color:var(--onSig);font-size:14px;font-weight:800}
+.fx-check.off{background:transparent;border:2px solid var(--line);color:transparent}
+
+/* ploščici */
+.fx-duo{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fx-big{font-size:26px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
+.fx-ring{position:relative;flex:none;margin:0 auto}
+.fx-ring svg{transform:rotate(-90deg);display:block}
+.fx-ring .mid{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.fx-ring .mid b{font-size:19px;font-weight:800;letter-spacing:-.03em;display:block;line-height:1;font-variant-numeric:tabular-nums}
+.fx-ring .mid small{font-size:10px;color:var(--dim2);font-weight:600}
+
+/* makro palice */
+.fx-mac{display:flex;flex-direction:column;gap:9px;flex:1;min-width:0}
+.fx-mac .t{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--dim)}
+.fx-mac .t span:last-child{color:var(--dim2);font-weight:600;font-variant-numeric:tabular-nums}
+.fx-track{height:6px;border-radius:var(--r-full);background:var(--panel2);overflow:hidden;margin-top:5px}
+.fx-track i{display:block;height:100%;border-radius:var(--r-full)}
+
+/* seznam tedna */
+.fx-li{display:flex;align-items:center;gap:10px;padding:7px 0;cursor:pointer}
+.fx-li:hover{opacity:.85}
+.fx-li b{font-size:13.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+.fx-li span.d{font-size:12px;color:var(--dim2);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* prazno stanje */
+.fx-empty{text-align:center;padding:26px 18px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.fx-empty .ico{width:62px;height:62px;border-radius:var(--r-xl);background:var(--panel2);display:grid;place-items:center}
+.fx-empty h3{font-size:17px;font-weight:800;letter-spacing:-.02em;margin:0}
+.fx-empty p{font-size:13.5px;color:var(--dim);max-width:280px;margin:0;line-height:1.55}
+.fx-empty .btn{margin-top:2px}
+
+.fx-note{display:flex;gap:11px;align-items:flex-start}
+.fx-note .ic{width:30px;height:30px;border-radius:var(--r-s);background:var(--accSoft);display:grid;place-items:center;flex:none}
+.fx-note b{font-size:13px;font-weight:800}
+.fx-note p{font-size:13px;color:var(--dim);margin:2px 0 0;line-height:1.55}
+
+@media(max-width:640px){
+  .fx-head .nm{font-size:21px}
+  .fx-ttl{font-size:19px}
+  .fx-c{padding:15px}
+  .fx-week{gap:4px}
+  .fx-day{padding:8px 0 7px}
+  .fx-day .dd{font-size:14px}
+}
+
 </style>
 </head>
 <body>
@@ -933,22 +1084,18 @@ header .b:hover{background:var(--line);color:var(--ink)}
   <header class="no-print" style="background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20">
     <div class="hd-wrap">
       <div style="display:flex;align-items:center;gap:16px;padding:12px 0 11px;flex-wrap:wrap">
-        <svg viewBox="0 0 168 40" aria-label="FORMAI" style="height:30px;width:auto;display:block;cursor:pointer" onclick="switchTab('dash');window.scrollTo({top:0,behavior:'smooth'})">
+        <svg viewBox="0 0 168 40" aria-label="FORMAI" style="height:30px;width:auto;display:block;cursor:pointer" onclick="switchTab('dash');fxTop()">
           <rect x="0" y="0" width="40" height="40" rx="11" fill="#A3E635"></rect>
           <path d="M5.5 26.5h5.6l3.2-8.8 3.4 14.2 3.6-18 3.2 10.4 2.8-4.6h3.9" fill="none" stroke="#0F1216" stroke-width="2.8" stroke-linejoin="miter"></path>
           <text x="52" y="29" font-family="Manrope, system-ui, sans-serif" font-size="25" font-weight="800" letter-spacing="-0.8" fill="#F2F5F8">FORMAI</text>
         </svg>
-        <div style="padding-left:18px;border-left:1px solid var(--line)">
-          <div class="k" data-i18n="hdProfil">Profil</div>
-          <div class="n" id="pgProfil" style="font-size:11.5px">—</div>
-        </div>
+        <span style="display:none" id="pgProfil"></span>
         <div style="display:flex;align-items:center;gap:14px;margin-left:auto;flex-wrap:wrap">
-          <div class="kpis">
-            <div class="kpi" onclick="statInfo('prip')"><div class="k" data-i18n="kpiPrip">Priprav.</div><div class="n" id="pgKpiPrip" style="font-size:18px;color:var(--sig)">–</div></div>
-            <div class="kpi" onclick="statInfo('tsb')"><div class="k" data-i18n="kpiSvez">Svežina</div><div class="n" id="pgKpiSvez" style="font-size:18px">–</div></div>
-            <div class="kpi" onclick="statInfo('ctl')"><div class="k" data-i18n="kpiKond">Kondicija</div><div class="n" id="pgKpiKond" style="font-size:18px">–</div></div>
-            <div class="kpi"><div class="k" data-i18n="kpiTeden">Ta teden</div><div class="n" id="pgKpiTeden" style="font-size:18px">–</div></div>
+          <div class="hd-forma" onclick="statInfo('tsb')" title="Svežina (TSB)">
+            <span class="k" data-i18n="forma">Forma</span><b class="n" id="pgKpiSvez">–</b>
           </div>
+          <button class="b sig hd-cta" onclick="switchTab('plan');fxTop()"><span data-i18n="todayBtn">Današnji trening</span></button>
+          <span style="display:none" id="pgKpiPrip"></span><span style="display:none" id="pgKpiKond"></span><span style="display:none" id="pgKpiTeden"></span>
           <button class="b" style="padding:8px 12px" id="langBtn" onclick="toggleLang()">SL → EN</button>
           <button class="b hd-install" style="padding:8px 12px;display:none" id="btnInstall" onclick="doInstall()"><span data-i18n="install">Namesti</span></button>
           <div id="avatarInit" class="hd-avatar" title="Profil" onclick="switchTab('settings')">?</div>
@@ -974,119 +1121,8 @@ header .b:hover{background:var(--line);color:var(--ink)}
   <main class="main">
 
     <!-- ===== PREGLED ===== -->
-    <section class="tab active" id="tab-dash" style="padding:0 0 8px">
-      <div style="animation:.18s ease 0s 1 normal none running fu;display:flex;flex-direction:column;gap:18px">
-
-        <div id="pgOnboard"></div>
-        <div id="pgAlert"></div>
-
-        <div class="g2" style="display:grid;grid-template-columns:minmax(0px,1.58fr) minmax(0px,1fr);gap:18px;align-items:start">
-
-          <div style="display:flex;flex-direction:column;gap:18px;min-width:0">
-            <div class="p">
-              <div style="display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--line);background:var(--panel2)">
-                <span class="k" id="pgDatum" style="color:var(--sig)">Danes</span>
-                <span class="n" id="pgVreme" style="font-size:10.5px;color:var(--dim);margin-left:auto"></span>
-              </div>
-              <div style="padding:20px 18px 18px">
-                <div style="display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap">
-                  <div style="flex:1 1 0%;min-width:250px">
-                    <h1 id="pgNaslov" style="font-size:33px;font-weight:600;line-height:1.05">—</h1>
-                    <div id="pgOpis" style="font-size:13.5px;color:var(--dim);margin-top:8px;max-width:42em"></div>
-                  </div>
-                  <div id="pgMetrike" style="display:flex;border:1px solid var(--line)"></div>
-                </div>
-
-                <div id="pgObremBox" style="margin-top:20px;border:1px solid var(--line);background:#0d1216;padding:13px 14px 10px;display:none">
-                  <div style="display:flex;justify-content:space-between;align-items:baseline">
-                    <span class="k" data-i18n="pgObrem">Profil obremenitve</span><span class="n" id="pgObremCone" style="font-size:9.5px;color:var(--dim2)"></span>
-                  </div>
-                  <div id="pgObremBari" style="display:flex;align-items:flex-end;gap:2px;height:54px;margin-top:9px;border-bottom:1px solid var(--line)"></div>
-                  <div id="pgObremLbl" style="display:flex;margin-top:6px"></div>
-                </div>
-
-                <div id="pgGumbi" style="display:flex;flex-wrap:wrap;gap:9px;margin-top:16px;align-items:center"></div>
-
-                <div id="pgTrenerBox" style="margin-top:16px;padding:11px 13px;border-left:2px solid var(--sig2);background:#0d1216;display:none">
-                  <div id="pgTrener" style="font-size:13px;color:var(--ink)"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div style="display:flex;flex-direction:column;gap:18px;min-width:0">
-            <div class="p">
-              <div style="display:flex;align-items:center;padding:10px 18px;border-bottom:1px solid var(--line)">
-                <span class="k" data-i18n="pgPrip">Pripravljenost</span>
-                <span class="k" id="pgStreak" style="margin-left:auto;color:var(--sig2)"></span>
-              </div>
-              <div style="padding:14px 18px 16px">
-                <div style="display:flex;align-items:flex-end;gap:8px">
-                  <div class="n" id="pgPrip" style="font-size:52px;line-height:.95;color:var(--sig)">–</div>
-                  <div class="k" style="padding-bottom:9px">/ 100</div>
-                </div>
-                <div style="height:4px;background:#1b2227;margin-top:10px;display:flex;gap:1px">
-                  <div id="pgPripBar" style="width:0%;height:100%;background:var(--sig)"></div>
-                </div>
-                <div id="pgPripTxt" style="font-size:13px;color:var(--dim);margin-top:9px"></div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line2)">
-                  <div><div class="k" data-i18n="pgSpanec">Spanec</div><div class="n" id="pgSpanec" style="font-size:19px">—</div></div>
-                  <div><div class="k" data-i18n="pgRhr">Utrip v mirovanju</div><div class="n" id="pgRhr" style="font-size:19px">—</div></div>
-                  <div style="cursor:pointer" onclick="statInfo('atl')"><div class="k">Utrujenost (ATL)</div><div class="n" id="pgAtl" style="font-size:19px">—</div></div>
-                  <div style="cursor:pointer" onclick="statInfo('ctl')"><div class="k">Kondicija (CTL)</div><div class="n" id="pgCtl" style="font-size:19px">—</div></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="p">
-              <div style="display:flex;align-items:center;padding:10px 18px;border-bottom:1px solid var(--line)">
-                <span class="k" data-i18n="pgKalorije">Kalorije danes</span>
-                <a href="#" class="k" style="color:var(--sig);margin-left:auto" onclick="switchTab('kalorije');return false"><span data-i18n="navPrehrana">Prehrana</span> →</a>
-              </div>
-              <div style="padding:14px 18px 16px">
-                <div class="n" id="pgKcal" style="font-size:30px">—</div>
-                <div style="height:4px;background:#1b2227;margin-top:9px"><div id="pgKcalBar" style="width:0%;height:100%;background:var(--sig)"></div></div>
-                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px">
-                  <div><div class="k" data-i18n="pgBelj">Belj.</div><div class="n" id="pgBelj" style="font-size:16px">—</div></div>
-                  <div><div class="k" data-i18n="pgOh">Ogl. hidr.</div><div class="n" id="pgOh" style="font-size:16px">—</div></div>
-                  <div><div class="k" data-i18n="pgMasc">Maščobe</div><div class="n" id="pgMasc" style="font-size:16px">—</div></div>
-                </div>
-                <div class="k" id="pgKcalNota" style="margin-top:12px;color:var(--dim)"></div>
-                <div class="k" style="margin-top:8px;color:var(--dim2);white-space:normal;line-height:1.5;letter-spacing:.06em">⚕ <span data-i18n="medNote">Ocena, ne zdravniški nasvet.</span></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="g2" style="display:grid;grid-template-columns:minmax(0px,1.58fr) minmax(0px,1fr);gap:18px;align-items:stretch">
-          <div class="p">
-            <div style="display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--line)">
-              <span class="k" id="pgTedenNaslov">Ta teden</span>
-              <span class="k" id="pgTedenSub" style="margin-left:auto;color:var(--dim)"></span>
-            </div>
-            <div style="padding:14px 18px 16px">
-              <div id="pgTedenStat" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px"></div>
-              <div id="pgTedenBari" style="display:flex;gap:5px;margin-top:16px;align-items:flex-end"></div>
-            </div>
-          </div>
-          <div class="p">
-            <div style="display:flex;align-items:center;padding:10px 18px;border-bottom:1px solid var(--line)">
-              <span class="k" data-i18n="pgForma90">Forma · 90 dni</span>
-              <span class="k" id="pgFormaHead" style="margin-left:auto;color:var(--dim)"></span>
-            </div>
-            <div style="padding:14px 18px 12px">
-              <div id="pgFormaWrap"></div>
-              <div id="pgFormaMeseci" style="display:flex;justify-content:space-between;margin-top:4px"></div>
-              <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap">
-                <span class="k"><span style="display:inline-block;width:12px;height:2px;background:var(--sig);vertical-align:3px;margin-right:5px"></span>Kondicija</span>
-                <span class="k"><span style="display:inline-block;width:12px;height:2px;background:#4a555e;vertical-align:3px;margin-right:5px"></span>Utrujenost</span>
-                <span class="k"><span style="display:inline-block;width:12px;height:2px;background:var(--sig2);vertical-align:3px;margin-right:5px"></span>Svežina</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
+<section class="tab active" id="tab-dash" style="padding:0 0 8px">
+      <div class="fx" id="fxDanes"></div>
       <div id="dashLegacy" aria-hidden="true" style="position:absolute;left:-99999px;top:0;width:1200px;height:800px;overflow:hidden;pointer-events:none"><div>
       <div class="page-head head-row">
         <div>
@@ -2351,249 +2387,320 @@ function pgCell(k, val, sub, pct){
     + (pct==null?'':`<div style="height:3px;background:#1b2227;margin-top:6px"><div style="width:${Math.max(0,Math.min(100,pct))}%;height:100%;background:var(--sig)"></div></div>`)
     + `</div>`;
 }
-function risiPregled(){
-  if(!document.getElementById('pgNaslov')) return;
-  const sl = LANG!=='en';
-  const p = state.settings.profile || {};
-  const iso = todayIso(), now = new Date();
-  const f = currentForm(), prip = pripravljenost();
-  const ti = tedenInfo();
-  const wk = weekAgg(0);
-
-  /* ---- glava ---- */
-  const nivo = (p.nivo||'').toUpperCase();
-  const tedenTxt = ti && ti.tot ? ` · ${sl?'TEDEN':'WEEK'} ${ti.n}/${ti.tot}` : '';
-  const ime = (p.ime||'').trim().toUpperCase();
-  const set = (id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
-  const setH = (id,v)=>{ const e=document.getElementById(id); if(e) e.innerHTML=v; };
-  set('pgProfil', [ime||null, nivo||null].filter(Boolean).join(' · ') + tedenTxt || '—');
-  set('pgKpiPrip', prip);
-  set('pgKpiSvez', f? (f.tsb>0?'+':'')+Math.round(f.tsb) : '–');
-  set('pgKpiKond', f? Math.round(f.ctl) : '–');
-  set('pgKpiTeden', pgHM(wk.min||0));
-  const av=document.getElementById('avatarInit'); if(av) av.textContent = (ime[0]||'?');
-
-  /* ---- 1. plošča: današnji trening ---- */
-  const d = planDayFor(iso);
-  const dan = (sl?DNEVI:DNEVI)[(now.getDay()+6)%7];
-  const MES_POLN=['januar','februar','marec','april','maj','junij','julij','avgust','september','oktober','november','december'];
-  set('pgDatum', `${sl?'DANES':'TODAY'} · ${dan} ${now.getDate()}. ${sl?MES_POLN[now.getMonth()]:MESECI[now.getMonth()]}`);
-  let wx='';
-  try{ const w=weatherByDate(iso); if(w){ const wi=weatherInfo(w.code)||{};
-    wx = [ w.pop!=null? (w.pop>=60?(sl?'DEŽ':'RAIN'):w.pop>=30?(sl?'MOŽEN DEŽ':'RAIN POSSIBLE'):(sl?'SUHO':'DRY'))+' '+w.pop+' %' : null,
-           w.tmax!=null? Math.round(w.tmax)+' °C' : null ].filter(Boolean).join(' · ');
-  } }catch(_){}
-  set('pgVreme', wx);
-
-  const metr=document.getElementById('pgMetrike'), obrem=document.getElementById('pgObremBox');
-  const gumbi=document.getElementById('pgGumbi');
-  if(!d){
-    set('pgNaslov', sl?'Za danes ni plana':'No plan for today');
-    set('pgOpis', sl?'Generiraj teden in trener te vodi vsak dan.':'Generate a week and the coach guides you daily.');
-    if(metr) metr.innerHTML=''; if(obrem) obrem.style.display='none';
-    if(gumbi) gumbi.innerHTML = `<button class="b sig" onclick="switchTab('plan');setTimeout(()=>generatePlan(),200)">${sl?'Ustvari tedenski plan':'Create weekly plan'} →</button>`;
-  } else {
-    const cls = chipClass(d.tip,d), rest = cls==='pocitek';
-    set('pgNaslov', d.naslov || d.tip || (sl?'Trening':'Workout'));
-    (function(){
-      const vr=(d.opis||'').split('\n').map(x=>x.trim()).filter(Boolean);
-      const glavna = vr.find(x=>!/^(ogrev|warm|zaključ|ohlaj|cool|raztez|stretch)/i.test(x));
-      set('pgOpis', d.zakaj || d.namen || glavna || vr[0] || '');
-    })();
-    const kcal = d.tss_ocena? Math.round(d.tss_ocena*11) : (d.trajanje_min? Math.round(d.trajanje_min*9) : null);
-    const moc = (p.ftp && ['intervali','tempo'].includes(cls))? `${Math.round(p.ftp*0.85)}–${Math.round(p.ftp*1.05)} W` : null;
-    const cells = [
-      rest? null : [sl?'Čas':'Time', (d.trajanje_min||0)+'′'],
-      moc? [sl?'Moč':'Power', moc] : null,
-      d.tss_ocena? ['TSS', String(d.tss_ocena)] : null,
-      kcal? ['Kcal', String(kcal)] : null
-    ].filter(Boolean);
-    if(metr) metr.innerHTML = cells.map(([k,v],i)=>
-      `<div style="padding:7px 13px${i<cells.length-1?';border-right:1px solid var(--line)':''}"><div class="k">${k}</div><div class="n" style="font-size:16px">${v}</div></div>`).join('');
-
-    /* profil obremenitve — iz vrstic opisa, ista logika kot doslej */
-    const L=(d.opis||'').split('\n').filter(x=>x.trim());
-    let segs=null;
-    if(!rest && L.length>=2){
-      segs = L.map(line=>{
-        const rep2=line.match(/(\d+)\s*[×x]\s*(\d+)\s*(min|minut)/i), one=line.match(/(\d+)\s*(min|minut)/i);
-        let mins = rep2? (+rep2[1]*+rep2[2]) : (one? +one[1] : null);
-        if(rep2){ const pav=line.match(/vmes[^.]*?(\d+)\s*(min|minut)/i); if(pav) mins += (+rep2[1]-1)*(+pav[1]); }
-        if(!mins) mins = Math.max(10, Math.round((d.trajanje_min||60)/L.length));
-        const hard=/interval|glavni|klanec|tempo|prag|z4|z3|c4|c3|močno|hitro/i.test(line);
-        const warm=/ogrev/i.test(line), cool=/zaključ|ohlaj|sprošč/i.test(line);
-        const pav = rep2? (line.match(/vmes[^.]*?(\d+)\s*(min|minut)/i)||[])[1] : null;
-        return { mins, hard, warm, cool,
-                 rep: rep2? +rep2[1] : null, repMin: rep2? +rep2[2] : null, pavza: pav? +pav : null,
-                 lbl: warm?(sl?'Ogrevanje':'Warm-up'):cool?(sl?'Ohlajanje':'Cool-down')
-                      :(rep2? `${sl?'Glavni del':'Main'} ${rep2[1]} × ${rep2[2]}′` : (sl?'Glavni del':'Main')) };
-      });
-      let tot=segs.reduce((a,x)=>a+x.mins,0)||1; const target=+d.trajanje_min||tot;
-      if(Math.abs(tot-target)>4){
-        let i2=segs.findIndex(x=>x.hard); if(i2<0) i2=0;
-        segs[i2].mins=Math.max(5, segs[i2].mins+(target-tot));
-      }
-    }
-    if(obrem){
-      if(segs && segs.length>=2){
-        obrem.style.display='';
-        const bloki=[];
-        segs.forEach(x=>{
-          if(x.hard && x.rep && x.rep>1){
-            for(let r=0;r<x.rep;r++){
-              bloki.push({flex:x.repMin, h:'100%', bg:'var(--sig)'});
-              if(r<x.rep-1 && x.pavza) bloki.push({flex:x.pavza, h:'30%', bg:'#17323d'});
-            }
-          } else {
-            bloki.push({flex:x.mins, h: x.hard?'100%':(x.warm||x.cool)?'44%':'62%',
-                        bg: x.hard?'var(--sig)':(x.warm||x.cool)?'#1e4d61':'#17323d'});
-          }
-        });
-        document.getElementById('pgObremBari').innerHTML =
-          bloki.map(bk=>`<div style="flex:${bk.flex};height:${bk.h};background:${bk.bg}"></div>`).join('');
-        document.getElementById('pgObremLbl').innerHTML = segs.map((x,i)=>
-          `<div class="k" style="flex:${x.mins}${x.hard?';color:var(--sig)':''}${i===segs.length-1?';text-align:right':''};overflow:hidden">${x.lbl}${x.rep?(x.pavza?` · ${sl?'vmes':'rec'} ${x.pavza}′`:''):` ${x.mins}′`}</div>`).join('');
-        const cone = segs.filter(x=>x.hard).length? 'C2 → C4 → C2' : 'C1 → C2';
-        set('pgObremCone', cone);
-      } else obrem.style.display='none';
-    }
-    const done = d.done || state.rides.some(r=>r.date===iso);
-    if(gumbi) gumbi.innerHTML =
-      `<button class="b sig" onclick="openPlanDay('${iso}')">${sl?'Podrobnosti treninga':'Workout details'} →</button>`
-      + (done? `<span class="k" style="color:var(--green);padding-left:6px">✓ ${sl?'Opravljeno':'Done'}</span>`
-             : `<button class="b" onclick="markDayDone('${iso}')">${sl?'Označi opravljeno':'Mark done'}</button>`
-               + `<button class="b" onclick="switchTab('trener');setTimeout(()=>{const i=document.getElementById('chatIn'); if(i){i.value='${sl?'Nimam toliko časa — skrajšaj današnji trening':'I do not have that much time — shorten today'}';i.focus();}},250)">${sl?'Nimam toliko časa':'Not enough time'}</button>`);
-  }
-
-  /* trenerjeva opomba */
-  const tb=document.getElementById('pgTrenerBox');
-  if(tb){
-    let txt=''; try{ const cc=coachCache(); if(cc && cc.date===iso && cc.text) txt=cc.text; }catch(_){}
-    if(txt){ tb.style.display='';
-      setH('pgTrener', `<span class="k" style="color:var(--sig2)">${sl?'Trener ·':'Coach ·'}</span> ${esc(String(txt).split('\n')[0]).slice(0,240)} <a href="#" onclick="switchTab('trener');return false">${sl?'Vprašaj':'Ask'} →</a>`);
-    } else tb.style.display='none';
-  }
-
-  /* ---- 2. plošča: pripravljenost ---- */
-  set('pgPrip', prip);
-  const pb=document.getElementById('pgPripBar'); if(pb) pb.style.width = prip+'%';
-  set('pgPripTxt', prip>=70? (sl?'Odlična — dan za močan trening.':'Excellent — a day for a hard session.')
-                 : prip>=45? (sl?'Solidna — drži se plana.':'Solid — stick to the plan.')
-                           : (sl?'Nizka — danes raje lažje.':'Low — go easy today.'));
-  const stk=streakDays();
-  set('pgStreak', stk>=2? `${stk} ${sl?'dni zaporedno':'day streak'}` : '');
-  set('pgSpanec', '—');
-  set('pgRhr', p.restHr? String(p.restHr) : '—');
-  set('pgAtl', f? String(Math.round(f.atl)) : '—');
-  set('pgCtl', f? String(Math.round(f.ctl)) : '—');
-
-  /* ---- 3. plošča: kalorije ---- */
-  (function(){
-    let eaten=null, cilj=null, mak={p:0,c:0,f:0,has:false}, zadnji=null, poraba=null;
-    try{
-      const kal=kalData();
-      const dnevi = kal?.days || kal?.dnevi || {};
-      const dan = dnevi[iso] || (Array.isArray(kal?.entries)? {entries:kal.entries.filter(e=>e.date===iso)} : null);
-      const en = dan?.entries || dan?.obroki || [];
-      if(en.length){
-        eaten = Math.round(en.reduce((a,e)=>a+(+(e.kcal??e.k??e.kalorije)||0),0));
-        mak = kalMacros(en);
-        const t = en.map(e=>e.time||e.cas||e.ura).filter(Boolean).sort().pop(); if(t) zadnji=t;
-      }
-      const d0=planDayFor(iso), t0=(typeof tdee==='function')? tdee() : null;
-      cilj = d0?.kcal_vnos || (t0? Math.round(t0 - ((typeof wantsLean==='function'&&wantsLean())? (typeof goalDeficit==='function'? goalDeficit():0) : 0)) : null);
-      poraba = t0? Math.round(t0) : null;
-    }catch(_){}
-    const profilPopoln = !!(p.teza && p.visina && p.starost && p.spol);
-    if(!profilPopoln) cilj=null;
-    setH('pgKcal', eaten==null && cilj==null ? `<span style="font-size:15px;color:var(--dim)">${sl?'Dopolni profil, da izračunam':'Complete your profile to calculate'}</span>`
-       : `${pgNum(eaten??0)} <span style="font-size:13px;color:var(--dim)">/ ${cilj? pgNum(cilj)+' kcal' : (sl?'cilj ni znan':'goal unknown')}</span>`);
-    const kb=document.getElementById('pgKcalBar');
-    if(kb) kb.style.width = (eaten!=null && cilj)? Math.max(0,Math.min(100,Math.round(eaten/cilj*100)))+'%' : '0%';
-    set('pgBelj', mak.has? mak.p+' g' : '—');
-    set('pgOh',   mak.has? mak.c+' g' : '—');
-    set('pgMasc', mak.has? mak.f+' g' : '—');
-    const bits=[];
-    if(eaten!=null && cilj) bits.push(`${sl?'ostane':'left'} ${pgNum(Math.max(0,cilj-eaten))} kcal`);
-    if(poraba) bits.push(`${sl?'poraba':'burn'} ~${pgNum(poraba)} kcal`);
-    if(zadnji) bits.push(`${sl?'zadnji obrok':'last meal'} ${zadnji}`);
-    set('pgKcalNota', bits.join(' · '));
-  })();
-
-  /* ---- 4. plošča: ta teden ---- */
-  (function(){
-    const ws=weekStart(new Date()), we=addDays(ws,6);
-    const dd=x=>String(x.getDate()).padStart(2,'0')+'. '+String(x.getMonth()+1).padStart(2,'0')+'.';
-    set('pgTedenNaslov', `${sl?'Ta teden':'This week'} · ${dd(ws)} – ${dd(we)}`);
-    const ciljMin=(p.ure||0)*60;
-    let planiranih=0, opravljenih=0;
-    for(let i=0;i<7;i++){ const it=isoDate(addDays(ws,i)); const pd=planDayFor(it);
-      if(pd && chipClass(pd.tip,pd)!=='pocitek'){ planiranih++; if(pd.done||state.rides.some(r=>r.date===it)) opravljenih++; } }
-    set('pgTedenSub', `${pgHM(wk.min)}${ciljMin?` ${sl?'od':'of'} ${pgHM(ciljMin)}`:''} h · ${opravljenih} ${sl?'od':'of'} ${planiranih}`);
-    const ciljTss = Math.round(state.rides.length? (formSeries().slice(-1)[0]?.ctl||0)*7 : 0);
-    document.getElementById('pgTedenStat').innerHTML =
-      pgCell(sl?'Opravljeno':'Done', pgHM(wk.min), 'h', ciljMin? wk.min/ciljMin*100 : null)
-    + pgCell(sl?'Razdalja':'Distance', pgNum(Math.round(wk.km)), 'km', null)
-    + pgCell(sl?'Višinci':'Elevation', pgNum(Math.round(state.rides.filter(r=>r.date>=isoDate(ws)&&r.date<=isoDate(we)).reduce((a,r)=>a+(+r.elev||0),0))), 'm', null)
-    + pgCell('TSS', pgNum(Math.round(wk.tss)), ciljTss? '/ '+pgNum(ciljTss) : null, ciljTss? wk.tss/ciljTss*100 : null);
-
-    let maxMin=1;
-    const dnevi=[];
-    for(let i=0;i<7;i++){
-      const it=isoDate(addDays(ws,i)), pd=planDayFor(it);
-      const rides=state.rides.filter(r=>r.date===it);
-      const opr=rides.reduce((a,r)=>a+(+r.time||0),0);
-      const plan=(pd && chipClass(pd.tip,pd)!=='pocitek')? (+pd.trajanje_min||0) : 0;
-      const min=opr||plan; if(min>maxMin) maxMin=min;
-      dnevi.push({it,min,opr,plan,danes:it===iso,ime:(sl?['Pon','Tor','Sre','Čet','Pet','Sob','Ned']:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'])[i]});
-    }
-    document.getElementById('pgTedenBari').innerHTML = dnevi.map(x=>{
-      const h = x.min? Math.max(6, Math.round(x.min/maxMin*100)) : 0;
-      const stil = x.opr? 'background:var(--sig)' : 'background:rgba(57,135,229,.18);border:1px dashed var(--sig)';
-      const bar = x.min? `<div style="width:100%;height:${h}%;${stil}"></div>`
-                       : `<div style="width:100%;height:4px;background:#2a333a"></div>`;
-      return `<div style="flex:1 1 0%"><div style="height:58px;display:flex;align-items:flex-end">${bar}</div>`
-        + `<div style="height:1px;background:${x.danes?'var(--sig)':'var(--line)'}"></div>`
-        + `<div class="k" style="margin-top:6px;text-align:center${x.danes?';color:var(--sig)':''}">${x.ime} ${x.min? x.min+'′':'—'}</div></div>`;
-    }).join('');
-  })();
-
-  /* ---- 5. plošča: forma 90 dni ---- */
-  (function(){
-    const wrap=document.getElementById('pgFormaWrap'); if(!wrap) return;
-    const s90=formSeries().slice(-90);
-    set('pgFormaHead', f? `CTL ${Math.round(f.ctl)} · ATL ${Math.round(f.atl)} · TSB ${f.tsb>0?'+':''}${Math.round(f.tsb)}` : '');
-    if(s90.length<14){
-      wrap.innerHTML = `<div class="m" style="padding:22px 0">${sl?'Dodaj aktivnosti — graf se izriše, ko je vsaj 14 dni podatkov.':'Add activities — the chart appears once there are 14 days of data.'}</div>`;
-      document.getElementById('pgFormaMeseci').innerHTML=''; return;
-    }
-    const W=320,H=120;
-    const vals=[...s90.map(x=>x.ctl),...s90.map(x=>x.atl),...s90.map(x=>x.tsb)];
-    const mx=Math.max(...vals)*1.1, mn=Math.min(...vals,0)*1.1;
-    const X=i=>(W*i/(s90.length-1)).toFixed(1);
-    const Y=v=>(H-8-(H-16)*((v-mn)/((mx-mn)||1))).toFixed(1);
-    const line=(k)=>s90.map((x,i)=>`${X(i)},${Y(x[k])}`).join(' ');
-    wrap.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:112px;display:block">
-      <line x1="0" y1="30" x2="${W}" y2="30" stroke="#1b2227" stroke-width="1" vector-effect="non-scaling-stroke"></line>
-      <line x1="0" y1="60" x2="${W}" y2="60" stroke="#1b2227" stroke-width="1" vector-effect="non-scaling-stroke"></line>
-      <line x1="0" y1="90" x2="${W}" y2="90" stroke="#1b2227" stroke-width="1" vector-effect="non-scaling-stroke"></line>
-      <polyline points="${line('atl')}" fill="none" stroke="#4a555e" stroke-width="1.4" vector-effect="non-scaling-stroke"></polyline>
-      <polyline points="${line('tsb')}" fill="none" stroke="var(--sig2)" stroke-width="1.2" vector-effect="non-scaling-stroke"></polyline>
-      <polyline points="${line('ctl')}" fill="none" stroke="var(--sig)" stroke-width="2.2" vector-effect="non-scaling-stroke"></polyline>
-    </svg>`;
-    const idx=[0, Math.floor(s90.length/3), Math.floor(s90.length*2/3), s90.length-1];
-    document.getElementById('pgFormaMeseci').innerHTML = idx.map((i,n)=>{
-      const m=MESECI[parseIso(s90[i].date).getMonth()];
-      return `<span class="k"${n===3?' style="color:var(--sig)"':''}>${n===3?(sl?'Danes':'Today'):m}</span>`;
-    }).join('');
-  })();
-
-  /* onboarding in opozorila prenesemo iz obstoječih vozlišč */
+/* ══════════════════════════════════════════════════════════════
+   FX — zaslon Danes, zgrajen po prototipu.
+   Podatki pridejo iz obstoječega motorja; nič novega se ne shranjuje.
+   ══════════════════════════════════════════════════════════════ */
+/* stran se pomika po <body>, ne po oknu (html/body imata height:100%) */
+function fxTop(){
   try{
-    const o=document.getElementById('onboardCard'), a=document.getElementById('dashAlert');
-    const po=document.getElementById('pgOnboard'), pa=document.getElementById('pgAlert');
-    if(po && o) po.innerHTML=o.innerHTML;
-    if(pa) pa.innerHTML = opozoriloSlepote() + ((a && a.innerHTML) || '');
+    window.scrollTo({top:0,behavior:'smooth'});
+    document.body.scrollTo? document.body.scrollTo({top:0,behavior:'smooth'}) : (document.body.scrollTop=0);
+    document.documentElement.scrollTop = 0;
+  }catch(_){ try{ document.body.scrollTop=0; }catch(__){} }
+}
+const FX_SVG = {
+  kolo:'<circle cx="6" cy="17" r="3.2"/><circle cx="18" cy="17" r="3.2"/><path d="M6 17l4-8h5l3 8M10 9h6"/>',
+  tek:'<circle cx="13.5" cy="4.5" r="1.6"/><path d="M9 21l2-5-2.5-2.5L7 9l4-1.5 3 2.5 3 .8M6.5 12L5 9M14 14.5l1.5 3.5 2.5 2"/>',
+  moc:'<path d="M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10"/>',
+  hrana:'<path d="M6 3v8a3 3 0 006 0V3M9 11v10"/><path d="M17 3c-1.5 2-2 4-2 6s.5 3 2 3 2-1 2-3-.5-4-2-6zM17 12v9"/>',
+  trener:'<path d="M21 15a2 2 0 01-2 2H8l-5 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>',
+  pocitek:'<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>'
+};
+function fxIco(k, size, col, w){
+  return '<svg viewBox="0 0 24 24" width="'+(size||20)+'" height="'+(size||20)+'" fill="none" stroke="'+(col||'currentColor')+
+         '" stroke-width="'+(w||1.8)+'" stroke-linecap="round" stroke-linejoin="round">'+(FX_SVG[k]||'')+'</svg>';
+}
+/* tip treninga → barva in oznaka športa */
+function fxSport(day){
+  if(!day) return {k:'pocitek', c:'var(--t-poc)', n:'Počitek', ico:'pocitek'};
+  let cls='vzdrzljivost';
+  try{ cls = chipClass(day.tip, day); }catch(_){}
+  if(cls==='pocitek') return {k:'pocitek', c:'var(--t-poc)', n:'Počitek', ico:'pocitek'};
+  if(cls==='moc')     return {k:'moc',     c:'var(--t-moc)', n:'Moč',     ico:'moc'};
+  if(cls==='tek')     return {k:'tek',     c:'var(--t-tek)', n:'Tek',     ico:'tek'};
+  if(cls==='pohod')   return {k:'pohod',   c:'var(--t-tek)', n:'Pohod',   ico:'tek'};
+  var ps='kolo'; try{ ps = primarniSport(); }catch(_){}
+  if(ps==='kolo') return {k:'kolo', c:'var(--t-kolo)', n:'Kolo', ico:'kolo'};
+  if(ps==='tek')  return {k:'tek',  c:'var(--t-tek)',  n:'Tek in hoja', ico:'tek'};
+  return {k:'pohod', c:'var(--t-tek)', n:'Pohod', ico:'tek'};
+}
+function fxDone(iso, day){
+  if(day && day.done) return true;
+  try{ return state.rides.some(function(r){ return r.date===iso; }); }catch(_){ return false; }
+}
+function fxNum(n){ try{ return Number(n).toLocaleString('sl-SI'); }catch(_){ return String(n); } }
+function fxDur(m){
+  m = Math.round(+m||0); if(!m) return '';
+  var h=Math.floor(m/60), r=m%60;
+  return h? (h+' h'+(r? ' '+r+' min':'')) : (r+' min');
+}
+/* dnevne kalorije — ISTA logika kot prej, a s popravljenim deficitom */
+function fxKal(iso){
+  var out={eaten:null, cilj:null, mak:{p:0,c:0,f:0,has:false}, poraba:null, popoln:false};
+  var p=state.settings.profile;
+  out.popoln = !!(p.teza && p.visina && p.starost && p.spol);
+  try{
+    var kal=kalData(), dnevi=(kal&&(kal.days||kal.dnevi))||{};
+    var dan=dnevi[iso] || (kal && Array.isArray(kal.entries) ? {entries:kal.entries.filter(function(e){return e.date===iso;})} : null);
+    var en=(dan&&(dan.entries||dan.obroki))||[];
+    if(en.length){
+      out.eaten = Math.round(en.reduce(function(a,e){ return a + (+(e.kcal!=null?e.kcal:(e.k!=null?e.k:e.kalorije))||0); },0));
+      out.mak = kalMacros(en);
+    }
+    var d0=planDayFor(iso), t0=(typeof tdee==='function')? tdee() : null;
+    var def = 0;
+    try{ if(typeof wantsLean==='function' && wantsLean()){ var g=goalDeficit(); def = (g && g.deficit) ? g.deficit : 0; } }catch(_){}
+    out.cilj = (d0 && d0.kcal_vnos) ? d0.kcal_vnos : (t0 ? Math.round(t0 - def) : null);
+    out.poraba = t0 ? Math.round(t0) : null;
+  }catch(_){}
+  if(!out.popoln) out.cilj=null;
+  return out;
+}
+/* obroč */
+function fxRing(pct, size, sw, sredina){
+  var r=(size/2)-sw/2, C=2*Math.PI*r, on=Math.max(0, Math.min(1, pct||0))*C;
+  return '<div class="fx-ring" style="width:'+size+'px;height:'+size+'px">'
+    +'<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'">'
+    +'<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="var(--panel2)" stroke-width="'+sw+'"/>'
+    +(on>0.5?'<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r.toFixed(2)+'" fill="none" stroke="var(--acc)" stroke-width="'+sw+'" stroke-linecap="round" stroke-dasharray="'+on.toFixed(1)+' '+C.toFixed(1)+'"/>':'')
+    +'</svg><div class="mid">'+sredina+'</div></div>';
+}
+/* sparkline */
+function fxSpark(vals, w, h){
+  if(!vals || vals.length<2) return '<div style="height:'+h+'px"></div>';
+  var mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals), sp=(mx-mn)||1;
+  var pts=vals.map(function(v,i){
+    var x=2+(i/(vals.length-1))*(w-4), y=h-3-((v-mn)/sp)*(h-8);
+    return x.toFixed(1)+' '+y.toFixed(1);
+  });
+  var line='M'+pts.join(' L');
+  var area=line+' L'+(w-2)+' '+h+' L2 '+h+' Z';
+  var last=pts[pts.length-1].split(' ');
+  return '<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" preserveAspectRatio="none" aria-hidden="true">'
+    +'<defs><linearGradient id="fxg" x1="0" y1="0" x2="0" y2="1">'
+    +'<stop offset="0" stop-color="var(--acc)" stop-opacity=".32"/><stop offset="1" stop-color="var(--acc)" stop-opacity="0"/></linearGradient></defs>'
+    +'<path d="'+area+'" fill="url(#fxg)"/>'
+    +'<path d="'+line+'" fill="none" stroke="var(--acc)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>'
+    +'<circle cx="'+last[0]+'" cy="'+last[1]+'" r="2.6" fill="var(--acc)"/></svg>';
+}
+
+/* ══════════ GLAVNI IZRIS ZASLONA DANES ══════════ */
+function risiPregled(){
+  var host = document.getElementById('fxDanes');
+  if(!host) return;
+  var sl = (typeof LANG==='undefined') || LANG!=='en';
+  var iso = todayIso(), now = new Date();
+  var p = state.settings.profile || {};
+  var day = planDayFor(iso);
+  var f = null; try{ f = currentForm(); }catch(_){}
+  var ti = null; try{ ti = tedenInfo(); }catch(_){}
+  var H = [];
+
+  /* --- glava --- */
+  var dan = DNEVI[(now.getDay()+6)%7], datum = dan.charAt(0).toUpperCase()+dan.slice(1)+', '+now.getDate()+'. '+({jan:'januar',feb:'februar',mar:'marec',apr:'april',maj:'maj',jun:'junij',jul:'julij',avg:'avgust',sep:'september',okt:'oktober',nov:'november',dec:'december'}[MESECI[now.getMonth()]]);
+  var ime = (p.ime||'').trim().split(/\s+/)[0] || '';
+  var ini = (p.ime||'').trim().split(/\s+/).map(function(x){return x.charAt(0);}).join('').slice(0,2).toUpperCase() || '?';
+  H.push('<div class="fx-head"><div><div class="hi">'+esc(datum)+'</div><div class="nm">'
+    + (ime ? (sl?'Živjo, ':'Hi, ')+esc(ime) : (sl?'Danes':'Today')) + '</div></div>'
+    + '<div class="fx-av" title="Profil" onclick="switchTab(\'settings\')">'+esc(ini)+'</div></div>');
+
+  H.push('<div id="fxOnboard"></div><div id="fxAlert"></div>');
+
+  /* --- tedenski trak --- */
+  var ws = weekStart(now), dni = [];
+  for(var i=0;i<7;i++){
+    var dd = addDays(ws,i), di = isoDate(dd), pd = planDayFor(di);
+    dni.push({iso:di, d:dd, plan:pd, sp:fxSport(pd), danes:di===iso, prej:di<iso, done:fxDone(di,pd)});
+  }
+  var faza = '';
+  try{ if(state.macro && state.macro.weeks && ti && ti.n) faza = (state.macro.weeks[ti.n-1]||{}).faza || ''; }catch(_){}
+  var tedenTxt = ti ? (ti.tot ? (sl?'TEDEN ':'WEEK ')+ti.n+' / '+ti.tot : (ti.left!=null ? (sl?'ŠE ':'')+ti.left+(sl?' TEDNOV DO CILJA':' WEEKS TO GOAL') : '')) : '';
+  var kratice = sl ? ['pon','tor','sre','čet','pet','sob','ned'] : ['mon','tue','wed','thu','fri','sat','sun'];
+
+  var W = '<div class="fx-btw" style="margin-bottom:8px">'
+    + '<div class="fx-lbl" style="color:var(--dim2)">'+esc(tedenTxt)+'</div>'
+    + (faza ? '<span class="fx-chip">'+esc(faza)+'</span>' : '') + '</div><div class="fx-week">';
+  dni.forEach(function(x,i){
+    var cls = x.danes ? 'fx-day today' : (x.prej ? 'fx-day past' : 'fx-day');
+    var pika = x.plan ? '<i style="background:'+(x.danes?'rgba(15,18,22,.55)':x.sp.c)+'"></i>' : '';
+    W += '<div class="'+cls+'" onclick="openPlanDay(\''+x.iso+'\')"><div class="dn">'+kratice[i]+'</div>'
+       + '<div class="dd">'+x.d.getDate()+'</div><div class="dt">'+pika+'</div></div>';
+  });
+  W += '</div>';
+
+  /* --- kartica današnjega treninga --- */
+  var S;
+  if(day){
+    var sp = fxSport(day), done = fxDone(iso, day);
+    var prvi = String(day.opis||'').split('\n').filter(Boolean)[0] || '';
+    var m = [];
+    if(day.trajanje_min) m.push(fxDur(day.trajanje_min));
+    if(day.tss_ocena) m.push(day.tss_ocena+' TSS');
+    if(day.kcal_poraba) m.push('~'+fxNum(day.kcal_poraba)+' kcal');
+    var meta = m.map(function(x,i){ return (i?'<i>·</i>':'')+'<span>'+esc(x)+'</span>'; }).join('');
+    S = '<div class="fx-c fx-sess">'
+      + '<div class="bar" style="background:'+sp.c+'"></div>'
+      + '<div class="fx-btw"><div class="fx-kind" style="color:'+sp.c+'">'+esc(sp.n)+' · '+(sl?'danes':'today')+'</div>'
+      + (done ? '<div class="fx-check" title="'+(sl?'Opravljeno':'Done')+'">✓</div>' : '<span class="fx-chip">'+esc(day.tip||'')+'</span>')+'</div>'
+      + '<div class="fx-ttl">'+esc(day.naslov||'Trening')+'</div>'
+      + (prvi ? '<div class="fx-desc">'+esc(prvi)+'</div>' : '')
+      + (meta ? '<div class="fx-meta">'+meta+'</div>' : '')
+      + '<div class="fx-more" onclick="openPlanDay(\''+iso+'\')"><span>'+(sl?'Poglej cel trening':'See full session')+'</span><span style="margin-left:auto;font-size:16px">›</span></div>'
+      + (done ? '' : '<button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="markDayDone(\''+iso+'\')">'+(sl?'Označi kot opravljeno':'Mark as done')+'</button>')
+      + '</div>';
+  } else {
+    S = '<div class="fx-c" style="padding:0"><div class="fx-empty">'
+      + '<div class="ico">'+fxIco('kolo',28,'var(--acc)',1.7)+'</div>'
+      + '<h3>'+(sl?'Za danes ni plana':'No plan for today')+'</h3>'
+      + '<p>'+(sl?'Sestavi teden in trener te vodi vsak dan — kaj, koliko in zakaj.':'Build a week and the coach guides you every day.')+'</p>'
+      + '<button class="btn btn-primary" onclick="switchTab(\'plan\')">'+(sl?'Ustvari tedenski plan':'Create weekly plan')+'</button>'
+      + '</div></div>';
+  }
+
+  /* --- ploščici: forma + kalorije --- */
+  var serija = []; try{ serija = formSeries(); }catch(_){}
+  var zadnjih = serija.slice(-42).map(function(x){ return x.ctl; });
+  var tsb = f ? Math.round(f.tsb) : null;
+  var stanje = tsb==null ? '' : (tsb>5 ? (sl?'svež':'fresh') : tsb>-10 ? (sl?'v redu':'ok') : tsb>-20 ? (sl?'utrujen':'tired') : (sl?'zelo utrujen':'very tired'));
+  var barvaSt = tsb==null ? 'var(--dim2)' : (tsb>-10 ? 'var(--ok)' : tsb>-20 ? 'var(--yellow)' : 'var(--red)');
+  var T1 = '<div class="fx-c t" onclick="switchTab(\'analitika\')" style="cursor:pointer">'
+    + '<div class="fx-h4">'+(sl?'Forma':'Form')+'</div>'
+    + '<div style="display:flex;align-items:baseline;gap:6px;margin-top:3px">'
+    + '<b class="fx-big">'+(tsb==null?'–':(tsb>0?'+':'')+tsb)+'</b>'
+    + '<span style="font-size:11px;color:'+barvaSt+';font-weight:700">'+esc(stanje)+'</span></div>'
+    + fxSpark(zadnjih, 130, 40) + '</div>';
+
+  var K = fxKal(iso);
+  var pct = (K.eaten!=null && K.cilj) ? K.eaten/K.cilj : 0;
+  var sredina = K.cilj
+      ? '<div><b>'+fxNum(K.eaten||0)+'</b><small>'+(sl?'od ':'of ')+fxNum(K.cilj)+'</small></div>'
+      : '<div><b style="font-size:14px">—</b><small>'+(sl?'ni cilja':'no goal')+'</small></div>';
+  var T2 = '<div class="fx-c t" onclick="switchTab(\'kalorije\')" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">'
+    + fxRing(pct, 92, 9, sredina)
+    + '<div class="fx-h4" style="font-size:11px">'+(sl?'Kalorije':'Calories')+'</div></div>';
+
+  /* --- trener --- */
+  var trener = '';
+  try{ var cc=coachCache(); if(cc && cc.date===iso && (cc.txt||cc.text)) trener = String(cc.txt||cc.text); }catch(_){}
+  if(!trener && day && day.zakaj) trener = day.zakaj;
+  var C = trener ? ('<div class="fx-c t fx-note">'
+    + '<div class="ic">'+fxIco('trener',16,'var(--acc)',1.9)+'</div>'
+    + '<div><b>'+(sl?'Trener pravi':'Coach says')+'</b><p>'+esc(trener).replace(/\n/g,'<br>')+'</p></div></div>') : '';
+
+  /* --- desni stolpec: makro palice --- */
+  var M = '';
+  if(K.mak && K.mak.has){
+    var cilji = {p: Math.round((p.teza||70)*1.8), c: K.cilj? Math.round(K.cilj*0.45/4) : 0, f: K.cilj? Math.round(K.cilj*0.28/9) : 0};
+    function bar(ime, je, cil, barva){
+      var w = cil ? Math.max(0,Math.min(100,Math.round(je/cil*100))) : 0;
+      return '<div><div class="t"><span>'+ime+'</span><span>'+je+(cil?' / '+cil:'')+' g</span></div>'
+           + '<div class="fx-track"><i style="width:'+w+'%;background:'+barva+'"></i></div></div>';
+    }
+    M = '<div class="fx-mac">'
+      + bar(sl?'Beljakovine':'Protein', K.mak.p, cilji.p, 'var(--t-kolo)')
+      + bar(sl?'Ogljikovi hidrati':'Carbs', K.mak.c, cilji.c, 'var(--t-moc)')
+      + bar(sl?'Maščobe':'Fat', K.mak.f, cilji.f, 'var(--t-tek)')
+      + '</div>';
+  }
+  var ostane = (K.eaten!=null && K.cilj) ? Math.max(0, K.cilj-K.eaten) : null;
+  var KAL = '<div class="fx-c">'
+    + '<div style="display:flex;align-items:center;gap:16px">'
+    + fxRing(pct, 104, 10, K.cilj ? '<div><b style="font-size:21px">'+fxNum(K.eaten||0)+'</b><small>'+(sl?'od ':'of ')+fxNum(K.cilj)+' kcal</small></div>'
+                                 : '<div><b style="font-size:14px">—</b><small>'+(sl?'ni cilja':'no goal')+'</small></div>')
+    + (M || '<div class="fx-mac"><p style="font-size:13px;color:var(--dim);margin:0;line-height:1.55">'
+        + (K.popoln ? (sl?'Danes še nisi nič vnesel. Odpri Prehrano in slikaj obrok.':'Nothing logged today.')
+                    : (sl?'Za izračun kalorij potrebujem višino, težo, starost in spol. Brez tega ti številke ne pokažem.':'I need height, weight, age and sex first.'))
+        + '</p></div>')
+    + '</div>'
+    + '<div class="fx-btw" style="margin-top:15px;padding-top:13px;border-top:1px solid var(--line)">'
+    + '<div style="font-size:12px;color:var(--dim2);font-weight:600">'
+    + (ostane!=null ? (sl?'Še ':'')+'<b style="color:var(--ink)">'+fxNum(ostane)+' kcal</b>' : (K.popoln? (sl?'Odpri Prehrano':'Open Nutrition') : (sl?'Dopolni profil':'Complete profile')))
+    + (K.poraba ? ' · '+(sl?'poraba ~':'burn ~')+fxNum(K.poraba)+' kcal' : '') + '</div>'
+    + '<a href="#" class="fx-chip" onclick="switchTab(\''+(K.popoln?'kalorije':'settings')+'\');return false">'+(K.popoln?(sl?'Prehrana →':'Nutrition →'):(sl?'Profil →':'Profile →'))+'</a></div>'
+    + '<div style="margin-top:10px;font-size:11px;color:var(--dim2);line-height:1.5">⚕ '+(sl?'Ocena, ne zdravniški nasvet.':'An estimate, not medical advice.')+'</div>'
+    + '</div>';
+
+  /* --- desni stolpec: ta teden --- */
+  var opr = dni.filter(function(x){ return x.plan && x.done; }).length;
+  var vsi = dni.filter(function(x){ return x.plan && x.sp.k!=='pocitek'; }).length;
+  var minPlan = dni.reduce(function(a,x){ return a + (x.plan? (+x.plan.trajanje_min||0) : 0); },0);
+  var minOpr  = dni.reduce(function(a,x){ return a + ((x.plan && x.done)? (+x.plan.trajanje_min||0) : 0); },0);
+  var TW;
+  if(vsi){
+    TW = '<div class="fx-c">'
+      + '<div class="fx-btw" style="margin-bottom:9px"><b style="font-size:13.5px">'+(sl?'Opravljeno ta teden':'Done this week')+'</b>'
+      + '<span style="font-size:13.5px;font-weight:800;color:var(--acc)">'+opr+' / '+vsi+'</span></div>'
+      + '<div class="fx-track" style="height:7px;margin-top:0"><i style="width:'+(vsi?Math.round(opr/vsi*100):0)+'%;background:var(--acc)"></i></div>'
+      + '<div style="font-size:12px;color:var(--dim2);margin-top:8px;font-weight:600">'+fxDur(minOpr)+' '+(sl?'od':'of')+' '+fxDur(minPlan)+'</div>'
+      + '<div style="margin-top:13px;padding-top:11px;border-top:1px solid var(--line)">'
+      + dni.filter(function(x){ return x.plan; }).map(function(x,i){
+          var pod = kratice[(x.d.getDay()+6)%7];
+          return '<div class="fx-li" onclick="openPlanDay(\''+x.iso+'\')"'+(x.prej&&!x.done?' style="opacity:.6"':'')+'>'
+            + '<div class="fx-check'+(x.done?'':' off')+'" style="width:21px;height:21px;font-size:11px">✓</div>'
+            + '<span class="fx-dot" style="background:'+x.sp.c+'"></span>'
+            + '<b'+(x.danes?' style="color:var(--acc)"':'')+'>'+esc(pod)+' · '+esc(x.plan.naslov||x.plan.tip||'')+'</b>'
+            + '<span class="d">'+(x.plan.trajanje_min? fxDur(x.plan.trajanje_min) : '—')+'</span></div>';
+        }).join('')
+      + '</div></div>';
+  } else {
+    TW = '<div class="fx-c" style="padding:0"><div class="fx-empty" style="padding:22px 18px">'
+      + '<div class="ico" style="width:54px;height:54px">'+fxIco('trener',24,'var(--dim2)',1.7)+'</div>'
+      + '<h3 style="font-size:15px">'+(sl?'Ta teden nima plana':'No plan this week')+'</h3>'
+      + '<p style="font-size:13px">'+(sl?'Ko ga sestaviš, se tu izpiše dan za dnem s kljukicami.':'Once built, it appears here day by day.')+'</p>'
+      + '</div></div>';
+  }
+
+  /* --- graf forme 90 dni --- */
+  var G = '';
+  if(serija.length>4){
+    var zad = serija.slice(-90);
+    var ctl = zad.map(function(x){return x.ctl;}), atl = zad.map(function(x){return x.atl;});
+    var vsi2 = ctl.concat(atl), mn=Math.min.apply(null,vsi2), mx=Math.max.apply(null,vsi2), sp2=(mx-mn)||1;
+    var W2=520, H2=120;
+    function pot(a){ return 'M'+a.map(function(v,i){
+      return (4+(i/(a.length-1))*(W2-8)).toFixed(1)+' '+(H2-6-((v-mn)/sp2)*(H2-14)).toFixed(1); }).join(' L'); }
+    var lc=pot(ctl), la=pot(atl);
+    G = '<div class="fx-c">'
+      + '<div class="fx-btw" style="margin-bottom:8px"><h4 class="fx-h4">'+(sl?'Forma · 90 dni':'Form · 90 days')+'</h4>'
+      + '<div style="font-size:12px;color:var(--dim2);font-weight:700">CTL '+Math.round(f?f.ctl:0)+' · ATL '+Math.round(f?f.atl:0)+' · TSB '+(tsb>0?'+':'')+tsb+'</div></div>'
+      + '<svg viewBox="0 0 '+W2+' '+H2+'" width="100%" height="'+H2+'" preserveAspectRatio="none" aria-hidden="true">'
+      + '<defs><linearGradient id="fxg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--acc)" stop-opacity=".26"/><stop offset="1" stop-color="var(--acc)" stop-opacity="0"/></linearGradient></defs>'
+      + '<g stroke="var(--line)" stroke-width="1"><line x1="0" y1="30" x2="'+W2+'" y2="30"/><line x1="0" y1="60" x2="'+W2+'" y2="60"/><line x1="0" y1="90" x2="'+W2+'" y2="90"/></g>'
+      + '<path d="'+lc+' L'+(W2-4)+' '+H2+' L4 '+H2+' Z" fill="url(#fxg2)"/>'
+      + '<path d="'+la+'" fill="none" stroke="var(--dim)" stroke-width="2" stroke-dasharray="5 5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>'
+      + '<path d="'+lc+'" fill="none" stroke="var(--acc)" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>'
+      + '</svg>'
+      + '<div class="fx-row" style="gap:16px;margin-top:8px;font-size:11px;font-weight:700;color:var(--dim2)">'
+      + '<span class="fx-row" style="gap:6px"><span class="fx-dot" style="background:var(--acc)"></span>'+(sl?'Kondicija (CTL)':'Fitness')+'</span>'
+      + '<span class="fx-row" style="gap:6px"><span style="width:14px;height:0;border-top:2px dashed var(--dim);display:inline-block"></span>'+(sl?'Utrujenost (ATL)':'Fatigue')+'</span>'
+      + '</div></div>';
+  }
+
+  /* --- sestavi --- */
+  H.push('<div class="fx-cols">'
+    + '<div class="fx-col">'+W+S+'<div class="fx-duo">'+T1+T2+'</div>'+C+G+'</div>'
+    + '<div class="fx-col">'+KAL+TW+'</div>'
+    + '</div>');
+
+  host.innerHTML = H.join('');
+
+  /* vrednost v zgornji vrstici */
+  try{
+    var sv=document.getElementById('pgKpiSvez');
+    if(sv) sv.textContent = (tsb==null? '–' : (tsb>0?'+':'')+tsb);
+    var ai=document.getElementById('avatarInit'); if(ai) ai.textContent = ini;
+  }catch(_){}
+
+  /* opozorila in uvodna kartica iz starega motorja */
+  try{
+    var oc=document.getElementById('onboardCard'), t=document.getElementById('fxOnboard');
+    if(t) t.innerHTML = oc? oc.innerHTML : '';
+  }catch(_){}
+  try{
+    var al=document.getElementById('dashAlert'), t2=document.getElementById('fxAlert'), extra='';
+    try{ extra = opozoriloSlepote()||''; }catch(_){}
+    if(t2) t2.innerHTML = (al? al.innerHTML : '') + extra;
   }catch(_){}
 }
 
@@ -3147,7 +3254,14 @@ function renderPlan(){
   const past = plan.days.filter(d=>d.datum<=today && chipClass(d.tip,d)!=='pocitek');
   const doneN = past.filter(d=>d.done || state.rides.some(r=>r.date===d.datum)).length;
   const kcalDays = plan.days.filter(d=>d.kcal_vnos);
-  $('planSummary').innerHTML =
+  const _pct = past.length? Math.round(doneN/past.length*100) : 0;
+  const _minDone = plan.days.filter(d=>d.done || state.rides.some(r=>r.date===d.datum)).reduce((a,d)=>a+(+d.trajanje_min||0),0);
+  const _prog = past.length? `<div class="fx-prog">
+      <div class="t"><b>${LANG==='en'?'Done this week':'Opravljeno ta teden'}</b><span class="v">${doneN} / ${past.length}</span></div>
+      <div class="bar"><i style="width:${_pct}%"></i></div>
+      <div class="s">${fmtDur(_minDone)} ${LANG==='en'?'of':'od'} ${fmtDur(totMin)}</div>
+    </div>` : '';
+  $('planSummary').innerHTML = _prog +
     (ph ? `<div class="plan-summary" style="margin-bottom:10px;border-color:${fazaColor(ph.faza)||'var(--border2)'}">🎯 <b>Faza priprave:</b> ${esc(ph.faza)} — ${esc(ph.fokus)} (~${ph.ure} h ta teden)</div>` : '') +
     (plan?.summary ? `<div class="plan-summary" style="margin-bottom:10px"><b>Fokus:</b> ${esc(plan.focus||'')}<br>${esc(plan.summary)}</div>` : '') +
     `<div class="plan-summary" style="margin-bottom:14px">Σ <b>${fmtDur(totMin)}</b> na kolesu · ~<b>${totTss} TSS</b>${past.length?` · realizacija <b>${doneN}/${past.length}</b>`:''}${kcalDays.length?` · 🍽 povpr. vnos ~<b>${Math.round(kcalDays.reduce((a,d)=>a+d.kcal_vnos,0)/kcalDays.length)} kcal/dan</b>`:''}</div>`;
@@ -7204,7 +7318,7 @@ setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) sy
 
 <!-- ══════════ SPODNJA NAVIGACIJA (mobilno) ══════════ -->
 <nav class="mnav" id="mnav" aria-label="Glavna navigacija">
-  <button class="mnav-pill" onclick="switchTab('plan');window.scrollTo({top:0,behavior:'smooth'})" type="button">▶ <span data-i18n="todayBtn">Začni trening</span></button>
+  <button class="mnav-pill" onclick="switchTab('plan');fxTop()" type="button">▶ <span data-i18n="todayBtn">Začni trening</span></button>
   <button class="mn nav-item active" data-tab="dash" onclick="switchTab('dash')" type="button"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Danes</button>
   <button class="mn nav-item" data-tab="plan" onclick="switchTab('plan')" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 11h18"/></svg>Plan</button>
   <button class="mn nav-item" data-tab="kalorije" onclick="switchTab('kalorije')" type="button"><svg viewBox="0 0 24 24"><path d="M6 3v8a3 3 0 006 0V3M9 11v10"/><path d="M17 3c-1.5 2-2 4-2 6s.5 3 2 3 2-1 2-3-.5-4-2-6zM17 12v9"/></svg>Prehrana</button>
@@ -7219,6 +7333,7 @@ setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) sy
     <a onclick="mnavMore(0);switchTab('rides')"><svg viewBox="0 0 24 24"><circle cx="6" cy="17" r="3.2"/><circle cx="18" cy="17" r="3.2"/><path d="M6 17l4-8h5l3 8M10 9h6"/></svg>Aktivnosti</a>
     <a onclick="mnavMore(0);switchTab('analitika')"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Analiza</a>
     <a onclick="mnavMore(0);switchTab('porocila')"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>Poročila</a>
+    <a onclick="mnavMore(0);toggleLang()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 010 18M12 3a15 15 0 000 18"/></svg>Slovensko / English</a>
     <a onclick="mnavMore(0);switchTab('settings')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 11-4 0v-.1A1.6 1.6 0 008 19.4a1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H2a2 2 0 110-4h.1A1.6 1.6 0 004.6 8a1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H9a1.6 1.6 0 001-1.5V2a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V9a1.6 1.6 0 001.5 1H22a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"/></svg>Nastavitve</a>
   </div>
 </div>
