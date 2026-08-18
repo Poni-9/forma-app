@@ -76,8 +76,8 @@ label.fld span{display:block;font-size:11.5px;font-weight:700;color:var(--muted)
 .link-banner{display:block;padding:12px 15px;border-radius:12px;font-size:13px;font-weight:600;line-height:1.5;margin-bottom:14px;border:1px solid}
 .link-banner.ok{background:var(--accSoft);border-color:rgba(0,0,0,.28)}
 .link-banner.no{background:rgba(139,155,171,.07);color:var(--muted);border-color:var(--border)}
-.lb-top{display:flex;align-items:center;gap:8px;color:var(--acc2);font-size:12.5px}
-.lb-top b{color:var(--acc2)}
+.lb-top{display:flex;align-items:center;gap:8px;color:var(--dim);font-size:12px;font-weight:700;letter-spacing:.02em}
+.lb-top b{color:var(--muted)}
 .lb-dot{width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px rgba(163,230,53,.35);flex-shrink:0}
 .lb-plan{color:var(--text);font-weight:800;font-size:14.5px;margin-top:5px;line-height:1.35}
 .lb-nums{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:5px;color:var(--muted);font-weight:600;font-size:12.5px}
@@ -386,6 +386,14 @@ input.f::placeholder{color:var(--dim2)}
 .hstat .v,.dn-stat .v,.ring-txt .big{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .btn:active,.dn-cta:active{transform:scale(.97)}
 .link-banner{border-radius:var(--r-m)}
+
+/* ---- profesionalna doslednost (telefon) ---- */
+.link-banner{border:1px solid var(--border) !important;background:var(--panel) !important}
+.lb-dot{box-shadow:none;width:7px;height:7px}
+.dn-kicker{font-size:10.5px;letter-spacing:.09em}
+.ring-txt .big{letter-spacing:-.03em}
+.top .right .btn-sm{min-height:38px}
+.tabbar button .ic svg{opacity:.95}
 </style>
 </head>
 <body>
@@ -397,7 +405,7 @@ input.f::placeholder{color:var(--dim2)}
     <div class="right">
       <button class="btn btn-ghost btn-sm" id="btnInstallK" style="display:none" onclick="doInstallK()">📲 Namesti</button>
       <button class="btn btn-ghost btn-sm" id="btnSyncTop" onclick="forceSync()" title="Sinhroniziraj zdaj (pošlji + prejmi)">⟳</button>
-      <button class="btn btn-ghost btn-sm" onclick="openSettings()">⚙️ Nastavitve</button>
+      <button class="btn btn-ghost btn-sm" onclick="openSettings()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px;vertical-align:-2px"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 11-4 0v-.1A1.6 1.6 0 008 19.4a1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H2a2 2 0 110-4h.1A1.6 1.6 0 004.6 8a1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H9a1.6 1.6 0 001-1.5V2a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V9a1.6 1.6 0 001.5 1H22a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"/></svg>Nastavitve</button>
     </div>
   </div>
 
@@ -1145,7 +1153,7 @@ function renderVadba(){
     <div class="dn-card">
       <div class="dn-lbl" style="color:var(--dim)">BOLEČINA DANES?</div>
       <div style="display:flex;gap:6px;margin-top:8px">
-        ${[[0,'💪 Nič'],[1,'🙂 Malo'],[2,'😖 Precej'],[3,'🥵 Zelo']].map(([v,n])=>`<div style="flex:1;border:1px solid ${sor===v?'var(--acc)':'var(--border)'};background:${sor===v?'rgba(163,230,53,.1)':'transparent'};text-align:center;padding:7px 2px;font-size:11px;font-weight:600;color:${sor===v?'var(--text)':'var(--muted)'};cursor:pointer" onclick="dnSore(${v})">${n}</div>`).join('')}
+        ${[[0,'Nič'],[1,'Malo'],[2,'Precej'],[3,'Zelo']].map(([v,n])=>`<div style="flex:1;border:1px solid ${sor===v?'var(--acc)':'var(--border)'};background:${sor===v?'rgba(163,230,53,.1)':'transparent'};text-align:center;border-radius:var(--r-full);padding:8px 2px;font-size:11.5px;font-weight:600;color:${sor===v?'var(--text)':'var(--muted)'};cursor:pointer" onclick="dnSore(${v})">${n}</div>`).join('')}
       </div>
     </div>
     ${zadnje.length?`<div class="dn-card"><div class="dn-lbl" style="color:var(--dim)">ZADNJI TRENINGI</div>
@@ -1228,7 +1236,10 @@ function renderDanes(){
   const tip=(pd?.tip||'').toLowerCase();
   const isMoc=tip.includes('moč')||tip.includes('moc');
   const isRest=tip.includes('poči')||tip.includes('poci')||tip.includes('prosto');
-  const sportIco=isMoc?'🤸':tip.includes('tek')?'🏃':tip.includes('pohod')?'🥾':'🚴';
+  const _svgIco=(d)=>'<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;opacity:.75">'+d+'</svg>';
+  const sportIco = isMoc ? _svgIco('<path d="M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10"/>')
+    : (tip.includes('tek')||tip.includes('pohod')) ? _svgIco('<circle cx="13.5" cy="4.5" r="1.6"/><path d="M9 21l2-5-2.5-2.5L7 9l4-1.5 3 2.5 3 .8M6.5 12L5 9M14 14.5l1.5 3.5 2.5 2"/>')
+    : _svgIco('<circle cx="6" cy="17" r="3.2"/><circle cx="18" cy="17" r="3.2"/><path d="M6 17l4-8h5l3 8M10 9h6"/>');
   const naslov = pd? (isRest?'Počitek':String(pd.naslov||pd.tip)) : 'Ni plana';
   const cta = pd
     ? (isMoc? `<div style="flex:1.6"><button class="dn-cta" style="margin:0;padding:12px" onclick="pwStartFor('${todayIso()}')">Začni vadbo →</button></div>`
@@ -1242,46 +1253,46 @@ function renderDanes(){
       <circle cx="60" cy="60" r="52" fill="none" stroke="${eaten>target?'#edbb00':'var(--acc)'}" stroke-width="9" stroke-dasharray="${(C*p).toFixed(0)} ${C.toFixed(0)}" transform="rotate(-90 60 60)"></circle>
       <text x="60" y="55" fill="var(--text)" font-size="26" font-weight="800" text-anchor="middle" font-family="Manrope,system-ui,sans-serif">${rem.toLocaleString('sl')}</text>
       <text x="60" y="72" fill="var(--dim)" font-size="9.5" font-weight="700" text-anchor="middle" font-family="Manrope,system-ui,sans-serif">${eaten>target?'ČEZ CILJ':'ŠE LAHKO POJEŠ'}</text>
-    </svg>`; })() : `<div style="width:112px;height:112px;display:grid;place-items:center;border:1px solid var(--border);color:var(--dim);font-size:11px;text-align:center">nastavi cilj<br>v ⚙️</div>`;
+    </svg>`; })() : `<div style="width:112px;height:112px;display:grid;place-items:center;border:1px solid var(--border);color:var(--dim);font-size:11px;text-align:center">nastavi cilj<br>v Nastavitvah</div>`;
   const bar=(k,v,tgt,c)=>`<div><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:var(--dim)"><span>${k}</span><span style="color:#c3ccd4">${v}</span></div><div style="height:4px;background:var(--border);margin-top:3px"><div style="width:${tgt?Math.min(100,Math.round((parseFloat(v)||0)/tgt*100)):0}%;height:100%;background:${c}"></div></div></div>`;
   const signed = !!(window.FORMASYNC && FORMASYNC.uid && FORMASYNC.uid());
   const signBanner = signed ? '' : `<div style="border:1px solid var(--acc);background:rgba(163,230,53,.07);border-radius:var(--r-l);padding:14px 15px;margin-bottom:12px">
-    <div style="font-weight:700;font-size:13.5px">🔵 Prijavi se z Googlom</div>
+    <div style="font-weight:800;font-size:14.5px;letter-spacing:-.01em">Prijavi se z Google računom</div>
     <div style="font-size:11.5px;color:var(--muted);margin-top:2px">Tvoj račun: sinhronizacija z namizjem + AI brez nastavljanja. Vsak ima svojega.</div>
-    <button class="dn-cta" style="margin-top:10px;padding:10px;font-size:14px" onclick="FORMASYNC&&FORMASYNC.signIn().then(()=>setTimeout(renderDanes,900))">Prijava z Google →</button>
+    <button class="dn-cta" style="margin-top:10px;padding:10px;font-size:14px" onclick="FORMASYNC&&FORMASYNC.signIn().then(()=>setTimeout(renderDanes,900))">Prijava z Google</button>
   </div>`;
   el.innerHTML=signBanner+`
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px">
       <div class="dn-kicker">${DNEVI[(now.getDay()+6)%7].slice(0,3).toUpperCase()} ${now.getDate()} ${MESECI[now.getMonth()].toUpperCase()}${tedenK()}</div>
-      ${stk>=2?`<span style="border:1px solid rgba(237,187,0,.4);color:var(--yellow,#edbb00);font-size:10px;font-weight:800;padding:2px 7px;white-space:nowrap">🔥 ${stk} DNI</span>`:''}
+      ${stk>=2?`<span style="background:var(--panel2);color:var(--muted);border-radius:var(--r-full);font-size:10.5px;font-weight:800;padding:4px 11px;white-space:nowrap">${stk} DNI ZAPORED</span>`:''}
     </div>
     <div style="display:flex;align-items:center;gap:14px;margin-top:12px">
       ${ring}
       <div style="flex:1;display:flex;flex-direction:column;gap:7px;min-width:0">
         ${bar('VNOS', eaten.toLocaleString('sl')+(target?' / '+target.toLocaleString('sl'):''), target, 'var(--acc)')}
         ${bar('BELJAKOVINE', prot+' / '+protT+' g', protT, '#5fd67a')}
-        ${bar('PORABA', '~'+(burn&&burn.v?burn.v.toLocaleString('sl'):'–')+' kcal', null, '#A3E635')}
+        <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:var(--dim);padding-top:2px"><span>PORABA</span><span style="color:#c3ccd4">~${burn&&burn.v?burn.v.toLocaleString('sl'):'–'} kcal</span></div>
       </div>
     </div>
-    <div style="border:1px solid var(--acc);background:linear-gradient(180deg,rgba(163,230,53,.07),var(--panel));border-radius:var(--r-l);padding:14px 15px;margin-top:14px">
+    <div style="border:1px solid var(--border);background:var(--panel);border-radius:var(--r-l);padding:15px 16px;margin-top:14px">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div style="font-size:9.5px;font-weight:800;letter-spacing:.1em;color:var(--acc2)">DANES · ${esc((pd?.tip||'PROSTO').toUpperCase())}</div><div id="dnWx" style="font-size:10.5px;color:var(--muted);font-weight:700"></div></div>
       <div style="font-weight:800;font-size:20px;letter-spacing:-.02em;margin-top:4px">${sportIco} ${esc(naslov)}</div>
       ${pd?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${pd.trajanje_min?pd.trajanje_min+' min':''}${pd.kcal_poraba?' · ~'+pd.kcal_poraba+' kcal':''}</div>`:''}
       <div style="display:flex;gap:8px;margin-top:10px">
         ${cta}
-        <div style="flex:1"><button class="dn-cta" style="margin:0;padding:12px;background:transparent;border:1px solid var(--border2);color:#c3ccd4;font-size:13.5px" onclick="$('adaptBack').classList.add('open')">⏱ Nimam časa</button></div>
+        <div style="flex:1"><button class="dn-cta" style="margin:0;padding:12px;background:transparent;border:1px solid var(--border2);color:#c3ccd4;font-size:13.5px" onclick="$('adaptBack').classList.add('open')">Nimam časa</button></div>
       </div>
     </div>
     <div class="dn-card">
       <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:9.5px;font-weight:800;letter-spacing:.08em;color:var(--dim)">BOLEČINA DANES? <span style="color:var(--dim);font-weight:600">— vadba se prilagodi</span></div></div>
       <div style="display:flex;gap:6px;margin-top:8px">
-        ${[[0,'💪 Nič'],[1,'🙂 Malo'],[2,'😖 Precej'],[3,'🥵 Zelo']].map(([v,n])=>`<div style="flex:1;border:1px solid ${sor===v?'var(--acc)':'var(--border)'};background:${sor===v?'rgba(163,230,53,.1)':'transparent'};text-align:center;padding:7px 2px;font-size:11px;font-weight:${sor===v?'700':'600'};color:${sor===v?'var(--text)':'var(--muted)'};cursor:pointer" onclick="dnSore(${v})">${n}</div>`).join('')}
+        ${[[0,'Nič'],[1,'Malo'],[2,'Precej'],[3,'Zelo']].map(([v,n])=>`<div style="flex:1;border:1px solid ${sor===v?'var(--acc)':'var(--border)'};background:${sor===v?'rgba(163,230,53,.1)':'transparent'};text-align:center;border-radius:var(--r-full);padding:8px 2px;font-size:11.5px;font-weight:${sor===v?'700':'600'};color:${sor===v?'var(--text)':'var(--muted)'};cursor:pointer" onclick="dnSore(${v})">${n}</div>`).join('')}
       </div>
     </div>
-    <div style="display:flex;gap:8px;margin-top:10px">
-      <div style="flex:1;border:1px solid var(--border);background:var(--panel);padding:9px 11px"><div style="font-size:9px;font-weight:800;letter-spacing:.08em;color:var(--dim)">PRIPRAVLJENOST</div><div style="font-family:var(--bc);font-size:19px;font-weight:800;color:${prip>=70?'#5fd67a':prip>=45?'#edbb00':'var(--acc)'}">${prip}</div></div>
-      <div style="flex:1;border:1px solid var(--border);background:var(--panel);padding:9px 11px"><div style="font-size:9px;font-weight:800;letter-spacing:.08em;color:var(--dim)">FORMA</div><div style="font-family:var(--bc);font-size:19px;font-weight:800">${mf?(mf.tsb>0?'+':'')+Math.round(mf.tsb):'–'}</div></div>
-      <div style="flex:1;border:1px solid var(--border);background:var(--panel);padding:9px 11px;cursor:pointer" onclick="showPane('trener')"><div style="font-size:9px;font-weight:800;letter-spacing:.08em;color:var(--dim)">AI TRENER</div><div style="font-size:13px;margin-top:3px;font-weight:700;color:var(--acc2)">Vprašaj →</div></div>
+    <div style="display:flex;gap:8px;margin-top:10px;margin-bottom:14px">
+      <div style="flex:1;border:1px solid var(--border);background:var(--panel);border-radius:var(--r-m);padding:11px 13px"><div style="font-size:9px;font-weight:800;letter-spacing:.08em;color:var(--dim)">PRIPRAVLJENOST</div><div style="font-family:var(--bc);font-size:19px;font-weight:800;color:${prip>=70?'var(--acc)':prip>=45?'var(--text)':'var(--red)'}">${prip}</div></div>
+      <div style="flex:1;border:1px solid var(--border);background:var(--panel);border-radius:var(--r-m);padding:11px 13px"><div style="font-size:9px;font-weight:800;letter-spacing:.08em;color:var(--dim)">FORMA</div><div style="font-family:var(--bc);font-size:19px;font-weight:800">${mf?(mf.tsb>0?'+':'')+Math.round(mf.tsb):'–'}</div></div>
+      <div style="flex:1;border:1px solid var(--border);background:var(--panel);border-radius:var(--r-m);padding:11px 13px;cursor:pointer" onclick="showPane('trener')"><div style="font-size:9px;font-weight:800;letter-spacing:.08em;color:var(--dim)">AI TRENER</div><div style="font-size:13px;margin-top:3px;font-weight:700;color:var(--acc2)">Vprašaj →</div></div>
     </div>
     ${jutri?`<div class="dn-card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer" onclick="showPane('plan')">
       <div><div class="dn-lbl" style="color:var(--dim)">Jutri</div><div style="font-weight:700;font-size:13.5px;margin-top:2px">${esc(jutri.naslov||jutri.tip)}</div></div>
