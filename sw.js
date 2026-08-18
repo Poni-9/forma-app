@@ -3,7 +3,7 @@
          Predpomnilnik je samo rezerva, ko ni omrežja.
    Ostalo (ikone, slike): najprej predpomnilnik, v ozadju osveži.
    Ob vsaki objavi povečaj V — stari predpomnilniki se ob aktivaciji pobrišejo. */
-const V = '2026-07-30';
+const V = '2026-08-18';
 const C = 'formai-' + V;
 const CORE = ['./forma-trener.html','./kalorije.html','./index.html',
               './zasebnost.html','./pogoji.html','./icon-192.png','./icon-512.png'];
