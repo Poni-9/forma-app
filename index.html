@@ -1,358 +1,574 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="sl">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>FORMAI — AI trener za kolo, moč in prehrano</title>
-<meta name="description" content="Izbereš nivo — od »postani fit« do »treniraj kot pro« — in FORMAI zgradi tvoj plan treningov, prehrane in moči. Potem ga vsak dan prilagaja tebi."/>
-<meta property="og:title" content="FORMAI — tvoja najboljša forma. Brez ugibanja."/>
-<meta property="og:description" content="AI trener za kolo, tek, moč in prehrano. Plan, ki se uči od tebe."/>
-<meta property="og:image" content="https://formai.si/og.png"/>
-<meta name="theme-color" content="#0b0e11"/>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230b0e11%22/><path d=%22M8 8h84L8 92z%22 fill=%22%2362c5ee%22/></svg>"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
-
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>FORMAI — AI trener za kolo in prehrano</title>
+<meta name="description" content="Načrt treninga, ki se prilagodi vsaki vožnji, in kalorije, ki se prilagodijo treningu. Moč dodaš, če hočeš. Brez kolesa dobiš načrt za tek in hojo. Brezplačno 14 dni.">
+<meta name="theme-color" content="#0F1216">
+<link rel="canonical" href="https://formai.si/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://formai.si/">
+<meta property="og:title" content="FORMAI — AI trener za kolo in prehrano">
+<meta property="og:description" content="En načrt za trening in prehrano, ki se prilagaja tebi. Moč po želji. Deluje tudi brez kolesa.">
+<meta property="og:image" content="https://formai.si/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2224%22 fill=%22%230F1216%22/><path d=%22M22 68c10-2 16-14 22-18s12 6 18 2 12-16 16-22%22 stroke=%22%23A3E635%22 stroke-width=%229%22 fill=%22none%22 stroke-linecap=%22round%22/></svg>">
+<link rel="manifest" href="manifest-app.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root{
-  /* ==== FORMAI oblikovni sistem — dobesedno iz mockupa (29. 7. 2026) ==== */
-  --bench:#0b0e11; --bg:#0b0e11; --bg2:#080b0d;
-  --panel:#12171b; --panel2:#171d22; --panel3:#0d1216;
-  --line:#232b32; --line2:#1a2126;
-  --ink:#e9eef2; --dim:#939da6; --dim2:#606a72;
-  --sig:#62c5ee; --sigd:#38a6cf; --sig2:#ff458e; --onSig:#04161d;
-  --sans:'IBM Plex Sans',system-ui,sans-serif;
-  --mono:'IBM Plex Mono',ui-monospace,monospace;
-  /* stara imena → iste barve */
-  --border:var(--line); --border2:var(--line2); --borderH:#333d45;
-  --text:var(--ink); --soft:#c3ccd4; --muted:var(--dim);
-  --acc:var(--sig); --accH:#9ddcf7; --acc2:var(--sigd); --accSoft:rgba(98,197,238,.14);
-  --orange:var(--sigd); --green:#5fd67a; --greenSoft:rgba(95,214,122,.13);
-  --red:var(--sig2); --redSoft:rgba(255,69,142,.13);
-  --yellow:#edbb00; --yellowSoft:rgba(237,187,0,.13);
-  --blue:var(--sig); --blueSoft:rgba(98,197,238,.13);
-  --purple:#b48cff; --purpleSoft:rgba(180,140,255,.13);
-  --radius:0px; --bc:var(--mono);
-  font-family:var(--sans);
+:root{
+  --bg:#0F1216; --card:#171C22; --raised:#1E242C; --line:#262E37;
+  --ink:#F2F5F8; --ink-2:#A8B3BF; --ink-3:#6D7885;
+  --r-s:12px; --r-m:18px; --r-l:24px; --r-xl:32px; --r-full:999px;
+  --accent:#A3E635; --accent-ink:#0F1216; --accent-soft:rgba(163,230,53,.14);
+  --t-kolo:#3987e5; --t-moc:#d95926; --t-tek:#c2418f; --t-poc:#6D7885;
+  --ok:#199e70;
+  --wrap:1120px;
 }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{margin:0;font-family:var(--sans);color:var(--text);line-height:1.55;
-    background:
-      radial-gradient(1200px 560px at 85% -10%, rgba(98,197,238,.07), transparent 62%),
-      radial-gradient(900px 520px at -10% 108%, rgba(77,163,255,.045), transparent 60%),
-      var(--bg);}
-  a{color:var(--acc2);text-decoration:none}
-  a:hover{color:var(--acc)}
-  ::selection{background:var(--acc);color:#fff}
-  .topnav{display:flex;justify-content:space-between;align-items:center;padding:16px 40px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(17,16,19,.92);backdrop-filter:blur(8px);z-index:10;gap:14px;flex-wrap:wrap}
-  .logo{display:flex;align-items:center;gap:10px}
-  .logo i{width:28px;height:28px;background:linear-gradient(135deg,var(--acc) 50%,var(--border) 50%);display:block}
-  .logo b{font-family:var(--bc);font-weight:900;font-size:21px;letter-spacing:.08em}
-  .navlinks{display:flex;gap:26px;align-items:center;font-family:var(--bc);font-weight:600;font-size:15px;letter-spacing:.08em;flex-wrap:wrap}
-  .navlinks a{color:var(--muted);text-transform:uppercase}
-  .navlinks a:hover{color:var(--text)}
-  .btn{display:inline-block;background:var(--acc);color:#fff;font-family:var(--bc);font-weight:800;font-size:15px;letter-spacing:.08em;padding:12px 26px;cursor:pointer;border:none;text-transform:uppercase}
-  .btn:hover{background:var(--accH);color:#fff}
-  .btn.ghost{background:transparent;border:1px solid var(--border2);color:var(--soft)}
-  .btn.ghost:hover{border-color:var(--borderH);color:var(--text)}
-  .wrap{max-width:1120px;margin:0 auto;padding:0 40px}
-  @media(max-width:700px){.wrap{padding:0 20px}.topnav{padding:12px 20px}}
-
-  .hero{display:grid;grid-template-columns:1.1fr 1fr;gap:50px;align-items:center;padding:80px 0 70px}
-  @media(max-width:900px){.hero{grid-template-columns:1fr;padding:50px 0}}
-  .eyebrow{font-size:12px;font-weight:800;letter-spacing:.16em;color:var(--acc2);text-transform:uppercase}
-  h1{font-family:var(--bc);font-size:64px;font-weight:900;line-height:.98;margin-top:14px;text-transform:uppercase}
-  @media(max-width:700px){h1{font-size:42px}}
-  h1 .d{color:var(--acc)}
-  .sub{font-size:16.5px;color:var(--muted);line-height:1.6;margin-top:18px;max-width:460px}
-  .cta-row{display:flex;gap:12px;margin-top:28px;align-items:center;flex-wrap:wrap}
-  .cta-note{font-size:12.5px;color:var(--dim)}
-
-  .mock{border:1px solid var(--border);background:var(--panel);padding:18px}
-  .mock-head{display:flex;justify-content:space-between;align-items:baseline}
-  .mock-head b{font-family:var(--bc);font-weight:800;font-size:17px;letter-spacing:.06em}
-  .mock-head b span{color:var(--acc)}
-  .mock-head small{font-size:10px;color:var(--dim);font-weight:700;letter-spacing:.08em}
-  .bars{display:flex;align-items:flex-end;gap:4px;height:110px;margin-top:14px}
-  .bars i{flex:1;display:block}
-  .mock-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);border:1px solid var(--border);margin-top:14px}
-  .ms{background:var(--bg);padding:10px 12px}
-  .ms .k{font-size:9px;font-weight:700;letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
-  .ms .v{font-family:var(--bc);font-size:22px;font-weight:800}
-  .mock-note{font-size:11.5px;color:var(--dim);margin-top:10px;text-align:center}
-
-  section{border-top:1px solid var(--border)}
-  section.alt{background:var(--bg2)}
-  .sec-in{padding:60px 0}
-  h2{font-family:var(--bc);font-size:36px;font-weight:900;text-transform:uppercase}
-  h2 .d{color:var(--acc)}
-  .lead{font-size:14px;color:var(--muted);margin-top:6px}
-  .cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:26px}
-  @media(max-width:800px){.cards3{grid-template-columns:1fr}}
-  .fcard{border:1px solid var(--border);background:var(--panel);padding:22px}
-  .fcard .n{font-family:var(--bc);font-size:15px;font-weight:800;color:var(--acc2);letter-spacing:.1em;text-transform:uppercase}
-  .fcard .t{font-weight:700;font-size:16px;margin-top:10px}
-  .fcard p{font-size:13.5px;color:var(--muted);line-height:1.6;margin-top:6px}
-
-  .prices{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:32px auto 0;max-width:780px}
-  @media(max-width:700px){.prices{grid-template-columns:1fr}}
-  .price{border:1px solid var(--border);background:var(--panel);padding:28px;display:flex;flex-direction:column;position:relative}
-  .price.pro{border-color:var(--acc);background:linear-gradient(180deg,rgba(98,197,238,.09),var(--panel))}
-  .price .badge{position:absolute;top:-11px;left:28px;background:var(--acc);color:#fff;font-size:10.5px;font-weight:800;letter-spacing:.1em;padding:4px 10px;text-transform:uppercase}
-  .price .nm{font-family:var(--bc);font-weight:800;font-size:20px;letter-spacing:.06em}
-  .price .amt{font-family:var(--bc);font-size:44px;font-weight:900;margin-top:8px}
-  .price .amt small{font-size:15px;color:var(--dim);font-weight:600;font-family:var(--sans)}
-  .price ul{list-style:none;display:flex;flex-direction:column;gap:9px;font-size:13.5px;color:var(--soft);margin-top:18px;flex:1;padding:0}
-  .price li.off{color:var(--dim)}
-  .price .cta{margin-top:22px;text-align:center}
-  .pnote{text-align:center;font-size:12px;color:var(--dim);margin-top:18px}
-
-  footer{border-top:1px solid var(--border);background:var(--bg2)}
-  .foot-in{padding:28px 0;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--dim);gap:14px;flex-wrap:wrap}
-  .foot-in .logo i{width:18px;height:18px}
-  .foot-links{display:flex;gap:18px}
-  .foot-links a{color:var(--dim)}
-  .foot-links a:hover{color:var(--soft)}
-
-/* ============ PREMIUM POLISH ============ */
-.topnav{background:rgba(17,16,19,.8);backdrop-filter:blur(16px) saturate(1.2);-webkit-backdrop-filter:blur(16px) saturate(1.2);border-bottom:1px solid rgba(56,51,62,.7);box-shadow:0 10px 30px -20px rgba(0,0,0,.8)}
-.logo i{box-shadow:0 4px 16px -4px rgba(98,197,238,.5)}
-h1{background:linear-gradient(180deg,#ffffff 55%,#c3ccd4);-webkit-background-clip:text;background-clip:text;color:transparent}
-@media(max-width:600px){.navlinks a:nth-child(-n+3){display:none}}
-h1 .d{background:linear-gradient(135deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
-h2 .d{color:var(--acc)}
-.btn{transition:transform .15s, box-shadow .15s, filter .15s, border-color .15s, color .15s}
-.btn:not(.ghost){background:var(--sigd);box-shadow:0 8px 24px -10px rgba(98,197,238,.55), inset 0 1px 0 rgba(255,255,255,.16)}
-.btn:not(.ghost):hover{filter:brightness(1.07);transform:translateY(-1px)}
-.btn.ghost:hover{transform:translateY(-1px)}
-.hero{position:relative}
-.hero::before{content:'';position:absolute;right:-8%;top:0;width:560px;height:420px;background:radial-gradient(closest-side, rgba(98,197,238,.13), transparent 70%);pointer-events:none;filter:blur(6px)}
-.mock{position:relative;background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0) 40%), var(--panel);box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 34px 80px -34px rgba(0,0,0,.9), 0 0 0 1px rgba(98,197,238,.06)}
-.bars i{transform-origin:bottom;animation:barUp .8s cubic-bezier(.2,.9,.3,1) backwards}
-.bars i:nth-child(2){animation-delay:.05s}.bars i:nth-child(3){animation-delay:.1s}.bars i:nth-child(4){animation-delay:.15s}
-.bars i:nth-child(5){animation-delay:.2s}.bars i:nth-child(6){animation-delay:.25s}.bars i:nth-child(7){animation-delay:.3s}
-.bars i:nth-child(8){animation-delay:.35s}.bars i:nth-child(9){animation-delay:.4s}.bars i:nth-child(10){animation-delay:.45s}
-@keyframes barUp{from{transform:scaleY(0)}to{transform:scaleY(1)}}
-.fcard{background:linear-gradient(180deg, rgba(255,255,255,.016), rgba(255,255,255,0) 45%), var(--panel);box-shadow:inset 0 1px 0 rgba(255,255,255,.035), 0 12px 30px -26px rgba(0,0,0,.9);transition:border-color .2s, transform .2s, box-shadow .2s}
-.fcard:hover{border-color:var(--borderH);transform:translateY(-3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 22px 44px -26px rgba(0,0,0,.95)}
-.fcard .n{background:linear-gradient(135deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
-.price{background:linear-gradient(180deg, rgba(255,255,255,.014), rgba(255,255,255,0) 45%), var(--panel);box-shadow:inset 0 1px 0 rgba(255,255,255,.03), 0 14px 34px -28px rgba(0,0,0,.9);transition:transform .2s, border-color .2s}
-.price:hover{transform:translateY(-3px)}
-.price.pro{box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 24px 60px -28px rgba(98,197,238,.35)}
-.price .badge{box-shadow:0 6px 16px -6px rgba(98,197,238,.6)}
-input:focus{outline:none;border-color:var(--acc)!important;box-shadow:0 0 0 3px rgba(98,197,238,.15)}
-::-webkit-scrollbar{width:9px}
-::-webkit-scrollbar-thumb{background:#2b2830;border:2px solid var(--bg)}
-.rv{opacity:0;transform:translateY(16px);transition:opacity .55s ease, transform .55s ease}
-.rv.vis{opacity:1;transform:none}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.rv{opacity:1;transform:none}}
-
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:smooth}
-.navlinks a:not(.btn){position:relative}
-.navlinks a:not(.btn)::after{content:'';position:absolute;left:0;bottom:-6px;height:2px;width:0;background:var(--acc);transition:width .22s}
-.navlinks a:not(.btn):hover::after{width:100%}
-.ms .v{font-variant-numeric:tabular-nums}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+h1,h2,h3{margin:0;letter-spacing:-.025em;font-weight:800;line-height:1.12}
+h1{font-size:clamp(38px,7vw,68px)}
+h2{font-size:clamp(28px,4.6vw,44px)}
+h3{font-size:19px;line-height:1.25}
+p{margin:0;color:var(--ink-2)}
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 22px}
+.acc{color:var(--accent)}
 
-/* ===== gradniki, dobesedno iz mockupa formainamizje.html ===== */
-h1,h2,h3,h4{font-family:var(--sans);letter-spacing:-.022em}
-a{color:var(--sig);text-decoration:none}
-a:hover{color:#9ddcf7}
-.tabnav a{position:relative;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);padding:14px 0;display:block}
-.tabnav a:hover{color:var(--ink)}
-.tabnav a[aria-current="page"]{color:var(--ink)}
-.tabnav a[aria-current="page"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--sig)}
-.k{font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.17em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
-.m{font-size:12.5px;line-height:1.6;color:var(--dim)}
-.m b{color:var(--ink);font-weight:600}
-.kv{display:flex;align-items:baseline;gap:10px}
-.kv>:first-child{flex:1 1 0%;min-width:0}
-.kv>:last-child{flex:0 0 auto;white-space:nowrap}
-.n{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap}
-.p{background:var(--panel);border:1px solid var(--line)}
-.b{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.11em;text-transform:uppercase;white-space:nowrap;padding:10px 16px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
-.b:hover{background:#1e252b;border-color:#333d45}
-.b.sig{background:var(--sigd);border-color:var(--sigd);color:var(--onSig)}
-.b.sig:hover{background:var(--sig);border-color:var(--sig)}
-.b.g{background:transparent;border-color:transparent;color:var(--sig);padding:10px 4px}
-.b.g:hover{background:transparent;color:#9ddcf7}
-.b.dz{border-color:rgba(255,69,142,.4);color:var(--sig2);background:transparent}
-.b.dz:hover{background:rgba(255,69,142,.09);border-color:var(--sig2)}
-.sg button{font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:8px 15px;background:var(--panel);border:1px solid var(--line);border-left:none;color:var(--dim);cursor:pointer}
-.sg button:first-child{border-left:1px solid var(--line)}
-.sg button:hover{color:var(--ink);background:var(--panel2)}
-.sg button[data-on="1"]{background:var(--sigd);border-color:var(--sigd);color:var(--onSig)}
-input.f,textarea.f{width:100%;font-family:var(--sans);font-size:13.5px;padding:10px 12px;background:var(--panel3);border:1px solid var(--line);color:var(--ink);outline:none}
-input.f:focus,textarea.f:focus{border-color:var(--sig)}
-input.f::placeholder{color:var(--dim2)}
-.rw{display:grid;align-items:center;column-gap:16px;border-bottom:1px solid var(--line2)}
-.rw:hover{background:var(--panel2)}
-.tg{font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid}
-:focus-visible{outline:2px solid var(--sig);outline-offset:2px}
-::selection{background:rgba(98,197,238,.3)}
-::-webkit-scrollbar{width:10px;height:10px}
-::-webkit-scrollbar-thumb{background:#242c33}
-::-webkit-scrollbar-track{background:var(--bench)}
-@keyframes fu{0%{opacity:0;transform:translateY(5px)}100%{opacity:1;transform:none}}
-@media(max-width:1180px){.g2{grid-template-columns:minmax(0,1fr)!important}}
-@media(max-width:1100px){.hd-install{display:none}}
-@media(max-width:1000px){.g3{grid-template-columns:minmax(0,1fr)!important}}
-@media(max-width:860px){.sc{overflow-x:auto}.sc .rw{min-width:680px}}
+/* ---- glava ---- */
+header{position:sticky;top:0;z-index:60;background:rgba(15,18,22,.82);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.hd{display:flex;align-items:center;gap:26px;height:66px}
+.logo{font-weight:800;font-size:17px;letter-spacing:-.01em}
+.logo span{color:var(--accent)}
+nav.top{display:flex;gap:22px;margin-left:14px}
+nav.top a{font-size:14px;font-weight:600;color:var(--ink-3)}
+nav.top a:hover{color:var(--ink)}
+.hd .right{margin-left:auto;display:flex;align-items:center;gap:10px}
+
+/* ---- gumbi ---- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  font:inherit;font-weight:700;cursor:pointer;border:0;border-radius:var(--r-full);
+  padding:15px 26px;background:var(--raised);color:var(--ink);transition:transform .12s ease,filter .12s}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:scale(.975)}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink-2)}
+.btn.sm{padding:10px 18px;font-size:14px}
+.btn.block{width:100%}
+
+.chip{display:inline-flex;align-items:center;gap:8px;padding:7px 15px;border-radius:var(--r-full);
+  background:var(--raised);color:var(--ink-2);font-size:13px;font-weight:700}
+.chip.on{background:var(--accent-soft);color:var(--accent)}
+.dot{width:8px;height:8px;border-radius:var(--r-full);flex:none;display:inline-block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);padding:26px}
+
+/* ---- hero ---- */
+.hero{padding:70px 0 0;position:relative}
+.hero .grid{display:grid;grid-template-columns:1.06fr .94fr;gap:48px;align-items:center}
+.hero p.lead{font-size:clamp(16px,1.9vw,19px);margin-top:20px;max-width:520px}
+.hero .cta{display:flex;gap:11px;margin-top:30px;flex-wrap:wrap}
+.hero .fine{margin-top:15px;font-size:13px;color:var(--ink-3);font-weight:600}
+.tags{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:20px}
+.glow{position:absolute;inset:auto 0 0 0;height:520px;pointer-events:none;z-index:-1;
+  background:radial-gradient(60% 60% at 72% 22%,rgba(163,230,53,.12),transparent 70%)}
+
+/* ---- telefon ---- */
+.phone{width:330px;max-width:100%;margin:0 auto;background:var(--bg);border:1px solid var(--line);
+  border-radius:38px;box-shadow:0 2px 4px rgba(0,0,0,.5),0 30px 70px rgba(0,0,0,.55);overflow:hidden;padding:14px 14px 18px}
+.phone .ph-top{display:flex;align-items:center;justify-content:space-between;padding:2px 6px 12px;font-size:11px;color:var(--ink-3);font-weight:700}
+.week{display:flex;gap:5px;margin-bottom:11px}
+.day{flex:1;border-radius:14px;padding:7px 0 6px;text-align:center;background:var(--card)}
+.day .dn{font-size:9px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.05em}
+.day .dd{font-size:13px;font-weight:800;margin-top:1px}
+.day .dt{height:5px;margin-top:5px;display:flex;gap:2px;justify-content:center}
+.day .dt i{width:4px;height:4px;border-radius:var(--r-full);display:block}
+.day.now{background:var(--accent)}
+.day.now .dn,.day.now .dd{color:var(--accent-ink)}
+.sess{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 15px 14px 17px;position:relative;overflow:hidden}
+.sess .bar{position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--t-kolo);border-radius:0 4px 4px 0}
+.kind{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--t-kolo)}
+.ttl{font-size:17px;font-weight:800;letter-spacing:-.02em;margin-top:3px}
+.meta{display:flex;gap:7px;margin-top:9px;font-size:12px;color:var(--ink-2);font-weight:600}
+.meta span:nth-child(even){color:var(--ink-3)}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px}
+.mini{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px}
+.mini .lbl{font-size:9.5px;font-weight:800;letter-spacing:.09em;color:var(--ink-3);text-transform:uppercase}
+.ring{position:relative;width:78px;height:78px;margin:0 auto}
+.ring svg{transform:rotate(-90deg)}
+.ring .mid{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.pill{margin:11px auto 0;display:block;width:max-content;background:var(--accent);color:var(--accent-ink);
+  border-radius:var(--r-full);padding:11px 22px;font-weight:800;font-size:13px}
+
+/* ---- razdelki ---- */
+section{padding:76px 0}
+.sec-h{max-width:600px;margin-bottom:38px}
+.sec-h .kicker{font-size:12px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin-bottom:13px}
+.sec-h p{margin-top:14px;font-size:17px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.step .n{width:40px;height:40px;border-radius:var(--r-s);background:var(--accent-soft);color:var(--accent);
+  display:grid;place-items:center;font-weight:800;font-size:15px;margin-bottom:16px}
+.step h3{margin-bottom:9px}
+.step p{font-size:15px}
+.ic{width:44px;height:44px;border-radius:var(--r-s);background:var(--raised);display:grid;place-items:center;margin-bottom:16px}
+
+/* ---- cenik ---- */
+.price{display:flex;flex-direction:column}
+.price .amt{font-size:44px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.price .per{font-size:14px;color:var(--ink-3);font-weight:600;margin-top:4px}
+.price ul{list-style:none;margin:22px 0 26px;padding:0;display:flex;flex-direction:column;gap:11px;flex:1}
+.price li{display:flex;gap:11px;font-size:14.5px;color:var(--ink-2);font-weight:600;align-items:flex-start}
+.price li b{color:var(--ink);font-weight:700}
+.tick{color:var(--accent);flex:none;margin-top:2px}
+.price.hi{border-color:var(--accent);position:relative}
+.price.hi::after{content:'Priporočeno';position:absolute;top:-11px;left:26px;background:var(--accent);color:var(--accent-ink);
+  font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:4px 12px;border-radius:var(--r-full)}
+
+/* ---- faq ---- */
+details{border-bottom:1px solid var(--line);padding:20px 0}
+details summary{cursor:pointer;font-weight:700;font-size:17px;list-style:none;display:flex;align-items:center;gap:14px}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:'+';margin-left:auto;color:var(--ink-3);font-weight:700;font-size:22px;line-height:1}
+details[open] summary::after{content:'−'}
+details p{margin-top:12px;font-size:15px;max-width:760px}
+
+footer{border-top:1px solid var(--line);padding:44px 0 60px;color:var(--ink-3);font-size:14px}
+.fl{display:flex;gap:22px;flex-wrap:wrap;margin-top:14px}
+.fl a{color:var(--ink-3);font-weight:600}
+.fl a:hover{color:var(--ink)}
+
+@media(max-width:900px){
+  nav.top{display:none}
+  .hero{padding:44px 0 0}
+  .hero .grid{grid-template-columns:1fr;gap:40px}
+  .g3,.g2{grid-template-columns:1fr}
+  section{padding:60px 0}
+  .hero .cta{flex-direction:column}
+  .hero .cta .btn{width:100%}
+  .g2[style*="align-items:center"]{gap:28px}
+}
 </style>
 </head>
 <body>
+<div class="glow"></div>
 
-<nav class="topnav">
-  <div class="logo"><i></i><b>FORMAI</b></div>
-  <div class="navlinks">
-    <a href="#kako">Kako deluje</a>
-    <a href="#cenik">Cenik</a>
-    <a href="#faq">FAQ</a>
-    <a href="forma-trener.html" style="color:var(--soft)">Prijava</a>
-    <a class="btn" href="forma-trener.html" style="padding:9px 18px;font-size:14px">Začni brezplačno</a>
+<header>
+  <div class="wrap hd">
+    <a href="#" class="logo">FORM<span>AI</span></a>
+    <nav class="top">
+      <a href="#kako">Kako deluje</a>
+      <a href="#brez-kolesa">Brez kolesa</a>
+      <a href="#cenik">Cenik</a>
+      <a href="#faq">Vprašanja</a>
+    </nav>
+    <div class="right">
+      <a class="btn ghost sm" href="forma-trener.html">Prijava</a>
+      <a class="btn primary sm" href="forma-trener.html">Začni brezplačno</a>
+    </div>
   </div>
-</nav>
+</header>
 
-<div class="wrap">
-  <header class="hero">
+<!-- ═══════════ HERO ═══════════ -->
+<div class="hero">
+  <div class="wrap grid">
     <div>
-      <div class="eyebrow">AI trener za kolo, moč in prehrano</div>
-      <h1>Tvoja najboljša<br>forma<span class="d">.</span><br>Brez ugibanja<span class="d">.</span></h1>
-      <p class="sub">Izbereš nivo — od »postani fit« do »treniraj kot pro« — in FORMAI zgradi tvoj plan treningov, prehrane in moči. Potem ga vsak dan prilagaja tebi: tvoji formi, počutju in vremenu.</p>
-      <div class="cta-row">
-        <a class="btn" href="forma-trener.html">Začni brezplačno →</a>
-        <a class="btn ghost" href="forma-trener.html?demo=1">🎬 Poglej demo</a>
-        <span class="cta-note">Brez kartice · v aplikaciji si v minuti</span>
+      <div class="tags">
+        <span class="chip"><span class="dot" style="background:var(--t-kolo)"></span>Kolo</span>
+        <span class="chip"><span class="dot" style="background:var(--ok)"></span>Prehrana</span>
+        <span class="chip"><span class="dot" style="background:var(--t-moc)"></span>Moč po želji</span>
       </div>
+      <h1>Kolo in prehrana.<br><span class="acc">En načrt.</span></h1>
+      <p class="lead">
+        Načrt treninga, ki se prilagodi vsaki vožnji. Kalorije, ki se prilagodijo treningu.
+        Moč dodaš, če hočeš — ali pa ne.
+      </p>
+      <div class="cta">
+        <a class="btn primary" href="forma-trener.html">Sestavi moj načrt</a>
+        <a class="btn ghost" href="forma-trener.html?demo=1">Poglej z demo podatki</a>
+      </div>
+      <div class="fine">Brezplačno 14 dni · brez kartice · deluje tudi brez kolesa</div>
     </div>
-    <div class="mock">
-      <div class="mock-head"><b>TEDEN 6 <span>/12</span></b><small>PRIPRAVLJENOST 82</small></div>
-      <div class="bars">
-        <i style="background:#1f272d;height:40%"></i><i style="background:#1f272d;height:52%"></i>
-        <i style="background:#2a343b;height:46%"></i><i style="background:#2a343b;height:60%"></i>
-        <i style="background:#3a464e;height:55%"></i><i style="background:#3a464e;height:70%"></i>
-        <i style="background:#38a6cf;height:64%"></i><i style="background:#62c5ee;height:76%"></i>
-        <i style="background:var(--sig);height:88%"></i>
+
+    <div class="phone">
+      <div class="ph-top"><span>Sobota, 22. avgust</span><span>TEDEN 3 / 10</span></div>
+      <div class="week">
+        <div class="day"><div class="dn">pon</div><div class="dd">17</div><div class="dt"><i style="background:var(--t-kolo)"></i></div></div>
+        <div class="day"><div class="dn">tor</div><div class="dd">18</div><div class="dt"><i style="background:var(--t-moc)"></i></div></div>
+        <div class="day"><div class="dn">sre</div><div class="dd">19</div><div class="dt"><i style="background:var(--t-kolo)"></i><i style="background:var(--t-moc)"></i></div></div>
+        <div class="day"><div class="dn">čet</div><div class="dd">20</div><div class="dt"><i style="background:var(--t-poc)"></i></div></div>
+        <div class="day"><div class="dn">pet</div><div class="dd">21</div><div class="dt"><i style="background:var(--t-moc)"></i></div></div>
+        <div class="day now"><div class="dn">sob</div><div class="dd">22</div><div class="dt"><i style="background:rgba(15,18,22,.5)"></i></div></div>
+        <div class="day"><div class="dn">ned</div><div class="dd">23</div><div class="dt"><i style="background:var(--t-poc)"></i></div></div>
       </div>
-      <div class="mock-stats">
-        <div class="ms"><div class="k">FTP</div><div class="v">+6 W</div></div>
-        <div class="ms"><div class="k">Teža</div><div class="v">−1.8 kg</div></div>
-        <div class="ms"><div class="k">Kondicija</div><div class="v">+24</div></div>
+      <div class="sess">
+        <div class="bar"></div>
+        <div class="kind">Kolo · danes</div>
+        <div class="ttl">Dolga vzdržljivostna</div>
+        <div class="meta"><span>2 h 15 min</span><span>·</span><span>145 TSS</span><span>·</span><span>190–225 W</span></div>
       </div>
-      <div class="mock-note">Primer napredka po 6 tednih plana</div>
+      <div class="duo">
+        <div class="mini">
+          <div class="lbl">Forma</div>
+          <div style="display:flex;align-items:baseline;gap:5px;margin-top:2px">
+            <b style="font-size:22px;font-weight:800;letter-spacing:-.03em">+4</b>
+            <span style="font-size:10px;color:var(--ok);font-weight:700">svež</span>
+          </div>
+          <svg viewBox="0 0 120 34" width="100%" height="34" style="margin-top:4px" aria-hidden="true">
+            <defs><linearGradient id="sp" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#A3E635" stop-opacity=".35"/><stop offset="1" stop-color="#A3E635" stop-opacity="0"/></linearGradient></defs>
+            <path d="M2 27 L17 24 L32 28 L47 20 L62 23 L77 14 L92 17 L107 8 L118 6 L118 34 L2 34 Z" fill="url(#sp)"/>
+            <path d="M2 27 L17 24 L32 28 L47 20 L62 23 L77 14 L92 17 L107 8 L118 6" fill="none" stroke="#A3E635" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="118" cy="6" r="2.6" fill="#A3E635"/>
+          </svg>
+        </div>
+        <div class="mini" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px">
+          <div class="ring">
+            <svg width="78" height="78" viewBox="0 0 78 78">
+              <circle cx="39" cy="39" r="32" fill="none" stroke="#1E242C" stroke-width="8"/>
+              <circle cx="39" cy="39" r="32" fill="none" stroke="#A3E635" stroke-width="8" stroke-linecap="round" stroke-dasharray="137 201"/>
+            </svg>
+            <div class="mid"><div><b style="font-size:16px;font-weight:800;letter-spacing:-.03em">1 840</b>
+              <div style="font-size:9px;color:var(--ink-3);font-weight:600">od 2 690</div></div></div>
+          </div>
+          <div class="lbl">Kalorije</div>
+        </div>
+      </div>
+      <div class="pill">▶ Začni trening</div>
     </div>
-  </header>
+  </div>
 </div>
 
-<section class="alt" id="kako">
-  <div class="wrap sec-in">
-    <h2>Kako deluje<span class="d">.</span></h2>
-    <div class="cards3">
-      <div class="fcard">
-        <div class="n">01 · Izberi nivo</div>
-        <div class="t">Od »postani fit« do »treniraj kot pro«</div>
-        <p>Nivo določi vse: strukturo planov, globino analitike, ton razlag. Preklopiš kadar koli — podatki ostanejo.</p>
+<!-- ═══════════ KAKO DELUJE ═══════════ -->
+<section id="kako">
+  <div class="wrap">
+    <div class="sec-h">
+      <div class="kicker">Kako deluje</div>
+      <h2>Trije koraki, potem se vozi.</h2>
+      <p>Načrt ni statičen dokument. Vsaka opravljena vožnja ga prepiše za naprej.</p>
+    </div>
+    <div class="g3">
+      <div class="card step">
+        <div class="n">1</div>
+        <h3>Povemo si, kje si</h3>
+        <p>Povežeš Stravo ali intervals.icu in preberem zadnjih 90 dni — formo izračunam sam, ne po občutku. Če povezave nimaš, poveš sam in v prvi teden dam 20-minutni test za cone.</p>
       </div>
-      <div class="fcard">
-        <div class="n">02 · Živi normalno</div>
-        <div class="t">Slikaj obrok, vozi, telovadi</div>
-        <p>Vožnje pridejo iz Strave ali Intervals.icu same (ali s screenshotom). Obrok slikaš s telefonom — AI prešteje kalorije in makroje.</p>
+      <div class="card step">
+        <div class="n">2</div>
+        <h3>Dobiš teden, ne obljube</h3>
+        <p>Takoj na koncu prijave vidiš prvi teden po dnevih — kaj, koliko časa, v kateri coni in zakaj. Šele potem se odločiš, ali ti je všeč.</p>
       </div>
-      <div class="fcard">
-        <div class="n">03 · AI prilagaja</div>
-        <div class="t">Plan, ki se uči od tebe</div>
-        <p>Slabo spal? Dež v soboto? Prelahke serije? Trener vsak dan prilagodi naslednji korak in ti pove, zakaj.</p>
+      <div class="card step">
+        <div class="n">3</div>
+        <h3>Načrt se prilagaja</h3>
+        <p>Vozil si več, kot je pisalo? Slabo spal? Dež v soboto? Naslednji dan se prepiše in trener ti pove, zakaj. Kalorije se premaknejo skupaj s treningom.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section id="cenik">
-  <div class="wrap sec-in">
-    <div style="text-align:center">
-      <h2>Preprost cenik<span class="d">.</span></h2>
-      <div class="lead">Začni zastonj. Nadgradi, ko vidiš rezultate.</div>
+<!-- ═══════════ PREHRANA ═══════════ -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="g2" style="align-items:center;gap:44px">
+      <div>
+        <div class="kicker" style="font-size:12px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin-bottom:13px">Prehrana</div>
+        <h2>Kalorije, ki vedo,<br>kaj si odpeljal.</h2>
+        <p style="margin-top:16px;font-size:17px">
+          Večina aplikacij ti da eno številko za vsak dan. Tvoj torek s tremi urami na kolesu in tvoja sreda za mizo pa nista isti dan.
+        </p>
+        <div class="card" style="margin-top:24px;padding:20px 22px">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;gap:13px;align-items:flex-start">
+              <span class="tick" style="font-size:18px;line-height:1.2">✓</span>
+              <div><b style="font-size:15px">Slikaš obrok, dobiš makroje</b>
+              <div style="font-size:14px;color:var(--ink-2)">Brez tehtanja in brez iskanja po bazi.</div></div>
+            </div>
+            <div style="display:flex;gap:13px;align-items:flex-start">
+              <span class="tick" style="font-size:18px;line-height:1.2">✓</span>
+              <div><b style="font-size:15px">Cilj se premakne s treningom</b>
+              <div style="font-size:14px;color:var(--ink-2)">Dolga vožnja pomeni več hrane, ne manj.</div></div>
+            </div>
+            <div style="display:flex;gap:13px;align-items:flex-start">
+              <span class="tick" style="font-size:18px;line-height:1.2">✓</span>
+              <div><b style="font-size:15px">Varovalke, ki jih ne moreš prevoziti</b>
+              <div style="font-size:14px;color:var(--ink-2)">Nikoli pod bazalno porabo. Nikoli pod 1 500 kcal za moške in 1 200 za ženske. Pod 18 let brez deficita. Če hočeš hujšati prehitro, ti tega ne bom napisal.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="padding:28px">
+        <div style="display:flex;align-items:center;gap:20px">
+          <div class="ring" style="width:118px;height:118px;margin:0">
+            <svg width="118" height="118" viewBox="0 0 118 118">
+              <circle cx="59" cy="59" r="50" fill="none" stroke="#1E242C" stroke-width="11"/>
+              <circle cx="59" cy="59" r="50" fill="none" stroke="#A3E635" stroke-width="11" stroke-linecap="round" stroke-dasharray="215 314"/>
+            </svg>
+            <div class="mid"><div><b style="font-size:23px;font-weight:800;letter-spacing:-.03em">1 840</b>
+              <div style="font-size:11px;color:var(--ink-3);font-weight:600">od 2 690 kcal</div></div></div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:11px;min-width:0">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--ink-2);margin-bottom:5px"><span>Beljakovine</span><span style="color:var(--ink-3);font-weight:600">118 / 155 g</span></div>
+              <div style="height:6px;border-radius:999px;background:var(--raised);overflow:hidden"><i style="display:block;height:100%;width:76%;background:var(--t-kolo);border-radius:999px"></i></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--ink-2);margin-bottom:5px"><span>Ogljikovi hidrati</span><span style="color:var(--ink-3);font-weight:600">196 / 310 g</span></div>
+              <div style="height:6px;border-radius:999px;background:var(--raised);overflow:hidden"><i style="display:block;height:100%;width:63%;background:var(--t-moc);border-radius:999px"></i></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--ink-2);margin-bottom:5px"><span>Maščobe</span><span style="color:var(--ink-3);font-weight:600">52 / 78 g</span></div>
+              <div style="height:6px;border-radius:999px;background:var(--raised);overflow:hidden"><i style="display:block;height:100%;width:67%;background:var(--t-tek);border-radius:999px"></i></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:20px;padding-top:16px;border-top:1px solid var(--line)">
+          <div style="font-size:13px;color:var(--ink-3);font-weight:600">Še <b style="color:var(--ink)">850 kcal</b> · cilj vključuje trening</div>
+          <span class="chip" style="padding:5px 12px;font-size:12px;color:var(--ok)">Varno</span>
+        </div>
+        <div style="margin-top:16px;font-size:12px;color:var(--ink-3);line-height:1.5">
+          Prikaz vmesnika. FORMAI ni zdravstveni pripomoček in ne nadomešča zdravnika ali dietetika.
+        </div>
+      </div>
     </div>
-    <div class="prices">
-      <div class="price">
-        <div class="nm">FREE</div>
-        <div class="amt">0 €<small> / za vedno</small></div>
+  </div>
+</section>
+
+<!-- ═══════════ BREZ KOLESA ═══════════ -->
+<section id="brez-kolesa" style="padding-top:0">
+  <div class="wrap">
+    <div class="card" style="padding:clamp(28px,4vw,48px);border-color:var(--accent);background:linear-gradient(180deg,rgba(163,230,53,.06),transparent)">
+      <div class="g2" style="gap:40px;align-items:center">
+        <div>
+          <span class="chip on" style="margin-bottom:16px">Nimaš kolesa?</span>
+          <h2 style="font-size:clamp(26px,3.6vw,38px)">Potem dobiš načrt<br>za tek in hojo.</h2>
+          <p style="margin-top:16px;font-size:16px">
+            Ni pogojno. Ob prijavi izbereš, s čim treniraš — kolo zunaj, trenažer, ali nič od tega.
+            Če izbereš zadnje, dobiš tekaško-hodilni načrt v pogovornem tempu, isti obroč kalorij in istega trenerja.
+          </p>
+          <p style="margin-top:14px;font-size:16px">
+            Ko kolo dobiš, ga vklopiš v Nastavitvah. Načrt se prepiše, forma, ki si jo nabral, pa ostane.
+          </p>
+        </div>
+        <div style="background:var(--bg);border:1px solid var(--line);border-radius:var(--r-l);padding:18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--ink-3);font-weight:700;margin-bottom:12px">
+            <span>TEDEN 2 / 8</span><span class="chip" style="padding:4px 11px;font-size:11px">Osnova</span>
+          </div>
+          <div class="sess" style="border-radius:20px">
+            <div class="bar" style="background:var(--t-tek)"></div>
+            <div class="kind" style="color:var(--t-tek)">Tek in hoja · danes</div>
+            <div class="ttl">6 × (4 min tek / 2 min hoja)</div>
+            <p style="font-size:13.5px;margin-top:7px">Tečeš tako počasi, da lahko govoriš v celih stavkih. Če ne moreš, hodi dlje.</p>
+            <div class="meta"><span>44 min</span><span>·</span><span>≈ 5,5 km</span><span>·</span><span>Z2</span></div>
+          </div>
+          <div style="display:flex;gap:9px;margin-top:11px;flex-wrap:wrap">
+            <span class="chip" style="font-size:12px;padding:6px 13px"><span class="dot" style="background:var(--t-tek)"></span>Tek in hoja</span>
+            <span class="chip" style="font-size:12px;padding:6px 13px"><span class="dot" style="background:var(--t-moc)"></span>Moč</span>
+            <span class="chip" style="font-size:12px;padding:6px 13px"><span class="dot" style="background:var(--t-poc)"></span>Počitek</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ MOČ ═══════════ -->
+<section style="padding-top:0">
+  <div class="wrap g2" style="gap:44px;align-items:center">
+    <div class="card" style="padding:26px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:13px">
+          <div style="width:42px;height:42px;border-radius:var(--r-s);background:var(--raised);display:grid;place-items:center">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--t-moc)" stroke-width="1.8" stroke-linecap="round"><path d="M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10"/></svg>
+          </div>
+          <div><b style="font-size:16px">Moč</b><div style="font-size:13px;color:var(--ink-3);font-weight:600">2 × 40 min na teden</div></div>
+        </div>
+        <div style="width:50px;height:29px;border-radius:999px;background:var(--accent);position:relative;flex:none">
+          <div style="position:absolute;top:3px;right:3px;width:23px;height:23px;border-radius:999px;background:var(--accent-ink)"></div>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--line);padding-top:15px">
+        <div style="font-size:11px;font-weight:800;letter-spacing:.07em;color:var(--ink-3);margin-bottom:11px">TAKO IZGLEDA ENA VADBA</div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <div style="font-size:14px;font-weight:700">Počep z utežjo <span style="color:var(--ink-3);font-weight:600">· 3 × 8</span></div>
+          <div style="font-size:14px;font-weight:700">Izpadni korak <span style="color:var(--ink-3);font-weight:600">· 3 × 10</span></div>
+          <div style="font-size:14px;font-weight:700">Most za zadnjico <span style="color:var(--ink-3);font-weight:600">· 3 × 12</span></div>
+          <div style="font-size:14px;font-weight:700">Deska <span style="color:var(--ink-3);font-weight:600">· 3 × 45 s</span></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="kicker" style="font-size:12px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin-bottom:13px">Dodatek</div>
+      <h2>Moč je dodatek.<br>Ne pogoj.</h2>
+      <p style="margin-top:16px;font-size:17px">
+        Dve krajši vadbi na teden dvigneta moč na kolesu in zmanjšata možnost poškodbe. Če te ne zanima, jo izklopiš in načrt kolesarjenja se prilagodi isti dan.
+      </p>
+      <p style="margin-top:14px;font-size:17px">
+        Izbereš tudi, s čim jo delaš — samo s telesom, z utežmi doma ali v fitnesu. Vaje so temu prilagojene.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ NAPRAVE ═══════════ -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-h" style="max-width:640px">
+      <div class="kicker">Na telefonu in na računalniku</div>
+      <h2>Ena aplikacija, oba zaslona.</h2>
+      <p>FORMAI teče v brskalniku, zato ga ni treba iskati po trgovinah. Na telefonu ga dodaš na začetni zaslon in se odpre kot prava aplikacija — brez naslovne vrstice.</p>
+    </div>
+    <div class="g3">
+      <div class="card">
+        <div class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18.5h2"/></svg></div>
+        <h3>Na telefonu</h3>
+        <p style="font-size:15px;margin-top:8px">Deli → Dodaj na začetni zaslon. Deluje tudi brez signala za tisto, kar si že odprl.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2.5"/><path d="M8 21h8M12 17v4"/></svg></div>
+        <h3>Na računalniku</h3>
+        <p style="font-size:15px;margin-top:8px">Isti račun, širši pogled: graf forme za 90 dni, koledar in analiza ob strani.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-3-6.7M21 4v5h-5"/></svg></div>
+        <h3>Vedno usklajeno</h3>
+        <p style="font-size:15px;margin-top:8px">Prijaviš se z Googlom in načrt, obroki in aktivnosti se sinhronizirajo sami.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ CENIK ═══════════ -->
+<section id="cenik" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-h" style="max-width:620px">
+      <div class="kicker">Cenik</div>
+      <h2>Začni zastonj. Nadgradi, ko vidiš rezultate.</h2>
+      <p>Prvih 14 dni imaš vse odprto, brez kartice. Potem se sam odločiš.</p>
+    </div>
+    <div class="g2" style="gap:18px">
+      <div class="card price">
+        <div style="font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--ink-3);text-transform:uppercase;margin-bottom:14px">Free</div>
+        <div class="amt">0 €</div>
+        <div class="per">za vedno</div>
         <ul>
-          <li>✓ Dnevnik aktivnosti (Strava / Intervals.icu / screenshot)</li>
-          <li>✓ Pregled forme, teže in koledar</li>
-          <li>✓ Slikanje obrokov + AI tedenski plani — <b>neomejen AI v zgodnjem dostopu</b></li>
-          <li>✓ Program moči do muscle-upa</li>
-          <li>✓ Sinhronizacija med napravami (Google prijava)</li>
+          <li><span class="tick">✓</span><span>Dnevnik aktivnosti — <b>Strava, intervals.icu</b> ali zaslonska slika</span></li>
+          <li><span class="tick">✓</span><span>Pregled forme, teže in koledar</span></li>
+          <li><span class="tick">✓</span><span>Slikanje obrokov in tedenski načrti</span></li>
+          <li><span class="tick">✓</span><span>Program moči do muscle-upa</span></li>
+          <li><span class="tick">✓</span><span>Sinhronizacija med napravami (prijava z Googlom)</span></li>
         </ul>
-        <a class="btn ghost cta" href="forma-trener.html">Ustvari račun</a>
+        <a class="btn ghost block" href="forma-trener.html">Ustvari račun</a>
       </div>
-      <div class="price pro">
-        <div class="badge">Kmalu — zdaj zastonj v zgodnjem dostopu</div>
-        <div class="nm">PRO</div>
-        <div class="amt">9,99 €<small> / mesec</small></div>
+
+      <div class="card price hi">
+        <div style="font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--accent);text-transform:uppercase;margin-bottom:14px">Pro</div>
+        <div class="amt">9,99 €</div>
+        <div class="per">na mesec</div>
         <ul>
-          <li>✓ Vse iz Free</li>
-          <li>✓ <b>Neomejena AI</b> — brez ključa, brez omejitev</li>
-          <li>✓ AI trener: dnevna prilagajanja, razlage in klepet</li>
-          <li>✓ Neomejeno slikanje obrokov + makroji</li>
-          <li>✓ Mesečna poročila in deljenje napredka</li>
-          <li>✓ Prednostna podpora</li>
+          <li><span class="tick">✓</span><span>Vse iz Free</span></li>
+          <li><span class="tick">✓</span><span><b>Neomejen AI trener</b> — brez svojega ključa, brez omejitev</span></li>
+          <li><span class="tick">✓</span><span>Dnevna prilagajanja načrta, razlage in klepet</span></li>
+          <li><span class="tick">✓</span><span>Neomejeno slikanje obrokov in makroji</span></li>
+          <li><span class="tick">✓</span><span>Mesečna poročila in deljenje napredka</span></li>
+          <li><span class="tick">✓</span><span>Prednostna podpora</span></li>
         </ul>
-        <a class="btn cta" href="mailto:blaz.gregorc@formai.si?subject=FORMAI%20PRO">Nadgradi na PRO →</a>
+        <a class="btn primary block" href="forma-trener.html">Začni 14 dni brezplačno</a>
+        <div style="text-align:center;font-size:12.5px;color:var(--ink-3);margin-top:14px;font-weight:600">
+          Prekineš kadarkoli · <a href="mailto:blaz.gregorc@formai.si?subject=FORMAI%20PRO" style="color:var(--ink-2);text-decoration:underline">vprašanja</a>
+        </div>
       </div>
     </div>
-    <div class="pnote">Prekineš kadar koli · vprašanja: <a href="mailto:blaz.gregorc@formai.si?subject=FORMAI">piši nam</a></div>
   </div>
 </section>
 
-<section class="alt" id="faq">
-  <div class="wrap sec-in">
-    <h2>Pogosta vprašanja<span class="d">.</span></h2>
-    <div class="cards3" style="grid-template-columns:1fr 1fr">
-      <div class="fcard"><div class="t">Ali potrebujem Stravo?</div><p>Ne. Aktivnosti pridejo samodejno prek brezplačnega Intervals.icu (nanj se vežejo Garmin, Wahoo, Strava …), lahko pa tudi samo prilepiš screenshot — AI prebere vse podatke s slike. Ali vneseš ročno.</p></div>
-      <div class="fcard"><div class="t">Ali dela na telefonu?</div><p>Da — odpri aplikacijo na telefonu in izberi »Dodaj na začetni zaslon«. Obnaša se kot prava aplikacija: obroki, vodena vadba, AI trener. Namizje in telefon sta vedno usklajena prek Google prijave.</p></div>
-      <div class="fcard"><div class="t">Nimam kolesa / ne maram teka?</div><p>Ob registraciji izbereš svoje športe (kolo, tek, pohodi, moč) in označiš najljubše. AI gradi plan izključno iz tvojih izbir — najljubši športi prevladujejo.</p></div>
-      <div class="fcard"><div class="t">Kje so moji podatki?</div><p>Privzeto na tvoji napravi; s prijavo se varno sinhronizirajo prek tvojega Google računa. Ne prodajamo jih in ne delimo. <a href="zasebnost.html">Zasebnost & pogoji →</a> · <a href="pogoji.html">Pogoji uporabe</a> · <a href="privacy.html" hreflang="en">English</a></p></div>
+<!-- ═══════════ FAQ ═══════════ -->
+<section id="faq" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-h"><div class="kicker">Vprašanja</div><h2>Kar ljudi zanima.</h2></div>
+
+    <div style="max-width:840px">
+    <details open><summary>Ali potrebujem Stravo?</summary>
+      <p>Ne. Aktivnosti lahko pridejo prek brezplačnega intervals.icu — nanj se vežejo Garmin, Wahoo, Strava in drugi. Lahko pa samo prilepiš zaslonsko sliko z ure in AI prebere podatke z nje, ali vneseš ročno. S Stravo je najhitreje, ker ob prijavi preberem zadnjih 90 dni in formo izračunam sam.</p></details>
+
+    <details><summary>Nimam kolesa. Mi je aplikacija sploh za kaj?</summary>
+      <p>Da. Ob prijavi izbereš, s čim treniraš. Če izbereš »nimam kolesa«, dobiš načrt za tek in hojo — z istimi kalorijami, istim trenerjem in isto logiko prilagajanja. Ko kolo dobiš, ga vklopiš v Nastavitvah in načrt se prepiše; forma, ki si jo nabral, ostane.</p></details>
+
+    <details><summary>Ali moram delati vaje za moč?</summary>
+      <p>Ne. Moč je dodatek, ki ga med prijavo vklopiš ali pustiš izklopljenega, in ga lahko kadarkoli ugasneš. Če jo imaš vklopljeno, izbereš tudi opremo — samo telo, uteži doma ali fitnes — in vaje so temu prilagojene.</p></details>
+
+    <details><summary>Ali dela na telefonu?</summary>
+      <p>Da. Odpri stran na telefonu in izberi »Dodaj na začetni zaslon«. Odpre se kot prava aplikacija, brez naslovne vrstice brskalnika. Telefon in računalnik sta usklajena prek prijave z Googlom.</p></details>
+
+    <details><summary>Kako zanesljive so kalorije?</summary>
+      <p>Cilj izračunam iz tvoje višine, teže, starosti, spola in dejanske porabe na treningu. Brez teh podatkov ti številke sploh ne pokažem — raje nič kot ugibanje. Vgrajene so tudi trde varovalke: nikoli pod bazalno porabo, nikoli pod 1 500 kcal za moške in 1 200 za ženske, pod 18 let brez deficita, in največ 750 kcal dnevnega primanjkljaja. Če želiš shujšati hitreje, ti tega ne bom napisal.</p>
+      <p>FORMAI ni zdravstveni pripomoček in ne nadomešča zdravnika ali dietetika. Če imaš zdravstveno stanje, ki vpliva na prehrano ali trening, se najprej posvetuj s strokovnjakom.</p></details>
+
+    <details><summary>Kje so moji podatki?</summary>
+      <p>Privzeto ostanejo na tvoji napravi. Če se prijaviš, se sinhronizirajo prek tvojega računa. Ne prodajam jih in jih ne delim za oglaševanje. Za nasvete v naravnem jeziku uporabljam Googlov Gemini na plačljivi ravni, kjer se vsebina po Googlovih pogojih ne uporablja za učenje modelov. Vožnje s Strave v te pozive ne gredo. Podrobnosti so v <a href="zasebnost.html" style="color:var(--accent);text-decoration:underline">politiki zasebnosti</a>.</p></details>
+
+    <details><summary>Kdo stoji za tem?</summary>
+      <p>Blaž Gregorc, kolesar iz Slovenije, ki je aplikacijo najprej naredil zase. Piši mi na <a href="mailto:blaz.gregorc@formai.si" style="color:var(--accent);text-decoration:underline">blaz.gregorc@formai.si</a> — odgovarjam osebno.</p></details>
     </div>
   </div>
 </section>
 
-<section>
-  <div class="wrap sec-in" style="text-align:center">
-    <h2>Bodi zraven od začetka<span class="d">.</span></h2>
-    <div class="lead">Vpiši e-mail — obvestim te o novostih in ugodnostih za prve uporabnike.</div>
-    <form action="https://formsubmit.co/blaz.gregorc@formai.si" method="POST" style="display:flex;gap:10px;justify-content:center;margin-top:22px;flex-wrap:wrap">
-      <input type="email" name="email" required placeholder="tvoj@email.si" style="background:var(--panel);border:1px solid var(--border2);color:var(--text);padding:12px 16px;font-family:var(--sans);font-size:14px;min-width:260px;outline:none">
-      <input type="hidden" name="_subject" value="FORMAI — novi interesent">
-      <input type="text" name="_honey" style="display:none">
-      <input type="hidden" name="_captcha" value="false">
-      <input type="hidden" name="_next" value="https://formai.si/forma-trener.html">
-      <button class="btn" type="submit">Obveščaj me →</button>
-    </form>
-    <div class="pnote">Brez neumnosti — samo pomembne novice. Odjava kadar koli.</div>
+<!-- ═══════════ ZAKLJUČNI POZIV ═══════════ -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="card" style="text-align:center;padding:clamp(34px,5vw,60px);border-color:var(--accent);background:linear-gradient(180deg,rgba(163,230,53,.07),transparent)">
+      <h2>Prvi teden vidiš, preden plačaš.</h2>
+      <p style="margin:16px auto 0;font-size:17px;max-width:520px">
+        Prijava traja nekaj minut. Na koncu dobiš cel prvi teden po dnevih — in šele potem se odločiš.
+      </p>
+      <div style="display:flex;gap:11px;justify-content:center;margin-top:28px;flex-wrap:wrap">
+        <a class="btn primary" href="forma-trener.html">Sestavi moj načrt</a>
+        <a class="btn ghost" href="forma-trener.html?demo=1">Najprej demo</a>
+      </div>
+      <div style="margin-top:15px;font-size:13px;color:var(--ink-3);font-weight:600">Brezplačno 14 dni · brez kartice</div>
+    </div>
   </div>
 </section>
 
 <footer>
-  <div class="wrap foot-in">
-    <div class="logo"><i></i>© 2026 FORMAI</div>
-    <div class="foot-links">
-      <a href="zasebnost.html">Zasebnost & pogoji</a>
-      <a href="privacy.html" hreflang="en">Privacy (EN)</a>
-      <a href="terms.html" hreflang="en">Terms (EN)</a>
-      <a href="mailto:blaz.gregorc@formai.si">Kontakt</a>
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;gap:26px;flex-wrap:wrap;align-items:flex-start">
+      <div>
+        <div class="logo" style="font-size:16px">FORM<span>AI</span></div>
+        <div style="margin-top:8px;max-width:340px;font-size:13.5px">
+          AI trener za kolo, prehrano in moč. Narejeno v Sloveniji.
+        </div>
+      </div>
+      <div class="fl" style="margin-top:0">
+        <a href="zasebnost.html">Zasebnost</a>
+        <a href="pogoji.html">Pogoji</a>
+        <a href="privacy.html">Privacy (EN)</a>
+        <a href="terms.html">Terms (EN)</a>
+        <a href="mailto:blaz.gregorc@formai.si">Kontakt</a>
+      </div>
+    </div>
+    <div style="margin-top:28px;padding-top:22px;border-top:1px solid var(--line);font-size:13px">
+      © 2026 FORMAI · Ni zdravstveni pripomoček. Nasveti o treningu in prehrani ne nadomeščajo zdravnika.
     </div>
   </div>
 </footer>
 
 <script>
+/* leni odklop: ničesar ne nalagamo, samo mehki prikaz razdelkov */
 (function(){
-  try{
-    var els=document.querySelectorAll('.fcard,.price,.mock');
-    if(!('IntersectionObserver' in window)) return;
-    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('vis');io.unobserve(e.target);}});},{threshold:.12});
-    els.forEach(function(el){el.classList.add('rv');io.observe(el);});
-  }catch(_){}
+  if(!('IntersectionObserver' in window)) return;
+  var els=document.querySelectorAll('section .card, section .sec-h');
+  els.forEach(function(e){ e.style.opacity='0'; e.style.transform='translateY(14px)'; e.style.transition='opacity .5s ease, transform .5s ease'; });
+  var io=new IntersectionObserver(function(en){
+    en.forEach(function(x){ if(x.isIntersecting){ x.target.style.opacity='1'; x.target.style.transform='none'; io.unobserve(x.target); } });
+  },{rootMargin:'0px 0px -8% 0px'});
+  els.forEach(function(e){ io.observe(e); });
 })();
 </script>
 </body>
