@@ -11,13 +11,15 @@ const crypto = require("crypto");
 const {
   GEMINI_API_KEY,                    // OBVEZNO: tvoj Gemini ključ
   DEFAULT_MODEL = "gemini-flash-latest",
-  ALLOWED_ORIGINS = "https://poni-9.github.io,http://localhost:8080,http://127.0.0.1:8080",
+  // Privzetke držimo na produkcijski domeni: če se ob ponovnem deployu izgubijo
+  // spremenljivke okolja, mora aplikacija še vedno delati, ne pa tiho odpovedati.
+  ALLOWED_ORIGINS = "https://formai.si,https://www.formai.si,https://poni-9.github.io,http://localhost:8080,http://127.0.0.1:8080",
   FREE_CALLS_PER_DAY = "10",
   STRIPE_SECRET_KEY = "",            // sk_live_... ali sk_test_... (Stripe → Developers → API keys)
   STRIPE_WEBHOOK_SECRET = "",        // whsec_... (Stripe → Developers → Webhooks)
   STRAVA_CLIENT_ID = "",             // iz strava.com/settings/api
   STRAVA_CLIENT_SECRET = "",         // skrivnost — samo na strežniku
-  APP_URL = "https://poni-9.github.io/forma-app/forma-trener.html",
+  APP_URL = "https://formai.si/forma-trener.html",
   PORT = 8080,
 } = process.env;
 
@@ -59,11 +61,21 @@ async function meter(uid) {
   const day = new Date().toISOString().slice(0, 10);
   const ref = db.collection("aiUsage").doc(`${uid}_${day}`);
   const limit = parseInt(FREE_CALLS_PER_DAY, 10);
-  const snap = await ref.get();
-  const used = snap.exists ? (snap.data().n || 0) : 0;
-  if (used >= limit) return false;
-  await ref.set({ n: used + 1, t: Date.now() }, { merge: true });
-  return true;
+  // Transakcija: brez nje dva vzporedna zavihka oba preberosta n=9 in oba nadaljujeta,
+  // zato je bilo dnevno kvoto trivialno obiti z vzporednimi zahtevami.
+  try {
+    return await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      const used = snap.exists ? (snap.data().n || 0) : 0;
+      if (used >= limit) return false;
+      tx.set(ref, { n: used + 1, t: Date.now() }, { merge: true });
+      return true;
+    });
+  } catch (e) {
+    // Ob sporu/napaki raje propustimo klic kot da bi uporabniku po nepotrebnem zavrnili storitev.
+    console.error("meter tx", e && e.message);
+    return true;
+  }
 }
 
 /* ---------------- Gemini proxy ---------------- */
@@ -196,12 +208,24 @@ app.post("/strava/disconnect", async (req, res) => {
 // Preverimo podpis brez knjižnice (Stripe shema: t=timestamp,v1=hmac_sha256(timestamp + "." + body))
 function stripeVerify(rawBody, sigHeader) {
   if (!STRIPE_WEBHOOK_SECRET || !sigHeader) return false;
-  const parts = Object.fromEntries(String(sigHeader).split(",").map(kv => kv.split("=")));
-  if (!parts.t || !parts.v1) return false;
-  if (Math.abs(Date.now() / 1000 - Number(parts.t)) > 300) return false;           // star dogodek
+  // Med menjavo webhook skrivnosti Stripe pošlje VEČ podpisov v1 v isti glavi.
+  // Object.fromEntries bi obdržal samo zadnjega in zavrnil veljaven dogodek — zato zberemo vse.
+  let t = null; const sigs = [];
+  for (const kv of String(sigHeader).split(",")) {
+    const i = kv.indexOf("=");
+    if (i < 0) continue;
+    const k = kv.slice(0, i).trim(), v = kv.slice(i + 1).trim();
+    if (k === "t") t = v; else if (k === "v1") sigs.push(v);
+  }
+  if (!t || !sigs.length) return false;
+  if (Math.abs(Date.now() / 1000 - Number(t)) > 300) return false;                 // star dogodek
   const expected = crypto.createHmac("sha256", STRIPE_WEBHOOK_SECRET)
-    .update(parts.t + "." + rawBody.toString("utf8")).digest("hex");
-  try { return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(parts.v1)); } catch { return false; }
+    .update(t + "." + rawBody.toString("utf8")).digest("hex");
+  const exp = Buffer.from(expected);
+  return sigs.some(s => {
+    try { const b = Buffer.from(s); return b.length === exp.length && crypto.timingSafeEqual(exp, b); }
+    catch { return false; }
+  });
 }
 async function setPro(uid, on, extra = {}) {
   if (!uid) return;
@@ -213,10 +237,41 @@ app.post("/stripe/webhook", async (req, res) => {
     if (!stripeVerify(req.body, req.headers["stripe-signature"])) return res.status(400).send("bad signature");
     const ev = JSON.parse(req.body.toString("utf8"));
     const o = ev.data && ev.data.object || {};
+    // Idempotenca: Stripe ob neuspehu dogodke ponavlja. Brez tega je vsak ponovljen
+    // checkout.session.completed nova vrstica v "payments" in podvojen prihodek v poročilih.
+    if (ev.id) {
+      const evRef = db.collection("stripeEvents").doc(String(ev.id));
+      const fresh = await db.runTransaction(async (tx) => {
+        const s = await tx.get(evRef);
+        if (s.exists) return false;
+        tx.set(evRef, { type: ev.type || "", t: Date.now() });
+        return true;
+      }).catch(() => true);
+      if (!fresh) return res.json({ received: true, duplicate: true });
+    }
     if (ev.type === "checkout.session.completed") {
       const uid = o.client_reference_id || (o.metadata && o.metadata.uid);
       await setPro(uid, true, { email: o.customer_email || o.customer_details?.email || "", customer: o.customer || "", sub: o.subscription || "" });
       db.collection("payments").add({ uid: uid || null, amount: o.amount_total || 0, currency: o.currency || "eur", email: o.customer_details?.email || "", t: Date.now(), type: ev.type }).catch(()=>{});
+    } else if (ev.type === "invoice.paid" || ev.type === "invoice.payment_succeeded") {
+      // Podaljšanje naročnine: brez tega se PRO nikoli ne potrdi znova in nimamo datuma poteka.
+      const cust = o.customer;
+      if (cust) {
+        const end = o.lines?.data?.[0]?.period?.end || o.period_end || null;
+        const q = await db.collection("proUsers").where("customer", "==", cust).limit(5).get();
+        for (const d of q.docs) await setPro(d.id, true, end ? { current_period_end: end } : {});
+      }
+    } else if (ev.type === "customer.subscription.updated") {
+      const cust = o.customer;
+      if (cust) {
+        // status: active/trialing = PRO; past_due/unpaid/canceled/incomplete_expired = ne
+        const ok = ["active", "trialing"].includes(String(o.status || ""));
+        const q = await db.collection("proUsers").where("customer", "==", cust).limit(5).get();
+        for (const d of q.docs) await setPro(d.id, ok, {
+          status: o.status || "",
+          ...(o.current_period_end ? { current_period_end: o.current_period_end } : {})
+        });
+      }
     } else if (ev.type === "customer.subscription.deleted" || (ev.type === "invoice.payment_failed" && o.attempt_count >= 3)) {
       const cust = o.customer;
       if (cust) {
@@ -226,6 +281,31 @@ app.post("/stripe/webhook", async (req, res) => {
     }
     res.json({ received: true });
   } catch (e) { res.status(500).send("napaka"); }
+});
+/* Portal za naročnino: uporabnik lahko sam prekliče, zamenja kartico in vidi račune.
+   Brez tega je edini način odjave pisanje na e-pošto — kar je za EU potrošniško
+   naročnino premalo. Uporabimo neposreden klic na Stripe API, da ostane
+   server-package.json pri dveh odvisnostih (brez knjižnice stripe). */
+app.post("/stripe/portal", async (req, res) => {
+  const u = await requireUser(req, res); if (!u) return;
+  if (!STRIPE_SECRET_KEY) return res.status(503).json({ error: "stripe_ni_nastavljen" });
+  try {
+    const d = await db.collection("proUsers").doc(u.uid).get();
+    const customer = d.exists && d.data().customer;
+    if (!customer) return res.status(404).json({ error: "ni_narocnine" });
+    const body = new URLSearchParams({ customer, return_url: APP_URL });
+    const r = await fetch("https://api.stripe.com/v1/billing_portal/sessions", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + STRIPE_SECRET_KEY,
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body
+    });
+    const js = await r.json();
+    if (!r.ok) return res.status(r.status).json({ error: js.error?.message || "stripe_napaka" });
+    res.json({ url: js.url });
+  } catch (e) { res.status(500).json({ error: "napaka" }); }
 });
 // aplikacija po nakupu preveri stanje (brez čakanja na osvežitev)
 app.get("/stripe/status", async (req, res) => {

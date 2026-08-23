@@ -839,11 +839,17 @@ function addSug(i){
   const p=lastSug?.predlogi[i]; if(!p) return;
   dayData(todayIso()).entries.push({ id:uid(), ts:Date.now(), time:new Date().toTimeString().slice(0,5), meal:lastSug.obrok, jed:p.jed, grami:null, kcal:Math.round(p.kcal||0), b:Math.round(p.beljakovine_g||0), zan:'', op:'predlog', thumb:null });
   save(); renderAll();
+  toast('Dodano med vnose. 🍽️','');
+}
+
+/* PWA namestitev + service worker.
+   Prej je bil ta blok pomotoma znotraj addSug() (manjkal je zaklepaj), zato se je
+   service worker registriral šele, če je uporabnik kliknil "＋" pri AI predlogu obroka,
+   doInstallK() pa ni bil globalen in je gumb v HTML-ju vrgel ReferenceError. */
 let deferredPromptK=null;
 window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPromptK=e; const b=$('btnInstallK'); if(b) b.style.display='inline-flex'; });
 async function doInstallK(){ if(!deferredPromptK){ toast('V meniju brskalnika izberi »Dodaj na začetni zaslon«.'); return; } deferredPromptK.prompt(); await deferredPromptK.userChoice; deferredPromptK=null; const b=$('btnInstallK'); if(b) b.style.display='none'; }
-if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js'); }catch(_){} } toast('Dodano med vnose. 🍽️','');
-}
+if('serviceWorker' in navigator){ try{ navigator.serviceWorker.register('sw.js'); }catch(_){} }
 
 /* prebere uro fotografiranja iz EXIF (za pravilno razvrstitev v obrok pri večernem nalaganju) */
 async function exifHour(file){

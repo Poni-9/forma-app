@@ -7208,11 +7208,25 @@ setTimeout(()=>{ try{ maybeAutoMonth(); }catch(_){ } }, 15000);
 setTimeout(()=>{ try{ maybeAutoCoach(); }catch(_){ } }, 6500);
 setTimeout(()=>{ try{ icuOpozoriOStarih(); }catch(_){ } }, 8000);   // stari zapisi brez izvora ne smejo tiho izpasti
 if (new URLSearchParams(location.search).get('demo')==='1' && !state.rides.length){
-  try{ localStorage.setItem('forma_onb_done','1'); }catch(_){}
+  /* Demo NE sme trajno označiti onboardinga za opravljenega — sicer obiskovalec, ki si je
+     ogledal demo, ob naslednjem (resnem) obisku nikoli več ne vidi čarovnika za prijavo.
+     Zavihek si zapomni samo za to sejo. */
+  try{ sessionStorage.setItem('forma_demo_seja','1'); }catch(_){}
   setTimeout(()=>{ try{ demoLoad(); }catch(_){} }, 350);
-} else if (!localStorage.getItem('forma_onb_done') && !state.settings.profile.ime && !state.settings.profile.teza && !state.rides.length){
-  setTimeout(onbShow, 400);
-} else { try{ localStorage.setItem('forma_onb_done','1'); }catch(_){} }
+} else {
+  /* Demo se shrani v localStorage (vožnje IN nadomestni profil: teža 78, višina 179 …),
+     zato ga ne smemo šteti za "uporabnik že dela". Resnični podatki = aktivnost, ki ni demo,
+     ali profil, ki ni iz dema. */
+  const demoStanje = state.demo === true;
+  const imaResnicneVozjne = state.rides.some(r=>!r.demo);
+  const imaResnicenProfil = !demoStanje && !!(state.settings.profile.ime || state.settings.profile.teza);
+  const imaResnicnePodatke = imaResnicneVozjne || imaResnicenProfil;
+  if (!localStorage.getItem('forma_onb_done') && !sessionStorage.getItem('forma_demo_seja') && !imaResnicnePodatke){
+    setTimeout(onbShow, 400);
+  } else if (imaResnicnePodatke){
+    try{ localStorage.setItem('forma_onb_done','1'); }catch(_){}
+  }
+}
 
 /* ================================================================
    DEMO PODATKI — da nova stran ni prazna (odstranljivo)
@@ -7388,8 +7402,37 @@ setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) sy
     }catch(e){ st('Napaka: '+(e.message||e)); }
     start();
   }
+  /* Sledi (r.polyline) in streams NIKOLI ne gredo v oblak:
+     1) Firestore dokument ima trdo mejo 1 MiB in sledi bi jo prej ali slej presegle —
+        set() bi začel tiho odpovedovati in uporabnik bi izgubil sinhronizacijo vsega ostalega.
+     2) Zaradi tega je stavek "tvoja pot nikoli ne zapusti tvojega telefona" dobesedno resničen.
+     Zgodovina sledi ostane lokalno. */
+  function slimForSync(loc){
+    try{
+      if(typeof slimForma==='function') return { forma: slimForma(loc.forma), kalorije: loc.kalorije };
+      const c = loc.forma ? JSON.parse(JSON.stringify(loc.forma)) : null;
+      if(c && Array.isArray(c.rides)) c.rides.forEach(r=>{ delete r.polyline; delete r.streams; delete r.map; });
+      return { forma:c, kalorije: loc.kalorije };
+    }catch(_){ return loc; }
+  }
+  /* Ker sledi ne gredo v oblak, jih ob prevzemu z druge naprave ne smemo izgubiti:
+     oddaljeno stanje prevzamemo, geometrijo pa prenesemo iz lokalne kopije po id-ju vožnje. */
+  function keepLocalTracks(remForma, locForma){
+    try{
+      if(!remForma || !locForma || !Array.isArray(remForma.rides) || !Array.isArray(locForma.rides)) return remForma;
+      const mine={};
+      for(const r of locForma.rides) if(r && r.id && (r.polyline||r.streams)) mine[r.id]={polyline:r.polyline, streams:r.streams, trackSrc:r.trackSrc};
+      for(const r of remForma.rides){
+        const m = r && mine[r.id];
+        if(!m) continue;
+        if(!r.polyline && m.polyline){ r.polyline=m.polyline; if(m.trackSrc) r.trackSrc=m.trackSrc; }
+        if(!r.streams && m.streams) r.streams=m.streams;
+      }
+      return remForma;
+    }catch(_){ return remForma; }
+  }
   async function push(){
-    if(!fb.uid) return; const loc=readLocal(); const j=JSON.stringify(loc); if(j===fb.last) return; fb.last=j;
+    if(!fb.uid) return; const loc=slimForSync(readLocal()); const j=JSON.stringify(loc); if(j===fb.last) return; fb.last=j;
     try{ await fb.db.collection('formaSync').doc(fb.uid).set({ forma:loc.forma||null, kalorije:loc.kalorije||null, _ts:Date.now() }, {merge:true}); st('Sinhronizirano ✓ '+new Date().toLocaleTimeString()); }catch(e){ st('Napaka pri pošiljanju: '+(e.message||e)); }
   }
   let pulling=false;
@@ -7401,9 +7444,9 @@ setInterval(()=>{ if(document.visibilityState==='visible' && state.sync?.bin) sy
       if(rem){
         const loc = readLocal(); let kalNew=false, formaNew=false;
         if(rem.kalorije && (rem.kalorije._ts||0) > ((loc.kalorije&&loc.kalorije._ts)||0)){ try{ localStorage.setItem('kalorije_v1', JSON.stringify(rem.kalorije)); kalNew=true; }catch(_){} }
-        if(rem.forma && (rem.forma._ts||0) > ((loc.forma&&loc.forma._ts)||0)){ try{ localStorage.setItem('forma_trener_v1', JSON.stringify(rem.forma)); formaNew=true; }catch(_){} }
+        if(rem.forma && (rem.forma._ts||0) > ((loc.forma&&loc.forma._ts)||0)){ try{ localStorage.setItem('forma_trener_v1', JSON.stringify(keepLocalTracks(rem.forma, loc.forma))); formaNew=true; }catch(_){} }
         if(formaNew){ st('Novi podatki z druge naprave — osvežujem…'); setTimeout(()=>location.reload(), 500); }
-        else if(kalNew){ fb.last=JSON.stringify(readLocal()); try{ if(typeof renderKalorije==='function') renderKalorije(); if(typeof renderDash==='function') renderDash(); }catch(_){} st('Kalorije osvežene ✓ '+new Date().toLocaleTimeString()); }
+        else if(kalNew){ fb.last=JSON.stringify(slimForSync(readLocal())); try{ if(typeof renderKalorije==='function') renderKalorije(); if(typeof renderDash==='function') renderDash(); }catch(_){} st('Kalorije osvežene ✓ '+new Date().toLocaleTimeString()); }
       }
     }catch(_){}
     pulling=false;
