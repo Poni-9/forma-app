@@ -3610,7 +3610,41 @@ async function testGemini(){
 /* STRAVA-SAFE: aktivnosti, ki smejo v AI pozive (Stravina pravila prepovedujejo
    posredovanje njihovih podatkov zunanjim AI orodjem — zato Strava vožnje AI ne vidi;
    lokalna matematika (forma, rekordi, realizacija) jih normalno uporablja) */
-function aiRides(){ return state.rides.filter(r=>r.source!=='strava'); }
+/* Izvori v Intervals.icu, za katere vemo, da NISO Strava. Seznam ni popoln in tudi ne more biti —
+   zato je privzetek zaprt: neznan izvor ne gre v AI. Če se v opozorilu pojavi nova vrednost,
+   jo dodaj sem. */
+const ICU_AI_SAFE = new Set(['GARMIN','GARMIN_CONNECT','POLAR','SUUNTO','WAHOO','COROS','ZWIFT',
+  'UPLOAD','MANUAL','FILE','DROPBOX','TRAINERROAD','ROUVY','WHOOP','OURA','FITBIT','HAMMERHEAD',
+  'BRYTON','IGPSPORT','MAGENE','XERT','CONCEPT2','ELITE','TACX','KINOMAP','MYWHOOSH','PELOTON',
+  'DECATHLON','APPLE','HUAWEI','SPORTTRACKS','RIDE_WITH_GPS','NOLIO','TODAYS_PLAN']);
+
+/* Ali sme ta aktivnost v AI poziv?
+   Pravilo je pogodbena obveznost, zato je privzetek ZAPRI, ne odpri:
+   - Strava kot vir aplikacije               -> ne
+   - izrecno označeno aiEligible:false       -> ne
+   - iz Intervals.icu BREZ znanega izvora    -> ne (sem sodijo tudi vsi zapisi, uvoženi pred
+     uvedbo te varovalke — dokler jih uporabnik ne uvozi znova, jih ne moremo jamčiti)
+   Vse ostalo (datoteke, posnetki, ročni vnos) je uporabnikovo in sme. */
+function aiAllowed(r){
+  if(!r) return false;
+  if(r.source==='strava') return false;
+  if(r.aiEligible===false) return false;
+  if(r.source==='intervals') return ICU_AI_SAFE.has(String(r.icuOrigin||'').toUpperCase());
+  return true;
+}
+function aiRides(){ return state.rides.filter(aiAllowed); }
+
+/* Zapisi iz Intervals.icu brez zabeleženega izvora — uvoženi pred uvedbo varovalke.
+   Ne smejo tiho izpasti: uporabniku povemo, zakaj jih trener ne vidi in kaj naj naredi. */
+function icuOpozoriOStarih(){
+  try{
+    const brezIzvora = state.rides.filter(r=>r.source==='intervals' && !r.icuOrigin).length;
+    if(!brezIzvora) return;
+    if(localStorage.getItem('forma_icu_izvor_opozorilo')===String(brezIzvora)) return;
+    localStorage.setItem('forma_icu_izvor_opozorilo', String(brezIzvora));
+    setTimeout(()=>toast(`ℹ️ ${brezIzvora} voženj iz Intervals.icu nima zabeleženega izvora, zato jih trener zaenkrat ne uporablja. V Nastavitvah pritisni »Uvozi iz Intervals.icu« — ob ponovnem uvozu se označijo in trener jih spet vidi.`,'err'), 3200);
+  }catch(_){ }
+}
 function hasStravaRides(){ return state.rides.some(r=>r.source==='strava'); }
 /* AI-varne različice metrik: za AI pozive štejejo SAMO ne-Strava aktivnosti (pravila Strava API).
    Lokalni prikazi (dashboard, poročila na zaslonu, plan brez AI) še naprej uporabljajo vse podatke. */
@@ -5566,6 +5600,19 @@ async function icuImport(quiet){
         notes:''
       };
       r.tss = (a.icu_training_load && a.icu_training_load>0) ? Math.round(a.icu_training_load) : estimateTss(r);
+      /* IZVOR JE POMEMBNEJŠI OD POTI.
+         Intervals.icu pove, od kod je aktivnost prišla (GARMIN, STRAVA, UPLOAD, POLAR …).
+         Če je prišla iz Strave, so to Stravini podatki — dejstvo, da so pripotovali skozi
+         tretjo stran, pravila §5.3 ne odpravi. Take aktivnosti se prikazujejo normalno,
+         v AI pozive pa ne smejo. Privzetek zaprt: v AI spustimo samo znan, ne-Stravin izvor. */
+      r.icuOrigin = String(a.source || a.icu_sync_source || '').toUpperCase() || null;
+      r.aiEligible = ICU_AI_SAFE.has(r.icuOrigin || '');
+      if (r.icuOrigin === 'STRAVA') skip.stravaIzvor = (skip.stravaIzvor||0) + 1;
+      else if (!r.aiEligible){
+        skip.neznanIzvor = (skip.neznanIzvor||0) + 1;
+        skip.neznaneVrednosti = skip.neznaneVrednosti || new Set();
+        skip.neznaneVrednosti.add(r.icuOrigin || '(prazno)');
+      }
       state.rides.push(r); n++;
     }
     {
@@ -5579,7 +5626,23 @@ async function icuImport(quiet){
     }
     state.rides=dedupeRides(state.rides);
     save(); renderAll();
-    if (n) toast(`${quiet?'Samodejno u':'U'}voženih ${n} voženj iz Intervals.icu. 📈`,'ok');
+    if (n){
+      const sIzvor = skip.stravaIzvor || 0;
+      toast(`${quiet?'Samodejno u':'U'}voženih ${n} voženj iz Intervals.icu. 📈`,'ok');
+      if (sIzvor && !quiet){
+        // Uvoz je "uspel", trener pa še vedno ne vidi nič — to je treba povedati naravnost.
+        const vsi = sIzvor === n;
+        setTimeout(()=>toast(
+          vsi ? `⚠️ Vseh ${sIzvor} vožnje je v Intervals.icu sinhronizirala Strava, zato jih trener ne sme uporabiti. Poveži Garmin NEPOSREDNO z Intervals.icu (Settings → Garmin), ne prek Strave.`
+              : `⚠️ ${sIzvor} od ${n} voženj je Stravinega izvora — te trener ne sme uporabiti. Ostale vidi.`,
+          'err'), 2600);
+      }
+      if (skip.neznanIzvor && !quiet){
+        // Neznana vrednost izvora: privzeto ne gre v AI. Vrednost izpišemo, da jo je mogoče dodati v ICU_AI_SAFE.
+        const vals=[...(skip.neznaneVrednosti||[])].join(', ');
+        setTimeout(()=>toast(`ℹ️ ${skip.neznanIzvor} voženj ima izvor, ki ga ne poznam (${vals}) — za vsak primer jih trener ne uporablja. Javi mi to vrednost in jo dodam.`,'err'), 4400);
+      }
+    }
     else if (!quiet){
       const total = Array.isArray(acts)? acts.length : 0;
       if (skip.garmin>0 && n===0){
@@ -7143,6 +7206,7 @@ setTimeout(()=>{ try{ maybeAutoWeekly(); }catch(_){ } }, 9000);
 setTimeout(()=>{ try{ maybeAdaptPlan(); }catch(_){ } }, 12000);
 setTimeout(()=>{ try{ maybeAutoMonth(); }catch(_){ } }, 15000);
 setTimeout(()=>{ try{ maybeAutoCoach(); }catch(_){ } }, 6500);
+setTimeout(()=>{ try{ icuOpozoriOStarih(); }catch(_){ } }, 8000);   // stari zapisi brez izvora ne smejo tiho izpasti
 if (new URLSearchParams(location.search).get('demo')==='1' && !state.rides.length){
   try{ localStorage.setItem('forma_onb_done','1'); }catch(_){}
   setTimeout(()=>{ try{ demoLoad(); }catch(_){} }, 350);
