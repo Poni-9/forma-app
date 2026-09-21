@@ -1,15 +1,29 @@
 {
-  "name": "FORMAI — mobilna",
+  "name": "FORMAI",
   "short_name": "FORMAI",
-  "description": "Obroki, vadba in AI trener v žepu.",
-  "start_url": "./kalorije.html",
-  "scope": "./",
+  "description": "Osebni trener: kolo, moč doma, prehrana, teža in forma.",
+  "start_url": "/#/prehrana",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#0b0e11",
-  "theme_color": "#0b0e11",
+  "background_color": "#0F1216",
+  "theme_color": "#0F1216",
   "lang": "sl",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
