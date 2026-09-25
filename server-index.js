@@ -20,6 +20,9 @@ const {
   STRAVA_CLIENT_ID = "",             // iz strava.com/settings/api
   STRAVA_CLIENT_SECRET = "",         // skrivnost — samo na strežniku
   APP_URL = "https://formai.si/forma-trener.html",
+  ICU_CLIENT_ID = "",                // intervals.icu OAuth (https://intervals.icu/oauth/apply)
+  ICU_CLIENT_SECRET = "",            // skrivnost — samo na strežniku
+  ADMIN_EMAILS = "",                 // e-pošta skrbnika (Google račun) za pregled testnega programa; več z vejico
   PORT = 8080,
 } = process.env;
 
@@ -315,5 +318,59 @@ app.get("/stripe/status", async (req, res) => {
   catch { res.status(500).json({ error: "napaka" }); }
 });
 
-app.get("/health", (_, res) => res.json({ ok: true, model: DEFAULT_MODEL, strava: !!STRAVA_CLIENT_ID, stripe: !!STRIPE_WEBHOOK_SECRET }));
+/* ---------- intervals.icu OAuth: koda → žeton ----------
+   Aplikacija uporabnika pošlje na intervals.icu/oauth/authorize, ta vrne ?code=… na formai.si,
+   aplikacija kodo pošlje sem. Skrivnost ostane na strežniku; žeton gre nazaj v aplikacijo (nastavitve
+   uporabnika). Brez prijave dovoljeno (aplikacija dela tudi brez računa), z omejitvijo na IP. */
+const icuHits = new Map();
+function icuLimited(ip) {
+  const now = Date.now(), h = (icuHits.get(ip) || []).filter(t => now - t < 3600_000);
+  h.push(now); icuHits.set(ip, h);
+  if (icuHits.size > 5000) icuHits.clear();
+  return h.length > 20;
+}
+app.post("/icu/token", async (req, res) => {
+  if (!ICU_CLIENT_ID || !ICU_CLIENT_SECRET) return res.status(503).json({ error: "icu_ni_nastavljen" });
+  const ip = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim() || req.ip || "?";   // Cloud Run: pravi IP je v X-Forwarded-For
+  if (icuLimited(ip)) return res.status(429).json({ error: "prevec_poskusov" });
+  const code = req.body && req.body.code;
+  if (typeof code !== "string" || !code || code.length > 300) return res.status(400).json({ error: "manjka_koda" });
+  try {
+    const body = new URLSearchParams({ client_id: ICU_CLIENT_ID, client_secret: ICU_CLIENT_SECRET, code });
+    const r = await fetch("https://intervals.icu/api/oauth/token", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" }, body });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.access_token) return res.status(400).json({ error: "icu_" + r.status });
+    res.json({ access_token: d.access_token, scope: d.scope || null, athlete: d.athlete ? { id: d.athlete.id, name: d.athlete.name } : null });
+  } catch (e) { res.status(502).json({ error: "icu_napaka" }); }
+});
+
+/* ---------- testni program: anonimni odgovori + pregled za skrbnika ----------
+   En klik (A–D) enkrat na teden. Odgovor: naključna oznaka (ne uid), koda povabila, vprašanje, odgovor,
+   dan uporabe, različica. Vprašanja so v aplikaciji — strežnik sprejme vsako ime vprašanja v pravi obliki. */
+const pilotHits = new Map();
+app.post("/pilot/answer", async (req, res) => {
+  const ip = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim() || req.ip || "?";
+  const now = Date.now(), h = (pilotHits.get(ip) || []).filter(t => now - t < 3600_000); h.push(now); pilotHits.set(ip, h);
+  if (pilotHits.size > 5000) pilotHits.clear();
+  if (h.length > 60) return res.status(429).json({ error: "prevec" });
+  const b = req.body || {};
+  const anon = String(b.anon || ""), q = String(b.q || ""), a = String(b.a ?? "").slice(0, 200);
+  const code = b.code ? String(b.code).toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 24) : null;
+  if (!/^[a-f0-9]{8,32}$/.test(anon) || !/^[a-z0-9_]{2,32}$/.test(q) || !a.trim()) return res.status(400).json({ error: "neveljavno" });
+  try {
+    await db.collection("pilotAnswers").add({ anon, code: code || null, q, a, day: Number.isFinite(+b.day) ? Math.round(+b.day) : null, v: String(b.v || "").slice(0, 20), at: admin.firestore.FieldValue.serverTimestamp() });
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: "shramba" }); }
+});
+app.get("/pilot/summary", async (req, res) => {
+  const u = await requireUser(req, res); if (!u) return;
+  const admins = ADMIN_EMAILS.split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+  if (!u.email || !u.email_verified || !admins.includes(u.email.toLowerCase())) return res.status(403).json({ error: "ni_dostopa" });
+  try {
+    const snap = await db.collection("pilotAnswers").orderBy("at", "desc").limit(3000).get();
+    res.json({ answers: snap.docs.map(d => { const x = d.data(); return { anon: x.anon, code: x.code || null, q: x.q, a: x.a, day: x.day ?? null, v: x.v || "", at: x.at && x.at.toMillis ? x.at.toMillis() : null }; }) });
+  } catch (e) { res.status(500).json({ error: "shramba" }); }
+});
+
+app.get("/health", (_, res) => res.json({ ok: true, model: DEFAULT_MODEL, strava: !!STRAVA_CLIENT_ID, stripe: !!STRIPE_WEBHOOK_SECRET, icu: !!(ICU_CLIENT_ID && ICU_CLIENT_SECRET) }));
 app.listen(PORT, () => console.log("[peakform-server] live on :" + PORT));

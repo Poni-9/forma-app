@@ -94,7 +94,7 @@ input.f::placeholder{color:var(--dim2)}
 <div class="wrap">
   <a class="back" href="zasebnost.html">Slovensko →</a>
   <h1>Privacy Policy</h1>
-  <p class="sub">FORMAI (desktop and mobile) · in force since 24 July 2026 · <a href="zasebnost.html">Slovenian original</a></p>
+  <p class="sub">FORMAI (desktop and mobile) · in force since 24 July 2026 · updated 25 September 2026 · <a href="zasebnost.html">Slovenian original</a></p>
 
   <div class="card"><b>⚕️ Important:</b> FORMAI provides <b>coaching and nutrition guidance, not medical advice</b>. Calorie and training-load figures are estimates. Before making significant changes to your training or diet — and always in case of illness, injury or a health condition — consult a doctor.</div>
 
@@ -105,22 +105,31 @@ input.f::placeholder{color:var(--dim2)}
     <li><b>Profile:</b> name, age, sex, height, weight, heart rate, FTP, goals.</li>
     <li><b>Activities:</b> rides and workouts (distance, duration, elevation, heart rate, power) — entered manually, imported, or read from screenshots.</li>
     <li><b>Nutrition:</b> meal entries and photographs of food that you submit for analysis.</li>
+    <li><b>Wellbeing:</b> morning check-ins you enter yourself (sleep, soreness, energy) and — only if you turn it on — sleep, HRV and resting heart rate from your watch via intervals.icu.</li>
   </ul>
 
   <h2>Where your data is held</h2>
   <ul>
-    <li><b>Locally by default:</b> all data is stored in your browser (localStorage) on your own device.</li>
+    <li><b>Locally by default:</b> all data is stored in your browser (IndexedDB) on your own device.</li>
     <li><b>Synchronisation (if you turn it on):</b> data is stored in your account in Google Firebase (servers in the EU/EEA under Google's terms) or jsonbin.io, so it is available across your devices.</li>
-    <li><b>AI analysis:</b> text and images you submit for analysis are processed by the <b>Google Gemini API</b> as a contractual sub-processor. We use the <b>paid tier</b>, under which Google <b>does not use the content to train its models</b>. Content is used only to produce the response returned to you and is visible only to you. Requests run through our own server (Google Cloud Run, europe-west1); the API key is never exposed in the browser.</li>
+    <li><b>AI (coach, reviews, meal analysis):</b> when you use AI, a summary of your profile and training (e.g. goals, FTP, recent rides, training load, morning check-ins) and the text and images you submit are processed by the <b>Google Gemini API</b> as a contractual sub-processor. We use the <b>paid tier</b>, under which Google <b>does not use the content to train its models</b>. Content is used only to produce the response returned to you and is visible only to you. Requests run through our own server (Google Cloud Run, europe-west1); the API key is never exposed in the browser. Google does not guarantee the region in which it processes the content for this service.</li>
+    <li><b>Sleep, HRV and resting heart rate from your watch</b> stay on your device only: they are not uploaded to the cloud and never sent to AI.</li>
     <li>We <b>do not sell</b> your data and do not share it with third parties for advertising.</li>
   </ul>
 
-  <h2>Connected services (Garmin, Strava)</h2>
+  <h2>Connected services (intervals.icu, Garmin, Strava)</h2>
   <p>If you connect an external service yourself, we import <b>only</b> what the training features need, and only for as long as the connection is enabled.</p>
   <ul>
-    <li><b>Garmin Connect:</b> on connection we import your completed activities (duration, distance, elevation gain, heart rate, power) and, if you separately approve it, recovery measures (resting heart rate, HRV, sleep). We use this data exclusively to display your progress, compute training load, and adapt your training plan. Garmin data is <b>never sold</b>, never shared with third parties, and never used for advertising or profiling. You can disconnect at any time in Settings or in Garmin Connect; on disconnection we delete the stored tokens, and imported activities can be deleted together with the rest of your data.</li>
-    <li><b>Strava:</b> same scope and same rules. Activities imported from Strava are <b>not sent for AI processing</b> — for those we use local computation on your device.</li>
-    <li><b>Access tokens</b> for external services are stored only on our server and are never visible in the browser.</li>
+    <li><b>intervals.icu:</b> when you connect (sign in with intervals.icu or a personal API key) we read your completed activities (duration, distance, elevation gain, heart rate, power, zones, device), your FTP and zones and — only if you separately turn it on — sleep, HRV and resting heart rate. We write planned workouts from FORMAI to your intervals.icu calendar so they reach your watch. The access token or key is stored in the app data on your device and, if sync is on, in your account; it is used only to read your data and write workouts. You can disconnect at any time in Settings or in your intervals.icu settings.</li>
+    <li><b>Garmin:</b> data from Garmin devices reaches FORMAI via intervals.icu or from files you import yourself. We use it exclusively to display your progress, compute training load, and adapt your training plan. Garmin data is <b>never sold</b>, never shared with third parties, and never used for advertising or profiling. You can delete imported activities at any time together with the rest of your data.</li>
+    <li><b>Strava:</b> same scope and same rules. Activities from Strava (including via intervals.icu) are <b>not sent for AI processing</b> — for those we use local computation on your device. Strava access tokens are stored only on our server and are never visible in the browser.</li>
+  </ul>
+
+  <h2>Weekly question (test programme)</h2>
+  <ul>
+    <li>After your first week, the app asks at most one question per week (answer A–D). You can skip it or turn the questions off (“don’t ask again”).</li>
+    <li>If you answer, we send only: the question, your answer, a random identifier instead of your name or email, the invite code (if you came via a link with a code), the number of days you have used the app and the app version. No training, nutrition or wellbeing data is sent.</li>
+    <li>Only the developer sees the answers, and uses them solely to improve FORMAI.</li>
   </ul>
 
   <h2>Your rights (GDPR)</h2>

@@ -3,23 +3,250 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="robots" content="noindex,nofollow" />
-  <title>FORMAI</title>
-  <meta name="description" content="Osebni trener: kolo, moč doma, prehrana, teža in forma." />
+  <!-- pred prvim izrisom: pristajalna stran (nov obiskovalec) ali aplikacija (#/…, nameščena, že uporabljena) -->
+  <script>(function(){var d=document.documentElement,a=false;try{var L=localStorage;a=L.getItem('formai.app')==='1'||!!L.getItem('forma_trener_v1')||!!L.getItem('forma_onb_done')}catch(e){}var s=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;var r=function(x){return /^#\/./.test(x)};d.classList.add(a||s||r(location.hash)||/[?&](code|error)=/.test(location.search)?'is-app':'is-land');addEventListener('hashchange',function(){if(r(location.hash)){d.classList.remove('is-land');d.classList.add('is-app')}})})()</script>
+  <title>FORMAI — trener za kolo in prehrano</title>
+  <meta name="description" content="Načrt treninga za vse tvoje tekme v sezoni, ki se prilagodi vsaki vožnji, in prehrana, ki sledi treningu. V slovenščini. Zgodnji dostop je brezplačen." />
+  <link rel="canonical" href="https://formai.si/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://formai.si/" />
+  <meta property="og:site_name" content="FORMAI" />
+  <meta property="og:locale" content="sl_SI" />
+  <meta property="og:title" content="FORMAI — kolo in prehrana. En načrt." />
+  <meta property="og:description" content="Trener, ki ti za vsak dan pove, kaj voziti in koliko jesti — za vse tekme v sezoni." />
+  <meta property="og:image" content="https://formai.si/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
   <meta name="theme-color" content="#0F1216" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="FORMAI" />
   <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <script type="module" crossorigin src="/assets/index-Dm6nkzqc.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-DdnCIwWX.css">
+  <style>.is-land #root{display:none!important}.is-app #land{display:none!important}#root>.boot0{min-height:100dvh;display:grid;place-items:center;background:#0F1216;color:#F2F5F8;font:800 18px Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;letter-spacing:.02em}#root>.boot0 b{color:#A3E635;font-weight:800}#land{--bg:#0F1216;--card:#171C22;--raised:#1E242C;--line:#262E37;--ink:#F2F5F8;--ink2:#A8B3BF;--ink3:#6D7885;--acc:#A3E635;background:var(--bg);color:var(--ink);font-family:Manrope,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:clip;min-height:100vh}#land *,#land *::before,#land *::after{box-sizing:border-box}#land h1,#land h2,#land h3{margin:0;color:var(--ink);font-weight:800;letter-spacing:-.028em;line-height:1.08}#land h2{font-size:clamp(28px,5.2vw,44px)}#land h3{font-size:18px;line-height:1.25;letter-spacing:-.015em}#land h1,#land h2{text-wrap:balance}#land section{scroll-margin-top:76px}#land a:focus-visible,#land summary:focus-visible{outline:2px solid var(--acc);outline-offset:3px;border-radius:10px}.l-wrap{max-width:1120px;margin:0 auto;padding:0 20px}.l-nav{position:sticky;top:0;z-index:20;background:rgba(15,18,22,.82);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid rgba(38,46,55,.7)}.l-navin{display:flex;align-items:center;gap:28px;height:64px}.l-logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:.01em}.l-logo b{color:var(--acc);font-weight:800}.l-mark{display:block;border-radius:22.4%}.l-links{display:none;gap:22px;font-size:14.5px;font-weight:700;color:var(--ink2)}.l-links a:hover{color:var(--ink)}.l-navcta{margin-left:auto;display:flex;gap:8px}.l-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:54px;padding:0 26px;border-radius:999px;font-weight:800;font-size:16px;letter-spacing:-.005em;white-space:nowrap;transition:transform .15s ease,background .15s ease,border-color .15s ease}.l-btn:active{transform:scale(.97)}.l-primary{background:var(--acc);color:#0F1216;box-shadow:0 8px 28px rgba(163,230,53,.18)}.l-primary:hover{background:#b3ef4d}.l-ghost{border:1px solid var(--line);color:var(--ink)}.l-ghost:hover{border-color:#3a4450;background:rgba(255,255,255,.03)}.l-sm{height:40px;padding:0 16px;font-size:14px}.l-hero{position:relative;padding:36px 0 26px;overflow:hidden}.l-hero::before{content:"";position:absolute;inset:auto -20% 0 30%;height:70%;background:radial-gradient(closest-side,rgba(163,230,53,.10),transparent 70%);pointer-events:none}.l-herogrid{position:relative;display:grid;gap:38px;align-items:center}.l-invite{display:inline-flex;align-items:center;gap:8px;margin:0 0 14px;padding:8px 14px;border-radius:12px;background:rgba(163,230,53,.12);border:1px solid rgba(163,230,53,.3);color:var(--acc);font-size:13.5px;font-weight:800;letter-spacing:.02em}.l-invite[hidden]{display:none}.l-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}.l-chips span{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:13.5px;font-weight:700;color:var(--ink2)}.l-chips i{width:8px;height:8px;border-radius:50%}#land h1{font-size:clamp(42px,10.5vw,76px);letter-spacing:-.04em;line-height:1.02}#land h1 em{font-style:normal;color:var(--acc)}.l-lead{font-size:clamp(17px,2.2vw,20px);margin-top:18px;max-width:560px;line-height:1.5}.l-ctas{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}.l-ctas .l-btn{flex:1 1 auto}.l-note{font-size:13.5px;font-weight:700;margin-top:14px;color:var(--ink3)}.l-works{font-size:14px;color:var(--ink3);margin-top:34px;padding-top:18px;border-top:1px solid var(--line)}.l-works b{color:var(--ink2);font-weight:700}.l-phonewrap{display:flex;justify-content:center}.l-phone{width:100%;max-width:340px;background:#0B0E12;border:1px solid var(--line);border-radius:38px;padding:20px 16px 18px;box-shadow:0 30px 80px rgba(0,0,0,.55),inset 0 0 0 6px #10151a;position:relative}.l-phone::before{content:"";position:absolute;top:9px;left:50%;transform:translateX(-50%);width:76px;height:6px;border-radius:9px;background:#1b2128}.l-ph-top{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;color:var(--ink3);margin:10px 4px 12px}.l-ph-ph{font-size:10.5px;letter-spacing:.06em}.l-ph-week{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.l-ph-week div{background:var(--card);border-radius:12px;padding:7px 0 8px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px;opacity:0;animation:lUp .5s ease forwards}.l-ph-week div:nth-child(2){animation-delay:.05s}.l-ph-week div:nth-child(3){animation-delay:.1s}.l-ph-week div:nth-child(4){animation-delay:.15s}.l-ph-week div:nth-child(5){animation-delay:.2s}.l-ph-week div:nth-child(6){animation-delay:.25s}.l-ph-week div:nth-child(7){animation-delay:.3s}.l-ph-week small{font-size:9.5px;font-weight:800;text-transform:uppercase;color:var(--ink3);letter-spacing:.04em}.l-ph-week b{font-size:14px;font-weight:800}.l-ph-week i{display:inline-block;width:5px;height:5px;border-radius:50%;background:#3a434d;margin:1px}.l-ph-week i.k{background:#3987e5}.l-ph-week i.m{background:#d95926}.l-ph-week i.p{background:#6D7885;opacity:.6}.l-ph-week .on{background:var(--acc)}.l-ph-week .on small,.l-ph-week .on b{color:#0F1216}.l-ph-week .on i{background:rgba(15,18,22,.55)}.l-ph-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px}.l-ph-sess{margin-top:12px;position:relative;padding-left:20px}.l-ph-sess::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 4px 4px 0;background:#3987e5}.l-ph-kind{font-size:10.5px;font-weight:800;letter-spacing:.1em;color:#3987e5}.l-ph-ttl{font-size:17px;font-weight:800;margin-top:4px;letter-spacing:-.02em}.l-ph-meta{font-size:12px;font-weight:700;color:var(--ink2);margin-top:6px}.l-ph-steps{display:flex;gap:4px;margin-top:11px}.l-ph-steps span{flex:1;height:4px;border-radius:4px;background:var(--raised)}.l-ph-steps .done{background:#3987e5}.l-ph-steps .now{background:linear-gradient(90deg,#3987e5 0,#3987e5 50%,var(--raised) 50%);background-size:200% 100%;animation:lStep 2.4s ease-in-out infinite alternate}.l-ph-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.l-ph-lbl{font-size:10px;font-weight:800;letter-spacing:.1em;color:var(--ink3)}.l-ph-big{font-size:25px;font-weight:800;letter-spacing:-.03em;margin-top:2px}.l-ph-big small{font-size:11px;font-weight:700;color:#199e70;letter-spacing:0}.l-spark{width:100%;height:36px;display:block;margin-top:6px}.l-spark .l-line{stroke-dasharray:160;stroke-dashoffset:160;animation:lDraw 1.4s .3s ease forwards}.l-spark .l-area{opacity:0;animation:lFade .8s 1.1s ease forwards}.l-ph-ringc{display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:12px 8px 10px}.l-ring{width:76px;height:76px;display:block}.l-ringv{stroke-dasharray:0 220;animation:lRing 1.4s .4s cubic-bezier(.2,.8,.2,1) forwards}.l-ph-ringc .l-ringt{position:absolute;top:12px;left:0;right:0;height:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05}.l-ringt b{font-size:15px;font-weight:800}.l-ringt small{font-size:9.5px;font-weight:700;color:var(--ink3)}.l-ph-ringc .l-ph-lbl{margin-top:5px}.l-ph-race{display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(163,230,53,.08);border:1px solid rgba(163,230,53,.22);font-size:12.5px;font-weight:700;color:var(--ink)}.l-flag{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:8px;background:var(--acc);color:#0F1216;font-size:12px;font-weight:800;flex:none}.l-flag.b{background:#3987e5;color:#fff}.l-flag.c{background:#3a434d;color:var(--ink)}.l-ph-pill{margin:14px auto 0;width:max-content;background:var(--acc);color:#0F1216;font-weight:800;font-size:14px;padding:12px 22px;border-radius:999px;box-shadow:0 8px 22px rgba(0,0,0,.5)}.l-sec{padding:56px 0}.l-alt{background:#0B0E12;border-top:1px solid #161b21;border-bottom:1px solid #161b21}.l-eyebrow{font-size:12.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);margin-bottom:12px}.l-sub{font-size:17px;margin-top:14px;max-width:640px;line-height:1.6}.l-steps{display:grid;gap:14px;margin-top:34px}.l-step{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;display:grid;grid-template-columns:auto 1fr;column-gap:14px;align-items:start}.l-step>*:not(.l-n){grid-column:2}.l-n{grid-row:span 2;display:inline-grid;place-items:center;width:36px;height:36px;border-radius:12px;background:rgba(163,230,53,.14);color:var(--acc);font-weight:800}.l-step p{margin-top:6px;font-size:15px}.l-step h3{margin-top:6px!important}.l-split{display:grid;gap:40px;align-items:center}.l-ticks{list-style:none;padding:0;margin:22px 0 0;display:grid;gap:12px}.l-ticks li{position:relative;padding-left:32px;color:var(--ink2);font-size:15.5px}.l-ticks li::before{content:"";position:absolute;left:0;top:3px;width:20px;height:20px;border-radius:7px;background:rgba(163,230,53,.14) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A3E635' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E") center/13px no-repeat}.l-ticks b{color:var(--ink);font-weight:700}.l-season{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:22px}.l-sea-head{display:flex;justify-content:space-between;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}.l-sea-bar{display:flex;gap:3px;height:16px;margin-top:14px}.l-sea-bar i{display:block;border-radius:5px}.l-sea-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:12px;font-weight:700;color:var(--ink3)}.l-sea-legend span{display:inline-flex;align-items:center;gap:6px}.l-sea-legend i{width:9px;height:9px;border-radius:3px}.l-sea-races{display:grid;gap:8px;margin-top:18px}.l-race{display:flex;align-items:center;gap:12px;background:var(--raised);border-radius:14px;padding:11px 12px}.l-race b{display:block;font-size:14.5px}.l-race small{display:block;font-size:12.5px;font-weight:600;color:var(--ink3)}.l-feats{display:grid;gap:12px;margin-top:34px}.l-feat{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;display:grid;grid-template-columns:auto 1fr;column-gap:14px;align-items:start}.l-feat>*:not(svg){grid-column:2}.l-feat svg{grid-row:span 2;width:40px;height:40px;padding:8px;border-radius:12px;background:rgba(163,230,53,.12);fill:none;stroke:var(--acc);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:var(--acc)}.l-feat h3{margin-top:9px!important}.l-feat p{margin-top:5px;font-size:15px}.l-food{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:24px;max-width:420px;width:100%;justify-self:center}.l-food-top{position:relative;display:flex;justify-content:center;margin-bottom:18px}.l-ringbig{width:150px;height:150px}.l-food-top .l-ringt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}.l-food-top .l-ringt b{font-size:28px;letter-spacing:-.03em}.l-food-top .l-ringt small{font-size:12px}.l-mac{display:grid;grid-template-columns:1fr auto;gap:6px 10px;margin-top:12px;font-size:13.5px}.l-mac span{color:var(--ink2);font-weight:600}.l-mac b{font-weight:800}.l-mac i{grid-column:1/-1;display:block;height:6px;border-radius:6px;background:var(--raised);overflow:hidden}.l-mac em{display:block;height:100%;border-radius:6px;background:var(--acc)}.l-food-note{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--ink2)}.l-food-note b{color:var(--ink)}.l-disc{font-size:12.5px;color:var(--ink3);margin-top:26px}.l-three{display:grid;gap:12px;margin-top:30px}.l-card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px 20px}.l-card svg{width:24px;height:24px;fill:none;stroke:var(--acc);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block;margin-bottom:10px}.l-card p{margin-top:8px;font-size:15px}.l-more{margin-top:18px;font-weight:700}.l-more a{color:var(--acc)}.l-pilot{display:grid;gap:24px;align-items:center}.l-faqwrap{max-width:820px}.l-faq{margin-top:26px;border-top:1px solid var(--line)}.l-faq details{border-bottom:1px solid var(--line)}.l-faq summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px 2px;font-weight:700;font-size:17px;color:var(--ink)}.l-faq summary::-webkit-details-marker{display:none}.l-faq summary::after{content:"";flex:none;width:12px;height:12px;border-right:2px solid var(--ink3);border-bottom:2px solid var(--ink3);transform:rotate(45deg) translate(-3px,-3px);transition:transform .2s ease}.l-faq details[open] summary::after{transform:rotate(225deg) translate(-2px,-2px)}.l-faq details p{padding:0 2px 20px;font-size:15.5px;max-width:700px}.l-final{padding:64px 0;text-align:center;background:radial-gradient(60% 80% at 50% 100%,rgba(163,230,53,.10),transparent 70%)}.l-center{justify-content:center}.l-center .l-btn{flex:0 1 auto}.l-foot{border-top:1px solid var(--line);padding:28px 0 36px}.l-footin{display:flex;flex-wrap:wrap;align-items:center;gap:14px 28px}.l-footin nav{display:flex;gap:20px;font-size:14px;font-weight:700;color:var(--ink2)}.l-footin nav a:hover{color:var(--ink)}.l-footin p{font-size:13px;color:var(--ink3);flex-basis:100%}@keyframes lUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}@keyframes lDraw{to{stroke-dashoffset:0}}@keyframes lFade{to{opacity:1}}@keyframes lRing{to{stroke-dasharray:128 220}}@keyframes lStep{from{background-position:100% 0}to{background-position:0 0}}.l-ringbig .l-ringv{animation-name:lRingBig}@keyframes lRingBig{to{stroke-dasharray:128 220}}@media (min-width:640px){.l-steps,.l-three{grid-template-columns:repeat(3,1fr)}.l-feats{grid-template-columns:repeat(2,1fr)}.l-ctas .l-btn{flex:0 1 auto}.l-step,.l-feat{display:block;padding:24px}.l-n{margin-bottom:14px}.l-feat svg{margin-bottom:12px}.l-step h3,.l-feat h3{margin-top:0!important}}@media (min-width:900px){.l-links{display:flex}.l-hero{padding:72px 0 40px}.l-herogrid{grid-template-columns:1.15fr .85fr;gap:56px}.l-split{grid-template-columns:1.05fr .95fr;gap:64px}.l-feats{grid-template-columns:repeat(3,1fr)}.l-pilot{grid-template-columns:1fr auto}.l-sec{padding:96px 0}.l-final{padding:88px 0}.l-footin p{flex-basis:auto;margin-left:auto}}@media (max-width:380px){.l-navcta .l-ghost{display:none}}@media (prefers-reduced-motion:reduce){.l-ph-week div,.l-spark .l-line,.l-spark .l-area,.l-ringv,.l-ph-steps .now{animation:none!important;opacity:1!important;stroke-dashoffset:0!important}.l-ringv{stroke-dasharray:128 220!important}.l-btn{transition:none}}</style>
+  <script type="module" crossorigin src="/assets/index-C78UYL0j.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-D1rIGlLd.css">
 <link rel="manifest" href="/manifest.webmanifest"></head>
 <body>
-  <div id="root"></div>
+  <div id="land">
+  <header class="l-nav">
+    <div class="l-wrap l-navin">
+      <a class="l-logo" href="#top" aria-label="FORMAI — na vrh"><img class="l-mark" src="/icons/mark.svg" width="30" height="30" alt=""><span>FORM<b>AI</b></span></a>
+      <nav class="l-links" aria-label="Vsebina strani">
+        <a href="#kako">Kako deluje</a><a href="#sezona">Sezona</a><a href="#prehrana">Prehrana</a><a href="#zasebnost">Zasebnost</a><a href="#vprasanja">Vprašanja</a>
+      </nav>
+      <div class="l-navcta">
+        <a class="l-btn l-ghost l-sm" href="#/prijava">Prijava</a>
+        <a class="l-btn l-primary l-sm" href="#/uvod">Začni</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="l-hero" id="top">
+      <div class="l-wrap l-herogrid">
+        <div class="l-herotxt">
+          <p id="l-invite" class="l-invite" hidden></p>
+          <div class="l-chips"><span><i style="background:#3987e5"></i>Kolo</span><span><i style="background:#199e70"></i>Prehrana</span><span><i style="background:#A3E635"></i>Tekme sezone</span></div>
+          <h1>Kolo in prehrana.<br><em>En načrt.</em></h1>
+          <p class="l-lead">Trener, ki ti za vsak dan pove, kaj voziti in koliko jesti — za vse tekme v sezoni. Načrt se prilagodi vsaki vožnji, prehrana pa treningu.</p>
+          <div class="l-ctas">
+            <a class="l-btn l-primary" href="#/uvod">Sestavi moj načrt</a>
+            <a class="l-btn l-ghost" href="#/prijava">Že imam račun</a>
+          </div>
+          <p class="l-note">2 minuti · zgodnji dostop je brezplačen · brez kartice</p>
+        </div>
+
+        <div class="l-phonewrap" aria-hidden="true">
+          <div class="l-phone">
+            <div class="l-ph-top"><span>Sobota, 22. maja</span><span class="l-ph-ph">GRADNJA · 6/10</span></div>
+            <div class="l-ph-week">
+              <div><small>pon</small><b>17</b><i class="k"></i></div>
+              <div><small>tor</small><b>18</b><i class="k"></i><i class="m"></i></div>
+              <div><small>sre</small><b>19</b><i class="k"></i></div>
+              <div><small>čet</small><b>20</b><i class="k"></i></div>
+              <div><small>pet</small><b>21</b><i class="p"></i></div>
+              <div class="on"><small>sob</small><b>22</b><i></i></div>
+              <div><small>ned</small><b>23</b><i class="k"></i></div>
+            </div>
+            <div class="l-ph-card l-ph-sess">
+              <div class="l-ph-kind">KOLO · DANES</div>
+              <div class="l-ph-ttl">Dolga vožnja v Z2</div>
+              <div class="l-ph-meta">3 h · 160–210 W · gorivo 70 g/h</div>
+              <div class="l-ph-steps"><span class="done"></span><span class="done"></span><span class="now"></span><span></span><span></span></div>
+            </div>
+            <div class="l-ph-grid">
+              <div class="l-ph-card">
+                <div class="l-ph-lbl">FORMA</div>
+                <div class="l-ph-big">+6 <small>svež</small></div>
+                <svg class="l-spark" viewBox="0 0 120 36" preserveAspectRatio="none"><defs><linearGradient id="lspg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A3E635" stop-opacity=".35"/><stop offset="1" stop-color="#A3E635" stop-opacity="0"/></linearGradient></defs><path class="l-area" d="M2 26 L18 29 L34 22 L50 25 L66 17 L82 20 L98 11 L118 6 L118 36 L2 36Z" fill="url(#lspg)"/><path class="l-line" d="M2 26 L18 29 L34 22 L50 25 L66 17 L82 20 L98 11 L118 6" fill="none" stroke="#A3E635" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="l-ph-card l-ph-ringc">
+                <svg class="l-ring" viewBox="0 0 84 84"><circle cx="42" cy="42" r="35" fill="none" stroke="#1E242C" stroke-width="8"/><circle class="l-ringv" cx="42" cy="42" r="35" fill="none" stroke="#A3E635" stroke-width="8" stroke-linecap="round" transform="rotate(-90 42 42)"/></svg>
+                <div class="l-ringt"><b>1 840</b><small>od 3 150</small></div>
+                <div class="l-ph-lbl">KALORIJE</div>
+              </div>
+            </div>
+            <div class="l-ph-race"><span class="l-flag b">B</span><span>Tekma B · cestna dirka · čez 8 dni</span></div>
+            <div class="l-ph-pill">▶ Začni trening</div>
+          </div>
+        </div>
+      </div>
+      <div class="l-wrap"><p class="l-works">Vožnje pridejo same z ure — <b>Garmin, Wahoo, COROS, Polar, Suunto</b> prek brezplačnega intervals.icu. Ali datoteke .fit in .gpx.</p></div>
+    </section>
+
+    <section class="l-sec" id="kako">
+      <div class="l-wrap">
+        <div class="l-eyebrow">Kako deluje</div>
+        <h2>Trije koraki, potem se vozi.</h2>
+        <p class="l-sub">Načrt ni PDF, ki ga odložiš v predal. Vsaka vožnja ga popravi za naprej.</p>
+        <div class="l-steps">
+          <div class="l-step"><span class="l-n">1</span><h3>Poveš cilj in čas</h3><p>Tekma ali cilj, koliko ur na teden imaš in nekaj osnovnih podatkov. Dve minuti — brez ure in brez računa.</p></div>
+          <div class="l-step"><span class="l-n">2</span><h3>Takoj dobiš teden</h3><p>Po dnevih: kaj, koliko časa, v kateri coni in s katerimi vati — in zakaj ravno tako.</p></div>
+          <div class="l-step"><span class="l-n">3</span><h3>Načrt se prilagaja</h3><p>Vožnja z ure pride sama in odkljuka dan. Slabo spal, dež, tekma v nedeljo? Dan se prepiše, trener pa pove, zakaj.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="l-sec l-alt" id="sezona">
+      <div class="l-wrap l-split">
+        <div>
+          <div class="l-eyebrow">Sezona</div>
+          <h2>Vrh forme za vsak cilj.</h2>
+          <p class="l-sub">Vpišeš tekme sezone in kako pomembne so. A je cilj, B in C sta na poti do njega. Pred vsakim ciljem dobiš blok za to vrsto dirke — klanci, šprint, vzpon ali maraton — in tapering, po njem počitek. Vmes treniraš celovito: klance, šprint in ravnino.</p>
+          <ul class="l-ticks">
+            <li>Po zadnji tekmi off-season, nato lahek začetek in počasna gradnja.</li>
+            <li>Pred poletno tekmo privajanje na vročino, dva dni pred tekmo malo vlaknin.</li>
+            <li>Test FTP vsakih nekaj tednov — vsi vati v načrtu se posodobijo sami.</li>
+          </ul>
+        </div>
+        <div class="l-season" aria-hidden="true">
+          <div class="l-sea-head"><span>Sezona 2027</span><span>okt → sep</span></div>
+          <div class="l-sea-bar">
+            <i style="flex:2;background:#3a434d" title="off-season"></i>
+            <i style="flex:7;background:#2d6fb8"></i>
+            <i style="flex:6;background:#3987e5"></i>
+            <i style="flex:3;background:#8fbf2e"></i>
+            <i style="flex:1;background:#A3E635"></i>
+            <i style="flex:1;background:#2b333c"></i>
+            <i style="flex:3;background:#8fbf2e"></i>
+            <i style="flex:1;background:#A3E635"></i>
+            <i style="flex:2;background:#3a434d"></i>
+          </div>
+          <div class="l-sea-legend"><span><i style="background:#3a434d"></i>Off-season</span><span><i style="background:#2d6fb8"></i>Osnova</span><span><i style="background:#3987e5"></i>Gradnja</span><span><i style="background:#8fbf2e"></i>Specifično</span><span><i style="background:#A3E635"></i>Tapering</span></div>
+          <div class="l-sea-races">
+            <div class="l-race"><span class="l-flag c">C</span><div><b>Kriterij</b><small>šprint · 45 km · kot trening</small></div></div>
+            <div class="l-race"><span class="l-flag b">B</span><div><b>Cestna dirka</b><small>80 km · krajši teden pred njo</small></div></div>
+            <div class="l-race"><span class="l-flag">A</span><div><b>Maraton Franja</b><small>156 km · vrh forme</small></div></div>
+            <div class="l-race"><span class="l-flag">A</span><div><b>Gorski kronometer</b><small>12 km vzpona · drugi vrh</small></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="l-sec" id="kaj">
+      <div class="l-wrap">
+        <div class="l-eyebrow">Kaj dobiš</div>
+        <h2>Vse, kar dela trener. Vsak dan.</h2>
+        <div class="l-feats">
+          <div class="l-feat"><svg viewBox="0 0 24 24"><circle cx="6" cy="17" r="3.2"/><circle cx="18" cy="17" r="3.2"/><path d="M6 17l4-8h5l3 8M10 9h6"/></svg><h3>Vodenje med treningom</h3><p>En korak naenkrat: vati, kadenca, pisk pred menjavo in opomnik, kdaj jesti in piti.</p></div>
+          <div class="l-feat"><svg viewBox="0 0 24 24"><rect x="7" y="6" width="10" height="12" rx="3"/><path d="M9 6V3h6v3M9 18v3h6v-3M12 10v3l2 1"/></svg><h3>Treningi na uri</h3><p>Načrtovani treningi gredo v koledar intervals.icu in od tam na tvojo uro Garmin.</p></div>
+          <div class="l-feat"><svg viewBox="0 0 24 24"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg><h3>Trase iz tvojih poti</h3><p>Za dolge vožnje in intervale predlaga krog iz cest, ki jih že voziš.</p></div>
+          <div class="l-feat"><svg viewBox="0 0 24 24"><path d="M20.5 11.6a8.1 8.1 0 0 1-11.7 7.3L4 20.3l1.4-4.3a8.1 8.1 0 1 1 15.1-4.4z"/><path d="M12.3 7.6l.95 2.3 2.3.95-2.3.95-.95 2.3-.95-2.3-2.3-.95 2.3-.95z" fill="currentColor" stroke-width="1.2"/></svg><h3>AI trener</h3><p>Vprašaš karkoli. Odgovori s tvojimi vati, grami in datumi — v slovenščini.</p></div>
+          <div class="l-feat"><svg viewBox="0 0 24 24"><path d="M3.5 19.8h17"/><path d="M4.5 15.8l4.2-4.3 3.3 2.8 5.7-6.3"/><circle cx="19.3" cy="6.4" r="1.7" fill="currentColor" stroke="none"/></svg><h3>Napredek</h3><p>Forma, FTP, W/kg in teža na enem mestu — in ali si na poti do cilja.</p></div>
+          <div class="l-feat"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/></svg><h3>Jutranja pripravljenost</h3><p>Trije dotiki zjutraj. Ko je telo utrujeno, ponudi lažji dan in sejo prestavi.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="l-sec l-alt" id="prehrana">
+      <div class="l-wrap l-split">
+        <div>
+          <div class="l-eyebrow">Prehrana</div>
+          <h2>Kalorije, ki vedo, kaj si odpeljal.</h2>
+          <p class="l-sub">Večina aplikacij ti da eno številko za vsak dan. Sobota s tremi urami na kolesu in sreda za mizo pa nista isti dan.</p>
+          <ul class="l-ticks">
+            <li><b>Cilj se premakne s treningom</b> — dolga vožnja pomeni več hrane, ne manj.</li>
+            <li><b>Razpored obrokov in gorivo na kolesu</b> v gramih ogljikovih hidratov na uro.</li>
+            <li><b>Slikaš obrok</b> in dobiš oceno kalorij in makrohranil.</li>
+            <li><b>Varovalke, ki jih ne preskočiš:</b> nikoli pod bazalno porabo, nikoli pod 1 500 kcal (moški) oziroma 1 200 kcal (ženske), pod 18 let brez deficita in največ 750 kcal primanjkljaja na dan.</li>
+          </ul>
+        </div>
+        <div class="l-food" aria-hidden="true">
+          <div class="l-food-top">
+            <svg class="l-ring l-ringbig" viewBox="0 0 84 84"><circle cx="42" cy="42" r="35" fill="none" stroke="#1E242C" stroke-width="7"/><circle class="l-ringv" cx="42" cy="42" r="35" fill="none" stroke="#A3E635" stroke-width="7" stroke-linecap="round" transform="rotate(-90 42 42)"/></svg>
+            <div class="l-ringt"><b>1 840</b><small>od 3 150 kcal</small></div>
+          </div>
+          <div class="l-mac"><span>Beljakovine</span><b>118 / 150 g</b><i><em style="width:79%"></em></i></div>
+          <div class="l-mac"><span>Ogljikovi hidrati</span><b>290 / 430 g</b><i><em style="width:67%"></em></i></div>
+          <div class="l-mac"><span>Maščobe</span><b>52 / 85 g</b><i><em style="width:61%"></em></i></div>
+          <div class="l-food-note"><b>Na kolesu danes:</b> 70 g OH na uro — 2 bidona izotonika, 1 gel, banana.</div>
+        </div>
+      </div>
+      <div class="l-wrap"><p class="l-disc">FORMAI ni zdravstveni pripomoček in ne nadomešča zdravnika ali dietetika.</p></div>
+    </section>
+
+    <section class="l-sec" id="zasebnost">
+      <div class="l-wrap">
+        <div class="l-eyebrow">Zasebnost</div>
+        <h2>Tvoji podatki ostanejo tvoji.</h2>
+        <div class="l-three">
+          <div class="l-card"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18h2"/></svg><h3>Na tvoji napravi</h3><p>Vožnje, obroki in načrt so shranjeni na tvoji napravi. S prijavo z Googlom se uskladijo med tvojimi napravami. GPS sled ne zapusti naprave.</p></div>
+          <div class="l-card"><svg viewBox="0 0 24 24"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></svg><h3>AI dobi samo številke</h3><p>Trajanje, moč, utrip in kalorije — brez imena, e-pošte in poti. Vožnje s Strave v AI ne gredo nikoli.</p></div>
+          <div class="l-card"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg><h3>Brez oglasov</h3><p>Podatkov ne prodajamo in jih ne delimo za oglaševanje. AI (Google Gemini, plačljiva raven) jih ne uporablja za učenje.</p></div>
+        </div>
+        <p class="l-more"><a href="/zasebnost.html">Politika zasebnosti →</a></p>
+      </div>
+    </section>
+
+    <section class="l-sec l-alt">
+      <div class="l-wrap l-pilot">
+        <div>
+          <div class="l-eyebrow">Zgodnji dostop</div>
+          <h2>Brezplačno za prve kolesarje.</h2>
+          <p class="l-sub">FORMAI je nov in raste s prvimi uporabniki. Enkrat na teden te vpraša eno stvar — en klik: A, B, C ali D. Lahko ga preskočiš. Odgovori odločajo, kaj pride naslednje.</p>
+        </div>
+        <a class="l-btn l-primary" href="#/uvod">Sestavi moj načrt</a>
+      </div>
+    </section>
+
+    <section class="l-sec" id="vprasanja">
+      <div class="l-wrap l-faqwrap">
+        <div class="l-eyebrow">Vprašanja</div>
+        <h2>Kar kolesarje zanima.</h2>
+        <div class="l-faq">
+          <details><summary>Ali potrebujem Garmin ali merilnik moči?</summary><p>Ne. Brez merilnika moči voziš po utripu in občutku, vate uporabim, ko jih imaš. Vožnje pridejo z katere koli ure prek brezplačnega intervals.icu, iz datotek (.fit, .gpx) ali jih vpišeš ročno v nekaj sekundah.</p></details>
+          <details><summary>Kaj pa Strava?</summary><p>Svoj arhiv s Strave lahko uvoziš za zgodovino in formo. Neposredne povezave ni, ker Stravina pravila ne dovolijo, da bi njene podatke bral AI trener — uro zato povežeš prek intervals.icu.</p></details>
+          <details><summary>Treniram za več tekem. Gre?</summary><p>Da. Vpišeš vse tekme sezone in njihovo pomembnost. Za cilje A načrt pripravi vrh forme, pred B skrajša teden, C pa odpelješ kot trening.</p></details>
+          <details><summary>Ali deluje na telefonu?</summary><p>Da. Odpri formai.si in izberi »Dodaj na začetni zaslon« — odpre se kot aplikacija, brez naslovne vrstice. Na računalniku imaš isti račun in širši pogled.</p></details>
+          <details><summary>Kako zanesljive so kalorije?</summary><p>Cilj izračunam iz višine, teže, starosti, spola in porabe na treningu. Brez teh podatkov številke ne pokažem — raje nič kot ugibanje. Varovalke veljajo vedno. Ocene so približki; ob zdravstvenih težavah se posvetuj z zdravnikom ali dietetikom.</p></details>
+          <details><summary>Koliko stane?</summary><p>V zgodnjem dostopu je brezplačen, brez kartice. Če bo kdaj plačljiv, boš to izvedel vnaprej in se sam odločil.</p></details>
+          <details><summary>Je to zdravniški nasvet?</summary><p>Ne. FORMAI je trenerska usmeritev, ne medicinski pripomoček. Ob bolečini, bolezni ali zdravstvenih težavah se posvetuj z zdravnikom.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="l-final">
+      <div class="l-wrap">
+        <h2>Prvi teden imaš v dveh minutah.</h2>
+        <div class="l-ctas l-center"><a class="l-btn l-primary" href="#/uvod">Sestavi moj načrt</a><a class="l-btn l-ghost" href="#/prijava">Prijava</a></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="l-foot">
+    <div class="l-wrap l-footin">
+      <div class="l-logo"><img class="l-mark" src="/icons/mark.svg" width="24" height="24" alt=""><span>FORM<b>AI</b></span></div>
+      <nav aria-label="Pravno in kontakt"><a href="/zasebnost.html">Zasebnost</a><a href="/pogoji.html">Pogoji</a><a href="mailto:blaz.gregorc@formai.si">Kontakt</a></nav>
+      <p>© 2026 FORMAI · trener za kolo in prehrano</p>
+    </div>
+  </footer>
+  <!-- povabilo s kodo (QR kluba, znanca): pokaži ga na vrhu; aplikacija kodo shrani ob zagonu -->
+  <script>(function(){try{var c=(new URLSearchParams(location.search).get('pilot')||'').trim().toUpperCase().replace(/\s+/g,'-').replace(/[^A-Z0-9-]/g,'').slice(0,24);if(c){var e=document.getElementById('l-invite');e.textContent='Povabilo · '+c+' · zgodnji dostop';e.hidden=false}}catch(e){}})()</script>
+</div>
+  <div id="root"><div class="boot0">FORM<b>AI</b></div></div>
 </body>
 </html>

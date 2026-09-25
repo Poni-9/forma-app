@@ -92,7 +92,7 @@ input.f::placeholder{color:var(--dim2)}
   <a class="back" href="forma-trener.html">← Nazaj v aplikacijo</a>
   <a class="back" href="privacy.html" style="float:right">English version →</a>
   <h1>Zasebnost in pogoji uporabe</h1>
-  <p class="sub">FORMAI (namizje in telefon) · velja od 24. julija 2026</p>
+  <p class="sub">FORMAI (namizje in telefon) · velja od 24. julija 2026 · posodobljeno 25. septembra 2026</p>
 
   <div class="card"><b>⚠️ Pomembno:</b> FORMAI daje trenerske in prehranske <b>usmeritve</b>, ne medicinskih nasvetov. Ocene kalorij in obremenitev so približki. Pred večjimi spremembami treninga ali prehrane se posvetuj z zdravnikom, še posebej ob zdravstvenih težavah.</div>
 
@@ -101,22 +101,31 @@ input.f::placeholder{color:var(--dim2)}
     <li><b>Profil:</b> ime, starost, spol, višina, teža, srčni utrip, FTP, cilji.</li>
     <li><b>Aktivnosti:</b> vožnje in treningi (razdalja, čas, višinci, utrip, moč) — ročno, prek uvoza ali slik.</li>
     <li><b>Prehrana:</b> vnosi obrokov in fotografije hrane, ki jih pošlješ v analizo.</li>
+    <li><b>Počutje:</b> jutranji občutki, ki jih vpišeš sam (spanec, mišice, energija), in — samo če to vklopiš — spanec, HRV in mirovni utrip z ure prek intervals.icu.</li>
   </ul>
 
   <h2>Kje so tvoji podatki</h2>
   <ul>
-    <li><b>Privzeto lokalno:</b> vsi podatki so shranjeni v tvojem brskalniku (localStorage) na tvoji napravi.</li>
+    <li><b>Privzeto lokalno:</b> vsi podatki so shranjeni v tvojem brskalniku (IndexedDB) na tvoji napravi.</li>
     <li><b>Sinhronizacija (če jo vklopiš):</b> podatki se shranijo v tvoj račun v Google Firebase (strežniki v EU/EEA po Googlovih pogojih) oz. jsonbin.io, da so dostopni na vseh tvojih napravah.</li>
-    <li><b>AI analiza:</b> besedila in slike, ki jih pošlješ v analizo, obdela <b>Google Gemini API</b> kot pogodbeni podobdelovalec. Uporabljamo <b>plačljivo raven</b>, pri kateri Google vsebine <b>ne uporablja za učenje svojih modelov</b>. Vsebina se uporabi samo za odgovor tebi in je vidna samo tebi. Klici tečejo prek našega strežnika (Google Cloud Run, europe-west1); ključ ni nikoli izpostavljen v brskalniku.</li>
+    <li><b>AI (trener, ocene, analiza obroka):</b> ko uporabiš AI, povzetek tvojega profila in treninga (npr. cilji, FTP, zadnje vožnje, obremenitev, jutranji občutki) ter besedila in slike, ki jih pošlješ, obdela <b>Google Gemini API</b> kot pogodbeni podobdelovalec. Uporabljamo <b>plačljivo raven</b>, pri kateri Google vsebine <b>ne uporablja za učenje svojih modelov</b>. Vsebina se uporabi samo za odgovor tebi in je vidna samo tebi. Klici tečejo prek našega strežnika (Google Cloud Run, europe-west1); ključ ni nikoli izpostavljen v brskalniku. V kateri regiji Google vsebino obdela, pri tej storitvi ne jamči.</li>
+    <li><b>Spanec, HRV in mirovni utrip z ure</b> ostanejo samo na tvoji napravi: ne gredo v oblak in ne v AI.</li>
     <li>Podatkov <b>ne prodajamo</b> in jih ne delimo s tretjimi za oglaševanje.</li>
   </ul>
 
-  <h2>Povezane storitve (Garmin, Strava)</h2>
+  <h2>Povezane storitve (intervals.icu, Garmin, Strava)</h2>
   <p>Če sam povežeš zunanjo storitev, uvozimo <b>samo</b> tisto, kar je potrebno za trening, in samo dokler je povezava vklopljena.</p>
   <ul>
-    <li><b>Garmin Connect:</b> ob povezavi uvozimo tvoje opravljene aktivnosti (čas, razdalja, višinska razlika, srčni utrip, moč) in, če to sam odobriš, mere počitka (mirovni utrip, HRV, spanec). Podatke uporabimo izključno za prikaz tvojega napredka, izračun obremenitve in prilagoditev tvojega načrta treninga. Garminovih podatkov <b>ne prodajamo</b>, ne delimo s tretjimi in ne uporabljamo za oglaševanje ali profiliranje. Povezavo lahko kadar koli prekineš v Nastavitvah ali v Garmin Connectu; ob prekinitvi izbrišemo shranjene žetone, uvožene aktivnosti pa lahko izbrišeš skupaj s svojimi podatki.</li>
-    <li><b>Strava:</b> enak obseg in enaka pravila. Aktivnosti, uvožene s Strave, se <b>ne pošiljajo v AI obdelavo</b> — zanje uporabljamo lokalni izračun v tvoji napravi.</li>
-    <li><b>Dostopni žetoni</b> zunanjih storitev so shranjeni samo na našem strežniku in niso vidni v brskalniku.</li>
+    <li><b>intervals.icu:</b> ob povezavi (prijava z intervals.icu ali osebni API ključ) preberemo tvoje opravljene aktivnosti (čas, razdalja, višinska razlika, srčni utrip, moč, cone, naprava), FTP in cone ter — samo če to posebej vklopiš — spanec, HRV in mirovni utrip. V tvoj koledar intervals.icu zapišemo načrtovane vadbe iz FORMAI, da jih dobi tvoja ura. Dostop (žeton ali ključ) je shranjen v podatkih aplikacije na tvoji napravi in, če imaš vklopljeno sinhronizacijo, v tvojem računu; uporabimo ga samo za branje tvojih podatkov in zapis vadb. Povezavo kadar koli prekineš v Nastavitvah ali v nastavitvah intervals.icu.</li>
+    <li><b>Garmin:</b> podatki z naprav Garmin pridejo prek intervals.icu ali iz datotek, ki jih uvoziš sam. Uporabimo jih izključno za prikaz tvojega napredka, izračun obremenitve in prilagoditev tvojega načrta treninga. Garminovih podatkov <b>ne prodajamo</b>, ne delimo s tretjimi in ne uporabljamo za oglaševanje ali profiliranje. Uvožene aktivnosti lahko kadar koli izbrišeš skupaj s svojimi podatki.</li>
+    <li><b>Strava:</b> enak obseg in enaka pravila. Aktivnosti s Strave (tudi prek intervals.icu) se <b>ne pošiljajo v AI obdelavo</b> — zanje uporabljamo lokalni izračun v tvoji napravi. Dostopni žetoni Strave so shranjeni samo na našem strežniku in niso vidni v brskalniku.</li>
+  </ul>
+
+  <h2>Tedensko vprašanje (testni program)</h2>
+  <ul>
+    <li>Po prvem tednu uporabe te aplikacija največ enkrat na teden vpraša eno stvar (odgovor A–D). Lahko ga preskočiš ali vprašanja izklopiš (»ne sprašuj več«).</li>
+    <li>Če odgovoriš, na naš strežnik pošljemo samo: vprašanje, tvoj odgovor, naključno oznako namesto imena ali e-pošte, kodo povabila (če si prišel prek povezave s kodo), število dni uporabe in različico aplikacije. Podatkov o treningu, prehrani ali počutju ne pošljemo.</li>
+    <li>Odgovore vidi samo razvijalec in jih uporablja izključno za izboljšave FORMAI.</li>
   </ul>
 
   <h2>Tvoje pravice (GDPR)</h2>
