@@ -4,10 +4,19 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>FORMAI — Pogoji uporabe</title>
-<meta name="description" content="Pogoji uporabe aplikacije FORMAI."/>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="description" content="Pogoji uporabe FORMAI: kaj storitev je, starost, tvoj račun in podatki, brezplačni zgodnji dostop, povezane storitve, odgovornost in pravo."/>
+<link rel="canonical" href="https://formai.si/pogoji.html"/>
+<link rel="alternate" hreflang="sl" href="https://formai.si/pogoji.html"/>
+<link rel="alternate" hreflang="en" href="https://formai.si/terms.html"/>
+<link rel="alternate" hreflang="x-default" href="https://formai.si/pogoji.html"/>
+<link rel="icon" href="/favicon.ico" sizes="48x48"/>
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml"/>
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
+<meta name="theme-color" content="#0F1216"/>
 <style>
+  /* pisava je na formai.si (brez Google Fonts) */
+  @font-face{font-family:'Manrope';font-style:normal;font-weight:200 800;font-display:swap;src:url(/fonts/Manrope-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+  @font-face{font-family:'Manrope';font-style:normal;font-weight:200 800;font-display:swap;src:url(/fonts/Manrope-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
   :root{
   /* ==== FORMAI oblikovni sistem — dobesedno iz mockupa (29. 7. 2026) ==== */
   --bench:#0b0e11; --bg:#0b0e11; --bg2:#080b0d;
@@ -15,8 +24,8 @@
   --line:#232b32; --line2:#1a2126;
   --ink:#e9eef2; --dim:#939da6; --dim2:#606a72;
   --sig:#62c5ee; --sigd:#38a6cf; --sig2:#ff458e; --onSig:#04161d;
-  --sans:'IBM Plex Sans',system-ui,sans-serif;
-  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   /* stara imena → iste barve */
   --border:var(--line); --border2:var(--line2); --borderH:#333d45;
   --text:var(--ink); --soft:#c3ccd4; --muted:var(--dim);
@@ -46,6 +55,8 @@
 h1,h2,h3,h4{font-family:var(--sans);letter-spacing:-.022em}
 a{color:var(--sig);text-decoration:none}
 a:hover{color:#9ddcf7}
+/* povezave v besedilu: poleg barve še podčrtane (WCAG 1.4.1 — barva povezave proti besedilu je samo 1,4 : 1) */
+p a,li a{text-decoration:underline;text-underline-offset:.18em;text-decoration-thickness:1px}
 .tabnav a{position:relative;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);padding:14px 0;display:block}
 .tabnav a:hover{color:var(--ink)}
 .tabnav a[aria-current="page"]{color:var(--ink)}
@@ -86,81 +97,94 @@ input.f::placeholder{color:var(--dim2)}
 @media(max-width:1100px){.hd-install{display:none}}
 @media(max-width:1000px){.g3{grid-template-columns:minmax(0,1fr)!important}}
 @media(max-width:860px){.sc{overflow-x:auto}.sc .rw{min-width:680px}}
+
+/* ===== barve blagovne znamke (kot aplikacija in formai.si): temno ozadje, limeta — prej cian iz starega mockupa ===== */
+:root{--bench:#0F1216;--bg:#0F1216;--bg2:#0B0E12;--panel:#171C22;--panel2:#1E242C;--panel3:#12161B;--line:#262E37;--line2:#1E242C;
+  --ink:#F2F5F8;--dim:#A8B3BF;--dim2:#86909C;--sig:#A3E635;--sigd:#A3E635;--onSig:#0F1216;--text:var(--ink);--soft:#C9D1D9;--muted:#A8B3BF;
+  --acc:#A3E635;--accH:#C5F27A;--acc2:#A3E635;--accSoft:rgba(163,230,53,.12);--blue:#3987E5;--blueSoft:rgba(57,135,229,.13);--borderH:#333D47}
+body{-webkit-font-smoothing:antialiased}
+h2{color:var(--ink)}
+a:hover{color:#C5F27A}
+::selection{background:rgba(163,230,53,.28)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:26px}
+.brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.01em;color:var(--ink)!important;text-decoration:none!important}
+.brand img{width:30px;height:30px;border-radius:22.4%;display:block}
+.brand b{color:#A3E635}
+.top .back{margin:0}
+.nav2{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px;font-size:14px}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <a class="back" href="forma-trener.html">← Nazaj v aplikacijo</a>
-  <a class="back" href="terms.html" style="float:right">English version →</a>
+  <div class="top"><a class="brand" href="/" aria-label="FORMAI — domov"><img src="/icons/mark.svg" alt="" width="30" height="30"/><span>FORM<b>AI</b></span></a><a class="back" href="terms.html" hreflang="en" lang="en">English version&nbsp;→</a></div>
   <h1>Pogoji uporabe</h1>
-  <p class="sub">FORMAI · velja od 29. julija 2026</p>
+  <p class="sub">FORMAI · velja od 26.&nbsp;septembra&nbsp;2026</p>
 
-  <div class="card"><b>⚕️ Najprej najpomembnejše:</b> FORMAI daje <b>trenerske in prehranske usmeritve, ne zdravniškega nasveta</b>. Ocene kalorij, obremenitve in porabe so približki, izračunani iz podatkov, ki jih vneseš sam. Pred večjimi spremembami treninga ali prehrane — in vedno ob zdravstvenih težavah, bolezni, poškodbi ali nosečnosti — se posvetuj z zdravnikom.</div>
+  <div class="card"><b>⚕️ Najprej najpomembnejše:</b> FORMAI daje <b>trenerske in prehranske usmeritve, ne zdravniškega nasveta</b>. Ocene kalorij, obremenitve in porabe so približki, izračunani iz podatkov, ki jih vneseš sam. Pred večjimi spremembami treninga ali prehrane&nbsp;— in vedno ob zdravstvenih težavah, bolezni, poškodbi ali nosečnosti&nbsp;— se posvetuj z&nbsp;zdravnikom.</div>
 
   <h2>1. Kdo upravlja storitev</h2>
-  <p>FORMAI upravlja <b>Blaž Gregorc</b>, Slovenija, kot fizična oseba. Kontakt: <a href="mailto:blaz.gregorc@formai.si">blaz.gregorc@formai.si</a>. Storitev je dostopna na <a href="https://formai.si">formai.si</a>.</p>
+  <p>FORMAI upravlja <b>Blaž Gregorc</b>, Slovenija, kot fizična oseba. Kontakt: <a href="mailto:blaz.gregorc@formai.si">blaz.gregorc@formai.si</a>. Storitev je dostopna na <a href="https://formai.si/">formai.si</a>.</p>
 
   <h2>2. Kaj storitev je</h2>
   <p>FORMAI je pomočnik za načrtovanje treninga in prehrane. Iz tvojega profila, aktivnosti in ciljev sestavi tedenski plan, spremlja opravljeno in predlaga obroke. Del vsebine ustvari umetna inteligenca.</p>
   <ul>
     <li><b>Ni medicinski pripomoček</b> in ni namenjena diagnostiki, zdravljenju ali preprečevanju bolezni.</li>
     <li><b>Ni nadomestilo</b> za zdravnika, fizioterapevta, nutricionista ali osebnega trenerja.</li>
-    <li>Vsebina, ki jo ustvari AI, je lahko <b>napačna ali nepopolna</b>. Presodi jo s svojo pametjo in poslušaj svoje telo.</li>
+    <li>Vsebina, ki jo ustvari AI, je lahko <b>napačna ali nepopolna</b>. Presodi jo s&nbsp;svojo pametjo in poslušaj svoje telo.</li>
   </ul>
 
   <h2>3. Starost</h2>
-  <p>Storitev je namenjena osebam, <b>starim 15 let ali več</b>. Mlajšim od 18 let FORMAI ne načrtuje izgube teže — načrtuje vzdrževanje in rast forme, ker je telo še v rasti. Hujšanje v tem obdobju sodi pod zdravniški nadzor, ne v aplikacijo.</p>
+  <p>Storitev je namenjena osebam, <b>starim 15&nbsp;let ali več</b>. Mlajšim od 18&nbsp;let FORMAI ne načrtuje izgube teže&nbsp;— načrtuje vzdrževanje in rast forme, ker je telo še v&nbsp;rasti. Hujšanje v&nbsp;tem obdobju sodi pod zdravniški nadzor, ne v&nbsp;aplikacijo.</p>
 
   <h2>4. Tvoj račun in tvoji podatki</h2>
   <ul>
-    <li>Za sinhronizacijo se prijaviš z Google računom. Odgovoren si za dostop do svojega računa.</li>
-    <li>Podatke, ki jih vneseš, ostajajo <b>tvoji</b>. Kadar koli jih lahko izvoziš v Nastavitvah.</li>
-    <li>Račun in podatke lahko kadar koli izbrišeš v Nastavitvah ali s sporočilom na naš naslov.</li>
-    <li>Vnašaj resnične podatke o sebi. Napačna teža, višina ali starost pomenijo napačne izračune.</li>
+    <li>Brez prijave aplikacija deluje samo na tvoji napravi. Za sinhronizacijo med napravami in za AI funkcije se prijaviš z&nbsp;Google računom. Odgovoren si za dostop do svojega računa.</li>
+    <li>Podatki, ki jih vneseš, ostanejo <b>tvoji</b>. Kadar koli jih lahko izvoziš v&nbsp;Nastavitvah (»Izvozi&nbsp;vse«).</li>
+    <li>Račun in podatke lahko kadar koli izbrišeš v&nbsp;Nastavitvah (»Izbriši&nbsp;račun«, »Izbriši&nbsp;na&nbsp;napravi«) ali s&nbsp;sporočilom na naš naslov.</li>
+    <li>Vnašaj resnične podatke o&nbsp;sebi. Napačna teža, višina ali starost pomenijo napačne izračune.</li>
   </ul>
-  <p>Kazo ravnamo s podatki, je opisano v <a href="zasebnost.html">politiki zasebnosti</a>.</p>
+  <p>Kako ravnamo s&nbsp;podatki, je opisano v <a href="zasebnost.html">politiki zasebnosti</a>.</p>
 
   <h2>5. Kaj ni dovoljeno</h2>
   <ul>
-    <li>Uporabljati storitev za nezakonite namene ali v škodo drugih.</li>
+    <li>Uporabljati storitev za nezakonite namene ali v&nbsp;škodo drugih.</li>
     <li>Poskušati pridobiti dostop do tujih računov ali strežniških ključev.</li>
-    <li>Samodejno zajemati vsebino v obsegu, ki obremenjuje storitev.</li>
+    <li>Samodejno zajemati vsebino v&nbsp;obsegu, ki obremenjuje storitev.</li>
     <li>Predstavljati vsebine FORMAI kot zdravniški, prehranski ali terapevtski nasvet.</li>
   </ul>
 
-  <h2>6. Brezplačna raba in PRO</h2>
+  <h2>6. Cena in brezplačna raba</h2>
   <ul>
-    <li>Brezplačna raba vključuje <b>omejeno število AI dejanj na dan</b>.</li>
-    <li>PRO naročnina odpravi dnevno omejitev. Cena in obseg sta navedena v aplikaciji ob nakupu.</li>
-    <li>Naročnino lahko kadar koli prekineš; velja do konca plačanega obdobja. Za že opravljeno obdobje vračila ni, razen kadar tako določa zakon.</li>
-    <li>Če plačila še niso aktivna, je celotna storitev brezplačna in to ne pomeni obljube, da bo tako ostalo.</li>
+    <li>FORMAI je trenutno v <b>brezplačnem zgodnjem dostopu</b>. Brezplačna raba vključuje <b>do 10&nbsp;AI dejanj na dan</b>.</li>
+    <li>Plačljivega paketa trenutno ni v&nbsp;prodaji. Če ga uvedemo, bodo cena, obseg in tvoja pravica do odstopa od pogodbe v&nbsp;14&nbsp;dneh navedeni pred nakupom.</li>
+    <li>Brezplačni zgodnji dostop ni obljuba, da bo storitev vedno brezplačna; o&nbsp;morebitnem plačljivem paketu te obvestimo vnaprej.</li>
   </ul>
 
   <h2>7. Povezane storitve</h2>
-  <p>Če povežeš Strava, Garmin Connect ali podobno storitev, veljajo tudi njihovi pogoji. Povezavo lahko kadar koli prekineš. Podatki, uvoženi s Strave, se po njihovih pravilih <b>ne pošiljajo v AI obdelavo</b>.</p>
+  <p>Če povežeš intervals.icu (in prek njega podatke z&nbsp;ure Garmin ali druge naprave), veljajo tudi pogoji teh storitev. S&nbsp;Stravo in Garmin Connectom FORMAI ni neposredno povezan. Povezavo z&nbsp;intervals.icu lahko kadar koli prekineš. Aktivnosti, ki izvirajo s&nbsp;Strave, se po njenih pravilih <b>ne pošiljajo v&nbsp;AI obdelavo</b>.</p>
 
   <h2>8. Vsebina in avtorske pravice</h2>
   <p>Koda, oblika in besedila FORMAI so avtorsko delo upravljavca. Vsebina, ki jo ustvariš ali vneseš ti (aktivnosti, obroki, zapiski), ostaja tvoja. Za delovanje storitve nam daješ le dovoljenje, da jo obdelujemo in prikazujemo tebi.</p>
 
   <h2>9. Razpoložljivost in spremembe</h2>
-  <p>Storitev je osebni projekt v razvoju. Deluje »takšna, kot je«, brez jamstva o neprekinjenem delovanju. Funkcije lahko dodajamo, spreminjamo ali odstranjujemo; o pomembnih spremembah te obvestimo v aplikaciji.</p>
+  <p>Storitev je osebni projekt v&nbsp;razvoju. Deluje »takšna,&nbsp;kot&nbsp;je«, brez jamstva o&nbsp;neprekinjenem delovanju. Funkcije lahko dodajamo, spreminjamo ali odstranjujemo; o&nbsp;pomembnih spremembah te obvestimo v&nbsp;aplikaciji.</p>
 
   <h2>10. Omejitev odgovornosti</h2>
-  <p>Storitev uporabljaš na lastno odgovornost. V največjem obsegu, ki ga dopušča zakon, upravljavec ne odgovarja za posredno škodo, izgubo podatkov ali izgubljeni dobiček. <b>Nič v teh pogojih ne omejuje odgovornosti za naklep, hudo malomarnost ali za škodo na zdravju in življenju</b>, kadar tako določa prisilno pravo.</p>
+  <p>Storitev uporabljaš na lastno odgovornost. V&nbsp;največjem obsegu, ki ga dopušča zakon, upravljavec ne odgovarja za posredno škodo, izgubo podatkov ali izgubljeni dobiček. <b>Nič v&nbsp;teh pogojih ne omejuje odgovornosti za naklep, hudo malomarnost ali za škodo na zdravju in življenju</b>, kadar tako določa prisilno pravo.</p>
 
   <h2>11. Prekinitev</h2>
-  <p>Uporabo lahko kadar koli prenehaš in račun izbrišeš. Dostop lahko omejimo ali ukinemo, če storitev uporabljaš v nasprotju s temi pogoji ali v škodo drugih uporabnikov.</p>
+  <p>Uporabo lahko kadar koli prenehaš in račun izbrišeš. Dostop lahko omejimo ali ukinemo, če storitev uporabljaš v&nbsp;nasprotju s&nbsp;temi pogoji ali v&nbsp;škodo drugih uporabnikov.</p>
 
   <h2>12. Spremembe pogojev</h2>
-  <p>Pogoje lahko posodobimo. Vsaka različica ima zgoraj naveden datum veljavnosti. Ob bistvenih spremembah te obvestimo v aplikaciji; nadaljnja uporaba pomeni, da se z njimi strinjaš.</p>
+  <p>Pogoje lahko posodobimo. Vsaka različica ima zgoraj naveden datum veljavnosti. Ob bistvenih spremembah te obvestimo v&nbsp;aplikaciji; nadaljnja uporaba pomeni, da se z&nbsp;njimi strinjaš.</p>
 
   <h2>13. Pravo in pristojnost</h2>
-  <p>Veljajo pravo Republike Slovenije in prisilni predpisi EU o varstvu potrošnikov. Za spore je pristojno sodišče v Sloveniji. Kot potrošnik lahko uporabiš tudi platformo EU za spletno reševanje sporov.</p>
+  <p>Veljajo pravo Republike Slovenije in prisilni predpisi EU o&nbsp;varstvu potrošnikov. Za spore je pristojno sodišče v&nbsp;Sloveniji, razen če prisilni predpisi o&nbsp;varstvu potrošnikov določajo drugače.</p>
 
   <h2>14. Kontakt</h2>
-  <p>Blaž Gregorc, Slovenija — <a href="mailto:blaz.gregorc@formai.si">blaz.gregorc@formai.si</a></p>
+  <p>Blaž Gregorc, Slovenija&nbsp;— <a href="mailto:blaz.gregorc@formai.si">blaz.gregorc@formai.si</a></p>
 
-  <p style="margin-top:30px"><a href="zasebnost.html">Politika zasebnosti</a> · <a href="terms.html">English</a> · <a href="forma-trener.html">Nazaj v aplikacijo</a></p>
+  <p style="margin-top:30px"><a href="zasebnost.html">Politika zasebnosti</a> · <a href="terms.html" hreflang="en" lang="en">English</a> · <a href="/">Nazaj v&nbsp;aplikacijo</a></p>
 </div>
 </body>
 </html>

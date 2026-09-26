@@ -4,12 +4,19 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>FORMAI — Privacy Policy</title>
-<meta name="description" content="FORMAI privacy policy — what data is processed, where it is stored, how connected services such as Garmin Connect and Strava are handled, and your rights under the GDPR."/>
+<meta name="description" content="FORMAI privacy policy: what data is processed, where it is stored, what is sent to AI, the intervals.icu and Garmin connections, and your GDPR rights."/>
+<link rel="canonical" href="https://formai.si/privacy.html"/>
 <link rel="alternate" hreflang="sl" href="https://formai.si/zasebnost.html"/>
 <link rel="alternate" hreflang="en" href="https://formai.si/privacy.html"/>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="alternate" hreflang="x-default" href="https://formai.si/zasebnost.html"/>
+<link rel="icon" href="/favicon.ico" sizes="48x48"/>
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml"/>
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
+<meta name="theme-color" content="#0F1216"/>
 <style>
+  /* pisava je na formai.si (brez Google Fonts) */
+  @font-face{font-family:'Manrope';font-style:normal;font-weight:200 800;font-display:swap;src:url(/fonts/Manrope-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+  @font-face{font-family:'Manrope';font-style:normal;font-weight:200 800;font-display:swap;src:url(/fonts/Manrope-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
   :root{
   /* ==== FORMAI oblikovni sistem — dobesedno iz mockupa (29. 7. 2026) ==== */
   --bench:#0b0e11; --bg:#0b0e11; --bg2:#080b0d;
@@ -17,8 +24,8 @@
   --line:#232b32; --line2:#1a2126;
   --ink:#e9eef2; --dim:#939da6; --dim2:#606a72;
   --sig:#62c5ee; --sigd:#38a6cf; --sig2:#ff458e; --onSig:#04161d;
-  --sans:'IBM Plex Sans',system-ui,sans-serif;
-  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   /* stara imena → iste barve */
   --border:var(--line); --border2:var(--line2); --borderH:#333d45;
   --text:var(--ink); --soft:#c3ccd4; --muted:var(--dim);
@@ -48,6 +55,8 @@
 h1,h2,h3,h4{font-family:var(--sans);letter-spacing:-.022em}
 a{color:var(--sig);text-decoration:none}
 a:hover{color:#9ddcf7}
+/* povezave v besedilu: poleg barve še podčrtane (WCAG 1.4.1 — barva povezave proti besedilu je samo 1,4 : 1) */
+p a,li a{text-decoration:underline;text-underline-offset:.18em;text-decoration-thickness:1px}
 .tabnav a{position:relative;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);padding:14px 0;display:block}
 .tabnav a:hover{color:var(--ink)}
 .tabnav a[aria-current="page"]{color:var(--ink)}
@@ -88,71 +97,116 @@ input.f::placeholder{color:var(--dim2)}
 @media(max-width:1100px){.hd-install{display:none}}
 @media(max-width:1000px){.g3{grid-template-columns:minmax(0,1fr)!important}}
 @media(max-width:860px){.sc{overflow-x:auto}.sc .rw{min-width:680px}}
+
+/* ===== barve blagovne znamke (kot aplikacija in formai.si): temno ozadje, limeta — prej cian iz starega mockupa ===== */
+:root{--bench:#0F1216;--bg:#0F1216;--bg2:#0B0E12;--panel:#171C22;--panel2:#1E242C;--panel3:#12161B;--line:#262E37;--line2:#1E242C;
+  --ink:#F2F5F8;--dim:#A8B3BF;--dim2:#86909C;--sig:#A3E635;--sigd:#A3E635;--onSig:#0F1216;--text:var(--ink);--soft:#C9D1D9;--muted:#A8B3BF;
+  --acc:#A3E635;--accH:#C5F27A;--acc2:#A3E635;--accSoft:rgba(163,230,53,.12);--blue:#3987E5;--blueSoft:rgba(57,135,229,.13);--borderH:#333D47}
+body{-webkit-font-smoothing:antialiased}
+h2{color:var(--ink)}
+a:hover{color:#C5F27A}
+::selection{background:rgba(163,230,53,.28)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:26px}
+.brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.01em;color:var(--ink)!important;text-decoration:none!important}
+.brand img{width:30px;height:30px;border-radius:22.4%;display:block}
+.brand b{color:#A3E635}
+.top .back{margin:0}
+.nav2{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px;font-size:14px}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <a class="back" href="zasebnost.html">Slovensko →</a>
+  <div class="top"><a class="brand" href="/" aria-label="FORMAI — home"><img src="/icons/mark.svg" alt="" width="30" height="30"/><span>FORM<b>AI</b></span></a><a class="back" href="zasebnost.html" hreflang="sl" lang="sl">Slovensko&nbsp;→</a></div>
   <h1>Privacy Policy</h1>
-  <p class="sub">FORMAI (desktop and mobile) · in force since 24 July 2026 · updated 25 September 2026 · <a href="zasebnost.html">Slovenian original</a></p>
+  <p class="sub">FORMAI (desktop and mobile) · in force since 24&nbsp;July&nbsp;2026 · updated 26&nbsp;September&nbsp;2026 · <a href="zasebnost.html" hreflang="sl">Slovenian original</a></p>
 
-  <div class="card"><b>⚕️ Important:</b> FORMAI provides <b>coaching and nutrition guidance, not medical advice</b>. Calorie and training-load figures are estimates. Before making significant changes to your training or diet — and always in case of illness, injury or a health condition — consult a doctor.</div>
+  <div class="card"><b>⚕️ Important:</b> FORMAI provides coaching and nutrition <b>guidance</b>, not medical advice. Calorie and training-load figures are estimates. Before making significant changes to your training or diet, consult a doctor&nbsp;— especially if you have a health condition.</div>
 
-  <p class="sub" style="margin-bottom:22px">This is an English translation of the Slovenian privacy policy published at <a href="zasebnost.html">formai.si/zasebnost.html</a>. In case of any discrepancy, the Slovenian version prevails.</p>
+  <p class="sub" style="margin-bottom:22px">This is an English translation of the Slovenian privacy policy published at <a href="zasebnost.html" hreflang="sl">formai.si/zasebnost.html</a>. In case of any discrepancy, the Slovenian version prevails.</p>
 
   <h2>What data we process</h2>
   <ul>
-    <li><b>Profile:</b> name, age, sex, height, weight, heart rate, FTP, goals.</li>
-    <li><b>Activities:</b> rides and workouts (distance, duration, elevation, heart rate, power) — entered manually, imported, or read from screenshots.</li>
-    <li><b>Nutrition:</b> meal entries and photographs of food that you submit for analysis.</li>
-    <li><b>Wellbeing:</b> morning check-ins you enter yourself (sleep, soreness, energy) and — only if you turn it on — sleep, HRV and resting heart rate from your watch via intervals.icu.</li>
+    <li><b>Account (if you sign in):</b> the name, email address and photo of your Google account.</li>
+    <li><b>Profile:</b> name (if you enter it), age, sex, height, weight, heart rate, FTP, goals and races.</li>
+    <li><b>Activities:</b> rides and workouts (distance, duration, elevation, heart rate, power, GPS track)&nbsp;— entered manually, imported, or read from screenshots.</li>
+    <li><b>Nutrition:</b> meal entries, photographs of food and meal descriptions (typed or dictated) that you submit for analysis.</li>
+    <li><b>Wellbeing:</b> the morning check-in you fill in yourself (sleep, soreness, energy and, optionally, weight, waist and a note) and&nbsp;— only if you turn it on&nbsp;— sleep, HRV and resting heart rate from your watch via intervals.icu.</li>
+    <li><b>Place for the weather (optional):</b> a place you type in, or your device location rounded to about 1&nbsp;km.</li>
+    <li><b>Your conversation with the coach</b> and AI output (reviews, meal plan), so you can see them later.</li>
+  </ul>
+
+  <h2>Legal basis</h2>
+  <ul>
+    <li><b>Consent</b> (Art. 6(1)(a) GDPR); for health-related data&nbsp;— weight, heart rate, sleep and HRV, health notes&nbsp;— <b>explicit consent</b> (Art. 9(2)(a) GDPR). You can withdraw consent at any time (see “Your&nbsp;rights”); withdrawal does not affect the lawfulness of processing before it.</li>
+    <li><b>Performance of the service</b> you use (Art. 6(1)(b) GDPR): storing and synchronising your data, building your training plan and nutrition targets.</li>
   </ul>
 
   <h2>Where your data is held</h2>
   <ul>
-    <li><b>Locally by default:</b> all data is stored in your browser (IndexedDB) on your own device.</li>
-    <li><b>Synchronisation (if you turn it on):</b> data is stored in your account in Google Firebase (servers in the EU/EEA under Google's terms) or jsonbin.io, so it is available across your devices.</li>
-    <li><b>AI (coach, reviews, meal analysis):</b> when you use AI, a summary of your profile and training (e.g. goals, FTP, recent rides, training load, morning check-ins) and the text and images you submit are processed by the <b>Google Gemini API</b> as a contractual sub-processor. We use the <b>paid tier</b>, under which Google <b>does not use the content to train its models</b>. Content is used only to produce the response returned to you and is visible only to you. Requests run through our own server (Google Cloud Run, europe-west1); the API key is never exposed in the browser. Google does not guarantee the region in which it processes the content for this service.</li>
-    <li><b>Sleep, HRV and resting heart rate from your watch</b> stay on your device only: they are not uploaded to the cloud and never sent to AI.</li>
+    <li><b>Locally by default:</b> all data is stored in your browser (IndexedDB) on your own device. Until you sign in, it stays there; the services under “Other&nbsp;services” receive only what is listed for them.</li>
+    <li><b>Synchronisation when signed in:</b> when you sign in with a Google account, your data is automatically stored in your account in Google Firebase (Firestore) as well, so it is available on all your devices. There is no separate switch&nbsp;— synchronisation applies for as long as you are signed in. GPS tracks, meal photos, and sleep, HRV and resting heart rate from your watch are not uploaded to the cloud. For sign-in, Firebase Authentication receives the name, email address and photo of your Google account.</li>
+    <li><b>AI (coach, reviews, meal analysis):</b> works only when you are signed in and have allowed AI processing. When you use an AI feature, we send: the numbers from your profile (age, sex, height, weight, FTP, heart rate, goals and races), a summary of your training, plan and nutrition, your morning check-in (sleep, energy, soreness and your note, if you wrote one), the text of your question or conversation, and meal photos and descriptions you submit for analysis. <b>We do not send</b> your name, email address, exact location or GPS tracks, activities from Strava, or sleep, HRV and resting heart rate from your watch.</li>
+    <li>This data is processed by the <b>Google Gemini API</b> as our contractual processor. We use the <b>paid tier</b>, under which Google <b>does not use the content to train its models</b>; it is used only to produce the response returned to you (Google may keep it for a limited time solely to detect abuse). Requests run through our own server (Google Cloud Run, europe-west1); the API key is never exposed in the browser. Our server does not store the content&nbsp;— it records only the number of AI actions per day (for the daily limit) and a short entry per request without content (time, model, success, token counts). Google does not guarantee the region in which it processes the content for this service.</li>
+    <li><b>Sleep, HRV and resting heart rate from your watch</b> stay only on the device where you turned them on: they are not uploaded to the cloud and never sent to AI. The switch applies to each device separately; when you turn it off, this data is deleted from the device immediately.</li>
+    <li><b>Transfers outside the EU:</b> Google may process data outside the EU/EEA as well; such transfers are covered by Google’s data processing terms with the EU standard contractual clauses.</li>
     <li>We <b>do not sell</b> your data and do not share it with third parties for advertising.</li>
+  </ul>
+
+  <h2>Other services</h2>
+  <p>Your browser calls these services directly, so each request also reveals your IP address to them.</p>
+  <ul>
+    <li><b>Open-Meteo</b> (weather forecast, only if you set a place): approximate coordinates of the place&nbsp;— the app rounds them to about 1&nbsp;km, and a request is never more precise than about 100&nbsp;m&nbsp;— and, if you search for the place by name, the name you typed.</li>
+    <li><b>Meal dictation</b> (microphone button): speech is turned into text by your browser's or phone's speech recognition (e.g. Google in Chrome, Apple in Safari). FORMAI never receives audio&nbsp;— only the text you see and submit for analysis.</li>
+    <li><b>BRouter</b> (brouter.de, generating new routes): the start point (where your rides usually begin, rounded to about 100&nbsp;m), a few waypoints of the new route (e.g. the foot of a climb you already ride) and the road-bike settings. Your full ride tracks are never sent.</li>
+    <li><b>OpenStreetMap</b> (map tiles): when you open a map, your browser downloads tiles from OpenStreetMap servers, which thereby see the area shown.</li>
+    <li><b>GitHub Pages</b> (hosting of formai.si) and <b>Google Cloud Run</b> (our server) record the IP address and time of each request in their server logs.</li>
+    <li>Fonts are served from formai.si&nbsp;— your browser does not call Google Fonts or any other external font service.</li>
   </ul>
 
   <h2>Connected services (intervals.icu, Garmin, Strava)</h2>
   <p>If you connect an external service yourself, we import <b>only</b> what the training features need, and only for as long as the connection is enabled.</p>
   <ul>
-    <li><b>intervals.icu:</b> when you connect (sign in with intervals.icu or a personal API key) we read your completed activities (duration, distance, elevation gain, heart rate, power, zones, device), your FTP and zones and — only if you separately turn it on — sleep, HRV and resting heart rate. We write planned workouts from FORMAI to your intervals.icu calendar so they reach your watch. The access token or key is stored in the app data on your device and, if sync is on, in your account; it is used only to read your data and write workouts. You can disconnect at any time in Settings or in your intervals.icu settings.</li>
+    <li><b>intervals.icu:</b> when you connect (sign in with intervals.icu or a personal API key) we read your completed activities (duration, distance, elevation gain, heart rate, power, zones, device, GPS track), your FTP and zones and&nbsp;— only if you separately turn it on&nbsp;— sleep, HRV and resting heart rate. We write planned workouts from FORMAI to your intervals.icu calendar so they reach your watch. The access token or key is stored in the app data on your device and, while you are signed in, in your account (synchronisation); it is used only to read your data and write workouts. With sign-in via intervals.icu, our server exchanges the authorisation code for the token and does not store the token. You can disconnect at any time in Settings or in your intervals.icu settings.</li>
     <li><b>Garmin:</b> data from Garmin devices reaches FORMAI via intervals.icu or from files you import yourself. We use it exclusively to display your progress, compute training load, and adapt your training plan. Garmin data is <b>never sold</b>, never shared with third parties, and never used for advertising or profiling. You can delete imported activities at any time together with the rest of your data.</li>
-    <li><b>Strava:</b> same scope and same rules. Activities from Strava (including via intervals.icu) are <b>not sent for AI processing</b> — for those we use local computation on your device. Strava access tokens are stored only on our server and are never visible in the browser.</li>
+    <li><b>Strava:</b> FORMAI is no longer connected to Strava directly. Activities that originate from Strava and arrive via intervals.icu are shown in the app but are <b>never sent to AI</b>&nbsp;— for those we use only computation on your device, and their GPS tracks are not stored. Any access tokens left from the former direct Strava connection are stored only on our server and are deleted when you delete your account.</li>
   </ul>
 
   <h2>Weekly question (test programme)</h2>
   <ul>
-    <li>After your first week, the app asks at most one question per week (answer A–D). You can skip it or turn the questions off (“don’t ask again”).</li>
-    <li>If you answer, we send only: the question, your answer, a random identifier instead of your name or email, the invite code (if you came via a link with a code), the number of days you have used the app and the app version. No training, nutrition or wellbeing data is sent.</li>
+    <li>After your first week, the app asks at most one question per week (answer A–D). You can skip the question or turn the questions off (“don’t&nbsp;ask&nbsp;again”).</li>
+    <li>If you answer, we send our server only: the question ID, your answer, a random identifier instead of your name or email, the invite code (if you came via a link with a code), the number of days you have used the app, and the app version. No training, nutrition or wellbeing data is sent.</li>
+    <li>The random identifier is stored in your settings, which are synchronised when you sign in, so the answers are <b>pseudonymous</b>, not anonymous.</li>
     <li>Only the developer sees the answers, and uses them solely to improve FORMAI.</li>
+  </ul>
+
+  <h2>How long we keep data</h2>
+  <ul>
+    <li><b>On your device:</b> until you delete it.</li>
+    <li><b>In the cloud</b> (synchronised data, AI counters and request entries, Pro status, weekly-question answers): until you delete your account.</li>
+    <li><b>Server logs</b> (Google Cloud Run, GitHub Pages): for as long as Google’s or GitHub’s default rules provide.</li>
   </ul>
 
   <h2>Your rights (GDPR)</h2>
   <ul>
-    <li><b>Export:</b> Settings → "Export backup" downloads all of your data at any time.</li>
-    <li><b>Deletion:</b> clear your browser data and/or write to us to delete synchronised data — we delete it within 30 days.</li>
+    <li><b>Export:</b> Settings&nbsp;→ “Izvozi&nbsp;vse” (Export all) downloads all of your data at any time (a JSON file).</li>
+    <li><b>Deletion:</b> Settings&nbsp;→ “Izbriši&nbsp;račun” (Delete account) deletes your account and all cloud data&nbsp;— synchronised data, AI counters and request entries, Pro status, weekly-question answers and any old Strava tokens; the deletion is carried out by our server. “Izbriši&nbsp;na&nbsp;napravi” (Delete on this device) clears the data on the device. You can also write to us&nbsp;— we delete the data within 30&nbsp;days.</li>
     <li><b>Access and correction:</b> all of your data is visible and editable directly in the app.</li>
+    <li><b>Withdrawing consent:</b> turn off AI processing in Settings (“AI&nbsp;obdelava”), and sleep, HRV and resting heart rate from your watch with the switch next to the intervals.icu connection; you can also delete your data or account.</li>
+    <li>You also have the right to restriction of processing and to object, and the right to lodge a complaint with the Information Commissioner of the Republic of Slovenia (<a href="https://www.ip-rs.si/en/">ip-rs.si</a>).</li>
   </ul>
 
-  <h2>Terms of use</h2>
+  <h2>Terms of use (summary)</h2>
   <ul>
     <li>You use the application at your own responsibility; AI output is informational in nature.</li>
-    <li>Free use includes a limited number of AI actions per day; the Pro subscription removes the daily limit.</li>
-    <li>You may cancel a subscription at any time; it remains valid until the end of the paid period.</li>
+    <li>FORMAI is in free early access; free use includes up to 10&nbsp;AI actions per day. There is currently no paid plan.</li>
     <li>We may update or change the service; we will notify you in the app about material changes.</li>
   </ul>
-  <p>The full terms of use are available in <a href="terms.html">English</a> and in <a href="pogoji.html">Slovenian</a>.</p>
+  <p>Full terms: <a href="terms.html">Terms of use</a> (<a href="pogoji.html" hreflang="sl" lang="sl">Slovenščina</a>).</p>
 
   <h2>Contact</h2>
-  <p>Data controller: <b>Blaž Gregorc</b>, Slovenia.</p>
-  <p>Questions, data export or deletion: <a href="mailto:blaz.gregorc@formai.si">blaz.gregorc@formai.si</a>.</p>
-
-  <p style="margin-top:30px"><a href="terms.html">Terms of use</a> · <a href="zasebnost.html">Slovenščina</a> · <a href="forma-trener.html">Back to the app</a></p>
+  <p>Data controller: <b>Blaž Gregorc</b>, a private individual, Slovenia.</p>
+  <p>Questions, data export or deletion: <a href="mailto:blaz.gregorc@formai.si?subject=FORMAI%20privacy">blaz.gregorc@formai.si</a>.</p>
+  <p style="margin-top:30px"><a href="terms.html">Terms of use</a> · <a href="zasebnost.html" hreflang="sl" lang="sl">Slovenščina</a> · <a href="/">Back to the app</a></p>
 </div>
 </body>
 </html>

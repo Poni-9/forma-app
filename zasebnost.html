@@ -3,10 +3,20 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>FORMAI — Zasebnost in pogoji uporabe</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<title>FORMAI — Politika zasebnosti</title>
+<meta name="description" content="Politika zasebnosti FORMAI: katere podatke obdelujemo, kje so shranjeni, kaj gre v AI, povezave z intervals.icu in Garminom ter tvoje pravice po GDPR."/>
+<link rel="canonical" href="https://formai.si/zasebnost.html"/>
+<link rel="alternate" hreflang="sl" href="https://formai.si/zasebnost.html"/>
+<link rel="alternate" hreflang="en" href="https://formai.si/privacy.html"/>
+<link rel="alternate" hreflang="x-default" href="https://formai.si/zasebnost.html"/>
+<link rel="icon" href="/favicon.ico" sizes="48x48"/>
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml"/>
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
+<meta name="theme-color" content="#0F1216"/>
 <style>
+  /* pisava je na formai.si (brez Google Fonts) */
+  @font-face{font-family:'Manrope';font-style:normal;font-weight:200 800;font-display:swap;src:url(/fonts/Manrope-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+  @font-face{font-family:'Manrope';font-style:normal;font-weight:200 800;font-display:swap;src:url(/fonts/Manrope-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
   :root{
   /* ==== FORMAI oblikovni sistem — dobesedno iz mockupa (29. 7. 2026) ==== */
   --bench:#0b0e11; --bg:#0b0e11; --bg2:#080b0d;
@@ -14,8 +24,8 @@
   --line:#232b32; --line2:#1a2126;
   --ink:#e9eef2; --dim:#939da6; --dim2:#606a72;
   --sig:#62c5ee; --sigd:#38a6cf; --sig2:#ff458e; --onSig:#04161d;
-  --sans:'IBM Plex Sans',system-ui,sans-serif;
-  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   /* stara imena → iste barve */
   --border:var(--line); --border2:var(--line2); --borderH:#333d45;
   --text:var(--ink); --soft:#c3ccd4; --muted:var(--dim);
@@ -45,6 +55,8 @@
 h1,h2,h3,h4{font-family:var(--sans);letter-spacing:-.022em}
 a{color:var(--sig);text-decoration:none}
 a:hover{color:#9ddcf7}
+/* povezave v besedilu: poleg barve še podčrtane (WCAG 1.4.1 — barva povezave proti besedilu je samo 1,4 : 1) */
+p a,li a{text-decoration:underline;text-underline-offset:.18em;text-decoration-thickness:1px}
 .tabnav a{position:relative;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);padding:14px 0;display:block}
 .tabnav a:hover{color:var(--ink)}
 .tabnav a[aria-current="page"]{color:var(--ink)}
@@ -85,68 +97,114 @@ input.f::placeholder{color:var(--dim2)}
 @media(max-width:1100px){.hd-install{display:none}}
 @media(max-width:1000px){.g3{grid-template-columns:minmax(0,1fr)!important}}
 @media(max-width:860px){.sc{overflow-x:auto}.sc .rw{min-width:680px}}
+
+/* ===== barve blagovne znamke (kot aplikacija in formai.si): temno ozadje, limeta — prej cian iz starega mockupa ===== */
+:root{--bench:#0F1216;--bg:#0F1216;--bg2:#0B0E12;--panel:#171C22;--panel2:#1E242C;--panel3:#12161B;--line:#262E37;--line2:#1E242C;
+  --ink:#F2F5F8;--dim:#A8B3BF;--dim2:#86909C;--sig:#A3E635;--sigd:#A3E635;--onSig:#0F1216;--text:var(--ink);--soft:#C9D1D9;--muted:#A8B3BF;
+  --acc:#A3E635;--accH:#C5F27A;--acc2:#A3E635;--accSoft:rgba(163,230,53,.12);--blue:#3987E5;--blueSoft:rgba(57,135,229,.13);--borderH:#333D47}
+body{-webkit-font-smoothing:antialiased}
+h2{color:var(--ink)}
+a:hover{color:#C5F27A}
+::selection{background:rgba(163,230,53,.28)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:26px}
+.brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.01em;color:var(--ink)!important;text-decoration:none!important}
+.brand img{width:30px;height:30px;border-radius:22.4%;display:block}
+.brand b{color:#A3E635}
+.top .back{margin:0}
+.nav2{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px;font-size:14px}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <a class="back" href="forma-trener.html">← Nazaj v aplikacijo</a>
-  <a class="back" href="privacy.html" style="float:right">English version →</a>
-  <h1>Zasebnost in pogoji uporabe</h1>
-  <p class="sub">FORMAI (namizje in telefon) · velja od 24. julija 2026 · posodobljeno 25. septembra 2026</p>
+  <div class="top"><a class="brand" href="/" aria-label="FORMAI — domov"><img src="/icons/mark.svg" alt="" width="30" height="30"/><span>FORM<b>AI</b></span></a><a class="back" href="privacy.html" hreflang="en" lang="en">English version&nbsp;→</a></div>
+  <h1>Politika zasebnosti</h1>
+  <p class="sub">FORMAI (namizje in telefon) · velja od 24.&nbsp;julija&nbsp;2026 · posodobljeno 26.&nbsp;septembra&nbsp;2026</p>
 
-  <div class="card"><b>⚠️ Pomembno:</b> FORMAI daje trenerske in prehranske <b>usmeritve</b>, ne medicinskih nasvetov. Ocene kalorij in obremenitev so približki. Pred večjimi spremembami treninga ali prehrane se posvetuj z zdravnikom, še posebej ob zdravstvenih težavah.</div>
+  <div class="card"><b>⚕️ Pomembno:</b> FORMAI daje trenerske in prehranske <b>usmeritve</b>, ne medicinskih nasvetov. Ocene kalorij in obremenitve so približki. Pred večjimi spremembami treninga ali prehrane se posvetuj z&nbsp;zdravnikom, še posebej ob zdravstvenih težavah.</div>
 
   <h2>Katere podatke obdelujemo</h2>
   <ul>
-    <li><b>Profil:</b> ime, starost, spol, višina, teža, srčni utrip, FTP, cilji.</li>
-    <li><b>Aktivnosti:</b> vožnje in treningi (razdalja, čas, višinci, utrip, moč) — ročno, prek uvoza ali slik.</li>
-    <li><b>Prehrana:</b> vnosi obrokov in fotografije hrane, ki jih pošlješ v analizo.</li>
-    <li><b>Počutje:</b> jutranji občutki, ki jih vpišeš sam (spanec, mišice, energija), in — samo če to vklopiš — spanec, HRV in mirovni utrip z ure prek intervals.icu.</li>
+    <li><b>Račun (če se prijaviš):</b> ime, e-poštni naslov in fotografija tvojega Google računa.</li>
+    <li><b>Profil:</b> ime (če ga vpišeš), starost, spol, višina, teža, srčni utrip, FTP, cilji in tekme.</li>
+    <li><b>Aktivnosti:</b> vožnje in treningi (razdalja, čas, višinci, utrip, moč, GPS sled)&nbsp;— ročno, prek uvoza ali slik.</li>
+    <li><b>Prehrana:</b> vnosi obrokov, fotografije hrane in opisi obrokov (napisani ali narekovani), ki jih pošlješ v&nbsp;analizo.</li>
+    <li><b>Počutje:</b> jutranji vnos, ki ga izpolniš sam (spanec, mišice, energija, po želji teža, obseg pasu in opomba), in&nbsp;— samo če to vklopiš&nbsp;— spanec, HRV in mirovni utrip z&nbsp;ure prek intervals.icu.</li>
+    <li><b>Kraj za vreme (neobvezno):</b> kraj, ki ga vpišeš, ali lokacija naprave, zaokrožena na približno 1&nbsp;km.</li>
+    <li><b>Pogovor s&nbsp;trenerjem</b> in odgovori AI (ocene, jedilnik), da jih vidiš tudi pozneje.</li>
+  </ul>
+
+  <h2>Pravna podlaga</h2>
+  <ul>
+    <li><b>Privolitev</b> (točka (a) člena 6(1) GDPR); za podatke o&nbsp;zdravju&nbsp;— teža, srčni utrip, spanec in HRV, zdravstvene opombe&nbsp;— <b>izrecna privolitev</b> (točka (a) člena 9(2) GDPR). Privolitev lahko kadar koli prekličeš (glej »Tvoje&nbsp;pravice«); preklic ne vpliva na zakonitost obdelave pred njim.</li>
+    <li><b>Izvajanje storitve</b>, ki jo uporabljaš (točka (b) člena 6(1) GDPR): shranjevanje in sinhronizacija tvojih podatkov, sestava načrta treninga in prehranskih ciljev.</li>
   </ul>
 
   <h2>Kje so tvoji podatki</h2>
   <ul>
-    <li><b>Privzeto lokalno:</b> vsi podatki so shranjeni v tvojem brskalniku (IndexedDB) na tvoji napravi.</li>
-    <li><b>Sinhronizacija (če jo vklopiš):</b> podatki se shranijo v tvoj račun v Google Firebase (strežniki v EU/EEA po Googlovih pogojih) oz. jsonbin.io, da so dostopni na vseh tvojih napravah.</li>
-    <li><b>AI (trener, ocene, analiza obroka):</b> ko uporabiš AI, povzetek tvojega profila in treninga (npr. cilji, FTP, zadnje vožnje, obremenitev, jutranji občutki) ter besedila in slike, ki jih pošlješ, obdela <b>Google Gemini API</b> kot pogodbeni podobdelovalec. Uporabljamo <b>plačljivo raven</b>, pri kateri Google vsebine <b>ne uporablja za učenje svojih modelov</b>. Vsebina se uporabi samo za odgovor tebi in je vidna samo tebi. Klici tečejo prek našega strežnika (Google Cloud Run, europe-west1); ključ ni nikoli izpostavljen v brskalniku. V kateri regiji Google vsebino obdela, pri tej storitvi ne jamči.</li>
-    <li><b>Spanec, HRV in mirovni utrip z ure</b> ostanejo samo na tvoji napravi: ne gredo v oblak in ne v AI.</li>
-    <li>Podatkov <b>ne prodajamo</b> in jih ne delimo s tretjimi za oglaševanje.</li>
+    <li><b>Privzeto lokalno:</b> vsi podatki so shranjeni v&nbsp;tvojem brskalniku (IndexedDB) na tvoji napravi. Dokler se ne prijaviš, ostanejo tam; storitve iz razdelka »Druge&nbsp;storitve« dobijo samo to, kar je navedeno pri njih.</li>
+    <li><b>Sinhronizacija s&nbsp;prijavo:</b> ko se prijaviš z&nbsp;Google računom, se podatki samodejno shranjujejo tudi v&nbsp;tvoj račun v&nbsp;Google Firebase (Firestore), da so dostopni na vseh tvojih napravah. To ni posebno stikalo&nbsp;— sinhronizacija velja, dokler si prijavljen. GPS sledi, fotografije obrokov ter spanec, HRV in mirovni utrip z&nbsp;ure v&nbsp;oblak ne gredo. Za prijavo Firebase Authentication prejme ime, e-poštni naslov in fotografijo tvojega Google računa.</li>
+    <li><b>AI (trener, ocene, analiza obroka):</b> deluje samo, ko si prijavljen in AI obdelavo dovoliš. Ko uporabiš AI, pošljemo: številke iz profila (starost, spol, višina, teža, FTP, srčni utrip, cilji in tekme), povzetek treninga, načrta in prehrane, jutranji vnos (spanec, energija, mišice in opomba, če jo vpišeš), besedilo vprašanja oziroma pogovora ter fotografije in opise obrokov, ki jih pošlješ v&nbsp;analizo. <b>Ne pošljemo</b> imena, e-poštnega naslova, natančne lokacije ali GPS sledi, aktivnosti s&nbsp;Strave ter spanca, HRV in mirovnega utripa z&nbsp;ure.</li>
+    <li>Te podatke obdela <b>Google Gemini API</b> kot naš pogodbeni obdelovalec. Uporabljamo <b>plačljivo raven</b>, pri kateri Google vsebine <b>ne uporablja za učenje svojih modelov</b>; uporabi se samo za odgovor, ki ga dobiš ti (Google jo sme za omejen čas hraniti izključno za odkrivanje zlorab). Klici tečejo prek našega strežnika (Google Cloud Run, europe-west1); ključ ni nikoli izpostavljen v&nbsp;brskalniku. Naš strežnik vsebine ne shranjuje&nbsp;— beleži samo število AI dejanj na dan (za dnevno omejitev) in kratek zapis vsakega klica brez vsebine (čas, model, uspeh, število žetonov). V&nbsp;kateri regiji Google vsebino obdela, pri tej storitvi ne jamči.</li>
+    <li><b>Spanec, HRV in mirovni utrip z&nbsp;ure</b> ostanejo samo na napravi, na kateri si jih vklopil: ne gredo v&nbsp;oblak in ne v&nbsp;AI. Stikalo velja za vsako napravo posebej; ob izklopu se ti podatki z&nbsp;naprave takoj izbrišejo.</li>
+    <li><b>Prenos zunaj EU:</b> Google lahko podatke obdeluje tudi zunaj EU/EGP; tak prenos varujejo Googlovi pogoji za obdelavo podatkov s&nbsp;standardnimi pogodbenimi klavzulami EU.</li>
+    <li>Podatkov <b>ne prodajamo</b> in jih ne delimo s&nbsp;tretjimi za oglaševanje.</li>
+  </ul>
+
+  <h2>Druge storitve</h2>
+  <p>Te storitve kliče tvoj brskalnik neposredno, zato ob vsaki zahtevi vidijo tudi tvoj IP naslov.</p>
+  <ul>
+    <li><b>Open-Meteo</b> (vremenska napoved, samo če nastaviš kraj): približne koordinate kraja&nbsp;— v&nbsp;aplikaciji jih zaokrožimo na približno 1&nbsp;km, v&nbsp;poizvedbi nikoli natančneje od približno 100&nbsp;m&nbsp;— in, če kraj poiščeš po imenu, vpisano ime kraja.</li>
+    <li><b>Narekovanje obroka</b> (gumb z mikrofonom): govor pretvori v besedilo prepoznava govora tvojega brskalnika oziroma telefona (npr. Google v Chromu, Apple v Safariju). FORMAI zvoka ne prejme&nbsp;— samo besedilo, ki ga vidiš in pošlješ v oceno.</li>
+    <li><b>BRouter</b> (brouter.de, izris novih tras): začetna točka (tvoj običajni začetek voženj, zaokrožena na približno 100&nbsp;m), nekaj vmesnih točk nove trase (npr. vznožje klanca, ki ga že voziš) in nastavitve za cestno kolo. Celotnih sledi tvojih voženj ne pošljemo.</li>
+    <li><b>OpenStreetMap</b> (ploščice zemljevida): ko odpreš zemljevid, brskalnik prenese ploščice s&nbsp;strežnikov OpenStreetMap, ki pri tem vidijo prikazano območje.</li>
+    <li><b>GitHub Pages</b> (gostovanje formai.si) in <b>Google Cloud Run</b> (naš strežnik) v&nbsp;strežniških dnevnikih beležita IP naslov in čas zahteve.</li>
+    <li>Pisave so na formai.si&nbsp;— brskalnik ne kliče Google Fonts ali drugih zunanjih pisav.</li>
   </ul>
 
   <h2>Povezane storitve (intervals.icu, Garmin, Strava)</h2>
   <p>Če sam povežeš zunanjo storitev, uvozimo <b>samo</b> tisto, kar je potrebno za trening, in samo dokler je povezava vklopljena.</p>
   <ul>
-    <li><b>intervals.icu:</b> ob povezavi (prijava z intervals.icu ali osebni API ključ) preberemo tvoje opravljene aktivnosti (čas, razdalja, višinska razlika, srčni utrip, moč, cone, naprava), FTP in cone ter — samo če to posebej vklopiš — spanec, HRV in mirovni utrip. V tvoj koledar intervals.icu zapišemo načrtovane vadbe iz FORMAI, da jih dobi tvoja ura. Dostop (žeton ali ključ) je shranjen v podatkih aplikacije na tvoji napravi in, če imaš vklopljeno sinhronizacijo, v tvojem računu; uporabimo ga samo za branje tvojih podatkov in zapis vadb. Povezavo kadar koli prekineš v Nastavitvah ali v nastavitvah intervals.icu.</li>
-    <li><b>Garmin:</b> podatki z naprav Garmin pridejo prek intervals.icu ali iz datotek, ki jih uvoziš sam. Uporabimo jih izključno za prikaz tvojega napredka, izračun obremenitve in prilagoditev tvojega načrta treninga. Garminovih podatkov <b>ne prodajamo</b>, ne delimo s tretjimi in ne uporabljamo za oglaševanje ali profiliranje. Uvožene aktivnosti lahko kadar koli izbrišeš skupaj s svojimi podatki.</li>
-    <li><b>Strava:</b> enak obseg in enaka pravila. Aktivnosti s Strave (tudi prek intervals.icu) se <b>ne pošiljajo v AI obdelavo</b> — zanje uporabljamo lokalni izračun v tvoji napravi. Dostopni žetoni Strave so shranjeni samo na našem strežniku in niso vidni v brskalniku.</li>
+    <li><b>intervals.icu:</b> ob povezavi (prijava z&nbsp;intervals.icu ali osebni API ključ) preberemo tvoje opravljene aktivnosti (čas, razdalja, višinska razlika, srčni utrip, moč, cone, naprava, GPS sled), FTP in cone ter&nbsp;— samo če to posebej vklopiš&nbsp;— spanec, HRV in mirovni utrip. V&nbsp;tvoj koledar intervals.icu zapišemo načrtovane vadbe iz FORMAI, da jih dobi tvoja ura. Dostop (žeton ali ključ) je shranjen v&nbsp;podatkih aplikacije na tvoji napravi in, ko si prijavljen, v&nbsp;tvojem računu (sinhronizacija); uporabimo ga samo za branje tvojih podatkov in zapis vadb. Pri prijavi z&nbsp;intervals.icu kodo za žeton zamenja naš strežnik, ki žetona ne shrani. Povezavo kadar koli prekineš v&nbsp;Nastavitvah ali v&nbsp;nastavitvah intervals.icu.</li>
+    <li><b>Garmin:</b> podatki z&nbsp;naprav Garmin pridejo prek intervals.icu ali iz datotek, ki jih uvoziš sam. Uporabimo jih izključno za prikaz tvojega napredka, izračun obremenitve in prilagoditev tvojega načrta treninga. Garminovih podatkov <b>ne prodajamo</b>, ne delimo s&nbsp;tretjimi in ne uporabljamo za oglaševanje ali profiliranje. Uvožene aktivnosti lahko kadar koli izbrišeš skupaj s&nbsp;svojimi podatki.</li>
+    <li><b>Strava:</b> FORMAI s&nbsp;Stravo ni več neposredno povezan. Aktivnosti, ki izvirajo s&nbsp;Strave in pridejo prek intervals.icu, v&nbsp;aplikaciji vidiš, v&nbsp;AI pa jih <b>ne pošiljamo nikoli</b>&nbsp;— zanje uporabljamo samo izračun na tvoji napravi; njihovih GPS sledi ne shranjujemo. Morebitni dostopni žetoni iz prejšnje neposredne povezave s&nbsp;Stravo so shranjeni samo na našem strežniku in se izbrišejo z&nbsp;izbrisom računa.</li>
   </ul>
 
   <h2>Tedensko vprašanje (testni program)</h2>
   <ul>
-    <li>Po prvem tednu uporabe te aplikacija največ enkrat na teden vpraša eno stvar (odgovor A–D). Lahko ga preskočiš ali vprašanja izklopiš (»ne sprašuj več«).</li>
-    <li>Če odgovoriš, na naš strežnik pošljemo samo: vprašanje, tvoj odgovor, naključno oznako namesto imena ali e-pošte, kodo povabila (če si prišel prek povezave s kodo), število dni uporabe in različico aplikacije. Podatkov o treningu, prehrani ali počutju ne pošljemo.</li>
+    <li>Po prvem tednu uporabe te aplikacija največ enkrat na teden vpraša eno stvar (odgovor A–D). Vprašanje lahko preskočiš ali vprašanja izklopiš (»ne&nbsp;sprašuj&nbsp;več«).</li>
+    <li>Če odgovoriš, na naš strežnik pošljemo samo: oznako vprašanja, tvoj odgovor, naključno oznako namesto imena ali e-pošte, kodo povabila (če si prišel prek povezave s&nbsp;kodo), število dni uporabe in različico aplikacije. Podatkov o&nbsp;treningu, prehrani ali počutju ne pošljemo.</li>
+    <li>Naključna oznaka je shranjena v&nbsp;tvojih nastavitvah, ki se ob prijavi sinhronizirajo, zato so odgovori <b>psevdonimni</b>, ne anonimni.</li>
     <li>Odgovore vidi samo razvijalec in jih uporablja izključno za izboljšave FORMAI.</li>
+  </ul>
+
+  <h2>Kako dolgo hranimo podatke</h2>
+  <ul>
+    <li><b>Na napravi:</b> dokler jih ne izbrišeš.</li>
+    <li><b>V&nbsp;oblaku</b> (sinhronizirani podatki, števci in zapisi AI, status Pro, odgovori na tedensko vprašanje): do izbrisa računa.</li>
+    <li><b>Strežniški dnevniki</b> (Google Cloud Run, GitHub Pages): toliko časa, kot določajo privzeta pravila Googla oziroma GitHuba.</li>
   </ul>
 
   <h2>Tvoje pravice (GDPR)</h2>
   <ul>
-    <li><b>Izvoz:</b> v Nastavitvah → »Izvozi varnostno kopijo« kadar koli preneseš vse svoje podatke.</li>
-    <li><b>Izbris:</b> počisti podatke brskalnika in/ali nam piši za izbris sinhroniziranih podatkov — izbrišemo jih v 30 dneh.</li>
-    <li><b>Vpogled/popravek:</b> vsi podatki so ti vidni in urejljivi neposredno v aplikaciji.</li>
+    <li><b>Izvoz:</b> v&nbsp;Nastavitvah&nbsp;→ »Izvozi&nbsp;vse« kadar koli preneseš vse svoje podatke (datoteka JSON).</li>
+    <li><b>Izbris:</b> v&nbsp;Nastavitvah&nbsp;→ »Izbriši&nbsp;račun« izbrišeš račun in vse podatke v&nbsp;oblaku&nbsp;— sinhronizirane podatke, števce in zapise AI, status Pro, odgovore na tedensko vprašanje in morebitne stare žetone Strave; izbris opravi naš strežnik. Podatke na napravi počistiš z&nbsp;»Izbriši&nbsp;na&nbsp;napravi«. Lahko nam tudi pišeš&nbsp;— podatke izbrišemo v&nbsp;30&nbsp;dneh.</li>
+    <li><b>Vpogled in popravek:</b> vsi podatki so ti vidni in urejljivi neposredno v&nbsp;aplikaciji.</li>
+    <li><b>Preklic privolitve:</b> AI obdelavo izklopiš v&nbsp;Nastavitvah (»AI&nbsp;obdelava«), spanec, HRV in mirovni utrip z&nbsp;ure pa s&nbsp;stikalom pri povezavi z&nbsp;intervals.icu; podatke ali račun lahko tudi izbrišeš.</li>
+    <li>Imaš tudi pravico do omejitve obdelave in do ugovora ter pravico do pritožbe pri Informacijskem pooblaščencu Republike Slovenije (<a href="https://www.ip-rs.si/">ip-rs.si</a>).</li>
   </ul>
 
-  <h2>Pogoji uporabe</h2>
+  <h2>Pogoji uporabe (povzetek)</h2>
   <ul>
     <li>Aplikacijo uporabljaš na lastno odgovornost; ocene AI so informativne narave.</li>
-    <li>Brezplačna raba vključuje omejeno število AI dejanj na dan; Pro naročnina neomejeno.</li>
-    <li>Naročnino lahko kadar koli prekineš; velja do konca plačanega obdobja.</li>
-    <li>Storitev lahko posodabljamo ali spreminjamo; o pomembnih spremembah te obvestimo v aplikaciji.</li>
+    <li>FORMAI je v&nbsp;brezplačnem zgodnjem dostopu; brezplačna raba vključuje do 10&nbsp;AI dejanj na dan. Plačljivega paketa trenutno ni.</li>
+    <li>Storitev lahko posodabljamo ali spreminjamo; o&nbsp;pomembnih spremembah te obvestimo v&nbsp;aplikaciji.</li>
   </ul>
+  <p>Celotni pogoji: <a href="pogoji.html">Pogoji uporabe</a> (<a href="terms.html" hreflang="en" lang="en">English</a>).</p>
 
   <h2>Kontakt</h2>
-  <p>Upravljavec podatkov: <b>Blaž Gregorc</b>, Slovenija.</p>
+  <p>Upravljavec podatkov: <b>Blaž Gregorc</b>, fizična oseba, Slovenija.</p>
   <p>Vprašanja, izvoz ali izbris podatkov: <a href="mailto:blaz.gregorc@formai.si?subject=FORMAI%20zasebnost">blaz.gregorc@formai.si</a>.</p>
-  <p style="margin-top:20px"><a href="pogoji.html">Pogoji uporabe</a> · <a href="forma-trener.html">Nazaj v aplikacijo</a></p>
+  <p style="margin-top:30px"><a href="pogoji.html">Pogoji uporabe</a> · <a href="privacy.html" hreflang="en" lang="en">English</a> · <a href="/">Nazaj v&nbsp;aplikacijo</a></p>
 </div>
 </body>
 </html>
