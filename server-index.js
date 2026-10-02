@@ -1,6 +1,7 @@
 /* ============================================================
-   PEAKFORM — strežnik (Cloud Run)
-   1) AI proxy: Gemini prek TVOJEGA ključa (prijava + Pro/kvota)
+   FORMAI — strežnik (Cloud Run)
+   1) AI proxy: Gemini prek TVOJEGA ključa (prijava + Pro/kvota); samo dovoljena modela,
+      ob preobremenitvi (503/429) takoj rezervni model; porabljeno predplačilo (402) → 503 ai_placilo
    2) Strava OAuth "na en klik": žetoni uporabnikov v Firestore,
       aplikacija nikoli ne vidi skrivnosti
    ============================================================ */
@@ -11,6 +12,8 @@ const crypto = require("crypto");
 const {
   GEMINI_API_KEY,                    // OBVEZNO: tvoj Gemini ključ
   DEFAULT_MODEL = "gemini-flash-latest",
+  FALLBACK_MODEL = "gemini-2.5-flash",  // ko je DEFAULT_MODEL preobremenjen (503 »high demand«) ali je njegova kvota polna (429)
+  GEMINI_TIMEOUT_MS = "60000",          // časovna omejitev enega klica Gemini (→ 504)
   // Privzetke držimo na produkcijski domeni: če se ob ponovnem deployu izgubijo
   // spremenljivke okolja, mora aplikacija še vedno delati, ne pa tiho odpovedati.
   ALLOWED_ORIGINS = "https://formai.si,https://www.formai.si,https://poni-9.github.io,http://localhost:8080,http://127.0.0.1:8080",
@@ -80,6 +83,33 @@ async function meter(uid) {
     return true;
   }
 }
+/** Vrni mesto v dnevni kvoti, ko Gemini ni odgovoril po naši krivdi (preobremenjen, predplačilo, časovna omejitev). */
+async function unmeter(uid) {
+  const day = new Date().toISOString().slice(0, 10);
+  const ref = db.collection("aiUsage").doc(`${uid}_${day}`);
+  try {
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      const used = snap.exists ? (snap.data().n || 0) : 0;
+      if (used > 0) tx.set(ref, { n: used - 1 }, { merge: true });
+    });
+  } catch (e) { console.error("unmeter tx", e && e.message); }
+}
+
+const MODELS = new Set([DEFAULT_MODEL, FALLBACK_MODEL]);
+const AI_TIMEOUT = Math.max(5000, parseInt(GEMINI_TIMEOUT_MS, 10) || 60000);
+/** En klic Gemini z izbranim modelom in časovno omejitvijo. */
+async function askGemini(model, body) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), AI_TIMEOUT);
+  try {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+      { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY }, body: JSON.stringify(body), signal: ctrl.signal });
+    return { status: r.status, ok: r.ok, text: await r.text(), timeout: false };
+  } catch (e) {
+    return { status: 0, ok: false, text: "", timeout: ctrl.signal.aborted, err: e && e.message };
+  } finally { clearTimeout(timer); }
+}
 
 /* ---------------- Gemini proxy ---------------- */
 app.post("/api/gemini", async (req, res) => {
@@ -91,19 +121,29 @@ app.post("/api/gemini", async (req, res) => {
     if (!pro && !(await meter(user.uid)))
       return res.status(402).json({ error: "limit", message: "Brezplačna dnevna AI kvota porabljena — nadgradi na Pro." });
 
-    const model = (req.body.model || DEFAULT_MODEL).replace(/[^a-z0-9.\-]/gi, "");
+    // samo dovoljena modela (aplikacija ne more izbrati dražjega); neznano ime → privzeti
+    const wanted = String(req.body.model || DEFAULT_MODEL).replace(/[^a-z0-9.\-]/gi, "");
+    let model = MODELS.has(wanted) ? wanted : DEFAULT_MODEL;
     const body = req.body.body;
     if (!body || !body.contents) return res.status(400).json({ error: "manjka body.contents" });
 
-    const r = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-      { method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": GEMINI_API_KEY },
-        body: JSON.stringify(body) });
-
-    const text = await r.text();
-    db.collection("aiLog").add({ uid: user.uid, pro, model, ok: r.ok, status: r.status, t: Date.now() }).catch(()=>{});
-    res.status(r.status).type("application/json").send(text);
+    let r = await askGemini(model, body);
+    // preobremenjen ali polna kvota tega modela → isti zahtevek takoj na rezervni model (en krog manj za telefon)
+    if (!r.timeout && (r.status === 503 || r.status === 429) && model !== FALLBACK_MODEL) {
+      console.warn("gemini", model, r.status, "→ rezervni", FALLBACK_MODEL);
+      model = FALLBACK_MODEL;
+      r = await askGemini(model, body);
+    }
+    db.collection("aiLog").add({ uid: user.uid, pro, model, ok: r.ok, status: r.timeout ? 504 : r.status, t: Date.now() }).catch(()=>{});
+    if (r.ok) return res.status(200).type("application/json").send(r.text);
+    // neuspeh po naši krivdi: mesto v kvoti nazaj
+    if (!pro && (r.timeout || r.status === 0 || r.status === 402 || r.status === 429 || r.status >= 500)) unmeter(user.uid).catch(() => {});
+    if (r.timeout) return res.status(504).json({ error: "ai_casovna_omejitev" });
+    if (r.status === 0) { console.error("gemini omrežje:", r.err); return res.status(502).json({ error: "ai_ni_dosegljiv" }); }
+    // Google: porabljeno predplačilo (od 18. 9. 2026 402 namesto 429) — to NI uporabnikova kvota; podrobnost samo v dnevnik
+    if (r.status === 402) { console.error("gemini 402 (predplačilo):", r.text.slice(0, 300)); return res.status(503).json({ error: "ai_placilo" }); }
+    if (r.status >= 500 || r.status === 429) console.error("gemini", r.status, r.text.slice(0, 300));
+    res.status(r.status).type("application/json").send(r.text);
   } catch (e) { res.status(500).json({ error: String(e.message || e).slice(0, 200) }); }
 });
 
@@ -372,5 +412,5 @@ app.get("/pilot/summary", async (req, res) => {
   } catch (e) { res.status(500).json({ error: "shramba" }); }
 });
 
-app.get("/health", (_, res) => res.json({ ok: true, model: DEFAULT_MODEL, strava: !!STRAVA_CLIENT_ID, stripe: !!STRIPE_WEBHOOK_SECRET, icu: !!(ICU_CLIENT_ID && ICU_CLIENT_SECRET) }));
+app.get("/health", (_, res) => res.json({ ok: true, model: DEFAULT_MODEL, fallback: FALLBACK_MODEL, strava: !!STRAVA_CLIENT_ID, stripe: !!STRIPE_WEBHOOK_SECRET, icu: !!(ICU_CLIENT_ID && ICU_CLIENT_SECRET) }));
 app.listen(PORT, () => console.log("[peakform-server] live on :" + PORT));
