@@ -416,5 +416,76 @@ app.get("/pilot/summary", async (req, res) => {
   } catch (e) { res.status(500).json({ error: "shramba" }); }
 });
 
+/* ---------- pripombe uporabnikov: besedilo, posnetek zaslona, tehnični podatki ----------
+   POST /feedback — vsak (prijava neobvezna, z njo e-pošta za odgovor); GET /feedback/list, GET in POST /feedback/:id —
+   samo skrbnik (ADMIN_EMAILS). Posnetek je v dokumentu (do ~750 KB besedila; Firestore do 1 MiB); »rešeno« ga izbriše. */
+const fbHits = new Map();
+const FB_KINDS = new Set(["nejasno", "napaka", "predlog"]);
+async function optionalUser(req) {
+  const h = req.headers.authorization || "";
+  const tok = h.startsWith("Bearer ") ? h.slice(7) : null;
+  if (!tok) return null;
+  try { return await admin.auth().verifyIdToken(tok); } catch { return null; }
+}
+async function requireAdmin(req, res) {
+  const u = await requireUser(req, res); if (!u) return null;
+  const admins = ADMIN_EMAILS.split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+  if (!u.email || !u.email_verified || !admins.includes(u.email.toLowerCase())) { res.status(403).json({ error: "ni_dostopa" }); return null; }
+  return u;
+}
+app.post("/feedback", async (req, res) => {
+  const ip = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim() || req.ip || "?";
+  const now = Date.now(), h = (fbHits.get(ip) || []).filter(t => now - t < 3600_000); h.push(now); fbHits.set(ip, h);
+  if (fbHits.size > 5000) fbHits.clear();
+  if (h.length > 20) return res.status(429).json({ error: "prevec" });
+  const b = req.body || {};
+  const kind = FB_KINDS.has(b.kind) ? b.kind : "nejasno";
+  const text = String(b.text || "").slice(0, 3000);
+  const shot = typeof b.shot === "string" && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(b.shot) ? b.shot : null;
+  if (shot && shot.length > 750000) return res.status(413).json({ error: "prevelik_posnetek" });
+  if (!text.trim() && !shot) return res.status(400).json({ error: "prazno" });
+  const anon = /^[a-f0-9]{16}$/.test(String(b.anon || "")) ? String(b.anon) : null;
+  const id = String(b.id || "").replace(/[^a-z0-9]/gi, "").slice(0, 32);
+  const m = b.meta && typeof b.meta === "object" ? b.meta : {};
+  const meta = {
+    v: String(m.v || "").slice(0, 20), route: String(m.route || "").slice(0, 60), w: Number.isFinite(+m.w) ? Math.round(+m.w) : null, h: Number.isFinite(+m.h) ? Math.round(+m.h) : null,
+    ua: String(m.ua || "").slice(0, 200), lang: String(m.lang || "").slice(0, 20), online: m.online !== false, at: String(m.at || "").slice(0, 30),
+    errs: Array.isArray(m.errs) ? m.errs.slice(-8).map(e => String(e).slice(0, 220)) : [],
+  };
+  const u = await optionalUser(req);
+  try {
+    const doc = { kind, text, shot, meta, anon, uid: u ? u.uid : null, email: u && u.email ? u.email : null, status: "novo", at: admin.firestore.FieldValue.serverTimestamp() };
+    // ponovno pošiljanje iz vrste na napravi (isti id) ne podvoji
+    if (id && anon) await db.collection("feedback").doc(`${anon}_${id}`).set(doc); else await db.collection("feedback").add(doc);
+    res.json({ ok: true });
+  } catch (e) { console.error("feedback", e && e.message); res.status(500).json({ error: "shramba" }); }
+});
+app.get("/feedback/list", async (req, res) => {
+  const u = await requireAdmin(req, res); if (!u) return;
+  try {
+    const q = req.query.vse === "1" ? db.collection("feedback").orderBy("at", "desc").limit(200) : db.collection("feedback").where("status", "==", "novo").limit(200);
+    const snap = await q.get();
+    const items = snap.docs.map(d => { const x = d.data(); return { id: d.id, kind: x.kind, text: x.text || "", status: x.status || "novo", hasShot: !!x.shot, meta: x.meta || {}, email: x.email || null, anon: x.anon || "", at: x.at && x.at.toMillis ? x.at.toMillis() : null }; })
+      .sort((a, b2) => (b2.at || 0) - (a.at || 0));
+    res.json({ items });
+  } catch (e) { console.error("feedback list", e && e.message); res.status(500).json({ error: "shramba" }); }
+});
+app.get("/feedback/:id", async (req, res) => {
+  const u = await requireAdmin(req, res); if (!u) return;
+  try {
+    const d = await db.collection("feedback").doc(String(req.params.id).slice(0, 80)).get();
+    if (!d.exists) return res.status(404).json({ error: "ni" });
+    res.json({ shot: d.data().shot || null });
+  } catch (e) { res.status(500).json({ error: "shramba" }); }
+});
+app.post("/feedback/:id", async (req, res) => {
+  const u = await requireAdmin(req, res); if (!u) return;
+  const status = req.body && req.body.status === "reseno" ? "reseno" : "novo";
+  try {
+    await db.collection("feedback").doc(String(req.params.id).slice(0, 80)).set({ status, ...(status === "reseno" ? { shot: null, resolvedAt: admin.firestore.FieldValue.serverTimestamp() } : {}) }, { merge: true });
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: "shramba" }); }
+});
+
 app.get("/health", (_, res) => res.json({ ok: true, model: DEFAULT_MODEL, fallback: FALLBACK_MODEL, strava: !!STRAVA_CLIENT_ID, stripe: !!STRIPE_WEBHOOK_SECRET, icu: !!(ICU_CLIENT_ID && ICU_CLIENT_SECRET) }));
 app.listen(PORT, () => console.log("[peakform-server] live on :" + PORT));
