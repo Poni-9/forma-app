@@ -17,7 +17,7 @@ const {
   // Privzetke držimo na produkcijski domeni: če se ob ponovnem deployu izgubijo
   // spremenljivke okolja, mora aplikacija še vedno delati, ne pa tiho odpovedati.
   ALLOWED_ORIGINS = "https://formai.si,https://www.formai.si,https://poni-9.github.io,http://localhost:8080,http://127.0.0.1:8080",
-  FREE_CALLS_PER_DAY = "10",
+  FREE_CALLS_PER_DAY = "1000",
   STRIPE_SECRET_KEY = "",            // sk_live_... ali sk_test_... (Stripe → Developers → API keys)
   STRIPE_WEBHOOK_SECRET = "",        // whsec_... (Stripe → Developers → Webhooks)
   STRAVA_CLIENT_ID = "",             // iz strava.com/settings/api
@@ -119,7 +119,7 @@ app.post("/api/gemini", async (req, res) => {
 
     const pro = await isPro(user.uid);
     if (!pro && !(await meter(user.uid)))
-      return res.status(402).json({ error: "limit", message: "Brezplačna dnevna AI kvota porabljena — nadgradi na Pro." });
+      return res.status(402).json({ error: "limit", limit: parseInt(FREE_CALLS_PER_DAY, 10) || null, message: "Dnevna meja AI je dosežena — nova se odpre jutri." });
 
     // samo dovoljena modela (aplikacija ne more izbrati dražjega); neznano ime → privzeti
     const wanted = String(req.body.model || DEFAULT_MODEL).replace(/[^a-z0-9.\-]/gi, "");
@@ -136,8 +136,12 @@ app.post("/api/gemini", async (req, res) => {
     }
     db.collection("aiLog").add({ uid: user.uid, pro, model, ok: r.ok, status: r.timeout ? 504 : r.status, t: Date.now() }).catch(()=>{});
     if (r.ok) return res.status(200).type("application/json").send(r.text);
+    // Google zavrne KLJUČ (401 npr. ACCESS_TOKEN_TYPE_UNSUPPORTED, 403 PERMISSION_DENIED, 400 API_KEY_INVALID) — to ni
+    // uporabnikova prijava; prej je šel 401 naprej in aplikacija je rekla »Za AI se moraš prijaviti«
+    const keyBad = r.status === 401 || r.status === 403 || (r.status === 400 && /API_KEY_INVALID|API key/i.test(r.text || ""));
     // neuspeh po naši krivdi: mesto v kvoti nazaj
-    if (!pro && (r.timeout || r.status === 0 || r.status === 402 || r.status === 429 || r.status >= 500)) unmeter(user.uid).catch(() => {});
+    if (!pro && (keyBad || r.timeout || r.status === 0 || r.status === 402 || r.status === 429 || r.status >= 500)) unmeter(user.uid).catch(() => {});
+    if (keyBad) { console.error("gemini", r.status, "(ključ):", (r.text || "").slice(0, 300)); return res.status(503).json({ error: "ai_kljuc" }); }
     if (r.timeout) return res.status(504).json({ error: "ai_casovna_omejitev" });
     if (r.status === 0) { console.error("gemini omrežje:", r.err); return res.status(502).json({ error: "ai_ni_dosegljiv" }); }
     // Google: porabljeno predplačilo (od 18. 9. 2026 402 namesto 429) — to NI uporabnikova kvota; podrobnost samo v dnevnik
