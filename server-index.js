@@ -280,64 +280,36 @@ app.post("/api/claude/povabilo", async (req, res) => {
   } catch (e) { console.error("povabilo", e && e.message); return res.status(500).json({ error: "streznik" }); }
 });
 
-const claudeBusy = new Set();   // en klic trenerja naenkrat na uporabnika (na tej instanci)
-app.post("/api/claude", async (req, res) => {
-  let user = null, pro = false, metered = false, mine = false;
-  const refund = () => { if (metered && user) unmeter(user.uid, "claudeUsage").catch(() => {}); metered = false; };
+/**
+ * TRENER (Claude) KOT OPRAVILO (14. 10.): premislek lahko traja minute, telefon pa stran medtem zamrzne ali prekine
+ * povezavo. Zato strežnik klic opravi do konca sam, stanje in rezultat hrani v claudeJobs/{id} (uid, namen, faza,
+ * besedilo), aplikacija pa ga spremlja (GET /api/claude/job/:id) in ob vrnitvi rezultat samo prevzame. Tečoče opravilo
+ * istega uporabnika se ob novem zahtevku vrne isto (ponovno odprta aplikacija se nanj priklopi). Rezultat ostane 1 h.
+ */
+const JOB_TTL_MS = 60 * 60 * 1000;
+const jobsRunning = new Map();   // uid → jobId (na tej instanci); pravo stanje je v Firestore
+const jobsAbort = new Map();     // jobId → AbortController (»ne čakam« ustavi model, da ne plačujemo zastonj)
+const jobRef = id => db.collection("claudeJobs").doc(id);
+async function runClaudeJob(id, uid, pro, purpose, effort, body) {
+  const t0 = Date.now();
+  const ctrl = new AbortController(); jobsAbort.set(id, ctrl);
+  let faza = "misli", lastHb = 0;
+  const save = (x) => jobRef(id).set({ ...x, hb: Math.round((Date.now() - t0) / 1000), t: Date.now() }, { merge: true }).catch(e => console.error("job save", e && e.message));
+  const onPhase = f => { if (f !== faza) { faza = f; void save({ faza }); } };
+  const hb = setInterval(() => { if (Date.now() - lastHb >= 15000) { lastHb = Date.now(); void save({ faza }); } }, 15000);
   try {
-    if (!ANTHROPIC_API_KEY) return res.status(503).json({ error: "claude_ni_nastavljen" });
-    user = await requireUser(req, res); if (!user) return;
-    if (!(await claudeAllowed(user))) return res.status(403).json({ error: "claude_ni_dovoljen" });
-    if (claudeBusy.has(user.uid)) return res.status(429).json({ error: "claude_ze_dela" });
-    claudeBusy.add(user.uid); mine = true;
-    pro = await isPro(user.uid);
-    // lasten dnevni števec (Claude je dražji od Gemini): tudi PRO ima strop
-    const lim = pro ? CLAUDE_CALLS_PER_DAY_PRO : CLAUDE_CALLS_PER_DAY;
-    if (!(await meter(user.uid, "claudeUsage", lim)))
-      return res.status(402).json({ error: "limit", limit: parseInt(lim, 10) || null, message: "Dnevna meja trenerja je dosežena — nova se odpre jutri." });
-    metered = true;
-    const purpose = Object.prototype.hasOwnProperty.call(CLAUDE_PURPOSES, req.body.purpose) ? req.body.purpose : "predlog";
-    const cap = CLAUDE_EFFORTS.indexOf(CLAUDE_EFFORT_CAP) >= 0 ? CLAUDE_EFFORTS.indexOf(CLAUDE_EFFORT_CAP) : CLAUDE_EFFORTS.length - 1;
-    const want = CLAUDE_EFFORTS.indexOf(req.body.effort) >= 0 ? CLAUDE_EFFORTS.indexOf(req.body.effort) : 2;
-    const effort = CLAUDE_EFFORTS[Math.min(want, cap)];
-    const system = String(req.body.system || "").slice(0, 60000);
-    const content = String(req.body.user || "").slice(0, 300000);
-    if (!content) { refund(); return res.status(400).json({ error: "manjka user" }); }
-    const schema = req.body.schema && typeof req.body.schema === "object" && JSON.stringify(req.body.schema).length < 60000 ? req.body.schema : null;
-    const body = {
-      model: CLAUDE_MODEL,
-      max_tokens: CLAUDE_PURPOSES[purpose],
-      ...(system ? { system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }] } : {}),
-      messages: [{ role: "user", content }],
-      thinking: { type: "adaptive" },
-      output_config: { effort, ...(schema ? { format: { type: "json_schema", schema } } : {}) },
-      metadata: { user_id: crypto.createHash("sha256").update("formai:" + user.uid).digest("hex").slice(0, 32) },
-    };
-    // od tu naprej odgovor teče: glava 200, nato vrstice
-    res.status(200).set({ "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no" });
-    res.flushHeaders();
-    const t0 = Date.now();
-    let faza = "misli", done = false;
-    const line = o => { try { res.write(JSON.stringify(o) + "\n"); } catch { /* zaprto */ } };
-    const hb = setInterval(() => line({ hb: Math.round((Date.now() - t0) / 1000), faza }), 10000);
-    // aplikacija zaprta: ustavi model (ne plačujemo razmisleka, ki ga nihče ne bo videl)
-    const gone = new AbortController();
-    res.on("close", () => { if (!done) gone.abort(); });
-    const onPhase = f => { if (f !== faza) { faza = f; line({ hb: Math.round((Date.now() - t0) / 1000), faza }); } };
-    let r = await askClaude(body, gone.signal, onPhase);
+    let r = await askClaude(body, ctrl.signal, onPhase);
     // preobremenjen (529) ali notranja napaka takoj na začetku (ne po dolgem premisleku): en ponovni poskus po 2 s
-    if (!r.ok && !r.timeout && !gone.signal.aborted && !r.text && Date.now() - t0 < 30000 && (r.status === 529 || r.status === 500)) { await new Promise(x => setTimeout(x, 2000)); r = await askClaude(body, gone.signal, onPhase); }
+    if (!r.ok && !r.timeout && !ctrl.signal.aborted && !r.text && Date.now() - t0 < 30000 && (r.status === 529 || r.status === 500)) { await new Promise(x => setTimeout(x, 2000)); r = await askClaude(body, ctrl.signal, onPhase); }
     clearInterval(hb);
-    done = true;
-    db.collection("aiLog").add({ uid: user.uid, pro, model: r.model || CLAUDE_MODEL, purpose, effort, ok: r.ok, status: r.timeout ? 504 : r.status, stop: r.stop || null, usage: r.usage, ms: Date.now() - t0, t: Date.now() }).catch(() => {});
-    const fail = (error, status) => { refund(); res.end(JSON.stringify({ error, status }) + "\n"); };
-    if (gone.signal.aborted) { refund(); return res.end(); }
+    if (ctrl.signal.aborted) { if (!pro) await unmeter(uid, "claudeUsage").catch(() => {}); return save({ state: "napaka", error: "preklicano", status: 499, faza: "konec" }); }
+    db.collection("aiLog").add({ uid, pro, model: r.model || CLAUDE_MODEL, purpose, effort, ok: r.ok, status: r.timeout ? 504 : r.status, stop: r.stop || null, usage: r.usage, ms: Date.now() - t0, t: Date.now() }).catch(() => {});
+    const fail = async (error, status) => { if (!pro) await unmeter(uid, "claudeUsage").catch(() => {}); await save({ state: "napaka", error, status, faza: "konec" }); };
     if (r.ok) {
       const text = r.text.trim();
       if (!text) return fail("claude_prazno", 502);
-      // odrezan (max_tokens), zavrnjen ali prekinjen odgovor ni načrt — aplikacija gre na rezervo, klic se ne šteje
       if (r.stop !== "end_turn") { console.error("claude stop:", r.stop); return fail("claude_nedokoncano", 502); }
-      return res.end(JSON.stringify({ text, stop: r.stop, model: r.model, usage: r.usage }) + "\n");
+      return save({ state: "koncano", text, stop: r.stop, model: r.model, usage: r.usage, faza: "konec" });
     }
     const msg = r.msg || "";
     if (r.timeout) return fail("ai_casovna_omejitev", 504);
@@ -349,10 +321,94 @@ app.post("/api/claude", async (req, res) => {
     console.error("claude", r.status, msg.slice(0, 300));
     return fail("claude_zahtevek", r.status === 413 ? 413 : 400);
   } catch (e) {
-    refund();
-    if (res.headersSent) { try { res.end(JSON.stringify({ error: "streznik", status: 500 }) + "\n"); } catch { /* zaprto */ } return; }
-    res.status(500).json({ error: String(e.message || e).slice(0, 200) });
-  } finally { if (mine && user) claudeBusy.delete(user.uid); }
+    clearInterval(hb);
+    console.error("claude job", e && e.message);
+    if (!pro) unmeter(uid, "claudeUsage").catch(() => {});
+    await save({ state: "napaka", error: "streznik", status: 500, faza: "konec" });
+  } finally { jobsAbort.delete(id); if (jobsRunning.get(uid) === id) jobsRunning.delete(uid); }
+}
+/** Pospravljanje: opravila po izteku (exp = začetek + najdaljši klic + 1 h) se izbrišejo — z rezultatom vred. */
+async function sweepClaudeJobs() {
+  try {
+    const old = await db.collection("claudeJobs").where("exp", "<", Date.now()).limit(300).get();
+    await Promise.all(old.docs.map(d => d.ref.delete().catch(() => {})));
+  } catch (e) { console.error("claudeJobs pospravljanje", e && e.message); }
+}
+setTimeout(() => { void sweepClaudeJobs(); setInterval(() => void sweepClaudeJobs(), 30 * 60 * 1000).unref?.(); }, 60 * 1000).unref?.();
+/** Javni pogled na opravilo (brez poziva). */
+const jobView = (id, d) => ({ id, state: d.state, faza: d.faza || "misli", hb: d.hb || 0, purpose: d.purpose || null, ...(d.state === "koncano" ? { text: d.text, stop: d.stop || null, model: d.model || null, usage: d.usage || null } : {}), ...(d.state === "napaka" ? { error: d.error, status: d.status } : {}) });
+
+app.post("/api/claude", async (req, res) => {
+  try {
+    if (!ANTHROPIC_API_KEY) return res.status(503).json({ error: "claude_ni_nastavljen" });
+    const user = await requireUser(req, res); if (!user) return;
+    if (!(await claudeAllowed(user))) return res.status(403).json({ error: "claude_ni_dovoljen" });
+    // isti zahtevek že teče ali je pravkar končan (ponovno odprta aplikacija): vrni isto opravilo, ne začni novega
+    // slike (npr. postava, ki si jo želi): do 3, JPEG/PNG/WEBP/GIF, vsaka do ~2 MB base64 — gredo modelu kot slike
+    const IMG_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+    const images = (Array.isArray(req.body.images) ? req.body.images : []).filter(i => i && IMG_TYPES.has(i.mime) && typeof i.data === "string" && i.data.length < 2_800_000 && /^[A-Za-z0-9+/=]+$/.test(i.data.slice(0, 200))).slice(0, 3);
+    const h = crypto.createHash("sha256").update(JSON.stringify([req.body.purpose, req.body.effort, req.body.system, req.body.user, req.body.schema, images.map(i => i.data)])).digest("hex").slice(0, 32);
+    const same = await db.collection("claudeJobs").where("uid", "==", user.uid).where("h", "==", h).limit(5).get().catch(() => null);
+    if (same && !same.empty) {
+      const hit = same.docs.map(d => ({ id: d.id, x: d.data() })).filter(({ x }) => (x.state === "tece" && Date.now() - (x.t || 0) < 3 * 60 * 1000) || (x.state === "koncano" && x.text && Date.now() - (x.t || 0) < JOB_TTL_MS)).sort((a, b) => (b.x.t0 || 0) - (a.x.t0 || 0))[0];
+      if (hit) return res.status(200).json({ job: jobView(hit.id, hit.x), ze: true });
+    }
+    const pro = await isPro(user.uid);
+    const lim = pro ? CLAUDE_CALLS_PER_DAY_PRO : CLAUDE_CALLS_PER_DAY;
+    if (!(await meter(user.uid, "claudeUsage", lim)))
+      return res.status(402).json({ error: "limit", limit: parseInt(lim, 10) || null, message: "Dnevna meja trenerja je dosežena — nova se odpre jutri." });
+    const purpose = Object.prototype.hasOwnProperty.call(CLAUDE_PURPOSES, req.body.purpose) ? req.body.purpose : "predlog";
+    const cap = CLAUDE_EFFORTS.indexOf(CLAUDE_EFFORT_CAP) >= 0 ? CLAUDE_EFFORTS.indexOf(CLAUDE_EFFORT_CAP) : CLAUDE_EFFORTS.length - 1;
+    const want = CLAUDE_EFFORTS.indexOf(req.body.effort) >= 0 ? CLAUDE_EFFORTS.indexOf(req.body.effort) : 2;
+    const effort = CLAUDE_EFFORTS[Math.min(want, cap)];
+    const system = String(req.body.system || "").slice(0, 60000);
+    const content = String(req.body.user || "").slice(0, 300000);
+    if (!content) { if (!pro) unmeter(user.uid, "claudeUsage").catch(() => {}); return res.status(400).json({ error: "manjka user" }); }
+    const schema = req.body.schema && typeof req.body.schema === "object" && JSON.stringify(req.body.schema).length < 60000 ? req.body.schema : null;
+    const body = {
+      model: CLAUDE_MODEL,
+      max_tokens: CLAUDE_PURPOSES[purpose],
+      ...(system ? { system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }] } : {}),
+      messages: [{ role: "user", content: images.length ? [...images.map(i => ({ type: "image", source: { type: "base64", media_type: i.mime, data: i.data } })), { type: "text", text: content }] : content }],
+      thinking: { type: "adaptive" },
+      output_config: { effort, ...(schema ? { format: { type: "json_schema", schema } } : {}) },
+      metadata: { user_id: crypto.createHash("sha256").update("formai:" + user.uid).digest("hex").slice(0, 32) },
+    };
+    const id = crypto.randomBytes(10).toString("base64url");
+    const t0 = Date.now();
+    await jobRef(id).set({ uid: user.uid, h, purpose, effort, state: "tece", faza: "misli", hb: 0, t0, t: t0, exp: t0 + CLAUDE_TIMEOUT + JOB_TTL_MS });
+    jobsRunning.set(user.uid, id);
+    // teče naprej tudi, ko aplikacija zapre povezavo
+    void runClaudeJob(id, user.uid, pro, purpose, effort, body);
+    return res.status(202).json({ job: jobView(id, { state: "tece", faza: "misli", hb: 0, purpose }) });
+  } catch (e) { res.status(500).json({ error: String(e.message || e).slice(0, 200) }); }
+});
+app.get("/api/claude/job/:id", async (req, res) => {
+  try {
+    const user = await requireUser(req, res); if (!user) return;
+    const id = String(req.params.id || "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 32);
+    const d = await jobRef(id).get().catch(() => null);
+    if (!d || !d.exists || d.data().uid !== user.uid) return res.status(404).json({ error: "ni_opravila" });
+    const x = d.data();
+    // opravilo, ki se je nehalo javljati (instanca ugasnjena): napaka, da aplikacija gre na rezervo
+    if (x.state === "tece" && Date.now() - (x.t || 0) > 3 * 60 * 1000) { await jobRef(id).set({ state: "napaka", error: "claude_prekinjeno", status: 502, faza: "konec" }, { merge: true }).catch(() => {}); if (!(await isPro(user.uid))) unmeter(user.uid, "claudeUsage").catch(() => {}); return res.json({ job: jobView(id, { ...x, state: "napaka", error: "claude_prekinjeno", status: 502 }) }); }
+    res.set("Cache-Control", "no-store");
+    return res.json({ job: jobView(id, x) });
+  } catch (e) { res.status(500).json({ error: String(e.message || e).slice(0, 200) }); }
+});
+/** Aplikacija je rezultat prevzela: besedilo se izbriše (ostane samo zapis brez vsebine). */
+app.delete("/api/claude/job/:id", async (req, res) => {
+  try {
+    const user = await requireUser(req, res); if (!user) return;
+    const id = String(req.params.id || "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 32);
+    const d = await jobRef(id).get().catch(() => null);
+    if (!d || !d.exists || d.data().uid !== user.uid) return res.status(404).json({ error: "ni_opravila" });
+    // še teče (»ne čakam«, zaslon zaprt): ustavi model; sicer samo pozabi besedilo
+    const c = jobsAbort.get(id);
+    if (d.data().state === "tece" && c) { c.abort(); return res.json({ ok: true, ustavljeno: true }); }
+    await jobRef(id).set({ text: admin.firestore.FieldValue.delete(), prevzeto: Date.now() }, { merge: true }).catch(() => {});
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: String(e.message || e).slice(0, 200) }); }
 });
 
 /* ---------------- Strava OAuth (en klik) ---------------- */
