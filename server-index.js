@@ -2,6 +2,7 @@
    FORMAI — strežnik (Cloud Run)
    1) AI proxy: Gemini prek TVOJEGA ključa (prijava + Pro/kvota); samo dovoljena modela,
       ob preobremenitvi (503/429) takoj rezervni model; porabljeno predplačilo (402) → 503 ai_placilo
+      + /api/claude: Claude (Anthropic) za trenerja, ki sestavi načrt (ključ ANTHROPIC_API_KEY samo tukaj)
    2) Strava OAuth "na en klik": žetoni uporabnikov v Firestore,
       aplikacija nikoli ne vidi skrivnosti
    ============================================================ */
@@ -26,6 +27,12 @@ const {
   ICU_CLIENT_ID = "",                // intervals.icu OAuth (https://intervals.icu/oauth/apply)
   ICU_CLIENT_SECRET = "",            // skrivnost — samo na strežniku
   ADMIN_EMAILS = "",                 // e-pošta skrbnika (Google račun) za pregled testnega programa; več z vejico
+  ANTHROPIC_API_KEY = "",            // Claude (Anthropic) za sestavo načrta — samo na strežniku, nikoli v aplikaciji
+  CLAUDE_MODEL = "claude-opus-5-5",  // model za trenerja (vprašanja, predlog, pogajanje, sestava)
+  CLAUDE_TIMEOUT_MS = "840000",      // največji razmislek lahko traja minute; Cloud Run naj ima --timeout=900
+  CLAUDE_EFFORT_CAP = "max",         // strop premisleka (low|medium|high|xhigh|max) — cenejše: high
+  CLAUDE_CALLS_PER_DAY = "30",       // klicev trenerja (Claude) na uporabnika na dan — en načrt je ~4–8 klicev
+  CLAUDE_CALLS_PER_DAY_PRO = "100",  // isto za PRO
   PORT = 8080,
 } = process.env;
 
@@ -63,10 +70,10 @@ async function isPro(uid) {
   catch { return false; }
 }
 
-async function meter(uid) {
+async function meter(uid, coll = "aiUsage", lim = FREE_CALLS_PER_DAY) {
   const day = new Date().toISOString().slice(0, 10);
-  const ref = db.collection("aiUsage").doc(`${uid}_${day}`);
-  const limit = parseInt(FREE_CALLS_PER_DAY, 10);
+  const ref = db.collection(coll).doc(`${uid}_${day}`);
+  const limit = parseInt(lim, 10);
   // Transakcija: brez nje dva vzporedna zavihka oba preberosta n=9 in oba nadaljujeta,
   // zato je bilo dnevno kvoto trivialno obiti z vzporednimi zahtevami.
   try {
@@ -84,9 +91,9 @@ async function meter(uid) {
   }
 }
 /** Vrni mesto v dnevni kvoti, ko Gemini ni odgovoril po naši krivdi (preobremenjen, predplačilo, časovna omejitev). */
-async function unmeter(uid) {
+async function unmeter(uid, coll = "aiUsage") {
   const day = new Date().toISOString().slice(0, 10);
-  const ref = db.collection("aiUsage").doc(`${uid}_${day}`);
+  const ref = db.collection(coll).doc(`${uid}_${day}`);
   try {
     await db.runTransaction(async (tx) => {
       const snap = await tx.get(ref);
@@ -149,6 +156,203 @@ app.post("/api/gemini", async (req, res) => {
     if (r.status >= 500 || r.status === 429) console.error("gemini", r.status, r.text.slice(0, 300));
     res.status(r.status).type("application/json").send(r.text);
   } catch (e) { res.status(500).json({ error: String(e.message || e).slice(0, 200) }); }
+});
+
+/* ---------------- Claude (Anthropic) — trener, ki sestavi načrt ---------------- */
+// Aplikacija pošlje navodila (system), podatke uporabnika (user, brez imena, e-pošte, kraja in Strave — to preveri
+// aplikacija) in obliko odgovora (JSON shema). Strežnik izbere model in strop izhoda; aplikacija ne more izbrati
+// dražjega modela ali najvišjega napora. Vsebine ne shranjujemo — v dnevnik gre le namen, uspeh in število žetonov.
+const CLAUDE_PURPOSES = { vprasanja: 32000, predlog: 64000, sestava: 64000 };   // namen → strop izhoda (z razmislekom)
+const CLAUDE_EFFORTS = ["low", "medium", "high", "xhigh", "max"];
+const CLAUDE_TIMEOUT = Math.max(10000, parseInt(CLAUDE_TIMEOUT_MS, 10) || 840000);
+/**
+ * En klic Claude s pretakanjem (stream): dolg razmislek ne visi na eni tihi povezavi. Zbere besedilo odgovora;
+ * onPhase("misli" | "pise") ob začetku razmisleka in pisanja. Vrne { ok, status, text, stop, model, usage, msg, timeout }.
+ */
+async function askClaude(body, signal, onPhase) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), CLAUDE_TIMEOUT);
+  const stop = () => ctrl.abort();
+  if (signal) signal.addEventListener("abort", stop);
+  const out = { ok: false, status: 0, text: "", stop: null, model: body.model, usage: { in: 0, out: 0, cacheRead: 0 }, msg: "", timeout: false };
+  if (signal && signal.aborted) { clearTimeout(timer); return out; }
+  try {
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "content-type": "application/json", "anthropic-version": "2023-06-01", "x-api-key": ANTHROPIC_API_KEY },
+      body: JSON.stringify({ ...body, stream: true }), signal: ctrl.signal,
+    });
+    out.status = r.status;
+    if (!r.ok) {
+      const t = await r.text();
+      try { out.msg = String(JSON.parse(t).error.message || ""); } catch { out.msg = t.slice(0, 300); }
+      return out;
+    }
+    const dec = new TextDecoder();
+    let buf = "";
+    for await (const chunk of r.body) {
+      buf += dec.decode(chunk, { stream: true });
+      let i;
+      while ((i = buf.indexOf("\n\n")) >= 0) {
+        const ev = buf.slice(0, i); buf = buf.slice(i + 2);
+        const line = ev.split("\n").find(l => l.startsWith("data:"));
+        if (!line) continue;
+        let d; try { d = JSON.parse(line.slice(5)); } catch { continue; }
+        if (d.type === "message_start" && d.message) {
+          out.model = d.message.model || out.model;
+          const u = d.message.usage || {};
+          out.usage.in = u.input_tokens || 0; out.usage.cacheRead = u.cache_read_input_tokens || 0;
+        } else if (d.type === "content_block_start" && d.content_block) {
+          if (onPhase) onPhase(d.content_block.type === "text" ? "pise" : "misli");
+        } else if (d.type === "content_block_delta" && d.delta && d.delta.type === "text_delta") {
+          out.text += d.delta.text || "";
+        } else if (d.type === "message_delta") {
+          if (d.delta && d.delta.stop_reason) out.stop = d.delta.stop_reason;
+          if (d.usage && d.usage.output_tokens) out.usage.out = d.usage.output_tokens;
+        } else if (d.type === "error") {
+          const t = d.error && d.error.type;
+          out.status = t === "overloaded_error" ? 529 : t === "rate_limit_error" ? 429 : 500;
+          out.msg = String((d.error && d.error.message) || t || "");
+          return out;
+        }
+      }
+    }
+    out.ok = true;
+    return out;
+  } catch (e) {
+    out.status = 0; out.timeout = ctrl.signal.aborted && !(signal && signal.aborted); out.msg = String((e && e.message) || "");
+    return out;
+  } finally { clearTimeout(timer); if (signal) signal.removeEventListener("abort", stop); }
+}
+/**
+ * TRENER (Claude): vprašanja, predlog tedna, pogajanje in sestava načrta. Model dobi proste roke (premislek do
+ * CLAUDE_EFFORT_CAP). Odgovor teče kot NDJSON: vsakih 10 s vrstica {hb, faza} (povezava ostane živa, aplikacija
+ * pokaže, da trener dela), zadnja vrstica je {text, …} ali {error, status}.
+ */
+/**
+ * DOSTOP DO CLAUDE (Blaž, 14. 10.: »naj ne bo dostopen za vse, samo zame in za tistega, ki mu pošljem povezavo,
+ * ostali samo Gemini«): skrbnik (ADMIN_EMAILS) in uporabniki s povabilom (claudeUsers/{uid}, piše samo strežnik).
+ * Povabilo: skrbnik ustvari kodo (claudeInvites/{koda}, enkratna), prejemnik jo z računom unovči.
+ */
+const isAdminTok = u => { const a = ADMIN_EMAILS.split(",").map(x => x.trim().toLowerCase()).filter(Boolean); return !!(u && u.email && u.email_verified && a.includes(u.email.toLowerCase())); };
+async function claudeAllowed(u) {
+  if (isAdminTok(u)) return true;
+  try { const d = await db.collection("claudeUsers").doc(u.uid).get(); return d.exists && d.data().on === true; } catch { return false; }
+}
+app.get("/api/claude/dostop", async (req, res) => {
+  const u = await requireUser(req, res); if (!u) return;
+  res.json({ ok: !!ANTHROPIC_API_KEY && (await claudeAllowed(u)), skrbnik: isAdminTok(u), kljuc: !!ANTHROPIC_API_KEY });
+});
+app.post("/api/claude/povabilo/nova", async (req, res) => {
+  const u = await requireAdmin(req, res); if (!u) return;
+  const koda = crypto.randomBytes(12).toString("base64url");
+  const max = Math.max(1, Math.min(20, parseInt(req.body && req.body.max, 10) || 1));
+  await db.collection("claudeInvites").doc(koda).set({ by: u.uid, t: Date.now(), uses: 0, max, users: [] });
+  res.json({ koda, max });
+});
+app.get("/api/claude/povabila", async (req, res) => {
+  const u = await requireAdmin(req, res); if (!u) return;
+  const snap = await db.collection("claudeUsers").orderBy("t", "desc").limit(200).get().catch(() => null);
+  res.json({ uporabniki: snap ? snap.docs.map(d => ({ email: d.data().email || null, t: d.data().t || null, on: d.data().on === true })) : [] });
+});
+const inviteHits = new Map();
+app.post("/api/claude/povabilo", async (req, res) => {
+  const u = await requireUser(req, res); if (!u) return;
+  const now = Date.now(), h = (inviteHits.get(u.uid) || []).filter(t => now - t < 3600_000); h.push(now); inviteHits.set(u.uid, h);
+  if (inviteHits.size > 5000) inviteHits.clear();
+  if (h.length > 10) return res.status(429).json({ error: "prevec" });
+  const koda = String((req.body && req.body.koda) || "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 40);
+  if (koda.length < 12) return res.status(404).json({ error: "neveljavno_povabilo" });
+  const inv = db.collection("claudeInvites").doc(koda), usr = db.collection("claudeUsers").doc(u.uid);
+  try {
+    const out = await db.runTransaction(async tx => {
+      const [i, me] = [await tx.get(inv), await tx.get(usr)];
+      if (!i.exists) return { status: 404, error: "neveljavno_povabilo" };
+      const d = i.data();
+      if (me.exists && me.data().on === true) return { ok: true };
+      if ((d.uses || 0) >= (d.max || 1)) return { status: 410, error: "povabilo_porabljeno" };
+      tx.set(usr, { on: true, koda, email: u.email || null, t: Date.now() });
+      tx.set(inv, { uses: (d.uses || 0) + 1, users: [...(d.users || []), u.uid] }, { merge: true });
+      return { ok: true };
+    });
+    if (out.ok) return res.json({ ok: true, kljuc: !!ANTHROPIC_API_KEY });
+    return res.status(out.status).json({ error: out.error });
+  } catch (e) { console.error("povabilo", e && e.message); return res.status(500).json({ error: "streznik" }); }
+});
+
+const claudeBusy = new Set();   // en klic trenerja naenkrat na uporabnika (na tej instanci)
+app.post("/api/claude", async (req, res) => {
+  let user = null, pro = false, metered = false, mine = false;
+  const refund = () => { if (metered && user) unmeter(user.uid, "claudeUsage").catch(() => {}); metered = false; };
+  try {
+    if (!ANTHROPIC_API_KEY) return res.status(503).json({ error: "claude_ni_nastavljen" });
+    user = await requireUser(req, res); if (!user) return;
+    if (!(await claudeAllowed(user))) return res.status(403).json({ error: "claude_ni_dovoljen" });
+    if (claudeBusy.has(user.uid)) return res.status(429).json({ error: "claude_ze_dela" });
+    claudeBusy.add(user.uid); mine = true;
+    pro = await isPro(user.uid);
+    // lasten dnevni števec (Claude je dražji od Gemini): tudi PRO ima strop
+    const lim = pro ? CLAUDE_CALLS_PER_DAY_PRO : CLAUDE_CALLS_PER_DAY;
+    if (!(await meter(user.uid, "claudeUsage", lim)))
+      return res.status(402).json({ error: "limit", limit: parseInt(lim, 10) || null, message: "Dnevna meja trenerja je dosežena — nova se odpre jutri." });
+    metered = true;
+    const purpose = Object.prototype.hasOwnProperty.call(CLAUDE_PURPOSES, req.body.purpose) ? req.body.purpose : "predlog";
+    const cap = CLAUDE_EFFORTS.indexOf(CLAUDE_EFFORT_CAP) >= 0 ? CLAUDE_EFFORTS.indexOf(CLAUDE_EFFORT_CAP) : CLAUDE_EFFORTS.length - 1;
+    const want = CLAUDE_EFFORTS.indexOf(req.body.effort) >= 0 ? CLAUDE_EFFORTS.indexOf(req.body.effort) : 2;
+    const effort = CLAUDE_EFFORTS[Math.min(want, cap)];
+    const system = String(req.body.system || "").slice(0, 60000);
+    const content = String(req.body.user || "").slice(0, 300000);
+    if (!content) { refund(); return res.status(400).json({ error: "manjka user" }); }
+    const schema = req.body.schema && typeof req.body.schema === "object" && JSON.stringify(req.body.schema).length < 60000 ? req.body.schema : null;
+    const body = {
+      model: CLAUDE_MODEL,
+      max_tokens: CLAUDE_PURPOSES[purpose],
+      ...(system ? { system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }] } : {}),
+      messages: [{ role: "user", content }],
+      thinking: { type: "adaptive" },
+      output_config: { effort, ...(schema ? { format: { type: "json_schema", schema } } : {}) },
+      metadata: { user_id: crypto.createHash("sha256").update("formai:" + user.uid).digest("hex").slice(0, 32) },
+    };
+    // od tu naprej odgovor teče: glava 200, nato vrstice
+    res.status(200).set({ "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no" });
+    res.flushHeaders();
+    const t0 = Date.now();
+    let faza = "misli", done = false;
+    const line = o => { try { res.write(JSON.stringify(o) + "\n"); } catch { /* zaprto */ } };
+    const hb = setInterval(() => line({ hb: Math.round((Date.now() - t0) / 1000), faza }), 10000);
+    // aplikacija zaprta: ustavi model (ne plačujemo razmisleka, ki ga nihče ne bo videl)
+    const gone = new AbortController();
+    res.on("close", () => { if (!done) gone.abort(); });
+    const onPhase = f => { if (f !== faza) { faza = f; line({ hb: Math.round((Date.now() - t0) / 1000), faza }); } };
+    let r = await askClaude(body, gone.signal, onPhase);
+    // preobremenjen (529) ali notranja napaka takoj na začetku (ne po dolgem premisleku): en ponovni poskus po 2 s
+    if (!r.ok && !r.timeout && !gone.signal.aborted && !r.text && Date.now() - t0 < 30000 && (r.status === 529 || r.status === 500)) { await new Promise(x => setTimeout(x, 2000)); r = await askClaude(body, gone.signal, onPhase); }
+    clearInterval(hb);
+    done = true;
+    db.collection("aiLog").add({ uid: user.uid, pro, model: r.model || CLAUDE_MODEL, purpose, effort, ok: r.ok, status: r.timeout ? 504 : r.status, stop: r.stop || null, usage: r.usage, ms: Date.now() - t0, t: Date.now() }).catch(() => {});
+    const fail = (error, status) => { refund(); res.end(JSON.stringify({ error, status }) + "\n"); };
+    if (gone.signal.aborted) { refund(); return res.end(); }
+    if (r.ok) {
+      const text = r.text.trim();
+      if (!text) return fail("claude_prazno", 502);
+      // odrezan (max_tokens), zavrnjen ali prekinjen odgovor ni načrt — aplikacija gre na rezervo, klic se ne šteje
+      if (r.stop !== "end_turn") { console.error("claude stop:", r.stop); return fail("claude_nedokoncano", 502); }
+      return res.end(JSON.stringify({ text, stop: r.stop, model: r.model, usage: r.usage }) + "\n");
+    }
+    const msg = r.msg || "";
+    if (r.timeout) return fail("ai_casovna_omejitev", 504);
+    if (r.status === 0) { console.error("claude omrežje:", msg.slice(0, 200)); return fail("ai_ni_dosegljiv", 502); }
+    if (r.status === 401 || r.status === 403) { console.error("claude", r.status, "(ključ):", msg.slice(0, 200)); return fail("claude_kljuc", 503); }
+    if (r.status === 400 && /credit balance|billing|purchase credits/i.test(msg)) { console.error("claude 400 (dobroimetje):", msg.slice(0, 200)); return fail("ai_placilo", 503); }
+    if (r.status === 429) return fail("claude_omejitev", 429);
+    if (r.status === 529 || r.status >= 500) { console.error("claude", r.status, msg.slice(0, 200)); return fail("claude_prezaseden", 503); }
+    console.error("claude", r.status, msg.slice(0, 300));
+    return fail("claude_zahtevek", r.status === 413 ? 413 : 400);
+  } catch (e) {
+    refund();
+    if (res.headersSent) { try { res.end(JSON.stringify({ error: "streznik", status: 500 }) + "\n"); } catch { /* zaprto */ } return; }
+    res.status(500).json({ error: String(e.message || e).slice(0, 200) });
+  } finally { if (mine && user) claudeBusy.delete(user.uid); }
 });
 
 /* ---------------- Strava OAuth (en klik) ---------------- */
@@ -487,5 +691,5 @@ app.post("/feedback/:id", async (req, res) => {
   } catch (e) { res.status(500).json({ error: "shramba" }); }
 });
 
-app.get("/health", (_, res) => res.json({ ok: true, model: DEFAULT_MODEL, fallback: FALLBACK_MODEL, strava: !!STRAVA_CLIENT_ID, stripe: !!STRIPE_WEBHOOK_SECRET, icu: !!(ICU_CLIENT_ID && ICU_CLIENT_SECRET) }));
+app.get("/health", (_, res) => res.json({ ok: true, model: DEFAULT_MODEL, fallback: FALLBACK_MODEL, claude: ANTHROPIC_API_KEY ? CLAUDE_MODEL : false, strava: !!STRAVA_CLIENT_ID, stripe: !!STRIPE_WEBHOOK_SECRET, icu: !!(ICU_CLIENT_ID && ICU_CLIENT_SECRET) }));
 app.listen(PORT, () => console.log("[peakform-server] live on :" + PORT));
