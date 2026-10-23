@@ -1,0 +1,1 @@
+let t=null;typeof window<"u"&&window.addEventListener("beforeinstallprompt",n=>{n.preventDefault(),t=n});const e=()=>!!t,i=()=>typeof window<"u"&&window.innerWidth>=900;async function o(){const n=t;if(n){try{await n.prompt(),await n.userChoice}catch{}t=null}}export{e as c,i,o as p};
