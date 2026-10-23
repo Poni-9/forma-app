@@ -112,10 +112,18 @@ a:hover{color:#C5F27A}
 .brand b{color:#A3E635}
 .top .back{margin:0}
 .nav2{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px;font-size:14px}
+
+/* (v3.50) svetla tema, ko jo uporabnik izbere v aplikaciji (Videz → Svetlo ali Kot telefon) — iste barve kot aplikacija */
+:root[data-theme="light"]{color-scheme:light;--bench:#F4F6F2;--bg:#F4F6F2;--bg2:#E9EDE5;--panel:#FFFFFF;--panel2:#EEF2EA;--panel3:#F4F6F2;--line:#DCE2D8;--line2:#E3E8DF;--border:#DCE2D8;--border2:#E3E8DF;--borderH:#C9D1C4;--ink:#131A16;--text:#131A16;--soft:#3F4A44;--dim:#3F4A44;--muted:#3F4A44;--dim2:#5E6A63;--sig:#4A6F0E;--sigd:#4A6F0E;--acc:#4A6F0E;--acc2:#4A6F0E;--accH:#3A5A0A;--onSig:#FFFFFF;--accSoft:rgba(74,111,14,.12)}
+:root[data-theme="light"] .brand b{color:#4A6F0E}
+:root[data-theme="light"] a:hover{color:#3A5A0A}
+:root[data-theme="light"] ::selection{background:rgba(163,230,53,.35)}
+:root[data-theme="light"] ::-webkit-scrollbar-thumb{background:#C9D1C4}
 </style>
+<script>/* (v3.50) tema kot v aplikaciji (formai.theme): svetlo ali »kot telefon« pri svetlem telefonu */(function(){try{var t=localStorage.getItem('formai.theme');if(t==='svetlo'||(t==='samodejno'&&window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)){document.documentElement.dataset.theme='light';var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content','#F4F6F2')}}catch(e){}})()</script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <div class="top"><a class="brand" href="/" aria-label="FORMAI — home"><img src="/icons/mark.svg" alt="" width="30" height="30"/><span>FORM<b>AI</b></span></a><a class="back" href="pogoji.html" hreflang="sl" lang="sl">Slovensko&nbsp;→</a></div>
   <h1>Terms of Use</h1>
   <p class="sub">FORMAI · in force since 26&nbsp;September&nbsp;2026 · updated 4&nbsp;October&nbsp;2026 · <a href="pogoji.html" hreflang="sl">Slovenian original</a></p>
@@ -187,6 +195,6 @@ a:hover{color:#C5F27A}
   <p>Blaž Gregorc, Slovenia&nbsp;— <a href="mailto:blaz.gregorc@formai.si">blaz.gregorc@formai.si</a></p>
 
   <p style="margin-top:30px"><a href="privacy.html">Privacy policy</a> · <a href="pogoji.html" hreflang="sl" lang="sl">Slovenščina</a> · <a href="/">Back to the app</a></p>
-</div>
+</main>
 </body>
 </html>
