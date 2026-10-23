@@ -39,11 +39,11 @@
   font-family:var(--sans);
 }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--text);line-height:1.65;font-size:15.5px}
+  body{background:var(--bg);color:var(--text);line-height:1.65;font-size:.96875rem}
   .wrap{max-width:760px;margin:0 auto;padding:40px 22px 60px}
-  h1{font-size:30px;letter-spacing:-.02em;margin-bottom:6px}
+  h1{font-size:1.875rem;letter-spacing:-.02em;margin-bottom:6px}
   .sub{color:var(--muted);margin-bottom:30px}
-  h2{font-size:19px;margin:30px 0 10px;color:var(--acc2)}
+  h2{font-size:1.1875rem;margin:30px 0 10px;color:var(--acc2)}
   p,li{color:var(--muted);margin-bottom:10px}
   li{margin-left:20px}
   b{color:var(--text)}
@@ -57,19 +57,19 @@ a{color:var(--sig);text-decoration:none}
 a:hover{color:#9ddcf7}
 /* povezave v besedilu: poleg barve še podčrtane (WCAG 1.4.1 — barva povezave proti besedilu je samo 1,4 : 1) */
 p a,li a{text-decoration:underline;text-underline-offset:.18em;text-decoration-thickness:1px}
-.tabnav a{position:relative;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);padding:14px 0;display:block}
+.tabnav a{position:relative;font-family:var(--mono);font-size:.6875rem;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);padding:14px 0;display:block}
 .tabnav a:hover{color:var(--ink)}
 .tabnav a[aria-current="page"]{color:var(--ink)}
 .tabnav a[aria-current="page"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--sig)}
-.k{font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.17em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
-.m{font-size:12.5px;line-height:1.6;color:var(--dim)}
+.k{font-family:var(--mono);font-size:.59375rem;font-weight:500;letter-spacing:.17em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
+.m{font-size:.78125rem;line-height:1.6;color:var(--dim)}
 .m b{color:var(--ink);font-weight:600}
 .kv{display:flex;align-items:baseline;gap:10px}
 .kv>:first-child{flex:1 1 0%;min-width:0}
 .kv>:last-child{flex:0 0 auto;white-space:nowrap}
 .n{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap}
 .p{background:var(--panel);border:1px solid var(--line)}
-.b{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.11em;text-transform:uppercase;white-space:nowrap;padding:10px 16px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.b{font-family:var(--mono);font-size:.6875rem;font-weight:500;letter-spacing:.11em;text-transform:uppercase;white-space:nowrap;padding:10px 16px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
 .b:hover{background:#1e252b;border-color:#333d45}
 .b.sig{background:var(--sigd);border-color:var(--sigd);color:var(--onSig)}
 .b.sig:hover{background:var(--sig);border-color:var(--sig)}
@@ -77,16 +77,16 @@ p a,li a{text-decoration:underline;text-underline-offset:.18em;text-decoration-t
 .b.g:hover{background:transparent;color:#9ddcf7}
 .b.dz{border-color:rgba(255,69,142,.4);color:var(--sig2);background:transparent}
 .b.dz:hover{background:rgba(255,69,142,.09);border-color:var(--sig2)}
-.sg button{font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:8px 15px;background:var(--panel);border:1px solid var(--line);border-left:none;color:var(--dim);cursor:pointer}
+.sg button{font-family:var(--mono);font-size:.65625rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:8px 15px;background:var(--panel);border:1px solid var(--line);border-left:none;color:var(--dim);cursor:pointer}
 .sg button:first-child{border-left:1px solid var(--line)}
 .sg button:hover{color:var(--ink);background:var(--panel2)}
 .sg button[data-on="1"]{background:var(--sigd);border-color:var(--sigd);color:var(--onSig)}
-input.f,textarea.f{width:100%;font-family:var(--sans);font-size:13.5px;padding:10px 12px;background:var(--panel3);border:1px solid var(--line);color:var(--ink);outline:none}
+input.f,textarea.f{width:100%;font-family:var(--sans);font-size:.84375rem;padding:10px 12px;background:var(--panel3);border:1px solid var(--line);color:var(--ink);outline:none}
 input.f:focus,textarea.f:focus{border-color:var(--sig)}
 input.f::placeholder{color:var(--dim2)}
 .rw{display:grid;align-items:center;column-gap:16px;border-bottom:1px solid var(--line2)}
 .rw:hover{background:var(--panel2)}
-.tg{font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid}
+.tg{font-family:var(--mono);font-size:.59375rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid}
 :focus-visible{outline:2px solid var(--sig);outline-offset:2px}
 ::selection{background:rgba(98,197,238,.3)}
 ::-webkit-scrollbar{width:10px;height:10px}
@@ -107,11 +107,11 @@ h2{color:var(--ink)}
 a:hover{color:#C5F27A}
 ::selection{background:rgba(163,230,53,.28)}
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:26px}
-.brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.01em;color:var(--ink)!important;text-decoration:none!important}
+.brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:1.1875rem;letter-spacing:-.01em;color:var(--ink)!important;text-decoration:none!important}
 .brand img{width:30px;height:30px;border-radius:22.4%;display:block}
 .brand b{color:#A3E635}
 .top .back{margin:0}
-.nav2{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px;font-size:14px}
+.nav2{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px;font-size:.875rem}
 
 /* (v3.50) svetla tema, ko jo uporabnik izbere v aplikaciji (Videz → Svetlo ali Kot telefon) — iste barve kot aplikacija */
 :root[data-theme="light"]{color-scheme:light;--bench:#F4F6F2;--bg:#F4F6F2;--bg2:#E9EDE5;--panel:#FFFFFF;--panel2:#EEF2EA;--panel3:#F4F6F2;--line:#DCE2D8;--line2:#E3E8DF;--border:#DCE2D8;--border2:#E3E8DF;--borderH:#C9D1C4;--ink:#131A16;--text:#131A16;--soft:#3F4A44;--dim:#3F4A44;--muted:#3F4A44;--dim2:#5E6A63;--sig:#4A6F0E;--sigd:#4A6F0E;--acc:#4A6F0E;--acc2:#4A6F0E;--accH:#3A5A0A;--onSig:#FFFFFF;--accSoft:rgba(74,111,14,.12)}
@@ -126,7 +126,7 @@ a:hover{color:#C5F27A}
 <main class="wrap">
   <div class="top"><a class="brand" href="/" aria-label="FORMAI — home"><img src="/icons/mark.svg" alt="" width="30" height="30"/><span>FORM<b>AI</b></span></a><a class="back" href="zasebnost.html" hreflang="sl" lang="sl">Slovensko&nbsp;→</a></div>
   <h1>Privacy Policy</h1>
-  <p class="sub">FORMAI (desktop and mobile) · in force since 24&nbsp;July&nbsp;2026 · updated 14&nbsp;October&nbsp;2026 · <a href="zasebnost.html" hreflang="sl">Slovenian original</a></p>
+  <p class="sub">FORMAI (desktop and mobile) · in force since 24&nbsp;July&nbsp;2026 · updated 23&nbsp;October&nbsp;2026 · <a href="zasebnost.html" hreflang="sl">Slovenian original</a></p>
 
   <div class="card"><b>⚕️ Important:</b> FORMAI provides coaching and nutrition <b>guidance</b>, not medical advice. Calorie and training-load figures are estimates. Before making significant changes to your training or diet, consult a doctor&nbsp;— especially if you have a health condition.</div>
 
@@ -153,7 +153,7 @@ a:hover{color:#C5F27A}
   <ul>
     <li><b>Locally by default:</b> all data is stored in your browser (IndexedDB) on your own device. Until you sign in, it stays there; the services under “Other&nbsp;services” receive only what is listed for them.</li>
     <li><b>Synchronisation when signed in:</b> when you sign in with a Google account, your data is automatically stored in your account in Google Firebase (Firestore) as well, so it is available on all your devices. There is no separate switch&nbsp;— synchronisation applies for as long as you are signed in. GPS tracks, meal photos, and sleep, HRV and resting heart rate from your watch are not uploaded to the cloud. For sign-in, Firebase Authentication receives the name, email address and photo of your Google account.</li>
-    <li><b>AI (coach, reviews, meal analysis):</b> works only when you are signed in and have allowed AI processing. When you use an AI feature, we send: the numbers from your profile (age, sex, height, weight, FTP, heart rate, goals and races), a summary of your training (for strength sessions also exercises, sets and weights), plan and nutrition, your morning check-in (sleep, energy, soreness and your note, if you wrote one), the text of your question or conversation, meal photos and descriptions you submit for analysis, and images you attach for the coach (e.g. a physique you would like to have). <b>We do not send</b> your name, email address, exact location or GPS tracks, activities from Strava, or sleep, HRV and resting heart rate from your watch.</li>
+    <li><b>AI (coach, reviews, meal analysis):</b> works only when you are signed in and have allowed AI processing. When you use an AI feature, we send: the numbers from your profile (age, sex, height, weight, FTP, heart rate, goals and races), a summary of your training (for strength sessions also exercises, sets and weights), plan and nutrition, your morning check-in (sleep, energy, soreness and your note, if you wrote one), the text of your question or conversation, meal photos and descriptions you submit for analysis, and images you attach for the coach (e.g. a physique you would like to have). Workout images (watch screen, gym board, sheet) and&nbsp;— if you are 18 or older&nbsp;— a photo of yourself for exercise suggestions are sent to the AI (Google Gemini) for reading only and only with your consent; we never store them (not on the device, in the cloud or on the server). <b>We do not send</b> your name, email address, exact location or GPS tracks, activities from Strava, or sleep, HRV and resting heart rate from your watch.</li>
     <li>For users with an <b>invitation to the test programme</b>, building the plan (questions, weekly proposal, negotiation, exercises and strategy) is done by the <b>Anthropic Claude API</b> (Anthropic PBC, USA) as our contractual processor under Anthropic’s data processing addendum. Anthropic <b>does not use API content to train its models</b> and automatically deletes it, as a rule, within 30&nbsp;days (longer only if its safety systems flag it for a usage-policy violation or if the law requires it). Requests run through the same server of ours; the key is never in the browser. Because thinking takes several minutes, the server temporarily keeps the coach’s answer in Google Firebase (Firestore) until the app collects it — at most about two hours, then it is deleted; your images and the prompt are not stored.</li>
     <li>All other AI features (and plan building for all other users) are processed by the <b>Google Gemini API</b> as our contractual processor. We use the <b>paid tier</b>, under which Google <b>does not use the content to train its models</b>; it is used only to produce the response returned to you (Google may keep it for a limited time solely to detect abuse). Requests run through our own server (Google Cloud Run, europe-west1); the API key is never exposed in the browser. Our server does not store the content&nbsp;— it records only the number of AI actions per day (for a possible daily limit) and a short entry per request without content (time, model, success, token counts). Google does not guarantee the region in which it processes the content for this service.</li>
     <li><b>Sleep, HRV and resting heart rate from your watch</b> stay only on the device where you turned them on: they are not uploaded to the cloud and never sent to AI. The switch applies to each device separately; when you turn it off, this data is deleted from the device immediately.</li>
