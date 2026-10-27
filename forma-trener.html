@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html lang="sl"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width, initial-scale=1"><title>FORMAI</title>
-<meta http-equiv="refresh" content="0;url=/">
 <style>html,body{margin:0;height:100%;background:#0F1216;color:#A8B3BF;font:600 15px system-ui,sans-serif;display:grid;place-items:center}a{color:#A3E635}</style></head>
-<body><p>FORMAI se je preselil — <a href="/">odpri aplikacijo</a></p><script>location.replace('/')</script></body></html>
+<body><p>FORMAI se je preselil — <a href="/">odpri aplikacijo</a></p>
+<!-- (v3.57) vrnitev s Strave / Garmina / Wahoo (?strava=ok …) gre naprej v aplikacijo s parametri (prej so se izgubili) -->
+<script>location.replace('/' + location.search + (location.hash || ''))</script>
+<noscript><meta http-equiv="refresh" content="0;url=/"></noscript></body></html>
