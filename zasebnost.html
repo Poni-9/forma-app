@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+<!-- (v3.54) OSNUTEK 27. 10. 2026 (FORMAI Pro, plačila, statistika uporabe) — Blaž mora besedilo potrditi pred objavo; to ni pravni nasvet. -->
 <html lang="sl">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>FORMAI — Politika zasebnosti</title>
-<meta name="description" content="Politika zasebnosti FORMAI: katere podatke obdelujemo, kje so shranjeni, kaj gre v AI, povezave z intervals.icu in Garminom ter tvoje pravice po GDPR."/>
+<meta name="description" content="Politika zasebnosti FORMAI: katere podatke obdelujemo, kje so shranjeni, kaj gre v AI, plačila (Stripe), statistika uporabe, povezave z intervals.icu in Garminom ter tvoje pravice po GDPR."/>
 <link rel="canonical" href="https://formai.si/zasebnost.html"/>
 <link rel="alternate" hreflang="sl" href="https://formai.si/zasebnost.html"/>
 <link rel="alternate" hreflang="en" href="https://formai.si/privacy.html"/>
@@ -126,7 +127,7 @@ a:hover{color:#C5F27A}
 <main class="wrap">
   <div class="top"><a class="brand" href="/" aria-label="FORMAI — domov"><img src="/icons/mark.svg" alt="" width="30" height="30"/><span>FORM<b>AI</b></span></a><a class="back" href="privacy.html" hreflang="en" lang="en">English version&nbsp;→</a></div>
   <h1>Politika zasebnosti</h1>
-  <p class="sub">FORMAI (namizje in telefon) · velja od 24.&nbsp;julija&nbsp;2026 · posodobljeno 26.&nbsp;oktobra&nbsp;2026</p>
+  <p class="sub">FORMAI (namizje in telefon) · velja od 24.&nbsp;julija&nbsp;2026 · posodobljeno 27.&nbsp;oktobra&nbsp;2026</p>
 
   <div class="card"><b>⚕️ Pomembno:</b> FORMAI daje trenerske in prehranske <b>usmeritve</b>, ne medicinskih nasvetov. Ocene kalorij in obremenitve so približki. Pred večjimi spremembami treninga ali prehrane se posvetuj z&nbsp;zdravnikom, še posebej ob zdravstvenih težavah.</div>
 
@@ -152,8 +153,8 @@ a:hover{color:#C5F27A}
     <li><b>Privzeto lokalno:</b> vsi podatki so shranjeni v&nbsp;tvojem brskalniku (IndexedDB) na tvoji napravi. Dokler se ne prijaviš, ostanejo tam; storitve iz razdelka »Druge&nbsp;storitve« dobijo samo to, kar je navedeno pri njih.</li>
     <li><b>Sinhronizacija s&nbsp;prijavo:</b> ko se prijaviš z&nbsp;Google računom, se podatki samodejno shranjujejo tudi v&nbsp;tvoj račun v&nbsp;Google Firebase (Firestore), da so dostopni na vseh tvojih napravah. To ni posebno stikalo&nbsp;— sinhronizacija velja, dokler si prijavljen. GPS sledi, fotografije obrokov ter spanec, HRV in mirovni utrip z&nbsp;ure v&nbsp;oblak ne gredo (izjema je neposredna povezava z&nbsp;Garmin Connect, pri kateri Garmin podatke pošilja našemu strežniku&nbsp;— glej razdelek »Garmin&nbsp;Connect«). Za prijavo Firebase Authentication prejme ime, e-poštni naslov in fotografijo tvojega Google računa.</li>
     <li><b>AI (trener, ocene, analiza obroka):</b> deluje samo, ko si prijavljen in AI obdelavo dovoliš. Ko uporabiš AI, pošljemo: številke iz profila (starost, spol, višina, teža, FTP, srčni utrip, cilji in tekme), povzetek treninga (pri vadbi moči tudi vaje, serije in kilograme), načrta in prehrane, jutranji vnos (spanec, energija, mišice in opomba, če jo vpišeš), besedilo vprašanja oziroma pogovora, fotografije in opise obrokov, ki jih pošlješ v&nbsp;analizo, ter slike, ki jih priložiš trenerju (npr. postava, ki si jo želiš). Slike treninga (zaslon ure, tabla v&nbsp;fitnesu, list) in&nbsp;— če imaš vsaj 18&nbsp;let&nbsp;— sliko sebe za predlog vaj pošljemo v&nbsp;AI (Google Gemini) samo v&nbsp;branje in samo s&nbsp;tvojo privolitvijo; ne shranimo jih nikjer (ne na napravi, ne v&nbsp;oblaku, ne na strežniku). <b>Ne pošljemo</b> imena, e-poštnega naslova, natančne lokacije ali GPS sledi, aktivnosti s&nbsp;Strave ter spanca, HRV in mirovnega utripa z&nbsp;ure.</li>
-    <li>Uporabnikom s <b>povabilom v testni program</b> sestavo načrta (vprašanja, predlog tedna, pogajanje, vaje in strategija) opravi <b>Anthropic Claude API</b> (Anthropic PBC, ZDA) kot naš pogodbeni obdelovalec po Anthropicovem dodatku o obdelavi podatkov. Anthropic vsebine API-ja <b>ne uporablja za učenje svojih modelov</b> in jo praviloma samodejno izbriše v&nbsp;30 dneh (dlje le, če jo njegovi varnostni sistemi označijo zaradi kršitve pravil uporabe ali če to zahteva zakon). Klici tečejo prek istega našega strežnika; ključ ni nikoli v&nbsp;brskalniku. Ker premislek traja več minut, strežnik trenerjev odgovor začasno hrani v&nbsp;Google Firebase (Firestore), dokler ga aplikacija ne prevzame — največ približno dve uri, nato se izbriše; tvojih slik in poziva ne hrani.</li>
-    <li>Vse ostale AI funkcije (in sestavo načrta vsem drugim uporabnikom) obdela <b>Google Gemini API</b> kot naš pogodbeni obdelovalec. Uporabljamo <b>plačljivo raven</b>, pri kateri Google vsebine <b>ne uporablja za učenje svojih modelov</b>; uporabi se samo za odgovor, ki ga dobiš ti (Google jo sme za omejen čas hraniti izključno za odkrivanje zlorab). Klici tečejo prek našega strežnika (Google Cloud Run, europe-west1); ključ ni nikoli izpostavljen v&nbsp;brskalniku. Naš strežnik vsebine ne shranjuje&nbsp;— beleži samo število AI dejanj na dan (za morebitno dnevno omejitev) in kratek zapis vsakega klica brez vsebine (čas, model, uspeh, število žetonov). V&nbsp;kateri regiji Google vsebino obdela, pri tej storitvi ne jamči.</li>
+    <li>Uporabnikom <b>FORMAI Pro</b> (z naročnino ali s&nbsp;povabilom) sestavo načrta (vprašanja, predlog tedna, pogajanje, vaje in strategija) opravi <b>Anthropic Claude API</b> (Anthropic PBC, ZDA) kot naš pogodbeni obdelovalec po Anthropicovem dodatku o obdelavi podatkov. Anthropic vsebine API-ja <b>ne uporablja za učenje svojih modelov</b> in jo praviloma samodejno izbriše v&nbsp;30 dneh (dlje le, če jo njegovi varnostni sistemi označijo zaradi kršitve pravil uporabe ali če to zahteva zakon). Klici tečejo prek istega našega strežnika; ključ ni nikoli v&nbsp;brskalniku. Ker premislek traja več minut, strežnik trenerjev odgovor začasno hrani v&nbsp;Google Firebase (Firestore), dokler ga aplikacija ne prevzame — največ približno dve uri, nato se izbriše; tvojih slik in poziva ne hrani.</li>
+    <li>Vse ostale AI funkcije (in sestavo načrta vsem drugim uporabnikom) obdela <b>Google Gemini API</b> kot naš pogodbeni obdelovalec. Uporabljamo <b>plačljivo raven</b>, pri kateri Google vsebine <b>ne uporablja za učenje svojih modelov</b>; uporabi se samo za odgovor, ki ga dobiš ti (Google jo sme za omejen čas hraniti izključno za odkrivanje zlorab). Klici tečejo prek našega strežnika (Google Cloud Run, europe-west1); ključ ni nikoli izpostavljen v&nbsp;brskalniku. Naš strežnik vsebine ne shranjuje&nbsp;— beleži samo število AI dejanj na dan in porabo AI (žetonov) na mesec (za omejitve Osnovne in Pro) ter kratek zapis vsakega klica brez vsebine (čas, model, uspeh, število žetonov). V&nbsp;kateri regiji Google vsebino obdela, pri tej storitvi ne jamči.</li>
     <li><b>Spanec, HRV in mirovni utrip z&nbsp;ure</b> (prek intervals.icu) ostanejo samo na napravi, na kateri si jih vklopil: ne gredo v&nbsp;oblak in ne v&nbsp;AI. Stikalo velja za vsako napravo posebej; ob izklopu se ti podatki z&nbsp;naprave takoj izbrišejo. Za zdravstvene podatke z&nbsp;Garmin Connect glej razdelek »Garmin&nbsp;Connect«&nbsp;— tudi ti ne gredo v&nbsp;AI.</li>
     <li><b>Prenos zunaj EU:</b> Anthropic in Google lahko podatke obdelujeta zunaj EU/EGP (npr. v&nbsp;ZDA); tak prenos varujejo pogoji za obdelavo podatkov obeh ponudnikov s&nbsp;standardnimi pogodbenimi klavzulami EU.</li>
     <li>Podatkov <b>ne prodajamo</b> in jih ne delimo s&nbsp;tretjimi za oglaševanje.</li>
@@ -196,6 +197,25 @@ a:hover{color:#C5F27A}
     <li><b>Garmin:</b> za Garmin Connect je samostojni upravljavec Garmin; velja njegova politika zasebnosti: <a href="https://www.garmin.com/privacy/connect/" rel="noopener">garmin.com/privacy/connect</a>. Pri vsakem prikazu Garminovih podatkov je naveden vir (»Garmin« in model naprave). Garmin, Garmin Connect in logotip Garmin so blagovne znamke družbe Garmin Ltd. ali njenih podružnic. <b>FORMAI ni Garminov izdelek</b>; Garmin ga ni razvil, ne podpira in ne jamči zanj.</li>
   </ul>
 
+  <h2 id="placila">Plačila (FORMAI Pro)</h2>
+  <ul>
+    <li>Naročnino FORMAI Pro plačaš prek <b>Stripe</b> (Stripe Payments Europe, Ltd., Irska). Podatke kartice (ali drugega plačilnega sredstva) vneseš neposredno na Stripovi plačilni strani&nbsp;— FORMAI jih <b>ne vidi in ne hrani</b>.</li>
+    <li><b>Kaj hranimo:</b> oznako kupca in naročnine pri Stripe, stanje naročnine (npr. aktivna, preklicana, plačilo zamuja), konec plačanega obdobja, vir Pro (naročnina ali povabilo) ter zapise o&nbsp;plačilih (znesek, valuta, datum, oznaka plačila) in tvojo e-pošto, da plačilo povežemo s&nbsp;tvojim računom.</li>
+    <li><b>Stripe</b> je za izvedbo plačila naš obdelovalec; za preprečevanje goljufij in za svoje zakonske obveznosti (npr. preprečevanje pranja denarja) podatke obdeluje kot samostojni upravljavec po svoji politiki zasebnosti: <a href="https://stripe.com/privacy" rel="noopener">stripe.com/privacy</a>. Stripe lahko podatke obdeluje tudi zunaj EU (npr. v&nbsp;ZDA), kar varujejo standardne pogodbene klavzule EU.</li>
+    <li><b>Pravna podlaga:</b> izvajanje pogodbe (točka (b) člena 6(1) GDPR); hramba zapisov o&nbsp;plačilih: zakonska obveznost (točka (c) člena 6(1) GDPR&nbsp;— računovodski in davčni predpisi).</li>
+    <li><b>Hramba:</b> stanje naročnine do izbrisa računa; zapisi o&nbsp;plačilih toliko časa, kot zahtevajo računovodski in davčni predpisi&nbsp;— ob izbrisu računa jih hranimo <b>brez tvoje e-pošte</b>.</li>
+  </ul>
+
+  <h2 id="statistika">Statistika uporabe</h2>
+  <ul>
+    <li><b>Kaj:</b> da vemo, kaj v&nbsp;aplikaciji deluje in kje se uporabniki ustavijo, beležimo odprtja aplikacije, zaslone, ki jih odpreš, in dogodke (npr. »uvod končan«, »načrt sestavljen«, »vadba opravljena«, »obrok vpisan«, »napaka AI«), različico aplikacije, ali je nameščena ali odprta v&nbsp;brskalniku, ali je telefon ali računalnik, ter domeno strani, s&nbsp;katere si prišel. <b>Brez vsebine:</b> ne beležimo, kaj si vpisal, vprašal ali pojedel, ne številk profila in ne treningov.</li>
+    <li><b>Brez piškotkov:</b> za obiskovalce ne uporabljamo piškotkov ali drugih oznak na napravi. Da preštejemo različne obiskovalce, strežnik iz IP naslova in vrste brskalnika izračuna dnevni zgoščeni identifikator (z&nbsp;naključno vrednostjo, ki se zamenja vsak dan); <b>IP naslova in vrste brskalnika ne shranimo</b>.</li>
+    <li><b>Prijavljeni:</b> če si prijavljen, dogodke povežemo s&nbsp;tvojim računom (prvi in zadnji obisk, število odprtij in dogodkov, različica, vrsta naprave), da vidimo, kje se kaj zatika, in ti lahko pomagamo.</li>
+    <li><b>Namen in podlaga:</b> izboljšave in odpravljanje napak; zakoniti interes (točka (f) člena 6(1) GDPR). Podatke vidi samo razvijalec; ne uporabljamo jih za oglaševanje in jih ne delimo s&nbsp;tretjimi.</li>
+    <li><b>Hramba:</b> dnevni povzetki (samo števci, brez identitete) 25&nbsp;mesecev; dnevni identifikator obiskovalca 2&nbsp;dni; zapis, povezan s&nbsp;tvojim računom, do izbrisa računa.</li>
+    <li><b>Izklop:</b> v&nbsp;Nastavitvah izklopiš »Pošiljaj statistiko uporabe«&nbsp;— od takrat aplikacija s&nbsp;te naprave statistike ne pošilja.</li>
+  </ul>
+
   <h2>Tedensko vprašanje (testni program)</h2>
   <ul>
     <li>Po prvem tednu uporabe te aplikacija največ enkrat na teden vpraša eno stvar (odgovor A–D). Vprašanje lahko preskočiš ali vprašanja izklopiš (»ne&nbsp;sprašuj&nbsp;več«).</li>
@@ -215,14 +235,15 @@ a:hover{color:#C5F27A}
   <h2>Kako dolgo hranimo podatke</h2>
   <ul>
     <li><b>Na napravi:</b> dokler jih ne izbrišeš.</li>
-    <li><b>V&nbsp;oblaku</b> (sinhronizirani podatki, števci in zapisi AI, status Pro, odgovori na tedensko vprašanje): do izbrisa računa.</li>
+    <li><b>V&nbsp;oblaku</b> (sinhronizirani podatki, števci in zapisi AI, status Pro in naročnine, statistika uporabe tvojega računa, odgovori na tedensko vprašanje): do izbrisa računa.</li>
+    <li><b>Zapisi o&nbsp;plačilih:</b> toliko časa, kot zahtevajo računovodski in davčni predpisi (brez e-pošte po izbrisu računa). <b>Statistika uporabe:</b> dnevni povzetki 25&nbsp;mesecev, dnevni identifikator obiskovalca 2&nbsp;dni.</li>
     <li><b>Strežniški dnevniki</b> (Google Cloud Run, GitHub Pages): toliko časa, kot določajo privzeta pravila Googla oziroma GitHuba.</li>
   </ul>
 
   <h2>Tvoje pravice (GDPR)</h2>
   <ul>
     <li><b>Izvoz:</b> v&nbsp;Nastavitvah&nbsp;→ »Izvozi&nbsp;vse« kadar koli preneseš vse svoje podatke (datoteka JSON). Ključa za intervals.icu v&nbsp;datoteki ni — ostane na napravi in v&nbsp;računu.</li>
-    <li><b>Izbris:</b> v&nbsp;Nastavitvah&nbsp;→ »Izbriši&nbsp;račun« izbrišeš račun in vse podatke v&nbsp;oblaku&nbsp;— sinhronizirane podatke, števce in zapise AI, status Pro, odgovore na tedensko vprašanje, morebitne stare žetone Strave ter Garminove žetone in podatke (povezava pri Garminu se prekliče); izbris opravi naš strežnik. Podatke na napravi počistiš z&nbsp;»Izbriši&nbsp;na&nbsp;napravi«. Lahko nam tudi pišeš&nbsp;— podatke izbrišemo v&nbsp;30&nbsp;dneh.</li>
+    <li><b>Izbris:</b> v&nbsp;Nastavitvah&nbsp;→ »Izbriši&nbsp;račun« izbrišeš račun in vse podatke v&nbsp;oblaku&nbsp;— sinhronizirane podatke, števce in zapise AI, status Pro, statistiko uporabe tvojega računa, odgovore na tedensko vprašanje, morebitne stare žetone Strave ter Garminove žetone in podatke (povezava pri Garminu se prekliče); aktivna naročnina Pro se prekliče, zapisi o&nbsp;plačilih ostanejo brez tvoje e-pošte (računovodstvo); izbris opravi naš strežnik. Podatke na napravi počistiš z&nbsp;»Izbriši&nbsp;na&nbsp;napravi«. Lahko nam tudi pišeš&nbsp;— podatke izbrišemo v&nbsp;30&nbsp;dneh.</li>
     <li><b>Vpogled in popravek:</b> vsi podatki so ti vidni in urejljivi neposredno v&nbsp;aplikaciji.</li>
     <li><b>Preklic privolitve:</b> AI obdelavo izklopiš v&nbsp;Nastavitvah (»AI&nbsp;obdelava«), spanec, HRV in mirovni utrip z&nbsp;ure pa s&nbsp;stikalom pri povezavi z&nbsp;intervals.icu oziroma s&nbsp;stikali in »Odklopi Garmin« pri povezavi z&nbsp;Garmin Connect; podatke ali račun lahko tudi izbrišeš.</li>
     <li>Imaš tudi pravico do omejitve obdelave in do ugovora ter pravico do pritožbe pri Informacijskem pooblaščencu Republike Slovenije (<a href="https://www.ip-rs.si/">ip-rs.si</a>).</li>
@@ -231,7 +252,7 @@ a:hover{color:#C5F27A}
   <h2>Pogoji uporabe (povzetek)</h2>
   <ul>
     <li>Aplikacijo uporabljaš na lastno odgovornost; ocene AI so informativne narave.</li>
-    <li>FORMAI je v&nbsp;brezplačnem zgodnjem dostopu; v&nbsp;tem obdobju ima AI samo visoko dnevno varovalko (1000&nbsp;AI dejanj na dan), ki je pri običajni uporabi ne dosežeš (nižjo lahko uvedemo z&nbsp;obvestilom v&nbsp;aplikaciji). Plačljivega paketa trenutno ni.</li>
+    <li>Osnovna je brezplačna, z&nbsp;dnevno in mesečno omejitvijo AI. FORMAI Pro je plačljiva naročnina (prek Stripe, preklic kadar koli v&nbsp;Nastavitvah) ali pa ga dobiš s&nbsp;povabilom.</li>
     <li>Storitev lahko posodabljamo ali spreminjamo; o&nbsp;pomembnih spremembah te obvestimo v&nbsp;aplikaciji.</li>
   </ul>
   <p>Celotni pogoji: <a href="pogoji.html">Pogoji uporabe</a> (<a href="terms.html" hreflang="en" lang="en">English</a>).</p>
