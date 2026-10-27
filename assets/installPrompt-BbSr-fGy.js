@@ -1,0 +1,1 @@
+import{K as e}from"./start-BWmUuoCW.js";let n=null;typeof window<"u"&&window.addEventListener("beforeinstallprompt",t=>{t.preventDefault(),n=t});const o=()=>!!n,a=()=>typeof window<"u"&&window.innerWidth>=900;async function r(){const t=n;if(t){e("install_prompt","system");try{await t.prompt(),await t.userChoice}catch{}n=null}}export{o as c,a as i,r as p};
