@@ -5,7 +5,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>FORMAI — Privacy Policy</title>
-<meta name="description" content="FORMAI privacy policy: what data is processed, where it is stored, what is sent to AI, payments (Stripe), usage statistics, the intervals.icu and Garmin connections, and your GDPR rights."/>
+<meta name="description" content="FORMAI privacy policy: what data is processed, where it is stored, what is sent to AI, payments (Stripe), usage statistics, the intervals.icu, Garmin, Strava and Wahoo connections, and your GDPR rights."/>
 <link rel="canonical" href="https://formai.si/privacy.html"/>
 <link rel="alternate" hreflang="sl" href="https://formai.si/zasebnost.html"/>
 <link rel="alternate" hreflang="en" href="https://formai.si/privacy.html"/>
@@ -129,7 +129,7 @@ a:hover{color:#C5F27A}
   <h1>Privacy Policy</h1>
   <p class="sub">FORMAI (desktop and mobile) · in force since 24&nbsp;July&nbsp;2026 · updated 27&nbsp;October&nbsp;2026 · <a href="zasebnost.html" hreflang="sl">Slovenian original</a></p>
 
-  <div class="card"><b>⚕️ Important:</b> FORMAI provides coaching and nutrition <b>guidance</b>, not medical advice. Calorie and training-load figures are estimates. Before making significant changes to your training or diet, consult a doctor&nbsp;— especially if you have a health condition.</div>
+  <div class="card"><b>Important:</b> FORMAI provides coaching and nutrition <b>guidance</b>, not medical advice. Calorie and training-load figures are estimates. Before making significant changes to your training or diet, consult a doctor&nbsp;— especially if you have a health condition.</div>
 
   <p class="sub" style="margin-bottom:22px">This is an English translation of the Slovenian privacy policy published at <a href="zasebnost.html" hreflang="sl">formai.si/zasebnost.html</a>. In case of any discrepancy, the Slovenian version prevails.</p>
 
@@ -146,7 +146,7 @@ a:hover{color:#C5F27A}
 
   <h2>Legal basis</h2>
   <ul>
-    <li><b>Consent</b> (Art. 6(1)(a) GDPR); for health-related data&nbsp;— weight, heart rate, sleep and HRV, sick period, health notes&nbsp;— <b>explicit consent</b> (Art. 9(2)(a) GDPR). You can withdraw consent at any time (see “Your&nbsp;rights”); withdrawal does not affect the lawfulness of processing before it.</li>
+    <li><b>Consent</b> (Art. 6(1)(a) GDPR); for health-related data&nbsp;— weight, heart rate, sleep and HRV, sick period, health notes&nbsp;— <b>explicit consent</b> (Art. 9(2)(a) GDPR). You can withdraw consent at any time (see “Your&nbsp;rights”); withdrawal does not affect the lawfulness of processing before it. For anyone under 15, consent (sign-in, AI) is given by a parent or guardian.</li>
     <li><b>Performance of the service</b> you use (Art. 6(1)(b) GDPR): storing and synchronising your data, building your training plan and nutrition targets.</li>
   </ul>
 
@@ -173,12 +173,13 @@ a:hover{color:#C5F27A}
     <li>Fonts are served from formai.si&nbsp;— your browser does not call Google Fonts or any other external font service.</li>
   </ul>
 
-  <h2>Connected services (intervals.icu, Garmin, Strava)</h2>
+  <h2>Connected services (intervals.icu, Garmin, Strava, Wahoo)</h2>
   <p>If you connect an external service yourself, we import <b>only</b> what the training features need, and only for as long as the connection is enabled.</p>
   <ul>
     <li><b>intervals.icu:</b> when you connect (sign in with intervals.icu or a personal API key) we read your completed activities (duration, distance, elevation gain, heart rate, power, zones, device, GPS track), your FTP and zones and&nbsp;— only if you separately turn it on&nbsp;— sleep, HRV and resting heart rate. We write planned workouts from FORMAI to your intervals.icu calendar so they reach your watch. The access token or key is stored in the app data on your device and, while you are signed in, in your account (synchronisation); it is used only to read your data and write workouts. With sign-in via intervals.icu, our server exchanges the authorisation code for the token and does not store the token. You can disconnect at any time in Settings or in your intervals.icu settings.</li>
     <li><b>Garmin:</b> data from Garmin devices reaches FORMAI directly from Garmin Connect (see the “Garmin&nbsp;Connect” section below), via intervals.icu or from files you import yourself. We use it exclusively to display your progress, compute training load, and adapt your training plan. Garmin data is <b>never sold</b>, never shared with third parties, and never used for advertising or profiling. You can delete imported activities at any time together with the rest of your data.</li>
-    <li><b>Strava:</b> FORMAI is no longer connected to Strava directly. Activities that originate from Strava and arrive via intervals.icu are shown in the app but are <b>never sent to AI</b>&nbsp;— for those we use only computation on your device, and their GPS tracks are not stored. Any access tokens left from the former direct Strava connection are stored only on our server and are deleted when you delete your account.</li>
+    <li id="strava"><b>Strava:</b> if you connect Strava in Import (“Poveži s&nbsp;Stravo”), our server reads summaries of your activities from the <b>last 7&nbsp;days</b> (sport, start, time, distance, elevation gain, heart rate, power, calories)&nbsp;— <b>no GPS tracks or maps</b>. Under Strava’s rules we use them only to show them to you and for the day’s expenditure (calories count towards today’s food target); they are <b>never sent to AI</b>, not even indirectly (they are hidden in feedback screenshots). On your device and, when you are signed in, in your account they are kept for at most 7&nbsp;days and then deleted automatically. Strava access tokens are held <b>only on our server</b>, never in the browser; “Odklopi Stravo” (Disconnect Strava) makes the server revoke access at Strava and delete the tokens, and deleting your account deletes them together with the account. You can also revoke access in Strava (Settings&nbsp;→ My Apps). The same applies to Strava-origin activities that arrive via intervals.icu: you see them, they are not sent to AI and their tracks are not stored.</li>
+    <li id="wahoo"><b>Wahoo:</b> if you connect Wahoo (“Poveži z&nbsp;Wahoo”), our server receives summaries of your workouts (sport, time, distance, elevation gain, power, heart rate, calories) and, if you choose, sends planned workouts and a route to your ELEMNT. The summaries are sent to AI like those from other devices; Wahoo does not send GPS tracks. Wahoo access tokens are held <b>only on our server</b>. “Odklopi Wahoo” (Disconnect Wahoo) makes the server revoke access at Wahoo and remove our workouts from your ELEMNT; imported workouts stay in the app as your activities. The same applies when you delete your account.</li>
   </ul>
 
   <h2 id="garmin">Garmin Connect</h2>
@@ -215,7 +216,7 @@ a:hover{color:#C5F27A}
     <li><b>Signed-in users:</b> if you are signed in, events are linked to your account (first and last visit, number of opens and events, version, device type) so that we can see where things go wrong and help you.</li>
     <li><b>Purpose and legal basis:</b> improvements and bug fixing; legitimate interest (Article 6(1)(f) GDPR). Only the developer sees this data; we do not use it for advertising and do not share it with third parties.</li>
     <li><b>Retention:</b> daily summaries (counters only, without identity) for 25&nbsp;months; the daily visitor identifier for 2&nbsp;days; the record linked to your account until you delete your account.</li>
-    <li><b>Turning it off:</b> in Settings, turn off “Pošiljaj statistiko uporabe” (Send usage statistics)&nbsp;— from then on the app does not send statistics from that device.</li>
+    <li><b>Turning it off:</b> in Settings, turn off “Pošiljaj statistiko uporabe” (Send usage statistics)&nbsp;— this applies to all your signed-in devices (the setting is synchronised) and to the landing page on this device.</li>
   </ul>
 
   <h2>Weekly question (test programme)</h2>
@@ -228,7 +229,7 @@ a:hover{color:#C5F27A}
 
   <h2>Feedback (the “Feedback” button)</h2>
   <ul>
-    <li>You send feedback yourself with the “Feedback” button: your text (or dictated text — speech recognition is done by your browser), the feedback type and <b>optionally a screenshot</b>, which you see before sending and can remove. The screenshot may contain your data that was on screen (e.g. weight or meals); Strava activities are left out of it.</li>
+    <li>You send feedback yourself with the “Feedback” button: your text (or dictated text — speech recognition is done by your browser), the feedback type and <b>optionally a screenshot</b>, which you see before sending and can remove. The screenshot may contain your data that was on screen (e.g. weight or meals); Strava activities are hidden in it.</li>
     <li>Technical data is attached: screen, app version, screen size, browser type, language and the last app error messages — and your email if you are signed in (so we can reply), otherwise a random device identifier.</li>
     <li>Feedback is stored in our Google Firebase (Firestore) and only the developer sees it. To find and fix bugs, the developer uses the AI assistant Anthropic Claude (USA), which reads the feedback and the screenshot.</li>
     <li>The screenshot is deleted once the feedback is resolved; the text is kept for at most 12 months. Earlier deletion: write to the contact below.</li>
@@ -244,8 +245,8 @@ a:hover{color:#C5F27A}
 
   <h2>Your rights (GDPR)</h2>
   <ul>
-    <li><b>Export:</b> Settings&nbsp;→ “Izvozi&nbsp;vse” (Export all) downloads all of your data at any time (a JSON file). The intervals.icu key is not included — it stays on your device and in your account.</li>
-    <li><b>Deletion:</b> Settings&nbsp;→ “Izbriši&nbsp;račun” (Delete account) deletes your account and all cloud data&nbsp;— synchronised data, AI counters and request entries, Pro status, usage statistics of your account, weekly-question answers, any old Strava tokens and the Garmin tokens and data (the connection with Garmin is revoked); an active Pro subscription is cancelled, and payment records are kept without your email address (accounting); the deletion is carried out by our server. “Izbriši&nbsp;na&nbsp;napravi” (Delete on this device) clears the data on the device. You can also write to us&nbsp;— we delete the data within 30&nbsp;days.</li>
+    <li><b>Export:</b> Settings&nbsp;→ “Izvozi&nbsp;kopijo” (Export a copy) downloads all of your data at any time (a JSON file). The intervals.icu key is not included — it stays on your device and in your account.</li>
+    <li><b>Deletion:</b> Settings&nbsp;→ “Izbriši&nbsp;račun” (Delete account) deletes your account and all cloud data&nbsp;— synchronised data, AI counters and request entries, Pro status, usage statistics of your account, weekly-question answers, the Strava and Wahoo tokens and the Garmin tokens and data (the connection with Garmin is revoked); an active Pro subscription is cancelled, and payment records are kept without your email address (accounting); the deletion is carried out by our server. “Izbriši&nbsp;na&nbsp;napravi” (Delete on this device) clears the data on the device. You can also write to us&nbsp;— we delete the data within 30&nbsp;days.</li>
     <li><b>Access and correction:</b> all of your data is visible and editable directly in the app.</li>
     <li><b>Withdrawing consent:</b> turn off AI processing in Settings (“AI&nbsp;obdelava”), and sleep, HRV and resting heart rate from your watch with the switch next to the intervals.icu connection or with the switches and “Odklopi Garmin” next to the Garmin Connect connection; you can also delete your data or account.</li>
     <li>You also have the right to restriction of processing and to object, and the right to lodge a complaint with the Information Commissioner of the Republic of Slovenia (<a href="https://www.ip-rs.si/en/">ip-rs.si</a>).</li>
