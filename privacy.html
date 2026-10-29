@@ -134,7 +134,7 @@ a:hover{color:#C5F27A}
   <div class="top"><a class="brand" href="/" aria-label="FORMAI — home"><img src="/icons/mark.svg" alt="" width="30" height="30"/><span>FORM<b>AI</b></span></a><a class="back" href="zasebnost.html" hreflang="sl" lang="sl">Slovensko&nbsp;→</a></div>
   <h1>Privacy Policy</h1>
   <p class="sub">FORMAI (desktop and mobile) · in force since 24&nbsp;July&nbsp;2026 · updated 29&nbsp;October&nbsp;2026 · <a href="zasebnost.html" hreflang="sl">Slovenian original</a></p>
-  <nav class="toc" aria-label="On this page"><b>On this page:</b><a href="#podatki">What data</a><a href="#podlaga">Legal basis</a><a href="#kje">Where</a><a href="#storitve">Other services</a><a href="#povezave">Strava, Wahoo, intervals.icu</a><a href="#garmin">Garmin</a><a href="#placila">Payments</a><a href="#statistika">Statistics</a><a href="#testni">Test programme</a><a href="#pripombe">Feedback</a><a href="#hramba">How long</a><a href="#pravice">Rights and deletion</a><a href="#pogoji">Terms</a><a href="#kontakt">Contact</a></nav>
+  <nav class="toc" aria-label="On this page"><b>On this page:</b><a href="#podatki">What data</a><a href="#podlaga">Legal basis</a><a href="#kje">Where</a><a href="#storitve">Other services</a><a href="#povezave">Strava, Wahoo, intervals.icu</a><a href="#garmin">Garmin</a><a href="#placila">Payments</a><a href="#statistika">Statistics</a><a href="#ankete">Polls</a><a href="#testni">Test programme</a><a href="#pripombe">Feedback</a><a href="#hramba">How long</a><a href="#pravice">Rights and deletion</a><a href="#pogoji">Terms</a><a href="#kontakt">Contact</a></nav>
 
   <div class="card"><b>Important:</b> FORMAI provides coaching and nutrition <b>guidance</b>, not medical advice. Calorie and training-load figures are estimates. Before making significant changes to your training or diet, consult a doctor&nbsp;— especially if you have a health condition.</div>
 
@@ -218,12 +218,19 @@ a:hover{color:#C5F27A}
 
   <h2 id="statistika">Usage statistics</h2>
   <ul>
-    <li><b>What:</b> so that we know what works in the app and where users get stuck, we record app opens, the screens you open and events (e.g. “onboarding finished”, “plan built”, “workout done”, “meal logged”, “AI error”), the app version, whether it is installed or opened in a browser, whether it is a phone or a computer, and the domain of the page you came from. <b>No content:</b> we do not record what you typed, asked or ate, your profile numbers or your workouts.</li>
+    <li><b>What:</b> so that we know what works in the app and where users get stuck, we record app opens, the screens you open events (e.g. “onboarding finished”, “plan built”, “workout done”, “meal logged”, “AI error”) and <b>which buttons and tabs you tap</b> (only the button’s name, e.g. “Začni trening” / Start workout, and the screen it is on) with the time of the event, the app version, whether it is installed or opened in a browser, whether it is a phone or a computer, and the domain of the page you came from. <b>No content:</b> we do not record what you typed, asked or ate (nothing from text fields and no messages), no numbers (weight, calories, minutes …), your profile numbers or your workouts.</li>
     <li><b>No cookies:</b> for visitors we use no cookies or other identifiers stored on the device. To count distinct visitors, the server computes a daily hashed identifier from the IP address and browser type (with a random value that changes every day); <b>the IP address and browser type are not stored</b>.</li>
-    <li><b>Signed-in users:</b> if you are signed in, events are linked to your account (first and last visit, number of opens and events, version, device type) so that we can see where things go wrong and help you.</li>
-    <li><b>Purpose and legal basis:</b> improvements and bug fixing; legitimate interest (Article 6(1)(f) GDPR). Only the developer sees this data; we do not use it for advertising and do not share it with third parties.</li>
-    <li><b>Retention:</b> daily summaries (counters only, without identity) for 25&nbsp;months; the daily visitor identifier for 2&nbsp;days; the record linked to your account until you delete your account.</li>
+    <li><b>Signed-in users:</b> if you are signed in, events are linked to your account (first and last visit, number of opens and events, version, device type) and we keep a <b>timeline</b>: when you opened which screen, what you tapped and what you did (e.g. “10:42 Plan → taps Start workout”), so that we can see where things go wrong, which features are used and which are not, and help you. Without signing in nothing is linked to a person&nbsp;— we only count totals.</li>
+    <li><b>Purpose and legal basis:</b> improvements and bug fixing; legitimate interest (Article 6(1)(f) GDPR). Only the controller (the FORMAI developer, Blaž Gregorc) sees this data in the admin dashboard, to which nobody else has access; we do not use it for advertising and do not share it with third parties.</li>
+    <li><b>Retention:</b> daily summaries (counters only, without identity) for 25&nbsp;months; the daily visitor identifier for 2&nbsp;days; <b>the tap and screen timeline of your account for 60&nbsp;days</b> (older days are deleted automatically); total counters linked to your account until you delete your account. Deleting your account also deletes the timeline.</li>
     <li><b>Turning it off:</b> in Settings, turn off “Pošiljaj statistiko uporabe” (Send usage statistics)&nbsp;— this applies to all your signed-in devices (the setting is synchronised) and to the landing page on this device.</li>
+  </ul>
+
+  <h2 id="ankete">Short in-app polls</h2>
+  <ul>
+    <li>After onboarding (never in the first 2&nbsp;days) the app asks at most one short question every 7&nbsp;days on the Today screen (e.g. “What are you missing in FORMAI?” or a 0–10 rating). Answering is optional&nbsp;— “Ne zdaj” (Not now) skips it.</li>
+    <li>We send: the question ID, the chosen answer, optionally your short comment (up to 194 characters), a random identifier and the app version; if you are signed in, the answer is linked to your account.</li>
+    <li>Only the controller sees the answers and uses them solely to improve FORMAI; they are kept until you delete your account (answers given without signing in until deletion on request).</li>
   </ul>
 
   <h2 id="testni">Weekly question (test programme)</h2>
@@ -245,7 +252,7 @@ a:hover{color:#C5F27A}
   <h2 id="hramba">How long we keep data</h2>
   <ul>
     <li><b>On your device:</b> until you delete it.</li>
-    <li><b>In the cloud</b> (synchronised data, AI counters and request entries, Pro and subscription status, usage statistics of your account, weekly-question answers): until you delete your account.</li>
+    <li><b>In the cloud</b> (synchronised data, AI counters and request entries, Pro and subscription status, usage statistics of your account, weekly-question and short-poll answers): until you delete your account; the tap and screen timeline for 60&nbsp;days.</li>
     <li><b>Payment records:</b> for as long as accounting and tax rules require (without your email address after account deletion). <b>Usage statistics:</b> daily summaries for 25&nbsp;months, the daily visitor identifier for 2&nbsp;days.</li>
     <li><b>Server logs</b> (Google Cloud Run, GitHub Pages): for as long as Google’s or GitHub’s default rules provide.</li>
   </ul>
