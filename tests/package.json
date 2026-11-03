@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --experimental-vm-modules --test hotfix.test.mjs pager.test.mjs" },
+  "devDependencies": { "jsdom": "24.1.3" },
+  "engines": { "node": ">=20" }
+}
