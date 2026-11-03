@@ -4,7 +4,7 @@ This repository contains a compiled static distribution, not the current applica
 
 ## Changes
 
-- `actions-D6Wf0Sxp.js`: explicit food masses are converted to fractional pieces without rounding to half-pieces or tenths. Fractional pieces with a known reference mass display as grams. Using the existing catalog, 100 g banana gives 88 kcal and 200 g gives 175 kcal; this is still a catalog estimate, not laboratory precision.
+- `actions-D6Wf0Sxp.js`: explicit food masses are converted to fractional pieces without rounding to half-pieces or tenths. Written gram/kilogram/decagram units are recognized; previously "100 gramov banana" could become 100 pieces. Fractional pieces with a known reference mass display as grams. Using the existing catalog, 100 g banana gives 88 kcal and 200 g gives 175 kcal; this is still a catalog estimate, not laboratory precision.
 - `start-BRLivjHr.js`: the weekly training summary uses the existing hours-and-minutes formatter. Three 45-minute sessions show 2 h 15 min.
 - `Sestavi-f9G-etRO.js`: introductory weekly volume preserves hundredths of an hour rather than rounding to half-hours. Planning constraints and prescribed sessions are unchanged.
 - `Prehrana-DNMBZnT3.js`: unlogged meals say "ni vpisa"; the evening notice no longer implies the person did not eat. English and German translations use fresh asset URLs.
