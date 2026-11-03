@@ -29,11 +29,13 @@ const context = vm.createContext({ n: translate });
 vm.runInContext('const nt=e=>e.type==="fitnes"||e.type==="doma";' + extract(start, 'function gn(') + 'const Di=e=>e.length-gn(e).size;' + extract(start, 'function ve(') + extract(start, 'function cl('), context);
 
 test('explicit fruit masses scale continuously instead of rounding to half-pieces', () => {
-  for (const [input, kcal] of [['100 g banana',88],['200 g banana',175],['10 g banana',9],['50 g banana',44],['0,2 kg banana',175],['20 dag banana',175],['banana, 100 g',88],['100 g jabolko',53]]) {
+  for (const [input, kcal] of [['100 g banana',88],['200 g banana',175],['10 g banana',9],['50 g banana',44],['0,2 kg banana',175],['20 dag banana',175],['banana, 100 g',88],['100 g jabolko',53],['100 gramov banana',88],['0,2 kilograma banane',175],['20 dekagramov banane',175]]) {
     assert.equal(parse(input).kcal, kcal, input);
   }
   assert.equal(parse('200 g banana').items[0].qty, '200 g');
   assert.equal(parse('banana, 100 g').items[0].qty, '100 g');
+  assert.equal(parse('banana, 100 gramov').kcal, 88);
+  assert.equal(parse('0,2 kilograma banane').items[0].qty, '200 g');
 });
 test('piece counts, fractions, multiple foods and ordinary gram foods still work', () => {
   for (const [input, kcal] of [['1 banana',105],['2 banani',210],['pol banane',53],['1/4 banane',26],['100 g oves',370],['100 g banana in 100 g oves',458],['2 x 100 g banana',175]]) {
