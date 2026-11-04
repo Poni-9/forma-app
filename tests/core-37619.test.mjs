@@ -97,5 +97,5 @@ test('all active JavaScript parses; dependency files and named exports resolve',
 test('PWA: patched assets have matching cache revisions and release version',()=>{
   const sw=read('sw.js');for(const path of JSON.parse(read('hotfix/changed-files.json')).filter(p=>p.startsWith('assets/'))){
     const hash=createHash('md5').update(read(path)).digest('hex');assert.ok(sw.includes(`{url:"${path}",revision:"${hash}"}`),path);
-  }assert.ok(entry.includes('ct="3.76.20"'));
+  }assert.ok(entry.includes('ct="3.76.21"'));
 });

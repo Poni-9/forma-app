@@ -1,0 +1,30 @@
+name: App quality
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: tests
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install isolated test dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Regression tests and module graph
+        run: npm test
+      - name: Navigation and gestures with the real app
+        run: npm run test:app
+      - name: Daily use, food drafts and partial workouts
+        run: npm run test:journeys
