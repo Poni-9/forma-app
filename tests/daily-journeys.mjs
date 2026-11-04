@@ -2,6 +2,7 @@
 // fake IndexedDB. No network, production account, paid API or external writes.
 import {createRequire} from 'node:module';
 import assert from 'node:assert/strict';
+import {qaApp} from './active-graph.mjs';
 const require=createRequire(process.env.FORMAI_TEST_MODULES || import.meta.url);
 const {JSDOM}=require('jsdom'),idb=require('fake-indexeddb');
 const dom=new JSDOM('<!doctype html><html class="is-land"><head><meta name="theme-color"></head><body><div id="root"></div></body></html>',{url:'https://test.invalid/#/danes',pretendToBeVisual:true});
@@ -27,27 +28,27 @@ async function until(fn,label){for(let i=0;i<600;i++){if(fn())return;await wait(
 const checks=[];
 async function check(name,fn){try{await fn();checks.push({name,ok:true});console.log('PASS',name);}catch(error){checks.push({name,ok:false,error:String(error)});console.error('FAIL',name,error.message);}}
 try{
-  const app=await import('../assets/start-VKBk-233.js');
-  const profile={...app.g().profile,onboardingDone:true,name:'QA',age:30,heightCm:180,weightKg:80,sex:'m'};
-  await app.cE(profile);
+  const app=await qaApp();   // (3.76.23, QA-004) aktivni start iz index.html + stabilen testni vstop (ne stisnjena imena ene gradnje)
+  const profile={...app.getState().profile,onboardingDone:true,name:'QA',age:30,heightCm:180,weightKg:80,sex:'m'};
+  await app.updateProfile(profile);
   // Start through the real landing-page bootstrap, which removes its own
   // hash listener. Calling the exported start() directly leaves that listener
   // armed and creates a second React root on the first route change.
   w.dispatchEvent(new w.HashChangeEvent("hashchange"));
   await until(()=>w.document.querySelector('main[data-scr="danes"] h1'),'startup');
-  const today=app.g().today;
+  const today=app.getState().today;
   const day={id:'qa-strength',date:today,kind:'moc',title:'QA strength',desc:'Ogrevanje in vaje.',durationMin:44,exercises:[{name:'Počep',sets:3,reps:'8–12'},{name:'Sklece',sets:3,reps:'8–12'}],done:{activityId:'qa-partial'}};
   const act={id:'qa-partial',date:today,start:today+'T00:30:00',sport:'moc',name:'QA strength',durationMin:8,exercises:[{name:'Počep',sets:1,reps:'8'}]};
   const meals=[{id:'qa-meal',date:today,slot:'drugo',time:'01:00',name:'banana',kcal:88,proteinG:1,carbsG:20,fatG:0}];
-  app.an({profile,plan:[day],activities:[act],mealsToday:meals,recentMeals:meals});
+  app.setState({profile,plan:[day],activities:[act],mealsToday:meals,recentMeals:meals});
   await wait(80);
-  const settings=app.g().settings,target=app.dF(profile,[act],[day],today,{today,hour:1});
+  const settings=app.getState().settings,target=app.dailyTarget(profile,[act],[day],today,{today,hour:1});
   const input={p:profile,target,plan:[day],activities:[act],meals,recentMeals:meals,weather:{},today,hour:1,settings};
   await check('Today and Nutrition recommend the same next recipe',()=>{
-    const built=app.dC({...input,day:today,prefs:settings.foodPrefs});
-    const slot=app.k_(built.dp,meals,1);
-    const recipes=app.dD(built.dp,today,app.dE(profile,target,settings,built.training,settings.recipeAlt?.[today]||{}),settings);
-    const actual=app.h$(input);
+    const built=app.dayMealsOf({...input,day:today,prefs:settings.foodPrefs});
+    const slot=app.nextSlotOf(built.dp,meals,1);
+    const recipes=app.recipesOf(built.dp,today,app.recipeCtxOf(profile,target,settings,built.training,settings.recipeAlt?.[today]||{}),settings);
+    const actual=app.nextMealOf(input);
     assert.equal(actual?.slot.key,slot?.key);
     assert.equal(actual?.r.name,recipes[slot.key].name);
     assert.equal(actual?.r.kcal,recipes[slot.key].kcal);
@@ -64,7 +65,7 @@ try{
     assert.ok(button,'primary resume button');
     assert.ok(button.compareDocumentPosition(hero.querySelector('.ex-grid')) & w.Node.DOCUMENT_POSITION_FOLLOWING);
   });
-  const route=async name=>{app.n(name);await until(()=>w.document.querySelector('main[data-scr="'+name+'"] h1'),name);await wait(40);};
+  const route=async name=>{app.navigate(name);await until(()=>w.document.querySelector('main[data-scr="'+name+'"] h1'),name);await wait(40);};
   await route('prehrana');
   const fill=value=>{const el=w.document.querySelector('#meal-desc');Object.getOwnPropertyDescriptor(w.HTMLTextAreaElement.prototype,'value').set.call(el,value);el.dispatchEvent(new w.Event('input',{bubbles:true}));};
   fill('200 g jogurta');await wait(20);
@@ -94,7 +95,7 @@ try{
     button('prejšnji').click();await until(()=>w.document.querySelector('#meal-desc')?.value==='včeraj 100 g riža','other draft retained');
   });
   await check('Fully completed training still has a completion tick',async()=>{
-    app.an({plan:[day],activities:[{...act,exercises:day.exercises.map(x=>({...x}))}]});
+    app.setState({plan:[day],activities:[{...act,exercises:day.exercises.map(x=>({...x}))}]});
     await route('danes');
     const todayButton=[...w.document.querySelectorAll('[data-t="teden-dan"]')].find(x=>x.textContent.includes('danes'));
     assert.match(todayButton.getAttribute('aria-label'),/opravljeno/);

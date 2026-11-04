@@ -2,6 +2,7 @@
 // fake IndexedDB. No network, production account, paid API or external writes.
 import {createRequire} from 'node:module';
 import assert from 'node:assert/strict';
+import {qaApp} from './active-graph.mjs';
 const require=createRequire(process.env.FORMAI_TEST_MODULES || import.meta.url);
 const {JSDOM}=require('jsdom'),idb=require('fake-indexeddb');
 const dom=new JSDOM('<!doctype html><html class="is-land"><head><meta name="theme-color"></head><body><div id="root"></div></body></html>',{url:'https://test.invalid/#/danes',pretendToBeVisual:true});
@@ -27,8 +28,8 @@ w.history.back=()=>{backCalls++;return historyBack();};
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function until(fn,label){for(let i=0;i<600;i++){if(fn())return;await wait(10);}throw Error(label+' timed out: '+w.document.body.textContent.slice(0,350));}
 try{
-  const app=await import('../assets/start-VKBk-233.js');
-  await app.cE({...app.g().profile,onboardingDone:true,name:'Preizkus',age:30,heightCm:180,weightKg:80});
+  const app=await qaApp();   // (3.76.23, QA-004) aktivni start iz index.html + stabilen testni vstop (ne stisnjena imena ene gradnje)
+  await app.updateProfile({...app.getState().profile,onboardingDone:true,name:'Preizkus',age:30,heightCm:180,weightKg:80});
   // Start through the real landing-page bootstrap, which removes its own
   // hash listener. Calling the exported start() directly leaves that listener
   // armed and creates a second React root on the first route change.
@@ -36,12 +37,12 @@ try{
   await until(()=>w.document.querySelector('main[data-scr="danes"]'),'App startup');
   const results=[];
   for(const route of ['danes','plan','prehrana','trener','aktivnosti','napredek','nastavitve','uvoz','vaje']){
-    app.n(route);await until(()=>w.document.querySelector(`main[data-scr="${route}"] h1`),route);
+    app.navigate(route);await until(()=>w.document.querySelector(`main[data-scr="${route}"] h1`),route);
     const main=w.document.querySelector('main.screen');
     assert.ok(!main.textContent.includes('Tega dela ni bilo mogoče naložiti'),route);
     results.push({route,heading:main.querySelector('h1').textContent,buttons:main.querySelectorAll('button').length});
   }
-  app.n('danes');await until(()=>w.document.querySelector('main[data-scr="danes"] h1'),'swipe start page');
+  app.navigate('danes');await until(()=>w.document.querySelector('main[data-scr="danes"] h1'),'swipe start page');
   const touch=(type,x,touching=true)=>{const event=new w.Event(type,{bubbles:true});Object.defineProperties(event,{touches:{value:touching?[{clientX:x,clientY:220}]:[]},changedTouches:{value:[{clientX:x,clientY:220}]}});w.document.querySelector('main').dispatchEvent(event);};
   const swipe=async dx=>{touch('touchstart',195);await wait(30);touch('touchmove',195+dx);await wait(100);touch('touchend',195+dx,false);};
   await swipe(-155);await until(()=>w.document.querySelector('main[data-scr="plan"] h1'),'actual React left swipe');await wait(80);

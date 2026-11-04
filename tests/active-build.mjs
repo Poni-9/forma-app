@@ -1,8 +1,9 @@
 // (3.76.22) Vrata kakovosti za AKTIVNO gradnjo — vse se razreši iz trenutnega index.html, nič ni vpisano po imenu (hash).
 //  1. graf modulov: vstop iz index.html, vsak relativen uvoz (statičen in dinamičen) obstaja v assets/
 //  2. sw.js: vsak vnos predpomnilnika obstaja; revizija (md5) se ujema z vsebino datoteke
-//  3. testi v tej mapi, vezani na module po imenu: če ciljajo neaktivno gradnjo, se jasno označijo kot NEVELJAVNI za to
-//     gradnjo (ne tiho zeleni). Vedenjske teste vzdržuje izvorni projekt (vitest, ~4 300 testov pred vsako objavo).
+//  3. testi v tej mapi, vezani na module po imenu (stari »white-box« testi gradnje 3.76.21: core-37619, pager-37619,
+//     meal-draft, hotfix, pager) so ARHIV — niso del vrat; njihova vedenja so prenesena v izvorne teste (vitest).
+//     Vrata za vedenje: app-smoke.mjs in daily-journeys.mjs (aktivni start iz index.html + stabilen testni vstop, 3.76.23+).
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 const root = new URL('../', import.meta.url)
@@ -38,7 +39,7 @@ for (const t of readdirSync(new URL('tests/', root)).filter(f => f.endsWith('.mj
   if (stale.length) bound.push(`${t}: ${stale.length}/${refs.length} uvozov iz druge gradnje (${stale.slice(0, 3).join(', ')}${stale.length > 3 ? ' …' : ''})`)
 }
 console.log(`aktivna gradnja ${ver}: ${seen.size} modulov v grafu, ${swN} vnosov sw.js (${revN} z revizijo)`)
-if (bound.length) console.log('NEVELJAVNO ZA TO GRADNJO (testi, vezani na imena modulov druge gradnje — ne zaganjam jih):\n  ' + bound.join('\n  '))
+if (bound.length) console.log('ARHIV (vezano na imena modulov druge gradnje — ni del vrat, glej test:arhiv-37621):\n  ' + bound.join('\n  '))
 if (fail.length) { console.error('NAPAKA:\n  ' + fail.join('\n  ')); process.exit(1) }
 console.log('AKTIVNA GRADNJA OK')
 if (process.argv.includes('--legacy') && bound.length) { console.error('Zahtevan zagon testov druge gradnje: niso veljavni za aktivni index.html.'); process.exit(1) }
