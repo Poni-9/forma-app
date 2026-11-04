@@ -5,7 +5,8 @@ import assert from 'node:assert/strict';
 const require=createRequire(process.env.FORMAI_TEST_MODULES || import.meta.url);
 const {JSDOM}=require('jsdom'),idb=require('fake-indexeddb');
 const dom=new JSDOM('<!doctype html><html class="is-land"><head><meta name="theme-color"></head><body><div id="root"></div></body></html>',{url:'https://test.invalid/#/danes',pretendToBeVisual:true});
-const w=dom.window,errors=[];
+const w=dom.window,errors=[],navigation=[];
+w.addEventListener('hashchange',()=>navigation.push({hash:w.location.hash,state:w.history.state,length:w.history.length}));
 w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){},addListener(){},removeListener(){}});
 w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};
 w.requestIdleCallback=fn=>w.setTimeout(()=>fn({didTimeout:false,timeRemaining:()=>50}),50);w.cancelIdleCallback=w.clearTimeout;
@@ -47,4 +48,4 @@ try{
   assert.equal(errors.length,0,errors.join('\n'));
   console.log(JSON.stringify({integration:'real modules; mocked browser/storage; network disabled',routes:results,errors},null,2));
   w.close();process.exit(0);
-}catch(error){console.error(error);console.error('Runtime errors:',errors);w.close();process.exit(1);}
+}catch(error){console.error(error);console.error('Runtime errors:',errors);console.error('Navigation:',navigation);w.close();process.exit(1);}

@@ -29,6 +29,7 @@ test('food quantities: pieces, multiple foods and zero quantities',()=>{
 });
 test('food quantities: an explicitly weighed banana stays labelled in grams',()=>{
   for(const grams of [1,50,60,100,120,200,240])assert.equal(parse(`${grams} g banana`).items[0].qty,`${grams} g`);
+  for(const [input,qty] of [['60g banana','60 g'],['120g banana','120 g'],['0,06kg banana','60 g'],['6dag banana','60 g']])assert.equal(parse(input).items[0].qty,qty,input);
 });
 test('weekly duration: exact hours and minutes; strength plus cardio on the same day',()=>{
   const c=vm.createContext({n:translate});
@@ -73,6 +74,7 @@ test('calendar export: filtering, escaped user text, multiple sessions and midni
   const plan=[{date:'2026-11-04',kind:'kolo',title:'Kolo, moč; test\nEND:VEVENT',durationMin:90},{date:'2026-11-04',kind:'moc',title:'Moč',durationMin:40},{date:'2026-11-05',kind:'pocitek',title:'Počitek',durationMin:30},{date:'2026-11-05',kind:'kolo',title:'Done',durationMin:30,done:true}];
   c.plan=plan;const text=vm.runInContext('O(plan,23)',c);assert.equal((text.match(/^BEGIN:VEVENT$/gm)||[]).length,2);
   assert.ok(text.includes('DTSTART:20261104T230000'));assert.ok(text.includes('DTEND:20261105T003000'));
+  assert.ok(text.includes('DTSTART:20261105T004000'),'second session must start on the next date, not at hour 24');
   assert.ok(text.includes('\\,')&&text.includes('\\;')&&text.includes('\\nEND:VEVENT'));
 });
 test('CSV export: formula injection and Strava restrictions',()=>{
@@ -95,5 +97,5 @@ test('all active JavaScript parses; dependency files and named exports resolve',
 test('PWA: patched assets have matching cache revisions and release version',()=>{
   const sw=read('sw.js');for(const path of JSON.parse(read('hotfix/changed-files.json')).filter(p=>p.startsWith('assets/'))){
     const hash=createHash('md5').update(read(path)).digest('hex');assert.ok(sw.includes(`{url:"${path}",revision:"${hash}"}`),path);
-  }assert.ok(entry.includes('ct="3.76.19"'));
+  }assert.ok(entry.includes('ct="3.76.20"'));
 });
