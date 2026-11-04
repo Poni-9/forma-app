@@ -21,12 +21,18 @@ for(const [key,value] of Object.entries(idb))if(key==='indexedDB'||key.startsWit
 new w.MutationObserver(records=>{for(const record of records)for(const node of record.addedNodes){if(node.nodeName==='LINK')queueMicrotask(()=>node.dispatchEvent(new w.Event('load')));}}).observe(w.document.head,{childList:true});
 w.addEventListener('error',event=>errors.push(String(event.error||event.message)));
 process.on('unhandledRejection',error=>errors.push(String(error)));
+let backCalls=0;
+const historyBack=w.history.back.bind(w.history);
+w.history.back=()=>{backCalls++;return historyBack();};
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function until(fn,label){for(let i=0;i<600;i++){if(fn())return;await wait(10);}throw Error(label+' timed out: '+w.document.body.textContent.slice(0,350));}
 try{
   const app=await import('../assets/start-VKBk-233.js');
   await app.cE({...app.g().profile,onboardingDone:true,name:'Preizkus',age:30,heightCm:180,weightKg:80});
-  app.lq.start();
+  // Start through the real landing-page bootstrap, which removes its own
+  // hash listener. Calling the exported start() directly leaves that listener
+  // armed and creates a second React root on the first route change.
+  w.dispatchEvent(new w.HashChangeEvent("hashchange"));
   await until(()=>w.document.querySelector('main[data-scr="danes"]'),'App startup');
   const results=[];
   for(const route of ['danes','plan','prehrana','trener','aktivnosti','napredek','nastavitve','uvoz','vaje']){
@@ -41,6 +47,8 @@ try{
   await swipe(-155);await until(()=>w.document.querySelector('main[data-scr="plan"] h1'),'actual React left swipe');await wait(80);
   await swipe(155);await until(()=>w.document.querySelector('main[data-scr="danes"] h1'),'actual React right swipe');
   await wait(450);assert.equal(w.document.querySelector('main').style.transform,'');
+  assert.equal(w.location.hash,'#/danes','return gesture stays on Today');
+  assert.equal(backCalls,1,'a single gesture traverses history exactly once');
   const tabs=[...w.document.querySelectorAll('nav.tabs button[data-t]')];
   tabs.find(b=>b.dataset.t==='zavihek-plan').click();tabs.find(b=>b.dataset.t==='zavihek-trener').click();
   await until(()=>w.document.querySelector('main[data-scr="trener"] h1'),'actual React rapid taps');

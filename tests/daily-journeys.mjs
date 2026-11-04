@@ -30,7 +30,10 @@ try{
   const app=await import('../assets/start-VKBk-233.js');
   const profile={...app.g().profile,onboardingDone:true,name:'QA',age:30,heightCm:180,weightKg:80,sex:'m'};
   await app.cE(profile);
-  app.lq.start();
+  // Start through the real landing-page bootstrap, which removes its own
+  // hash listener. Calling the exported start() directly leaves that listener
+  // armed and creates a second React root on the first route change.
+  w.dispatchEvent(new w.HashChangeEvent("hashchange"));
   await until(()=>w.document.querySelector('main[data-scr="danes"] h1'),'startup');
   const today=app.g().today;
   const day={id:'qa-strength',date:today,kind:'moc',title:'QA strength',desc:'Ogrevanje in vaje.',durationMin:44,exercises:[{name:'Počep',sets:3,reps:'8–12'},{name:'Sklece',sets:3,reps:'8–12'}],done:{activityId:'qa-partial'}};
