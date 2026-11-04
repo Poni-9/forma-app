@@ -2,12 +2,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --experimental-vm-modules --test core-37619.test.mjs pager-37619.test.mjs",
-    "test:app": "node app-smoke.mjs"
+    "test": "node --experimental-vm-modules --test core-37619.test.mjs pager-37619.test.mjs meal-draft.test.mjs",
+    "test:app": "node app-smoke.mjs",
+    "test:journeys": "node daily-journeys.mjs"
   },
   "devDependencies": {
     "jsdom": "24.1.3",
     "fake-indexeddb": "6.2.5"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }

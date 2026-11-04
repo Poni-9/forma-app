@@ -13,7 +13,7 @@ w.requestIdleCallback=fn=>w.setTimeout(()=>fn({didTimeout:false,timeRemaining:()
 w.fetch=async url=>{if(new URL(String(url),w.location.href).pathname.startsWith('/assets/'))return new Response('',{status:200});throw new TypeError('Offline integration fixture');};
 w.localStorage.setItem('formai.lang','sl');w.localStorage.setItem('formai.statsOff','1');
 Object.defineProperty(w,'innerWidth',{value:390});w.ontouchstart=null;
-for(const key of ['window','document','navigator','location','history','localStorage','sessionStorage','HTMLElement','Element','Node','MutationObserver','Event','CustomEvent','HashChangeEvent','DOMException','getComputedStyle','matchMedia','fetch','requestAnimationFrame','cancelAnimationFrame','requestIdleCallback','cancelIdleCallback','addEventListener','removeEventListener','dispatchEvent']){
+for(const key of ['window','document','navigator','location','history','localStorage','sessionStorage','HTMLElement','HTMLInputElement','HTMLTextAreaElement','HTMLSelectElement','HTMLButtonElement','Element','Node','MutationObserver','Event','CustomEvent','HashChangeEvent','DOMException','getComputedStyle','matchMedia','fetch','requestAnimationFrame','cancelAnimationFrame','requestIdleCallback','cancelIdleCallback','addEventListener','removeEventListener','dispatchEvent']){
   const value=key==='window'?w:w[key];Object.defineProperty(globalThis,key,{value:typeof value==='function'&&/^(getComputedStyle|matchMedia|fetch|request|cancel|addEvent|removeEvent|dispatchEvent)/.test(key)?value.bind(w):value,configurable:true});
 }
 globalThis.innerWidth=390;globalThis.scrollY=0;
