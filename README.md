@@ -38,7 +38,7 @@ Avtor: Blaž Gregorc · blaz.gregorc05@gmail.com
 
 ## Preverjanje trenutne objave
 
-Popravki 3.76.19, testi in navodila za prenos v izvorni projekt: [HOTFIX-3.76.19.md](HOTFIX-3.76.19.md).
+Popravki 3.76.19–20, testi in navodila za prenos v izvorni projekt: [HOTFIX-3.76.20.md](HOTFIX-3.76.20.md).
 
 V mapi `tests`: `npm install`, `npm test`, `npm run test:app`. Ta repozitorij je objavljena distribucija; pred naslednjo objavo iz ločenega izvornega projekta prenesi tudi popravke, opisane v opombi.
 
