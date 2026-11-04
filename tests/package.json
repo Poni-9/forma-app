@@ -2,9 +2,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --experimental-vm-modules --test core-37619.test.mjs pager-37619.test.mjs meal-draft.test.mjs",
-    "test:app": "node app-smoke.mjs",
-    "test:journeys": "node daily-journeys.mjs"
+    "test": "node active-build.mjs && node run-if-active.mjs test core-37619.test.mjs pager-37619.test.mjs meal-draft.test.mjs",
+    "test:app": "node run-if-active.mjs run app-smoke.mjs",
+    "test:journeys": "node run-if-active.mjs run daily-journeys.mjs",
+    "check:active": "node active-build.mjs"
   },
   "devDependencies": {
     "jsdom": "24.1.3",
