@@ -1,0 +1,25 @@
+# FORMAI
+
+> FORMAI je osebni AI trener v slovenščini za fitnes, tek in kolo, s prehrano, ki sledi treningu. Deluje v brskalniku in kot aplikacija na začetnem zaslonu telefona (formai.si).
+
+FORMAI se z uporabnikom pogovori o cilju, času in opremi ter se z njim dogovori za realen teden treninga. Prehrana (kalorije in makrohranila) se prilagaja dnevu: na dan treninga več, na dan za mizo manj. Varovalke: nikoli pod bazalno porabo, primanjkljaj največ 750 kcal na dan, pod 18 let brez primanjkljaja. FORMAI ni medicinski pripomoček.
+
+## Za koga
+- Rekreativci v fitnesu: vaje po opremi, serije, ponovitve in kilogrami; teža naslednjič višja.
+- Tekači: lahki teki, intervali in hribi, po utripu ali po občutku.
+- Kolesarji: tekme sezone (A, B, C), vati in FTP, gorivo na kolesu.
+
+## Cena
+- Osnovna: brezplačno, brez kartice. Načrt, vodenje, prehrana; AI do 20 vprašanj na dan.
+- FORMAI Pro: 8,99 EUR na mesec ali 79,99 EUR na leto (približno 26 % ceneje). AI do 200 vprašanj na dan in trener Claude (Anthropic).
+- Dokup AI za tekoči mesec: 2,99 EUR enkratno.
+
+## Naprave
+Garmin, Wahoo in Strava neposredno; COROS, Polar in Suunto prek brezplačnega intervals.icu; datoteke .fit in .gpx.
+
+## Povezave
+- Domača stran: https://formai.si/
+- Pogoji uporabe: https://formai.si/pogoji.html
+- Politika zasebnosti: https://formai.si/zasebnost.html
+- English terms: https://formai.si/terms.html
+- Kontakt: podpora@formai.si

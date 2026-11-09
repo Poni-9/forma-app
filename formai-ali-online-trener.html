@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>FORMAI ali online trener za kolo ali tek — primerjava</title>
+<meta name="description" content="Online trener za kolo ali tek stane 89–169 € na mesec, FORMAI Pro 8,99 €. Kaj dobiš pri enem in drugem, kdaj je boljši človek in kdaj FORMAI."/>
+<link rel="canonical" href="https://formai.si/formai-ali-online-trener.html"/>
+<link rel="icon" href="/favicon.ico" sizes="48x48"/>
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml"/>
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
+<meta name="theme-color" content="#0F1216"/>
+<style>
+  /* pisava je na formai.si (brez Google Fonts) */
+  @font-face{font-family:'Manrope';font-style:normal;font-weight:200 800;font-display:swap;src:url(/fonts/Manrope-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+  @font-face{font-family:'Manrope';font-style:normal;font-weight:200 800;font-display:swap;src:url(/fonts/Manrope-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+  :root{
+  /* ==== FORMAI oblikovni sistem — dobesedno iz mockupa (29. 7. 2026) ==== */
+  --bench:#0b0e11; --bg:#0b0e11; --bg2:#080b0d;
+  --panel:#12171b; --panel2:#171d22; --panel3:#0d1216;
+  --line:#232b32; --line2:#1a2126;
+  --ink:#e9eef2; --dim:#939da6; --dim2:#606a72;
+  --sig:#62c5ee; --sigd:#38a6cf; --sig2:#ff458e; --onSig:#04161d;
+  --sans:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  /* stara imena → iste barve */
+  --border:var(--line); --border2:var(--line2); --borderH:#333d45;
+  --text:var(--ink); --soft:#c3ccd4; --muted:var(--dim);
+  --acc:var(--sig); --accH:#9ddcf7; --acc2:var(--sigd); --accSoft:rgba(98,197,238,.14);
+  --orange:var(--sigd); --green:#5fd67a; --greenSoft:rgba(95,214,122,.13);
+  --red:var(--sig2); --redSoft:rgba(255,69,142,.13);
+  --yellow:#edbb00; --yellowSoft:rgba(237,187,0,.13);
+  --blue:var(--sig); --blueSoft:rgba(98,197,238,.13);
+  --purple:#b48cff; --purpleSoft:rgba(180,140,255,.13);
+  --radius:0px; --bc:var(--mono);
+  font-family:var(--sans);
+}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);line-height:1.65;font-size:.96875rem}
+  .wrap{max-width:760px;margin:0 auto;padding:40px 22px 60px}
+  h1{font-size:1.875rem;letter-spacing:-.02em;margin-bottom:6px}
+  .sub{color:var(--muted);margin-bottom:30px}
+  h2{font-size:1.1875rem;margin:30px 0 10px;color:var(--acc2)}
+  p,li{color:var(--muted);margin-bottom:10px}
+  li{margin-left:20px}
+  b{color:var(--text)}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin:18px 0}
+  a{color:var(--acc2)}
+  .back{display:inline-block;margin-bottom:20px;color:var(--acc2);text-decoration:none;font-weight:700}
+
+/* ===== gradniki, dobesedno iz mockupa formainamizje.html ===== */
+h1,h2,h3,h4{font-family:var(--sans);letter-spacing:-.022em}
+a{color:var(--sig);text-decoration:none}
+a:hover{color:#9ddcf7}
+/* povezave v besedilu: poleg barve še podčrtane (WCAG 1.4.1 — barva povezave proti besedilu je samo 1,4 : 1) */
+p a,li a{text-decoration:underline;text-underline-offset:.18em;text-decoration-thickness:1px}
+.tabnav a{position:relative;font-family:var(--mono);font-size:.6875rem;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);padding:14px 0;display:block}
+.tabnav a:hover{color:var(--ink)}
+.tabnav a[aria-current="page"]{color:var(--ink)}
+.tabnav a[aria-current="page"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--sig)}
+.k{font-family:var(--mono);font-size:.59375rem;font-weight:500;letter-spacing:.17em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
+.m{font-size:.78125rem;line-height:1.6;color:var(--dim)}
+.m b{color:var(--ink);font-weight:600}
+.kv{display:flex;align-items:baseline;gap:10px}
+.kv>:first-child{flex:1 1 0%;min-width:0}
+.kv>:last-child{flex:0 0 auto;white-space:nowrap}
+.n{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap}
+.p{background:var(--panel);border:1px solid var(--line)}
+.b{font-family:var(--mono);font-size:.6875rem;font-weight:500;letter-spacing:.11em;text-transform:uppercase;white-space:nowrap;padding:10px 16px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.b:hover{background:#1e252b;border-color:#333d45}
+.b.sig{background:var(--sigd);border-color:var(--sigd);color:var(--onSig)}
+.b.sig:hover{background:var(--sig);border-color:var(--sig)}
+.b.g{background:transparent;border-color:transparent;color:var(--sig);padding:10px 4px}
+.b.g:hover{background:transparent;color:#9ddcf7}
+.b.dz{border-color:rgba(255,69,142,.4);color:var(--sig2);background:transparent}
+.b.dz:hover{background:rgba(255,69,142,.09);border-color:var(--sig2)}
+.sg button{font-family:var(--mono);font-size:.65625rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:8px 15px;background:var(--panel);border:1px solid var(--line);border-left:none;color:var(--dim);cursor:pointer}
+.sg button:first-child{border-left:1px solid var(--line)}
+.sg button:hover{color:var(--ink);background:var(--panel2)}
+.sg button[data-on="1"]{background:var(--sigd);border-color:var(--sigd);color:var(--onSig)}
+input.f,textarea.f{width:100%;font-family:var(--sans);font-size:.84375rem;padding:10px 12px;background:var(--panel3);border:1px solid var(--line);color:var(--ink);outline:none}
+input.f:focus,textarea.f:focus{border-color:var(--sig)}
+input.f::placeholder{color:var(--dim2)}
+.rw{display:grid;align-items:center;column-gap:16px;border-bottom:1px solid var(--line2)}
+.rw:hover{background:var(--panel2)}
+.tg{font-family:var(--mono);font-size:.59375rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid}
+:focus-visible{outline:2px solid var(--sig);outline-offset:2px}
+::selection{background:rgba(98,197,238,.3)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#242c33}
+::-webkit-scrollbar-track{background:var(--bench)}
+@keyframes fu{0%{opacity:0;transform:translateY(5px)}100%{opacity:1;transform:none}}
+@media(max-width:1180px){.g2{grid-template-columns:minmax(0,1fr)!important}}
+@media(max-width:1100px){.hd-install{display:none}}
+@media(max-width:1000px){.g3{grid-template-columns:minmax(0,1fr)!important}}
+@media(max-width:860px){.sc{overflow-x:auto}.sc .rw{min-width:680px}}
+
+/* ===== barve blagovne znamke (kot aplikacija in formai.si): temno ozadje, limeta — prej cian iz starega mockupa ===== */
+:root{--bench:#0F1216;--bg:#0F1216;--bg2:#0B0E12;--panel:#171C22;--panel2:#1E242C;--panel3:#12161B;--line:#262E37;--line2:#1E242C;
+  --ink:#F2F5F8;--dim:#A8B3BF;--dim2:#86909C;--sig:#A3E635;--sigd:#A3E635;--onSig:#0F1216;--text:var(--ink);--soft:#C9D1D9;--muted:#A8B3BF;
+  --acc:#A3E635;--accH:#C5F27A;--acc2:#A3E635;--accSoft:rgba(163,230,53,.12);--blue:#3987E5;--blueSoft:rgba(57,135,229,.13);--borderH:#333D47}
+body{-webkit-font-smoothing:antialiased}
+h2{color:var(--ink)}
+a:hover{color:#C5F27A}
+::selection{background:rgba(163,230,53,.28)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:26px}
+.brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:1.1875rem;letter-spacing:-.01em;color:var(--ink)!important;text-decoration:none!important}
+.brand img{width:30px;height:30px;border-radius:22.4%;display:block}
+.brand b{color:#A3E635}
+.top .back{margin:0}
+.nav2{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px;font-size:.875rem}
+
+/* (v3.50) svetla tema, ko jo uporabnik izbere v aplikaciji (Videz → Svetlo ali Kot telefon) — iste barve kot aplikacija */
+:root[data-theme="light"]{color-scheme:light;--bench:#F4F6F2;--bg:#F4F6F2;--bg2:#E9EDE5;--panel:#FFFFFF;--panel2:#EEF2EA;--panel3:#F4F6F2;--line:#DCE2D8;--line2:#E3E8DF;--border:#DCE2D8;--border2:#E3E8DF;--borderH:#C9D1C4;--ink:#131A16;--text:#131A16;--soft:#3F4A44;--dim:#3F4A44;--muted:#3F4A44;--dim2:#5E6A63;--sig:#4A6F0E;--sigd:#4A6F0E;--acc:#4A6F0E;--acc2:#4A6F0E;--accH:#3A5A0A;--onSig:#FFFFFF;--accSoft:rgba(74,111,14,.12)}
+:root[data-theme="light"] .brand b{color:#4A6F0E}
+:root[data-theme="light"] a:hover{color:#3A5A0A}
+:root[data-theme="light"] ::selection{background:rgba(163,230,53,.35)}
+:root[data-theme="light"] ::-webkit-scrollbar-thumb{background:#C9D1C4}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.95rem}
+  th,td{text-align:left;vertical-align:top;padding:10px 8px;border-top:1px solid rgba(127,127,127,.25)}
+  th{font-weight:800}
+  @media (max-width:520px){table{font-size:.875rem}th,td{padding:8px 6px}}
+</style>
+<script>/* (v3.50) tema kot v aplikaciji (formai.theme): svetlo ali »kot telefon« pri svetlem telefonu */(function(){try{var t=localStorage.getItem('formai.theme');if(t==='svetlo'||(t==='samodejno'&&window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)){document.documentElement.dataset.theme='light';var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content','#F4F6F2')}}catch(e){}})()</script>
+</head>
+<body>
+<main class="wrap">
+  <h1>FORMAI ali online trener za kolo ali tek</h1>
+  <p class="sub">Primerjava cen in tega, kaj dobiš · cene iz javnih cenikov slovenskih ponudnikov, november&nbsp;2026</p>
+
+  <p>Online trener ti sestavi načrt, ga spremlja in ti odgovarja. FORMAI naredi isto delo z&nbsp;AI trenerjem: vpraša te, kar rabi, se s&nbsp;tabo dogovori za realen teden in ga prilagaja po vsakem treningu. <b>FORMAI ni človek</b>&nbsp;— tvoje tehnike ne vidi v&nbsp;živo. Spodaj je pošteno, kje je boljši eden in kje drugi.</p>
+
+  <h2>Koliko stane</h2>
+  <table>
+    <tr><th>Kaj</th><th>Cena</th></tr>
+    <tr><td>Online trener za kolo ali tek</td><td>89–169&nbsp;€ / mesec</td></tr>
+    <tr><td>Načrt treninga za 4&nbsp;tedne (enkratno)</td><td>126&nbsp;€</td></tr>
+    <tr><td>Športna prehrana z&nbsp;jedilnikom</td><td>80–149&nbsp;€ / mesec</td></tr>
+    <tr><td>Osebni trener v&nbsp;živo</td><td>35&nbsp;€ / uro</td></tr>
+    <tr><td><b>FORMAI Pro</b>&nbsp;— načrt, prehrana in trener AI skupaj</td><td><b>8,99&nbsp;€ / mesec</b> ali 79,99&nbsp;€ / leto</td></tr>
+    <tr><td><b>FORMAI Osnovna</b>&nbsp;— načrt, vodenje, prehrana, AI do 20 vprašanj na dan</td><td><b>0&nbsp;€</b></td></tr>
+  </table>
+  <p>Cene ponudnikov so orientacijske (javni ceniki, november 2026) in se razlikujejo od trenerja do trenerja.</p>
+
+  <h2>Kaj dobiš</h2>
+  <table>
+    <tr><th></th><th>Online trener</th><th>FORMAI</th></tr>
+    <tr><td>Načrt po tvojem tednu</td><td>Da</td><td>Da&nbsp;— dogovorita se, koliko dni in ur imaš in kateri dnevi ti ne gredo</td></tr>
+    <tr><td>Prilagajanje načrta</td><td>Ko ga trener pregleda</td><td>Po vsakem treningu in kadar poveš, da ne gre</td></tr>
+    <tr><td>Prehrana</td><td>Pogosto ločeno plačilo</td><td>Vključena: kalorije in beljakovine sledijo treningu</td></tr>
+    <tr><td>Odgovor na vprašanje</td><td>Ko trener odgovori</td><td>Takoj, s&nbsp;tvojimi številkami</td></tr>
+    <tr><td>Tehnika v&nbsp;živo, poškodbe</td><td>Da, če dela v&nbsp;živo</td><td>Ne&nbsp;— FORMAI ni človek in ni zdravniški nasvet</td></tr>
+    <tr><td>Tekme sezone, vati in FTP</td><td>Da</td><td>Da&nbsp;— cilji A, B, C, vrh forme za cilje A, gorivo na kolesu</td></tr>
+    <tr><td>Ura</td><td>Odvisno od trenerja</td><td>Garmin in Wahoo neposredno, COROS, Polar in Suunto prek intervals.icu; brez ure trening odkljukaš</td></tr>
+  </table>
+
+  <h2>Kdaj raje izberi človeka</h2>
+  <ul>
+    <li>Imaš poškodbo ali bolečino in rabiš nekoga, ki te vidi.</li>
+    <li>Učiš se tehnike (počep, mrtvi dvig, tekaški korak) in rabiš popravke v&nbsp;živo.</li>
+    <li>Tekmuješ na visoki ravni in hočeš osebno spremljanje in odnos.</li>
+  </ul>
+
+  <h2>Kdaj je FORMAI dovolj</h2>
+  <ul>
+    <li>Treniraš rekreativno in rabiš realen načrt, ki se prilagaja tvojemu tednu.</li>
+    <li>Hočeš, da prehrana sledi treningu&nbsp;— na dan treninga več, na dan za mizo manj.</li>
+    <li>Ne želiš plačati 89–169&nbsp;€ na mesec. Osnovna je brezplačna, Pro stane 8,99&nbsp;€.</li>
+  </ul>
+  <p style="margin-top:28px"><a href="/#/uvod"><b>Sestavi moj načrt&nbsp;→</b></a> &nbsp;Nekaj minut&nbsp;· Osnovna je brezplačna&nbsp;· brez kartice</p>
+  <p style="margin-top:30px"><a href="/">FORMAI</a> · <a href="/#cena">Cena</a> · <a href="formai-ali-online-trener.html">FORMAI ali online trener</a> · <a href="formai-in-intervals-icu.html">FORMAI in intervals.icu</a> · <a href="zasebnost.html">Zasebnost</a> · <a href="pogoji.html">Pogoji</a></p>
+</main>
+</body>
+</html>
