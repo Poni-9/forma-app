@@ -2,10 +2,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node active-build.mjs",
+    "test": "node active-build.mjs && npm run test:ai",
     "test:app": "node app-smoke.mjs",
     "test:journeys": "node daily-journeys.mjs",
-    "test:arhiv-37621": "node run-if-active.mjs test core-37619.test.mjs pager-37619.test.mjs meal-draft.test.mjs"
+    "test:arhiv-37621": "node run-if-active.mjs test core-37619.test.mjs pager-37619.test.mjs meal-draft.test.mjs",
+    "test:ai": "node --experimental-vm-modules --test ai-client.test.mjs"
   },
   "devDependencies": {
     "jsdom": "24.1.3",

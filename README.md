@@ -38,6 +38,8 @@ Avtor: Blaž Gregorc · blaz.gregorc05@gmail.com
 
 ## Preverjanje trenutne objave
 
+Popravek povezave AI 3.76.49, regresijski testi in navodila za prenos v izvorni projekt: [HOTFIX-3.76.49.md](HOTFIX-3.76.49.md). `npm test` preverja tudi aktivni AI odjemalec z nadzorovanimi omrežnimi odgovori.
+
 Popravki 3.76.19–20, testi in navodila za prenos v izvorni projekt: [HOTFIX-3.76.21.md](HOTFIX-3.76.21.md).
 
 V mapi `tests`: `npm install`, `npm test`, `npm run test:app`, `npm run test:journeys`. Ta repozitorij je objavljena distribucija; pred naslednjo objavo iz ločenega izvornega projekta prenesi tudi popravke, opisane v opombi.
