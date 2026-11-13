@@ -38,6 +38,8 @@ Avtor: Blaž Gregorc · blaz.gregorc05@gmail.com
 
 ## Preverjanje trenutne objave
 
+Popravek povezovanja Garmin 3.76.50, preizkusi in odprti strežniški CORS del: [HOTFIX-3.76.50.md](HOTFIX-3.76.50.md). `npm test` preverja tudi obnovitev prijave, časovne omejitve, dvojne klike in uporabniške izbire.
+
 Popravek povezave AI 3.76.49, regresijski testi in navodila za prenos v izvorni projekt: [HOTFIX-3.76.49.md](HOTFIX-3.76.49.md). `npm test` preverja tudi aktivni AI odjemalec z nadzorovanimi omrežnimi odgovori.
 
 Popravki 3.76.19–20, testi in navodila za prenos v izvorni projekt: [HOTFIX-3.76.21.md](HOTFIX-3.76.21.md).
