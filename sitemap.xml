@@ -40,4 +40,18 @@
     <loc>https://formai.si/formai-in-intervals-icu.html</loc>
     <lastmod>2026-11-09</lastmod>
   </url>
+  <url>
+    <loc>https://formai.si/kalkulator-ftp-cone.html</loc>
+    <lastmod>2026-11-27</lastmod>
+    <xhtml:link rel="alternate" hreflang="sl" href="https://formai.si/kalkulator-ftp-cone.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://formai.si/ftp-zones-calculator.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://formai.si/ftp-zones-calculator.html"/>
+  </url>
+  <url>
+    <loc>https://formai.si/ftp-zones-calculator.html</loc>
+    <lastmod>2026-11-27</lastmod>
+    <xhtml:link rel="alternate" hreflang="sl" href="https://formai.si/kalkulator-ftp-cone.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://formai.si/ftp-zones-calculator.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://formai.si/ftp-zones-calculator.html"/>
+  </url>
 </urlset>
