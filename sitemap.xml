@@ -54,4 +54,18 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://formai.si/ftp-zones-calculator.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://formai.si/ftp-zones-calculator.html"/>
   </url>
+  <url>
+    <loc>https://formai.si/kalkulator-kalorij-trening.html</loc>
+    <lastmod>2026-11-27</lastmod>
+    <xhtml:link rel="alternate" hreflang="sl" href="https://formai.si/kalkulator-kalorij-trening.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://formai.si/training-day-calorie-calculator.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://formai.si/training-day-calorie-calculator.html"/>
+  </url>
+  <url>
+    <loc>https://formai.si/training-day-calorie-calculator.html</loc>
+    <lastmod>2026-11-27</lastmod>
+    <xhtml:link rel="alternate" hreflang="sl" href="https://formai.si/kalkulator-kalorij-trening.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://formai.si/training-day-calorie-calculator.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://formai.si/training-day-calorie-calculator.html"/>
+  </url>
 </urlset>

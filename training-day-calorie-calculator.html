@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Training-day calorie calculator — free</title>
+<meta name="description" content="Enter weight, height, age and today’s session: get a calorie estimate for a training day and a rest day, plus protein. No sign-up."/>
+<meta name="referrer" content="strict-origin-when-cross-origin"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="FORMAI"/>
+<meta property="og:url" content="https://formai.si/training-day-calorie-calculator.html"/>
+<meta property="og:title" content="Training-day calorie calculator — free"/>
+<meta property="og:description" content="Enter weight, height, age and today’s session: get a calorie estimate for a training day and a rest day, plus protein. No sign-up."/>
+<meta property="og:image" content="https://formai.si/og.png?v=3"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Organization", "@id": "https://formai.si/#organization", "name": "FORMAI", "url": "https://formai.si/", "logo": "https://formai.si/icons/icon-512-v2.png", "email": "podpora@formai.si", "sameAs": ["https://www.instagram.com/formai.si/"]}, {"@type": "WebSite", "@id": "https://formai.si/#website", "url": "https://formai.si/", "name": "FORMAI"}, {"@type": "WebApplication", "@id": "https://formai.si/training-day-calorie-calculator.html#app", "url": "https://formai.si/training-day-calorie-calculator.html", "name": "Training-day calorie calculator — free", "description": "Enter weight, height, age and today’s session: get a calorie estimate for a training day and a rest day, plus protein. No sign-up.", "inLanguage": "en", "applicationCategory": "HealthApplication", "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"}, "isPartOf": {"@id": "https://formai.si/#website"}, "publisher": {"@id": "https://formai.si/#organization"}, "dateModified": "2026-11-27"}]}</script>
+<link rel="canonical" href="https://formai.si/training-day-calorie-calculator.html"/>
+<link rel="alternate" hreflang="sl" href="https://formai.si/kalkulator-kalorij-trening.html"/>
+<link rel="alternate" hreflang="en" href="https://formai.si/training-day-calorie-calculator.html"/>
+<link rel="alternate" hreflang="x-default" href="https://formai.si/training-day-calorie-calculator.html"/>
+<link rel="icon" href="/favicon.ico" sizes="48x48"/>
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml"/>
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
+<meta name="theme-color" content="#0F1216"/>
+<style>
+  /* pisava je na formai.si (brez Google Fonts) */
+  @font-face{font-family:'Manrope';font-style:normal;font-weight:200 800;font-display:swap;src:url(/fonts/Manrope-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+  @font-face{font-family:'Manrope';font-style:normal;font-weight:200 800;font-display:swap;src:url(/fonts/Manrope-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+  :root{
+  /* ==== FORMAI oblikovni sistem — dobesedno iz mockupa (29. 7. 2026) ==== */
+  --bench:#0b0e11; --bg:#0b0e11; --bg2:#080b0d;
+  --panel:#12171b; --panel2:#171d22; --panel3:#0d1216;
+  --line:#232b32; --line2:#1a2126;
+  --ink:#e9eef2; --dim:#939da6; --dim2:#606a72;
+  --sig:#62c5ee; --sigd:#38a6cf; --sig2:#ff458e; --onSig:#04161d;
+  --sans:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  /* stara imena → iste barve */
+  --border:var(--line); --border2:var(--line2); --borderH:#333d45;
+  --text:var(--ink); --soft:#c3ccd4; --muted:var(--dim);
+  --acc:var(--sig); --accH:#9ddcf7; --acc2:var(--sigd); --accSoft:rgba(98,197,238,.14);
+  --orange:var(--sigd); --green:#5fd67a; --greenSoft:rgba(95,214,122,.13);
+  --red:var(--sig2); --redSoft:rgba(255,69,142,.13);
+  --yellow:#edbb00; --yellowSoft:rgba(237,187,0,.13);
+  --blue:var(--sig); --blueSoft:rgba(98,197,238,.13);
+  --purple:#b48cff; --purpleSoft:rgba(180,140,255,.13);
+  --radius:0px; --bc:var(--mono);
+  font-family:var(--sans);
+}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);line-height:1.65;font-size:.96875rem}
+  .wrap{max-width:760px;margin:0 auto;padding:40px 22px 60px}
+  h1{font-size:1.875rem;letter-spacing:-.02em;margin-bottom:6px}
+  .sub{color:var(--muted);margin-bottom:30px}
+  h2{font-size:1.1875rem;margin:30px 0 10px;color:var(--acc2)}
+  p,li{color:var(--muted);margin-bottom:10px}
+  li{margin-left:20px}
+  b{color:var(--text)}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin:18px 0}
+  a{color:var(--acc2)}
+  .back{display:inline-block;margin-bottom:20px;color:var(--acc2);text-decoration:none;font-weight:700}
+
+/* ===== gradniki, dobesedno iz mockupa formainamizje.html ===== */
+h1,h2,h3,h4{font-family:var(--sans);letter-spacing:-.022em}
+a{color:var(--sig);text-decoration:none}
+a:hover{color:#9ddcf7}
+/* povezave v besedilu: poleg barve še podčrtane (WCAG 1.4.1 — barva povezave proti besedilu je samo 1,4 : 1) */
+p a,li a{text-decoration:underline;text-underline-offset:.18em;text-decoration-thickness:1px}
+.tabnav a{position:relative;font-family:var(--mono);font-size:.6875rem;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);padding:14px 0;display:block}
+.tabnav a:hover{color:var(--ink)}
+.tabnav a[aria-current="page"]{color:var(--ink)}
+.tabnav a[aria-current="page"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--sig)}
+.k{font-family:var(--mono);font-size:.59375rem;font-weight:500;letter-spacing:.17em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
+.m{font-size:.78125rem;line-height:1.6;color:var(--dim)}
+.m b{color:var(--ink);font-weight:600}
+.kv{display:flex;align-items:baseline;gap:10px}
+.kv>:first-child{flex:1 1 0%;min-width:0}
+.kv>:last-child{flex:0 0 auto;white-space:nowrap}
+.n{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap}
+.p{background:var(--panel);border:1px solid var(--line)}
+.b{font-family:var(--mono);font-size:.6875rem;font-weight:500;letter-spacing:.11em;text-transform:uppercase;white-space:nowrap;padding:10px 16px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.b:hover{background:#1e252b;border-color:#333d45}
+.b.sig{background:var(--sigd);border-color:var(--sigd);color:var(--onSig)}
+.b.sig:hover{background:var(--sig);border-color:var(--sig)}
+.b.g{background:transparent;border-color:transparent;color:var(--sig);padding:10px 4px}
+.b.g:hover{background:transparent;color:#9ddcf7}
+.b.dz{border-color:rgba(255,69,142,.4);color:var(--sig2);background:transparent}
+.b.dz:hover{background:rgba(255,69,142,.09);border-color:var(--sig2)}
+.sg button{font-family:var(--mono);font-size:.65625rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:8px 15px;background:var(--panel);border:1px solid var(--line);border-left:none;color:var(--dim);cursor:pointer}
+.sg button:first-child{border-left:1px solid var(--line)}
+.sg button:hover{color:var(--ink);background:var(--panel2)}
+.sg button[data-on="1"]{background:var(--sigd);border-color:var(--sigd);color:var(--onSig)}
+input.f,textarea.f{width:100%;font-family:var(--sans);font-size:.84375rem;padding:10px 12px;background:var(--panel3);border:1px solid var(--line);color:var(--ink);outline:none}
+input.f:focus,textarea.f:focus{border-color:var(--sig)}
+input.f::placeholder{color:var(--dim2)}
+.rw{display:grid;align-items:center;column-gap:16px;border-bottom:1px solid var(--line2)}
+.rw:hover{background:var(--panel2)}
+.tg{font-family:var(--mono);font-size:.59375rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid}
+:focus-visible{outline:2px solid var(--sig);outline-offset:2px}
+::selection{background:rgba(98,197,238,.3)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#242c33}
+::-webkit-scrollbar-track{background:var(--bench)}
+@keyframes fu{0%{opacity:0;transform:translateY(5px)}100%{opacity:1;transform:none}}
+@media(max-width:1180px){.g2{grid-template-columns:minmax(0,1fr)!important}}
+@media(max-width:1100px){.hd-install{display:none}}
+@media(max-width:1000px){.g3{grid-template-columns:minmax(0,1fr)!important}}
+@media(max-width:860px){.sc{overflow-x:auto}.sc .rw{min-width:680px}}
+
+/* ===== barve blagovne znamke (kot aplikacija in formai.si): temno ozadje, limeta — prej cian iz starega mockupa ===== */
+:root{--bench:#0F1216;--bg:#0F1216;--bg2:#0B0E12;--panel:#171C22;--panel2:#1E242C;--panel3:#12161B;--line:#262E37;--line2:#1E242C;
+  --ink:#F2F5F8;--dim:#A8B3BF;--dim2:#86909C;--sig:#A3E635;--sigd:#A3E635;--onSig:#0F1216;--text:var(--ink);--soft:#C9D1D9;--muted:#A8B3BF;
+  --acc:#A3E635;--accH:#C5F27A;--acc2:#A3E635;--accSoft:rgba(163,230,53,.12);--blue:#3987E5;--blueSoft:rgba(57,135,229,.13);--borderH:#333D47}
+body{-webkit-font-smoothing:antialiased}
+h2{color:var(--ink)}
+a:hover{color:#C5F27A}
+::selection{background:rgba(163,230,53,.28)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:26px}
+.brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:1.1875rem;letter-spacing:-.01em;color:var(--ink)!important;text-decoration:none!important}
+.brand img{width:30px;height:30px;border-radius:22.4%;display:block}
+.brand b{color:#A3E635}
+.top .back{margin:0}
+.nav2{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px;font-size:.875rem}
+
+/* (v3.50) svetla tema, ko jo uporabnik izbere v aplikaciji (Videz → Svetlo ali Kot telefon) — iste barve kot aplikacija */
+:root[data-theme="light"]{color-scheme:light;--bench:#F4F6F2;--bg:#F4F6F2;--bg2:#E9EDE5;--panel:#FFFFFF;--panel2:#EEF2EA;--panel3:#F4F6F2;--line:#DCE2D8;--line2:#E3E8DF;--border:#DCE2D8;--border2:#E3E8DF;--borderH:#C9D1C4;--ink:#131A16;--text:#131A16;--soft:#3F4A44;--dim:#3F4A44;--muted:#3F4A44;--dim2:#5E6A63;--sig:#4A6F0E;--sigd:#4A6F0E;--acc:#4A6F0E;--acc2:#4A6F0E;--accH:#3A5A0A;--onSig:#FFFFFF;--accSoft:rgba(74,111,14,.12)}
+:root[data-theme="light"] .brand b{color:#4A6F0E}
+:root[data-theme="light"] a:hover{color:#3A5A0A}
+:root[data-theme="light"] ::selection{background:rgba(163,230,53,.35)}
+:root[data-theme="light"] ::-webkit-scrollbar-thumb{background:#C9D1C4}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.95rem}
+  th,td{text-align:left;vertical-align:top;padding:10px 8px;border-top:1px solid rgba(127,127,127,.25)}
+  th{font-weight:800}
+  @media (max-width:520px){table{font-size:.875rem}th,td{padding:8px 6px}}
+</style>
+<script>/* (v3.50) tema kot v aplikaciji (formai.theme): svetlo ali »kot telefon« pri svetlem telefonu */(function(){try{var t=localStorage.getItem('formai.theme');if(t==='svetlo'||(t==='samodejno'&&window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)){document.documentElement.dataset.theme='light';var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content','#F4F6F2')}}catch(e){}})()</script>
+<style>
+  .calc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin:18px 0}
+  .calc label{display:block;font-size:.8125rem;color:var(--dim);font-weight:700;margin:0 0 5px}
+  .calc .g{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .calc input.f{border-radius:10px;font-size:1.0625rem;padding:12px 14px;font-weight:700}
+  .calc .seg{display:flex;gap:6px;margin:0 0 12px}
+  .calc .seg button{flex:1;font:inherit;font-weight:700;font-size:.8125rem;padding:10px 8px;border-radius:10px;border:1px solid var(--line);background:var(--panel3);color:var(--dim);cursor:pointer}
+  .calc .seg button[aria-pressed=true]{background:#A3E635;border-color:#A3E635;color:#0F1216}
+  .calc .big{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;margin:14px 0 2px}
+  .calc .note{font-size:.8125rem;color:var(--dim)}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  td i.z{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px;vertical-align:baseline}
+  a.cta{display:inline-block;background:#A3E635;color:#0F1216;font-weight:800;padding:14px 22px;border-radius:14px;text-decoration:none;margin-top:6px}
+  .tw{overflow-x:auto}
+  #rows td{vertical-align:top;padding-top:11px;padding-bottom:11px}
+  #rows small{display:block;font-size:.75rem;color:var(--dim);font-weight:500;margin:2px 0 0 18px;line-height:1.35}
+  .calc table{font-size:.875rem}
+  .calc th.n,.calc td.n{padding-left:8px}
+  @media (max-width:520px){.calc th:nth-child(2),.calc td:nth-child(2){display:none}.calc{padding:14px}.calc td,.calc th{padding-left:4px;padding-right:4px}}
+  .calc select.f{width:100%;font-family:inherit;font-size:1rem;font-weight:700;padding:12px 14px;border-radius:10px;background:var(--panel3);border:1px solid var(--line);color:var(--ink)}
+  .res2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  .res2 div{background:var(--panel3);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .res2 b{display:block;font-size:1.5rem;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .res2 span{font-size:.78125rem;color:var(--dim);font-weight:700}
+  .res2 .on{border-color:#A3E635}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Training-day calorie calculator</h1>
+  <p class="sub">How much to eat on a day you train and on a day you don’t · no sign-up, nothing is stored</p>
+  <p>On a day with a long ride or run your body burns a few hundred calories more than on a desk day. Enter your details and today’s session&nbsp;— you get an estimate for both days.</p>
+  <div class="calc">
+    <div class="g">
+      <div><label for="sex">Sex</label><select class="f" id="sex"><option value="m">male</option><option value="z">female</option></select></div>
+      <div><label for="age">Age</label><input class="f" id="age" inputmode="numeric" autocomplete="off" placeholder="30"/></div>
+      <div><label for="cm">Height (cm)</label><input class="f" id="cm" inputmode="decimal" autocomplete="off" placeholder="180"/></div>
+      <div><label for="kg">Weight (kg)</label><input class="f" id="kg" inputmode="decimal" autocomplete="off" placeholder="75"/></div>
+      <div><label for="day">A normal day</label><select class="f" id="day"><option value="1.3">mostly sitting</option><option value="1.5">on my feet a lot</option><option value="1.7">physical work</option></select></div>
+      <div><label for="sp">Today’s session</label><select class="f" id="sp"><option value="kolo">cycling</option><option value="tek">running</option><option value="moc">strength / gym</option><option value="hoja">walking / hiking</option></select></div>
+      <div><label for="min">Duration (min)</label><input class="f" id="min" inputmode="numeric" autocomplete="off" placeholder="60"/></div>
+      <div><label for="hard">How hard</label><select class="f" id="hard"><option value="0">easy</option><option value="1">moderate</option><option value="2">hard</option></select></div>
+    </div>
+    <div id="out" hidden>
+      <div class="res2"><div class="on"><b id="r1"></b><span>day with this session</span></div><div><b id="r2"></b><span>day without training</span></div><div><b id="r3"></b><span>burned in the session</span></div><div><b id="r4"></b><span>protein per day (1.6 g/kg)</span></div></div>
+      <p class="note" style="margin-top:12px">A maintenance estimate: resting needs by Mifflin–St&nbsp;Jeor, a normal day with an activity factor, the session from MET tables. Real expenditure can differ by 10–20&nbsp;%&nbsp;— a power meter or watch is more precise.</p>
+      <a class="cta" href="/?utm_source=calorie-calculator">Let FORMAI do this every day&nbsp;→</a>
+      <p class="note" style="margin-top:8px">FORMAI adjusts your calorie target every day to the session in your plan and the workout you actually do. The basic plan is free, no card.</p>
+    </div>
+  </div>
+  <h2>Why isn’t it one number for every day?</h2>
+  <p>Because days differ. Two hours on the bike is 1,000 calories or more; a desk day is none. Eat the same every day and you under-fuel training days and overeat on rest days.</p>
+  <h2>How accurate is the estimate?</h2>
+  <p>The formula only knows your sex, age, height and weight, not your muscle mass or metabolism. Use it as a starting point: track weight and how you feel for two to three weeks and adjust.</p>
+  <h2>How much protein?</h2>
+  <p>For people who train regularly, 1.4 to 2.0&nbsp;g per kilogram of body weight per day is the most common recommendation; the calculator shows 1.6&nbsp;g/kg. Spread it across the day.</p>
+  <p class="note" style="color:var(--dim);font-size:.875rem">Guidance, not medical advice. If you are ill, pregnant or have an eating disorder, talk to a doctor or dietitian.</p>
+  <p style="margin-top:30px"><a href="/">FORMAI</a> · <a href="training-day-calorie-calculator.html">Calorie calculator</a> · <a href="ftp-zones-calculator.html">FTP zones calculator</a> · <a href="kalkulator-kalorij-trening.html">Slovensko</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
+<script>
+(function(){
+  var $=function(i){return document.getElementById(i)}, SEP=",";
+  var MET={kolo:[5,8,11],tek:[7,9.8,12],moc:[3.5,5,6],hoja:[3.3,4.3,5.3]};
+  function num(i,lo,hi){var v=parseFloat(String($(i).value).replace(',','.'));return isFinite(v)&&v>=lo&&v<=hi?v:null}
+  function f(n){return String(Math.round(n/10)*10).replace(/\B(?=(\d{3})+(?!\d))/g,SEP)}
+  function draw(){
+    var a=num('age',14,90),h=num('cm',130,220),w=num('kg',35,200),m=num('min',0,600);
+    if(!a||!h||!w){$('out').hidden=true;return}
+    var bmr=10*w+6.25*h-5*a+($('sex').value==='z'?-161:5), rest=bmr*parseFloat($('day').value);
+    var met=MET[$('sp').value][+$('hard').value], tr=m?(met-1)*w*(m/60):0;
+    $('r1').textContent=f(rest+tr)+' kcal';$('r2').textContent=f(rest)+' kcal';$('r3').textContent=(m?'+'+f(tr):'0')+' kcal';$('r4').textContent=Math.round(w*1.6)+' g';
+    $('out').hidden=false;
+  }
+  ['sex','age','cm','kg','day','sp','min','hard'].forEach(function(i){$(i).addEventListener('input',draw);$(i).addEventListener('change',draw)});
+})();
+</script>
+</main>
+</body>
+</html>
