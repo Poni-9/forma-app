@@ -1,0 +1,27 @@
+name: Objava
+on:
+  push:
+    paths: ['.github/workflows/objava.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+env:
+  ID: 1D5kacOBV4Y9RAO8qF95ngV5rv-iBzIC5
+  SHA: 7a650cdaf0934300ac554c4fe776869985da1379e1efdc5376d8e66eb08f60b0
+jobs:
+  objava:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          set -euo pipefail
+          curl -fsSL -o p.zip "https://drive.usercontent.google.com/download?id=$ID&export=download&confirm=t"
+          echo "$SHA  p.zip" | sha256sum -c -
+          unzip -o -q p.zip -d .
+          rm p.zip
+          test -f googleac28b8b3118cc9e4.html
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets index.html sw.js
+          git diff --cached --quiet || git commit -m "3.78.0 (objava prek Actions)"
+          git push
