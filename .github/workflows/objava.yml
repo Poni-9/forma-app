@@ -6,8 +6,8 @@ on:
 permissions:
   contents: write
 env:
-  ID: 1Nn4mxrHaPPK7ZoaXexhdscbACfI_5Shg
-  SHA: 7ab0673d8fa3f88a0f0877e955f98facff7739fc1ee9b625e4d37d016317621d
+  ID: 1CQ3Kw5dbd9QANl1DYkk6zZqGOIw-RLtN
+  SHA: ea2963a080874324d03e5abe4b09f7a161e7402ecdaaa06e75c68cc2540a3667
 jobs:
   objava:
     runs-on: ubuntu-latest
