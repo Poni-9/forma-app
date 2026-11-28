@@ -6,8 +6,8 @@ on:
 permissions:
   contents: write
 env:
-  ID: 1D5kacOBV4Y9RAO8qF95ngV5rv-iBzIC5
-  SHA: 7a650cdaf0934300ac554c4fe776869985da1379e1efdc5376d8e66eb08f60b0
+  ID: 1Nn4mxrHaPPK7ZoaXexhdscbACfI_5Shg
+  SHA: 7ab0673d8fa3f88a0f0877e955f98facff7739fc1ee9b625e4d37d016317621d
 jobs:
   objava:
     runs-on: ubuntu-latest
@@ -23,5 +23,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add assets index.html sw.js
-          git diff --cached --quiet || git commit -m "3.78.0 (objava prek Actions)"
+          git diff --cached --quiet || git commit -m "objava prek Actions (zip $ID)"
           git push
